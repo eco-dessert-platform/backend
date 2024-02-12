@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final JPAQueryFactory jpaQueryFactory;
+
     @Override
     public StoreDetailResponseDto getStoreDetailResponseDto(Long storeId) {
         QStore store = QStore.store;
@@ -156,6 +157,22 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .allProducts(boardDtos)
                 .build();
     }
+
+    @Override
+    public HashMap<Long, String> getAllStoreTitle() {
+        QStore store = QStore.store;
+
+        List<Tuple> fetch = jpaQueryFactory
+                .select(store.id, store.name)
+                .from(store)
+                .fetch();
+
+        HashMap<Long, String> storeMap = new HashMap<>();
+        fetch.forEach((tuple) -> storeMap.put(tuple.get(store.id), tuple.get(store.name)));
+
+        return storeMap;
+    }
+
 }
 
 

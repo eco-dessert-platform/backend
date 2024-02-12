@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.repository;
 
+import java.util.HashMap;
 import java.util.List;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
@@ -14,6 +15,8 @@ public interface BoardQueryDSLRepository {
 
     Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, List<Long> boardIds);
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
+
+    HashMap<Long, String> getAllBoardTitle();
 
 }
 

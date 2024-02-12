@@ -33,10 +33,6 @@ public class SignatureAgreement {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "date_of_signature", columnDefinition = "datetime")
-    private DateTime dateOfSignature;
-
     @Column(name = "agreement_status", columnDefinition = "tinyint")
     private boolean agreementStatus;
-
 }

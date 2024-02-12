@@ -1,12 +1,17 @@
 package com.bbangle.bbangle.service.impl;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
+import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.model.Search;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.StoreRepository;
 import com.bbangle.bbangle.service.StoreService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -16,6 +21,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
+
+
     private final StoreRepository storeRepository;
 
     @Override

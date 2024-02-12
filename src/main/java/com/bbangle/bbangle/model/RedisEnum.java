@@ -3,17 +3,10 @@ package com.bbangle.bbangle.model;
 import java.util.Arrays;
 
 public enum RedisEnum {
-    STORE("store"),
-    BOARD("bread"),
-    BEST_KEYWORD("bestKeyword");
+    MIGRATION, STORE, BOARD, BEST_KEYWORD;
 
-    private final String label;
-
-    RedisEnum(String label) {
-        this.label = label;
-    }
-
-    public String label() {
-        return label;
+    public static boolean checkRedisNamespace(String namespace) {
+        return Arrays.stream(RedisEnum.values())
+                .anyMatch(e -> e.name().equals(namespace));
     }
 }

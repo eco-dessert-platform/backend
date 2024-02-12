@@ -1,22 +1,20 @@
 package com.bbangle.bbangle.service;
 
-import com.bbangle.bbangle.dto.KeywordDto;
+import com.bbangle.bbangle.dto.RecencySearchResponse;
 import com.bbangle.bbangle.dto.SearchResponseDto;
 
 import java.util.List;
 
 public interface SearchService {
-
-    void loadData();
-
+    void initSetting();
     void updateRedisAtBestKeyword();
 
-    SearchResponseDto getSearchResult(String keyword);
+    SearchResponseDto getSearchResult(int storePage, int boarPage, String keyword);
     void saveKeyword(Long memberId,String keyword);
 
-    List<KeywordDto> getRecencyKeyword(Long memberId);
+    RecencySearchResponse getRecencyKeyword(Long memberId);
 
-    Boolean deleteRecencyKeyword(Long keywordId, Long memberId);
+    Boolean deleteRecencyKeyword(String keyword, Long memberId);
 
     List<String> getBestKeyword();
 
