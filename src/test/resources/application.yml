@@ -1,25 +1,25 @@
 server:
   port: 8000
 spring:
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_BINDING_PORT}
+      password:
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create        # DB 초기화 전략 (none, create, create-drop, update, validate)
+      ddl-auto: none
+    #전송 쿼리 생성
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true      # 쿼리 로그 포맷 (정렬)
-        show_sql: true        # 쿼리 로그 출력
+        format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
-    driver-class-name: org.h2.Driver
-    url: 'jdbc:h2:mem:test'   # H2 DB 연결 주소 (In-Memory Mode)
-    #url: 'jdbc:h2:~/test'    # H2 DB 연결 주소 (Embedded Mode)
-    username: username        # H2 DB 접속 ID (사용자 지정)
-    password: password        # H2 DB 접속 PW (사용자 지정)
-  h2:
-    console: # H2 DB를 웹에서 관리할 수 있는 기능
-      enabled: true           # H2 Console 사용 여부
-      path: /h2-console       # H2 Console 접속 주소
+    url: ${MARIADB_LOCAL_URL}
+    username: ${MARIADB_LOCAL_USER}
+    password: ${MARIADB_LOCAL_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
   devtools:
     livereload:
       enabled: true
@@ -30,15 +30,15 @@ spring:
       client:
         registration:
           google:
-            client-id: 191791280887-ij6l3b2eav7n2eibubo3pq0msahvha04.apps.googleusercontent.com
-            client-secret: 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
-            redirect-uri: http://115.85.181.105:3000/login/oauth2/code/google
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri : ${REDIRECT_URI}
             scope:
               - email
               - profile
           kakao:
-            client-id: 081feb99e77785df45ba6cbe88406206
-            redirect-uri: https://api.bbangle.store/login/oauth2/code/kakao
+            client-id: ${KAKAO_CLIENT_ID}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:
@@ -51,13 +51,6 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6380
-
 jwt:
   issuer: bbanglebbangle
   secret_key: bbangleOven
-

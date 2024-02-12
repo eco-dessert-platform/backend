@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.dto;
 
 import com.bbangle.bbangle.model.Store;
-import com.querydsl.core.annotations.QueryProjection;
-import lombok.Builder;
 
 public record StoreResponseDto(
         Long storeId,
@@ -20,4 +18,5 @@ public record StoreResponseDto(
             store.getProfile(),
             false);
     }
+
 }

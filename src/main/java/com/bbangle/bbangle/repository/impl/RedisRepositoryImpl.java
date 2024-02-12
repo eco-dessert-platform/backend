@@ -4,7 +4,6 @@ import com.bbangle.bbangle.repository.RedisRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,7 +12,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,6 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<Long> get(String namespace, String key) {
@@ -41,23 +41,6 @@ public class RedisRepositoryImpl implements RedisRepository {
                     .toList();
     }
 
-    @Override
-    public String getString(String namespace, String key) {
-        // 네임스페이스와 키를 결합
-        String multiKey =  String.format("%s:%s", namespace, key);
-        // multiKey를 이용해 레디스 조회 후 값 반환
-        var value = redisTemplate.opsForValue();
-        // 가져온 값이 null이 아닌 경우에만 문자열로 변환하여 반환
-        try{
-            return value.get(multiKey).toString();
-        } catch (RedisSystemException e){
-            System.out.println("[에러] 레디스 RedisSystemException 에러");
-            return null;
-        } catch (NullPointerException e) {
-            System.out.println("[에러] 레디스 NullPointerException 에러");
-            return null;
-        }
-    }
 
     @Override
     public void set(String namespace, String key, String... values) {
@@ -68,23 +51,9 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
-    public void setFromString(String namespace, String key, String value) {
-        // 네임스페이스와 키를 결합
-        String multiKey =  String.format("%s:%s", namespace, key);
-        redisTemplate.opsForValue().set(multiKey, value);
-        log.info("[완료] 레디스 값 저장");
-    }
-
-    @Override
     public void delete(String namespace, String key) {
         String multiKey =  String.format("%s:%s", namespace, key);
         redisTemplate.delete(multiKey);
         log.info("[완료] 레디스 값 삭제");
-    }
-
-    @Override
-    public void deleteAll() {
-        Set<String> keys = redisTemplate.keys("*");
-        redisTemplate.delete(keys);
     }
 }
