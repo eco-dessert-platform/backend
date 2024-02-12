@@ -58,7 +58,6 @@ public class TrieUtil {
             if (currentMNode.isWordExists()) {
                 limit--;
 
-                System.out.println(currentMNode.getValue());
                 words.add(currentMNode.getValue());
 
                 if (limit == 0){

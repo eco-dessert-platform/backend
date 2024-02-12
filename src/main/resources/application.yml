@@ -1,11 +1,6 @@
 server:
   port: 8000
 spring:
-  data:
-    redis:
-      host: localhost
-      port: ${REDIS_BINDING_PORT}
-      password:
   jpa:
     hibernate:
       ddl-auto: none
@@ -16,9 +11,9 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
-    url: ${MARIADB_LOCAL_URL}
-    username: ${MARIADB_LOCAL_USER}
-    password: ${MARIADB_LOCAL_PASSWORD}
+    url: jdbc:mariadb://115.85.181.105:3300/bakery?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: root
+    password: 9893
     driver-class-name: org.mariadb.jdbc.Driver
   devtools:
     livereload:
@@ -30,15 +25,15 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri : ${REDIRECT_URI}
+            client-id: 191791280887-ij6l3b2eav7n2eibubo3pq0msahvha04.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: http://115.85.181.105:3000/login/oauth2/code/google
             scope:
               - email
               - profile
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-id: 081feb99e77785df45ba6cbe88406206
+            redirect-uri: https://api.bbangle.store/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:
@@ -51,6 +46,12 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
 jwt:
   issuer: bbanglebbangle
   secret_key: bbangleOven
+

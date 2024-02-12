@@ -1,27 +1,51 @@
 package com.bbangle.bbangle.repository.impl;
 
+import com.bbangle.bbangle.config.RedisConfig;
+import com.bbangle.bbangle.model.RedisEnum;
 import com.bbangle.bbangle.repository.RedisRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.bbangle.bbangle.service.SearchService;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Description;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 @SpringBootTest
 public class RedisRepositoryTest {
-
     @Autowired
     RedisRepository redisRepository;
+
+    final String boardNameSpace = RedisEnum.BOARD.name();
+    final String testKeyword = "비건";
+    final String[] testBoardId = {"1","2","3","4","5"};
+
+    @AfterEach
+    void after(){
+        redisRepository.deleteAll();
+    }
+
     @Test
-    void getRedisValue(){
-//        Object result = redisRepository.get("비");
-//
-//        // 결과가 List의 인스턴스인지 확인
-//        Assertions.assertTrue(result instanceof List, "결과가 List의 인스턴스가 아닙니다");
-//
-//        // 리스트 내부 요소의 타입을 추가로 확인하려면 다음과 같이 할 수 있습니다:
-//        Assertions.assertTrue(((List<?>) result).isEmpty() || ((List<?>) result).get(0) instanceof Long,
-//                "리스트의 요소가 Long 타입이 아닙니다");
+    @DisplayName("Redis에 보드값을 저장하면 정상적으로 값을 가져올 수 있어야한다")
+    void saveBoardValue(){
+        redisRepository.set(boardNameSpace, testKeyword, testBoardId);
+        var result = redisRepository.get(boardNameSpace, testKeyword);
+        Assertions.assertEquals(5, result.size(), "결과값 개수가 모자랍니다");
+        
+        AtomicLong assertNumber = new AtomicLong(1L);
+        result.forEach(boardId ->{
+            Assertions.assertEquals(boardId, assertNumber.get(), String.format("%s 값이 다릅니다",boardId));
+            assertNumber.getAndIncrement();
+        });
     }
 }

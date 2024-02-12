@@ -117,5 +117,8 @@ dependencies {
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 	testImplementation 'junit:junit:4.12'
+
+	// 임베디드 모드
+	runtimeOnly 'com.h2database:h2'
 }
 

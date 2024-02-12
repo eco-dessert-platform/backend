@@ -376,4 +376,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .build();
     }
 
+    @Override
+    public HashMap<Long, String> getAllBoardTitle() {
+        QBoard board = QBoard.board;
+
+        List<Tuple> fetch = queryFactory
+                .select(board.id, board.title)
+                .from(board)
+                .fetch();
+
+        HashMap<Long, String> boardMap = new HashMap<>();
+        fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
+
+        return boardMap;
+    }
+
 }

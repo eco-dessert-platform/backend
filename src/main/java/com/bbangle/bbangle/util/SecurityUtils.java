@@ -17,17 +17,20 @@ public class SecurityUtils {
             .getPrincipal()));
     }
 
-    public static Long getUserIdWithAnonymous() {
+    public static Long getMemberIdWithAnonymous() {
+        // 인증된 사용자인지 확인
         Authentication authentication = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
 
+        // 만약 요청된 인증이 있다면 통과
         if (authentication != null && authentication.getPrincipal() != null) {
+            // 익명의 사용자라면 null값 반환
             if (authentication instanceof AnonymousAuthenticationToken) {
-                // 익명 사용자의 처리 방식을 여기에 추가
-                return null; // 또는 특별한 값을 반환하거나 예외를 던질 수 있습니다.
+                return null;
             }
 
+            //아이디 값이 있다면 아이디값 Long으로 반환
             return Long.valueOf(String.valueOf(authentication.getPrincipal()));
         }
 

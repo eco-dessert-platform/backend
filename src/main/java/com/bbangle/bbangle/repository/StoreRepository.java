@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.repository;
 
+import com.bbangle.bbangle.model.Search;
 import com.bbangle.bbangle.model.Store;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +12,6 @@ import java.util.List;
 
 public interface StoreRepository extends JpaRepository<Store, Long>, StoreQueryDSLRepository {
     Slice<Store> findSliceBy(Pageable pageable);
-
     Page<Store> findByIdIn(@Param("ids") List<Long> ids, Pageable pageable);
 
 }
