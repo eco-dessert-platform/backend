@@ -1,8 +1,9 @@
 package com.bbangle.bbangle.wishListStore.controller;
 
 import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.wishListStore.dto.WishListStoreCursorPagingDto;
 import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,17 +18,44 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/likes")
 public class WishListStoreController {
     private final WishListStoreServiceImpl wishlistStoreService;
+    private static final Long MAX_CURSOR = 9999999L;
 
     /**
-     * 스토어 위시리스트 조회
+     * 스토어 위시리스트 조회 (오프셋 기반 페이지 네이션)
      *
      * @return the response entity List<wishListStoreResDto>
      */
     @GetMapping("/stores")
     public ResponseEntity<WishListStorePagingDto> getWishListStores(Pageable pageable){
+        long before = System.currentTimeMillis();
         Long memberId = SecurityUtils.getMemberId();
         WishListStorePagingDto wishListStoresRes = wishlistStoreService.getWishListStoresRes(memberId, pageable);
+        long after = System.currentTimeMillis();
+        log.info("take Time : {}", after-before);
         return ResponseEntity.ok().body(wishListStoresRes);
+    }
+
+    /**
+     * 스토어 위시리스트 조회 (커서 기반 페이지 네이션)
+     *
+     * @param cursorId the cursor id
+     * @return the wish list stores by cursor
+     */
+    @GetMapping("/stores/cursor")
+    public ResponseEntity<WishListStoreCursorPagingDto> getWishListStoresByCursor(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam int size
+    ){
+        long before = System.currentTimeMillis();
+        Long memberId = SecurityUtils.getMemberId();
+        if(cursorId == null){
+            cursorId = MAX_CURSOR;
+        }
+        WishListStoreCursorPagingDto wishListStoreRes =
+        wishlistStoreService.getWishListStoresResByCursor(memberId, cursorId, size);
+        long after = System.currentTimeMillis();
+        log.info("take Time : {}", after-before);
+        return ResponseEntity.ok().body(wishListStoreRes);
     }
 
     /**

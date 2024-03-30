@@ -1,15 +1,12 @@
 package com.bbangle.bbangle.wishListStore.repository;
 
-import static com.bbangle.bbangle.store.domain.QStore.store;
-import static com.bbangle.bbangle.wishListStore.domain.QWishlistStore.wishlistStore;
-
+import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.wishListStore.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.wishListStore.dto.WishListStoreResponseDto;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -18,12 +15,13 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import static com.bbangle.bbangle.store.domain.QStore.store;
+import static com.bbangle.bbangle.wishListStore.domain.QWishlistStore.wishlistStore;
+
 @Repository
+@RequiredArgsConstructor
 public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
-    public WishListStoreRepositoryImpl(EntityManager em) {
-        this.queryFactory = new JPAQueryFactory(em);
-    }
 
     @Override
     public List<WishlistStore> findWishListStores(Long memberId) {
@@ -85,5 +83,26 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
 
     private BooleanExpression isDeletedStore(boolean validate){
         return wishlistStore.isDeleted.eq(validate);
+    }
+
+    @Override
+    public List<WishListStoreResponseDto> getWishListStoreResByCursor(Long memberId, Long cursorId, int size) {
+        List<WishListStoreResponseDto> wishListStoreResponseDtos = queryFactory
+                .select(new QWishListStoreResponseDto(
+                        store.introduce,
+                        store.name.as("storeName"),
+                        wishlistStore.store.id.as("storeId")
+                ))
+                .from(wishlistStore)
+                .leftJoin(wishlistStore.store, store)
+                .where(
+                        eqWishStoreMemberId(memberId),
+                        isDeletedStore(false),
+                        wishlistStore.id.loe(cursorId)
+                )
+                .orderBy(wishlistStore.createdAt.desc())
+                .limit(size)
+                .fetch();
+        return wishListStoreResponseDtos;
     }
 }

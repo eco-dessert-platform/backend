@@ -14,4 +14,5 @@ public interface WishListStoreQueryDSLRepository {
 
     List<WishlistStore> findWishListStores(Long memberId);
 
+    List<WishListStoreResponseDto> getWishListStoreResByCursor(Long memberId, Long cursorId, int size);
 }

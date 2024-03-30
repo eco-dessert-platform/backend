@@ -14,7 +14,7 @@ import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
 import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
 import com.bbangle.bbangle.wishListFolder.service.WishListProductService;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

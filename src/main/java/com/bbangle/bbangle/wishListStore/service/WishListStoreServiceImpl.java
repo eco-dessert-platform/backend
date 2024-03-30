@@ -1,5 +1,6 @@
-package com.bbangle.bbangle.wishListStore.repository;
+package com.bbangle.bbangle.wishListStore.service;
 
+import com.bbangle.bbangle.wishListStore.dto.WishListStoreCursorPagingDto;
 import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
@@ -8,6 +9,9 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishListStore.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepositoryImpl;
 import com.bbangle.bbangle.wishListStore.service.WishListStoreService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -60,5 +64,12 @@ public class WishListStoreServiceImpl implements WishListStoreService {
                 wishListStore.delete();
             }
         }
+    }
+
+    @Override
+    public WishListStoreCursorPagingDto getWishListStoresResByCursor(Long memberId, Long cursorId, int size) {
+        List<WishListStoreResponseDto> wishListStoreResponseDtos =
+        wishListStoreRepositoryImpl.getWishListStoreResByCursor(memberId, cursorId, size);
+        return WishListStoreCursorPagingDto.of(wishListStoreResponseDtos, size);
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
 public class WishListStorePagingDto {
     private static final long LAST_PAGE = -1L;
 
-    private List<WishListStoreResponseDto> contents = new ArrayList<>();
+    private List<WishListStoreResponseDto> contents;
     private long lastPage;
     private long nextPage;
 
