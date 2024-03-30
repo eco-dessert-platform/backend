@@ -6,6 +6,7 @@ import static com.bbangle.bbangle.wishListStore.domain.QWishlistStore.wishlistSt
 import com.bbangle.bbangle.wishListStore.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.wishListStore.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -28,8 +29,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public List<WishlistStore> findWishListStores(Long memberId) {
         return queryFactory
                 .selectFrom(wishlistStore)
-                .where(wishlistStore.member.id.eq(memberId)
-                        .and(wishlistStore.isDeleted.eq(false)))
+                .where(eqWishStoreMemberId(memberId),
+                        isDeletedStore(false))
                 .fetch();
     }
 
@@ -43,7 +44,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 ))
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
-                .where(wishlistStore.member.id.eq(memberId).and(wishlistStore.isDeleted.ne(true)))
+                .where(eqWishStoreMemberId(memberId),
+                        isDeletedStore(false))
                 .orderBy(wishlistStore.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -57,7 +59,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 ))
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
-                .where(wishlistStore.member.id.eq(memberId).and(wishlistStore.isDeleted.ne(true)))
+                .where(eqWishStoreStoreId(memberId),
+                        isDeletedStore(false))
                 .orderBy(wishlistStore.createdAt.desc());
 
         return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchCount);
@@ -67,8 +70,20 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public Optional<WishlistStore> findWishListStore(Long memberId, Long storeId) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(wishlistStore)
-                .where(wishlistStore.member.id.eq(memberId)
-                        .and(wishlistStore.store.id.eq(storeId)))
+                .where(eqWishStoreMemberId(memberId),
+                       eqWishStoreStoreId(storeId))
                 .fetchOne());
+    }
+
+    private BooleanExpression eqWishStoreMemberId(Long memberId){
+        return memberId != null ? wishlistStore.member.id.eq(memberId) : null;
+    }
+
+    private BooleanExpression eqWishStoreStoreId(Long storeId){
+        return storeId != null? wishlistStore.store.id.eq(storeId) : null;
+    }
+
+    private BooleanExpression isDeletedStore(boolean validate){
+        return wishlistStore.isDeleted.eq(validate);
     }
 }
