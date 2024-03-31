@@ -36,6 +36,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public Page<WishListStoreResponseDto> getWishListStoreRes(Long memberId, Pageable pageable) {
         List<WishListStoreResponseDto> wishListStores = queryFactory
                 .select(new QWishListStoreResponseDto(
+                        wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
                         wishlistStore.store.id.as("storeId")
@@ -51,6 +52,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
 
         JPAQuery<WishListStoreResponseDto> countQuery = queryFactory
                 .select(new QWishListStoreResponseDto(
+                        wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
                         wishlistStore.store.id.as("storeId")
@@ -89,6 +91,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public List<WishListStoreResponseDto> getWishListStoreResByCursor(Long memberId, Long cursorId, int size) {
         List<WishListStoreResponseDto> wishListStoreResponseDtos = queryFactory
                 .select(new QWishListStoreResponseDto(
+                        wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
                         wishlistStore.store.id.as("storeId")

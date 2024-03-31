@@ -25,7 +25,7 @@ public class WishListStoreCursorPagingDto {
    }
 
    private static boolean isLastPage(List<WishListStoreResponseDto> wishListStoreResponseDtos, int size) {
-      return wishListStoreResponseDtos.size() < size ? true : false;
+      return wishListStoreResponseDtos.size() < size;
    }
 
    private static WishListStoreCursorPagingDto hasNextScroll(
@@ -34,7 +34,7 @@ public class WishListStoreCursorPagingDto {
    ) {
       int infoSize = wishListStoreResponseDtos.size();
       WishListStoreResponseDto currentLastPageInfo = wishListStoreResponseDtos.get(infoSize - 1);
-      Long currentLastStoreId = currentLastPageInfo.getStoreId();
-      return new WishListStoreCursorPagingDto(wishListStoreResponseDtos, currentLastStoreId, size);
+      Long currentLastId = currentLastPageInfo.getId();
+      return new WishListStoreCursorPagingDto(wishListStoreResponseDtos, currentLastId, size);
    }
 }
