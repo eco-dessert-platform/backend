@@ -22,7 +22,7 @@ public class QWithdrawal extends EntityPathBase<Withdrawal> {
 
     public static final QWithdrawal withdrawal = new QWithdrawal("withdrawal");
 
-    public final com.bbangle.bbangle.model.QBaseEntity _super = new com.bbangle.bbangle.model.QBaseEntity(this);
+    public final com.bbangle.bbangle.common.domain.QBaseEntity _super = new com.bbangle.bbangle.common.domain.QBaseEntity(this);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;

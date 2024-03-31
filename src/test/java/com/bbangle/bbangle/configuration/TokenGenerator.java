@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.configuration;
 
-import com.bbangle.bbangle.config.jwt.TokenProvider;
+import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.member.domain.Member;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;

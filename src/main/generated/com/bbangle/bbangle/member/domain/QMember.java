@@ -20,7 +20,7 @@ public class QMember extends EntityPathBase<Member> {
 
     public static final QMember member = new QMember("member1");
 
-    public final com.bbangle.bbangle.model.QBaseEntity _super = new com.bbangle.bbangle.model.QBaseEntity(this);
+    public final com.bbangle.bbangle.common.domain.QBaseEntity _super = new com.bbangle.bbangle.common.domain.QBaseEntity(this);
 
     public final StringPath birth = createString("birth");
 
@@ -44,9 +44,9 @@ public class QMember extends EntityPathBase<Member> {
 
     public final StringPath profile = createString("profile");
 
-    public final ListPath<com.bbangle.bbangle.model.WishlistFolder, com.bbangle.bbangle.model.QWishlistFolder> wishlistFolders = this.<com.bbangle.bbangle.model.WishlistFolder, com.bbangle.bbangle.model.QWishlistFolder>createList("wishlistFolders", com.bbangle.bbangle.model.WishlistFolder.class, com.bbangle.bbangle.model.QWishlistFolder.class, PathInits.DIRECT2);
+    public final ListPath<com.bbangle.bbangle.wishListFolder.domain.WishlistFolder, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder> wishlistFolders = this.<com.bbangle.bbangle.wishListFolder.domain.WishlistFolder, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder>createList("wishlistFolders", com.bbangle.bbangle.wishListFolder.domain.WishlistFolder.class, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder.class, PathInits.DIRECT2);
 
-    public final ListPath<com.bbangle.bbangle.model.WishlistStore, com.bbangle.bbangle.model.QWishlistStore> wishlistStores = this.<com.bbangle.bbangle.model.WishlistStore, com.bbangle.bbangle.model.QWishlistStore>createList("wishlistStores", com.bbangle.bbangle.model.WishlistStore.class, com.bbangle.bbangle.model.QWishlistStore.class, PathInits.DIRECT2);
+    public final ListPath<com.bbangle.bbangle.wishListStore.domain.WishlistStore, com.bbangle.bbangle.wishListStore.domain.QWishlistStore> wishlistStores = this.<com.bbangle.bbangle.wishListStore.domain.WishlistStore, com.bbangle.bbangle.wishListStore.domain.QWishlistStore>createList("wishlistStores", com.bbangle.bbangle.wishListStore.domain.WishlistStore.class, com.bbangle.bbangle.wishListStore.domain.QWishlistStore.class, PathInits.DIRECT2);
 
     public final ListPath<Withdrawal, QWithdrawal> withdrawals = this.<Withdrawal, QWithdrawal>createList("withdrawals", Withdrawal.class, QWithdrawal.class, PathInits.DIRECT2);
 

@@ -14,7 +14,7 @@ public class BoardWishListConfig {
 
     private final BoardRepository boardRepository;
 
-    @Qualifier("boardLikeInfoRedisTemplate")
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     @PostConstruct
@@ -26,8 +26,6 @@ public class BoardWishListConfig {
                 redisTemplate.opsForZSet()
                     .add(RedisKeyUtil.POPULAR_KEY, String.valueOf(board.getId()), 0);
             });
-
-
     }
 
 }

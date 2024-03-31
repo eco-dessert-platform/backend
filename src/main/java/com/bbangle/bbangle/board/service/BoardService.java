@@ -2,14 +2,16 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.page.CursorInfo;
+import com.bbangle.bbangle.page.CustomPage;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface BoardService {
 
-    Slice<BoardResponseDto> getBoardList(
+    CustomPage<List<BoardResponseDto>> getBoardList(
         String sort,
         Boolean glutenFreeTag,
         Boolean highProteinTag,
@@ -20,7 +22,8 @@ public interface BoardService {
         Integer minPrice,
         Integer maxPrice,
         Boolean orderAvailableToday,
-        Pageable pageable
+        Long cursorId,
+        CursorInfo cursorInfo
     );
 
     @Transactional(readOnly = true)

@@ -13,7 +13,8 @@ public interface BoardQueryDSLRepository {
     List<BoardResponseDto> getBoardResponseDto(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday
+        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
+        List<Long> matchedIdx
     );
 
     Slice<BoardResponseDto> getAllByFolder(
@@ -23,9 +24,7 @@ public interface BoardQueryDSLRepository {
         WishlistFolder wishlistFolder
     );
 
-    BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
-
-    BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId);
+    BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
 
     HashMap<Long, String> getAllBoardTitle();
 

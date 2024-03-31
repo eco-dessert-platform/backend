@@ -8,13 +8,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository {
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Board b SET b.detail = :detailUrl WHERE b.id = :boardId ")
-    int updateDetailWhereStoreIdEqualsBoardId(
-        @Param("boardId")
-        Long boardId,
-        @Param("detailUrl")
-        String detailUrl
-    );
+//    @Modifying(clearAutomatically = true)
+//    @Query("UPDATE Board b SET b.detail = :detailUrl WHERE b.id = :boardId ")
+//    int updateDetailWhereStoreIdEqualsBoardId(
+//        @Param("boardId")
+//        Long boardId,
+//        @Param("detailUrl")
+//        String detailUrl
+//    );
 
 }

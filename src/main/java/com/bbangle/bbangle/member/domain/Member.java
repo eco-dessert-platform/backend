@@ -4,6 +4,7 @@ import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import jakarta.persistence.*;
@@ -47,6 +48,13 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(name = "profile")
     private String profile;
 
+    @Column(name = "provider", columnDefinition = "varchar(20)")
+    @Enumerated(EnumType.STRING)
+    private OauthServerType provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
@@ -62,7 +70,7 @@ public class Member extends BaseEntity implements UserDetails {
     @Builder
     public Member(
         Long id, String email, String phone, String name, String nickname,
-        String birth, boolean isDeleted, String profile
+        String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
     ) {
         this.id = id;
         this.email = email;
@@ -72,6 +80,8 @@ public class Member extends BaseEntity implements UserDetails {
         this.birth = birth;
         this.isDeleted = isDeleted;
         this.profile = profile;
+        this.providerId = providerId;
+        this.provider = provider;
     }
 
     @Override

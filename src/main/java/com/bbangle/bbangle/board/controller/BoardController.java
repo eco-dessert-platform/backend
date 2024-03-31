@@ -6,12 +6,15 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
+import com.bbangle.bbangle.page.CursorInfo;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +39,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class BoardController {
 
+    private static final Long PAGE_SIZE = 10L - 1L;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+
     private final BoardServiceImpl boardService;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
@@ -45,7 +50,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping
-    public ResponseEntity<Slice<BoardResponseDto>> getList(
+    public ResponseEntity<CustomPage<?>> getList(
         @RequestParam(required = false)
         String sort,
         @RequestParam(required = false)
@@ -66,9 +71,12 @@ public class BoardController {
         Integer maxPrice,
         @RequestParam(required = false)
         Boolean orderAvailableToday,
-        @PageableDefault
-        Pageable pageable
+        @RequestParam(required = false)
+        Long cursorId
     ) {
+
+        CursorInfo cursorInfo = getCursorInfo(cursorId);
+
         return ResponseEntity.ok(boardService.getBoardList(sort,
             glutenFreeTag,
             highProteinTag,
@@ -79,7 +87,8 @@ public class BoardController {
             minPrice,
             maxPrice,
             orderAvailableToday,
-            pageable));
+            cursorId,
+            cursorInfo));
     }
 
     @GetMapping("/folders/{folderId}")
@@ -126,7 +135,7 @@ public class BoardController {
                     .format(formatter),
                 new BoardLikeInfo(boardId, 0.1, LocalDateTime.now(), ScoreType.VIEW));
         redisTemplate.opsForValue()
-            .set(viewCountKey, true, Duration.ofMinutes(3));
+            .set(viewCountKey, "true", Duration.ofMinutes(3));
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
@@ -151,7 +160,7 @@ public class BoardController {
                     .format(formatter),
                 new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.PURCHASE));
         redisTemplate.opsForValue()
-            .set(purchaseCountKey, true, Duration.ofMinutes(3));
+            .set(purchaseCountKey, "true", Duration.ofMinutes(3));
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
@@ -180,6 +189,36 @@ public class BoardController {
             .body(MessageResDto.builder()
                 .message(failMessage)
                 .build());
+    }
+
+    private CursorInfo getCursorInfo(Long cursorId) {
+        boolean hasNext = true;
+        Long rank = getRank(cursorId);
+        Long endSize = rank + PAGE_SIZE;
+        Long size = redisTemplate.opsForZSet()
+            .size(RedisKeyUtil.RECOMMEND_KEY);
+        if(rank.equals(size)){
+            throw new IllegalArgumentException("마지막 순위의 게시글입니다.");
+        }
+        if (rank + PAGE_SIZE > size) {
+            hasNext = false;
+            endSize = size;
+        }
+
+        return new CursorInfo(hasNext, rank, endSize);
+    }
+
+    private Long getRank(Long cursorId) {
+        if (Objects.isNull(cursorId)) {
+            return 0L;
+        }
+        Long rank = redisTemplate.opsForZSet()
+            .reverseRank(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(cursorId));
+        if(Objects.isNull(rank)){
+            throw new IllegalArgumentException("정상적이지 않은 등수입니다.");
+        }
+
+        return rank + 1;
     }
 
 }

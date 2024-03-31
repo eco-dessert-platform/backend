@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.token.service;
 
-import com.bbangle.bbangle.config.jwt.TokenProvider;
+import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.service.MemberService;
 import java.time.Duration;

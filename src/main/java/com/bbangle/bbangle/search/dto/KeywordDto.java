@@ -7,8 +7,7 @@ public record KeywordDto(
 ) {
 
     @QueryProjection
-    public KeywordDto(String keyword) {
-        this.keyword = keyword;
+    public KeywordDto {
     }
 
 }

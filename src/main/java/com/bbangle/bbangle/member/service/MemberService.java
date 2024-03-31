@@ -12,9 +12,10 @@ import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
-import com.bbangle.bbangle.wishListFolder.service.WishListProductService;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishListBoard.service.WishListBoardService;
+import com.bbangle.bbangle.wishListFolder.service.WishListFolderService;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,13 +38,12 @@ public class MemberService {
     private static final String DEFAULT_MEMBER_EMAIL = "example@xxxxx.com";
 
     private final S3Service imageService;
-
     private final MemberRepository memberRepository;
     private final SignatureAgreementRepository signatureAgreementRepository;
     private final WishListStoreServiceImpl wishListStoreServiceImpl;
-    private final WishListProductService wishListProductService;
-    private final WishListFolderService wishListFolderService;
+    private final WishListBoardService wishListBoardService;
     private final WithdrawalRepository withdrawalRepository;
+    private final WishListFolderService wishListFolderService;
 
     @PostConstruct
     public void initSetting() {
@@ -67,18 +67,6 @@ public class MemberService {
     public Member findById(Long id) {
         return memberRepository.findById(id)
             .orElseThrow(MemberNotFoundException::new);
-    }
-
-    public Member findByEmail(String email) {
-        return memberRepository.findByEmail(email)
-            .orElseThrow(
-                () -> new IllegalArgumentException("findByEmail() >>>> no Member by Email"));
-    }
-
-    public Member findByNickname(String nickname) {
-        return memberRepository.findByNickname(nickname)
-            .orElseThrow(() -> new IllegalArgumentException(
-                ("findByNickname() >>>>> no Member by Nickname")));
     }
 
     @Transactional
@@ -144,7 +132,7 @@ public class MemberService {
         wishListStoreServiceImpl.deletedByDeletedMember(memberId);
 
         //위시리스트 상품 삭제 표시
-        wishListProductService.deletedByDeletedMember(memberId);
+        wishListBoardService.deletedByDeletedMember(memberId);
 
         //위시리스트 폴더 삭제 표시
         wishListFolderService.deletedByDeletedMember(memberId);

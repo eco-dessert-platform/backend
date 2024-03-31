@@ -1,9 +1,10 @@
 package com.bbangle.bbangle.search.controller;
 
 import com.bbangle.bbangle.common.message.MessageResDto;
-import com.bbangle.bbangle.search.dto.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.SearchBoardDto;
-import com.bbangle.bbangle.search.dto.SearchStoreDto;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
+import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
+import com.bbangle.bbangle.search.dto.response.SearchStoreResponse;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import java.util.List;
@@ -34,45 +35,17 @@ public class SearchController {
     private final SearchService searchService;
   
     @GetMapping(GET_BOARD_KEYWORD_SEARCH_API)
-    public ResponseEntity<SearchBoardDto> getSearchBoardDtos(
-            @RequestParam(value = "page")
-            int page,
-            @RequestParam(value = "keyword")
-            String keyword,
-            @RequestParam(value = "sort", required = false, defaultValue = "LATEST")
-            String sort,
-            @RequestParam(value = "glutenFreeTag", required = false, defaultValue = "false")
-            Boolean glutenFreeTag,
-            @RequestParam(value = "highProteinTag", required = false, defaultValue = "false")
-            Boolean highProteinTag,
-            @RequestParam(value = "sugarFreeTag", required = false, defaultValue = "false")
-            Boolean sugarFreeTag,
-            @RequestParam(value = "veganTag", required = false, defaultValue = "false")
-            Boolean veganTag,
-            @RequestParam(value = "ketogenicTag", required = false, defaultValue = "false")
-            Boolean ketogenicTag,
-            @RequestParam(value = "orderAvailableToday", required = false, defaultValue = "false")
-            Boolean orderAvailableToday,
-            @RequestParam(value = "category", required = false, defaultValue = "")
-            String category,
-            @RequestParam(value = "minPrice", required = false, defaultValue = "0")
-            Integer minPrice,
-            @RequestParam(value = "maxPrice", required = false, defaultValue = "0")
-            Integer maxPrice
+    public ResponseEntity<SearchBoardResponse> getSearchBoardDtos(
+            SearchBoardRequest searchBoardRequest
     ){
-
+        // 회원, 비회원 둘 다 사용 가능
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return ResponseEntity.ok().body(searchService.getSearchBoardDtos(
-                memberId, page, keyword,
-                sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag,
-                orderAvailableToday, category, minPrice, maxPrice
-            ));
+        return ResponseEntity.ok().body(searchService.getSearchBoardDtos(memberId, searchBoardRequest));
     }
 
     @GetMapping(GET_STORE_KEYWORD_SEARCH_API)
-    public ResponseEntity<SearchStoreDto> getSearchStoreDtos(
+    public ResponseEntity<SearchStoreResponse> getSearchStoreDtos(
             @RequestParam("page")
             int page,
             @RequestParam(value = "keyword")
@@ -135,5 +108,4 @@ public class SearchController {
                 Map.of("content", searchService.getAutoKeyword(keyword))
             );
     }
-
 }

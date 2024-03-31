@@ -64,7 +64,6 @@ public class AdminServiceImpl implements AdminService {
                         .price(adminBoardRequestDto.price())
                         .status(adminBoardRequestDto.status())
                         .purchaseUrl(adminBoardRequestDto.purchaseUrl())
-                        .detail(adminBoardRequestDto.detailUrl())
                         .monday(adminBoardRequestDto.mon())
                         .tuesday(adminBoardRequestDto.tue())
                         .wednesday(adminBoardRequestDto.wed())
