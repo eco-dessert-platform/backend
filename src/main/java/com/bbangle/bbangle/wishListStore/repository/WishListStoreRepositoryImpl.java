@@ -39,7 +39,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                         wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
-                        wishlistStore.store.id.as("storeId")
+                        store.id.as("storeId"),
+                        store.profile
                 ))
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
@@ -50,20 +51,15 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<WishListStoreResponseDto> countQuery = queryFactory
-                .select(new QWishListStoreResponseDto(
-                        wishlistStore.id,
-                        store.introduce,
-                        store.name.as("storeName"),
-                        wishlistStore.store.id.as("storeId")
-                ))
+        JPAQuery<Long> countQuery = queryFactory
+                .select(wishlistStore.id.count())
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
                 .where(eqWishStoreStoreId(memberId),
                         isDeletedStore(false))
                 .orderBy(wishlistStore.createdAt.desc());
 
-        return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchCount);
+        return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchOne);
     }
 
     @Override
@@ -89,12 +85,13 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
 
     @Override
     public List<WishListStoreResponseDto> getWishListStoreResByCursor(Long memberId, Long cursorId, int size) {
-        List<WishListStoreResponseDto> wishListStoreResponseDtos = queryFactory
+        return queryFactory
                 .select(new QWishListStoreResponseDto(
                         wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
-                        wishlistStore.store.id.as("storeId")
+                        store.id.as("storeId"),
+                        store.profile
                 ))
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
@@ -106,6 +103,5 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .orderBy(wishlistStore.createdAt.desc())
                 .limit(size)
                 .fetch();
-        return wishListStoreResponseDtos;
     }
 }

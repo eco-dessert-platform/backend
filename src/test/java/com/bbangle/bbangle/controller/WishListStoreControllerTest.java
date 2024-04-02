@@ -56,6 +56,8 @@ public class WishListStoreControllerTest {
                 .param("sort", "createdAt,DESC"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contents[0].introduce").value("건강을 먹다-로썸"))
+                .andExpect(jsonPath("$.contents[0].wished").value(true))
+                .andExpect(jsonPath("$.contents[0].profile").value("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e"))
                 .andDo(print());
     }
 
