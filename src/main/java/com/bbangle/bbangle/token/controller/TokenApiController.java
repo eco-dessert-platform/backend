@@ -16,7 +16,7 @@ public class TokenApiController {
 
     private final TokenService tokenService;
 
-    @PostMapping("/api/token")
+    @PostMapping("/api/v1/token")
     public ResponseEntity<CreateAccessTokenResponse> createNewAccessToken(
         @RequestBody
         CreateAccessTokenRequest request

@@ -70,7 +70,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/token")
+            .requestMatchers("/api/v1/token")
             .permitAll()
             .requestMatchers("/api/v1/search/**")
             .permitAll()
