@@ -153,7 +153,6 @@ public class SearchServiceTest {
                 member.getId(), storePage, SEARCH_KEYWORD_STORE);
 
         var stores = searchStoreResult.content();
-
         assertThat(searchStoreResult.currentItemCount(), is(10));
         assertThat(searchStoreResult.pageNumber(), is(0));
         assertThat(searchStoreResult.itemAllCount(), is(15));
@@ -165,6 +164,7 @@ public class SearchServiceTest {
             assertThat(store.storeId(), is(i+1L));
             assertThat(store.storeName(), is("RAWSOME"));
             assertThat(store.isWished(), is(false));
+
 
         }
     }

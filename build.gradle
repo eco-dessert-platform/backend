@@ -126,5 +126,8 @@ dependencies {
 
 	// 아마존 S3 API
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
+
+    // faker
+    implementation 'net.datafaker:datafaker:2.1.0'
 }
 

@@ -1,16 +1,16 @@
 package com.bbangle.bbangle.store.controller;
 
 import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,11 +21,10 @@ public class StoreController {
     private final StoreService storeService;
 
     @GetMapping
-    public ResponseEntity<Slice<StoreResponseDto>> getList(
-        @PageableDefault
-        Pageable pageable
+    public ResponseEntity<CustomPage<List<StoreResponseDto>>> getList(
+        Long cursorId
     ) {
-        return ResponseEntity.ok(storeService.getList(pageable));
+        return ResponseEntity.ok(storeService.getList(cursorId));
     }
 
     @GetMapping("/{id}")

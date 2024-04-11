@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WishListStoreQueryDSLRepository {
-    Page<WishListStoreResponseDto> getWishListStoreRes(Long memberId, Pageable pageable);
+    Page<WishListStoreResponseDto> getWishListStoreResponse(Long memberId, Pageable pageable);
     Optional<WishlistStore> findWishListStore(Long memberId, Long storeId);
-
     List<WishlistStore> findWishListStores(Long memberId);
 
 }

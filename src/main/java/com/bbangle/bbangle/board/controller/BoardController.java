@@ -1,22 +1,34 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
-import com.bbangle.bbangle.page.CursorInfo;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -37,9 +49,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/boards")
 @RequiredArgsConstructor
+@Tag(name = "Boards", description = "게시판 API")
 public class BoardController {
 
-    private static final Long PAGE_SIZE = 10L - 1L;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
     private final BoardServiceImpl boardService;
@@ -49,42 +61,26 @@ public class BoardController {
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
+    @Operation(summary = "게시글 전체 조회")
+    @ApiResponse(
+        responseCode = "200",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = CustomPage.class)
+        )
+    )
     @GetMapping
-    public ResponseEntity<CustomPage<?>> getList(
-        @RequestParam(required = false)
-        String sort,
-        @RequestParam(required = false)
-        Boolean glutenFreeTag,
-        @RequestParam(required = false)
-        Boolean highProteinTag,
-        @RequestParam(required = false)
-        Boolean sugarFreeTag,
-        @RequestParam(required = false)
-        Boolean veganTag,
-        @RequestParam(required = false)
-        Boolean ketogenicTag,
-        @RequestParam(required = false)
-        String category,
-        @RequestParam(required = false)
-        Integer minPrice,
-        @RequestParam(required = false)
-        Integer maxPrice,
-        @RequestParam(required = false)
-        Boolean orderAvailableToday,
-        @RequestParam(required = false)
+    public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
+        @ParameterObject
+        FilterRequest filterRequest,
+        @RequestParam(required = false, name = "정렬 기준")
+        SortType sort,
+        @RequestParam(required = false, name = "페이지네이션 cursorId")
         Long cursorId
     ) {
-
-        return ResponseEntity.ok(boardService.getBoardList(sort,
-            glutenFreeTag,
-            highProteinTag,
-            sugarFreeTag,
-            veganTag,
-            ketogenicTag,
-            category,
-            minPrice,
-            maxPrice,
-            orderAvailableToday,
+        return ResponseEntity.ok(boardService.getBoardList(
+            filterRequest,
+            sort,
             cursorId));
     }
 

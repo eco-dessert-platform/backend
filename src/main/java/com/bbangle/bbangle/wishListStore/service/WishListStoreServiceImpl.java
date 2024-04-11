@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishListStore.repository;
+package com.bbangle.bbangle.wishListStore.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_WISH_INFO;
@@ -10,7 +10,8 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreService;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepositoryImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +29,8 @@ public class WishListStoreServiceImpl implements WishListStoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public WishListStorePagingDto getWishListStoresRes(Long memberId, Pageable pageable) {
-        return WishListStorePagingDto.of(wishListStoreRepositoryImpl.getWishListStoreRes(memberId, pageable));
+    public WishListStorePagingDto getWishListStoresResponse(Long memberId, Pageable pageable) {
+        return WishListStorePagingDto.of(wishListStoreRepositoryImpl.getWishListStoreResponse(memberId, pageable));
 
     }
 
