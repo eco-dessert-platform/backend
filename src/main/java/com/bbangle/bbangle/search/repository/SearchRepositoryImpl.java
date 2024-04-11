@@ -20,6 +20,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -39,74 +40,73 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
+    private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
+    private static final QStore store = QStore.store;
+    private static final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private static final QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+    private static final QSearch search = QSearch.search;
     private final int ONEDAY = 24;
     private final int DEFAULT_ITEM_SIZE = 10;
 
 
+    // 빈 DTO 반환
+
 
     @Override
-    public SearchBoardResponse getSearchedBoard(Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest, Pageable pageable) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
+    public Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds){
+        BooleanBuilder whereFilter = setFilteringCondition(boardRequest);
 
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+        return queryFactory
+                .select(product.board.id)
+                .distinct()
+                .from(product)
+                .where(
+                        board.id.in(boardIds),
+                        whereFilter
+                ).fetchCount();
+    }
 
-        BooleanBuilder filter =
-                setFilteringCondition(boardRequest.glutenFreeTag(),
-                        boardRequest.highProteinTag(),
-                        boardRequest.sugarFreeTag(),
-                        boardRequest.veganTag(),
-                        boardRequest.ketogenicTag(),
-                        boardRequest.orderAvailableToday(),
-                        boardRequest.category(),
-                        boardRequest.minPrice(),
-                        boardRequest.maxPrice(),
-                        product,
-                        board);
+    private SearchBoardResponse returnEmptyResponse(Pageable pageable, long total) {
+        return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, total);
+    }
 
+    // 정렬 기준 설정
+    private OrderSpecifier<?> determineOrder(SearchBoardRequest boardRequest, List<Long> boardIds) {
+        return boardRequest.sort().equals(SortType.POPULAR.getValue()) ?
+                board.view.add(board.wishCnt.multiply(10)).desc() :
+                orderByFieldList(boardIds, product.board.id);
+    }
 
+    // 페이징 적용된 조회
+    private List<Long> fetchFilteredQuery(JPAQuery<Long> query, OrderSpecifier<?> orderBy, Pageable pageable) {
+        return query.orderBy(orderBy).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
+    }
 
+    private OrderSpecifier<String> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
+        // 커스텀한 순서대로 데이터베이스 값을 뽑아올 수 있음
+        String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        return Expressions.stringTemplate("FIELD({0}, " + ids + ")", id).asc();
+    }
+
+    public List<Long> getFilteredBoardIds(SearchBoardRequest boardRequest, List<Long> boardIds, Pageable pageable){
+        BooleanBuilder whereFilter =
+                setFilteringCondition(boardRequest);
 
         var defaultQuery = queryFactory
                 .select(product.board.id)
                 .distinct()
                 .from(product)
                 .where(
-
                         board.id.in(boardIds),
-                        filter
+                        whereFilter
                 );
 
+        var orderBy = determineOrder(boardRequest, boardIds);
+        return fetchFilteredQuery(defaultQuery, orderBy, pageable);
+    }
 
-        // 검색된 게시물 전체 개수
-        var queryAllCount = defaultQuery.fetch().stream().toList().size();
-
-        // 게시글이 없다면 빈 DTO 반환
-        if (queryAllCount <= 0){
-            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
-        }
-
-        // 인가 상품인 경우
-        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
-        var orderByBuilder =
-                boardRequest.sort().equals(SortType.POPULAR.getValue())?
-                        board.view.add(board.wishCnt.multiply(10)).desc():
-                        orderByFieldList(boardIds, product.board.id);
-
-
-        // 필터링된 board의 id를 10개의 데이터를 끊어서 가져옴
-        var filterQuery = defaultQuery
-                .orderBy(orderByBuilder)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        if (filterQuery.size() <= 0){
-            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
-        }
-
-        // 가져올 컬럼명 입력
+    private List<Expression<?>> getColumnsForBoardDetails(Long memberId){
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(product.board.store.id);
         columns.add(product.board.store.name);
@@ -121,104 +121,124 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         columns.add(product.veganTag);
         columns.add(product.ketogenicTag);
 
-        // 회원이라면 위시리스트 등록 여부도 파악
         if (memberId != null && memberId > 0) {
             columns.add(wishlistProduct.id);
         }
 
-        // 위에서 찾은 10개 이하의 게시판의 정보들을 가져오는 쿼리 작성
+        return columns;
+    }
+
+    public List<Tuple> fetchBoardDetailsByBoardIds(Long memberId, List<Long> filteredBoardIds){
+        List<Expression<?>> columns = getColumnsForBoardDetails(memberId);
+
         var boards = queryFactory
                 .select(columns.toArray(new Expression[0]))
                 .from(product)
                 .join(product.board, board)
                 .join(product.board.store, store)
-                .where(product.board.id.in(filterQuery))
-                .orderBy(orderByFieldList(filterQuery, product.board.id));
+                .where(product.board.id.in(filteredBoardIds))
+                .orderBy(orderByFieldList(filteredBoardIds, product.board.id));
 
         // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
             boards = boards.leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false));
         }
 
+        return boards.fetch();
+    }
 
-        Map<Long, BoardResponseDto> boardMap = new LinkedHashMap<>();
-        Set<Category> categories = new HashSet<>();
+    private void putBoardResponseAtBoardIdToResponseMap(Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId, Set<Category> categories){
+        boardIdToResponseMap.put(boardId,
+                BoardResponseDto.builder()
+                        .boardId(boardId)
+                        .storeId(boardDetail.get(product.board.store.id))
+                        .storeName(boardDetail.get(product.board.store.name))
+                        .thumbnail(boardDetail.get(product.board.profile))
+                        .title(boardDetail.get(product.board.title))
+                        .price(boardDetail.get(product.board.price))
+                        .isBundled(categories.size() > 1)
+                        .tags(new ArrayList<>())
+                        .isWished(false)
+                        .build());
 
-        for (Tuple tuple:boards.fetch()) {
-            Long boardId =  tuple.get(product.board.id);
+        categories.clear();
+    }
 
-            // 이전 게시판 아이디와 현재 게시판 아이디가 다르다면 Map에 저장
-            if (!boardMap.containsKey(boardId)) {
-                boardMap.put(boardId,
-                        BoardResponseDto.builder()
-                                .boardId(boardId)
-                                .storeId(tuple.get(product.board.store.id))
-                                .storeName(tuple.get(product.board.store.name))
-                                .thumbnail(tuple.get(product.board.profile))
-                                .title(tuple.get(product.board.title))
-                                .price(tuple.get(product.board.price))
-                                .isBundled(categories.size() > 1)
-                                .tags(new ArrayList<>())
-                                .isWished(false)
-                                .build());
+    private BoardResponseDto getBoardTagsByboardDetailTuple(Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId){
+        BoardResponseDto boardResponseDto = boardIdToResponseMap.get(boardDetail.get(product.board.id));
 
-                categories.clear();
-            }
-
-            // 묶음 상품 표시를 위해 카테고리 SetMap에 저장
-            // 중복값은 저절로 제거됨
-            categories.add(tuple.get(product.category));
-
-            // 게시판에 표시할 전체태그 구성
-            BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
-
-            if (tuple.get(product.glutenFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
-            }
-            if (tuple.get(product.highProteinTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
-            }
-            if (tuple.get(product.sugarFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
-            }
-            if (tuple.get(product.veganTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.VEGAN.label());
-            }
-            if (tuple.get(product.ketogenicTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
-            }
-
-            boardMap.put(tuple.get(product.board.id), boardResponseDto);
+        if (boardDetail.get(product.glutenFreeTag)) {
+            boardIdToResponseMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
+        }
+        if (boardDetail.get(product.highProteinTag)) {
+            boardIdToResponseMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
+        }
+        if (boardDetail.get(product.sugarFreeTag)) {
+            boardIdToResponseMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
+        }
+        if (boardDetail.get(product.veganTag)) {
+            boardIdToResponseMap.get(boardId).tags().add(TagEnum.VEGAN.label());
+        }
+        if (boardDetail.get(product.ketogenicTag)) {
+            boardIdToResponseMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
         }
 
-        // DTO 중복제거
-        var content = boardMap.entrySet().stream().map(
+        return boardResponseDto;
+    }
+
+    private List<BoardResponseDto> duplicateBoardResponse(Map<Long, BoardResponseDto> boardIdToResponseMap){
+        return boardIdToResponseMap.entrySet().stream().map(
                 longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
         ).map(
                 boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
         ).toList();
+    }
+
+    private List<BoardResponseDto> getResponseContentByBoardDetails(List<Tuple> boardDetails){
+        Map<Long, BoardResponseDto> boardIdToResponseMap = new LinkedHashMap<>();
+        Set<Category> categories = new HashSet<>();
+
+        for (Tuple boardDetail:boardDetails) {
+            Long boardId =  boardDetail.get(product.board.id);
+
+            if (!boardIdToResponseMap.containsKey(boardId)) {
+                putBoardResponseAtBoardIdToResponseMap(boardIdToResponseMap, boardDetail, boardId, categories);
+            }
+            categories.add(boardDetail.get(product.category));
+            BoardResponseDto boardTags = getBoardTagsByboardDetailTuple(boardIdToResponseMap, boardDetail, boardId);
+            boardIdToResponseMap.put(boardDetail.get(product.board.id), boardTags);
+        }
+
+        return duplicateBoardResponse(boardIdToResponseMap);
+    }
+
+    @Override
+    public SearchBoardResponse getSearchedBoard(
+            Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest,
+            Pageable pageable, Long searchedBoardAllCount
+    ) {
+        List<Long> filteredBoardIds = getFilteredBoardIds(boardRequest, boardIds, pageable);
+
+        if (filteredBoardIds.size() <= 0){
+            return returnEmptyResponse(pageable, searchedBoardAllCount);
+        }
+
+        List<Tuple> boardDetails = fetchBoardDetailsByBoardIds(memberId, filteredBoardIds);
+
+        List<BoardResponseDto> content = getResponseContentByBoardDetails(boardDetails);
 
         return SearchBoardResponse.builder()
                 .content(content)
                 .pageNumber(pageable.getPageNumber())
-                .itemAllCount(queryAllCount)
+                .itemAllCount(searchedBoardAllCount)
                 .limitItemCount(DEFAULT_ITEM_SIZE)
                 .currentItemCount(content.size())
-                .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
+                .existNextPage(searchedBoardAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
                 .build();
-    }
-    private OrderSpecifier<?> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
-        // 커스텀한 순서대로 데이터베이스 값을 뽑아올 수 있음
-        String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));
-        return Expressions.stringTemplate("FIELD({0}, " + ids + ")", id).asc();
     }
 
     @Override
     public List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable){
-        QStore store = QStore.store;
-        QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
-
-
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(store.id);
         columns.add(store.name);
@@ -273,8 +293,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public List<KeywordDto> getRecencyKeyword(Member member) {
-        QSearch search = QSearch.search;
-
         return queryFactory.select(search.keyword, search.createdAt.max())
                 .from(search)
                 .where(search.isDeleted.eq(false), search.member.eq(member))
@@ -287,7 +305,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public String[] getBestKeyword() {
-        QSearch search = QSearch.search;
 
         // 현재시간과 하루전 시간을 가져옴
         LocalDateTime currentTime = LocalDateTime.now();
@@ -316,28 +333,24 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .execute();
     }
 
-    private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
-                                                        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                        Boolean orderAvailableToday, String category,
-                                                        Integer minPrice, Integer maxPrice,
-                                                        QProduct product, QBoard board) {
+    private static BooleanBuilder setFilteringCondition(SearchBoardRequest request) {
         BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null && glutenFreeTag == true) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        if (request.glutenFreeTag() != null && request.glutenFreeTag() == true) {
+            filterBuilder.and(product.glutenFreeTag.eq(request.glutenFreeTag()));
         }
-        if (highProteinTag != null && highProteinTag == true) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        if (request.highProteinTag() != null && request.highProteinTag() == true) {
+            filterBuilder.and(product.highProteinTag.eq(request.highProteinTag()));
         }
-        if (sugarFreeTag != null && sugarFreeTag == true) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        if (request.sugarFreeTag() != null && request.sugarFreeTag() == true) {
+            filterBuilder.and(product.sugarFreeTag.eq(request.sugarFreeTag()));
         }
-        if (veganTag != null && veganTag == true) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
+        if (request.veganTag() != null && request.veganTag() == true) {
+            filterBuilder.and(product.veganTag.eq(request.veganTag()));
         }
-        if (ketogenicTag != null && ketogenicTag == true) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        if (request.ketogenicTag() != null && request.ketogenicTag() == true) {
+            filterBuilder.and(product.ketogenicTag.eq(request.ketogenicTag()));
         }
-        if (orderAvailableToday != null && orderAvailableToday == true) {
+        if (request.orderAvailableToday() != null && request.orderAvailableToday() == true) {
             LocalDate currentDate = LocalDate.now();
             String dayOfWeek = currentDate.getDayOfWeek().toString().substring(0, 3);
             switch (dayOfWeek){
@@ -365,18 +378,18 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             }
 
         }
-        if (category != null && !category.isBlank()) {
-            if (!Category.checkCategory(category)) {
+        if (request.category() != null && !request.category().isBlank()) {
+            if (!Category.checkCategory(request.category())) {
                 throw new BbangleException(UNKNOWN_CATEGORY);
             }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+            filterBuilder.and(product.category.eq(Category.valueOf(request.category())));
         }
 
-        if (minPrice != null && minPrice!=0) {
-            filterBuilder.and(board.price.goe(minPrice));
+        if (request.minPrice() != null && request.minPrice()!=0) {
+            filterBuilder.and(board.price.goe(request.minPrice()));
         }
-        if (maxPrice != null && maxPrice!=0) {
-            filterBuilder.and(board.price.loe(maxPrice));
+        if (request.maxPrice() != null && request.maxPrice()!=0) {
+            filterBuilder.and(board.price.loe(request.maxPrice()));
         }
         return filterBuilder;
     }

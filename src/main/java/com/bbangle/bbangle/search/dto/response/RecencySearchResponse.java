@@ -9,5 +9,9 @@ import lombok.Builder;
 public record RecencySearchResponse(
     List<KeywordDto> content
 ) {
-
+    public static RecencySearchResponse getEmpty(){
+        return RecencySearchResponse.builder()
+                .content(List.of())
+                .build();
+    }
 }

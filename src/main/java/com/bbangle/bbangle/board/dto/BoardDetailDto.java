@@ -15,7 +15,7 @@ public record BoardDetailDto(
         String purchaseUrl,
         Boolean isWished,
         Boolean isBundled,
-        List<DetailResponseDto> detail,
+        List<DetailDto> detail,
         List<String> tags,
         List<ProductDto> products
 ) {}

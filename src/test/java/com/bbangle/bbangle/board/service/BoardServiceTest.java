@@ -740,31 +740,4 @@ public class BoardServiceTest {
             .ketogenicTag(ketogenicTag)
             .build();
     }
-
-    @Test
-    @DisplayName("오브젝트 스토리지에 상세페이지를 저장할 수 있으며, Board 테이블 detail 컬럼을 최신 값으로 업데이트 할 수 있다")
-    public void saveBoardDetailHtmlTest() {
-        byte[] content;
-        try {
-            content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
-        } catch (IOException e) {
-            throw new BbangleException(e);
-        }
-
-        // MockMultipartFile 인스턴스 생성
-        MockMultipartFile HTML_FILE = new MockMultipartFile(
-            "htmlFile", // form의 input field 이름
-            "detail.html", // 업로드될 파일명
-            "text/html", // 파일 타입
-            content // 파일 내용
-        );
-
-        Long boardId = 1L;
-
-        var result = boardService.saveBoardDetailHtml(boardId, HTML_FILE);
-        Assertions.assertThat(result)
-            .isEqualTo(true);
-    }
-
-
 }

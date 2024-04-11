@@ -38,7 +38,6 @@ public class SearchController {
     public ResponseEntity<SearchBoardResponse> getSearchBoardDtos(
             SearchBoardRequest searchBoardRequest
     ){
-        // 회원, 비회원 둘 다 사용 가능
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         return ResponseEntity.ok().body(searchService.getSearchBoardDtos(memberId, searchBoardRequest));

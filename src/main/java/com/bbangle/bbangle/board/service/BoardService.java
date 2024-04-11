@@ -8,7 +8,6 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface BoardService {
 
@@ -20,8 +19,4 @@ public interface BoardService {
 
     @Transactional(readOnly = true)
     BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
-
-
-    Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile);
-
 }

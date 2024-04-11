@@ -44,6 +44,10 @@ public class QMember extends EntityPathBase<Member> {
 
     public final StringPath profile = createString("profile");
 
+    public final EnumPath<com.bbangle.bbangle.token.oauth.domain.OauthServerType> provider = createEnum("provider", com.bbangle.bbangle.token.oauth.domain.OauthServerType.class);
+
+    public final StringPath providerId = createString("providerId");
+
     public final ListPath<com.bbangle.bbangle.wishListFolder.domain.WishlistFolder, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder> wishlistFolders = this.<com.bbangle.bbangle.wishListFolder.domain.WishlistFolder, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder>createList("wishlistFolders", com.bbangle.bbangle.wishListFolder.domain.WishlistFolder.class, com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder.class, PathInits.DIRECT2);
 
     public final ListPath<com.bbangle.bbangle.wishListStore.domain.WishlistStore, com.bbangle.bbangle.wishListStore.domain.QWishlistStore> wishlistStores = this.<com.bbangle.bbangle.wishListStore.domain.WishlistStore, com.bbangle.bbangle.wishListStore.domain.QWishlistStore>createList("wishlistStores", com.bbangle.bbangle.wishListStore.domain.WishlistStore.class, com.bbangle.bbangle.wishListStore.domain.QWishlistStore.class, PathInits.DIRECT2);
