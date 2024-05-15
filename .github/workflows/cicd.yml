@@ -15,7 +15,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew    
+        run: chmod +x gradlew
+      - name: application.yml 정보 넣기
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+          find src  
       - name: Test with Gradle
         run: ./gradlew --info test
       - name: 테스트 커버리지를 PR에 코멘트로 등록합니다 
