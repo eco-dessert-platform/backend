@@ -17,7 +17,7 @@ public class LowPriceCursorGenerator implements CursorGenerator{
 
     private final JPAQueryFactory queryFactory;
     private final Long cursorId;
-    private final Long memberId;
+    private final Long folderId;
 
     @Override
     public BooleanBuilder getCursor() {
@@ -26,10 +26,11 @@ public class LowPriceCursorGenerator implements CursorGenerator{
             return cursorBuilder;
         }
 
-        Optional.ofNullable(queryFactory.select(wishListBoard.id)
-            .from(wishListBoard)
-            .where(wishListBoard.boardId.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
-            .fetchOne())
+        Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
+                .from(wishListBoard)
+                .where(wishListBoard.boardId.eq(cursorId)
+                    .and(wishListBoard.wishlistFolderId.eq(folderId)))
+                .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         Integer price = queryFactory
@@ -38,7 +39,8 @@ public class LowPriceCursorGenerator implements CursorGenerator{
             .where(board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(board.price.goe(price)
-            .and(board.id.loe(cursorId)));
+            .and(wishListBoard.id.loe(wishListBoardId)));
+
         return cursorBuilder;
     }
 

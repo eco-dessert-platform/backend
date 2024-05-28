@@ -69,7 +69,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .join(ranking)
             .on(board.id.eq(ranking.board.id))
             .where(board.id.in(fetch))
-            .orderBy(order, board.id.desc())
+            .orderBy(order, wishListBoard.id.desc())
             .fetch();
     }
 

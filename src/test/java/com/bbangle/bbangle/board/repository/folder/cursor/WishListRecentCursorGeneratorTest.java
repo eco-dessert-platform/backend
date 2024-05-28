@@ -96,7 +96,7 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
     void getBoardWithWishListRecentWithCursor() {
         //given
         WishListRecentCursorGenerator wishListRecentCursor = new WishListRecentCursorGenerator(queryFactory, lastSavedId,
-            member.getId());
+            wishListFolder.getId());
 
         //when
         BooleanBuilder wishListRecentCursorCursorCondition = wishListRecentCursor.getCursor();

@@ -16,7 +16,7 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
 
     private final JPAQueryFactory queryFactory;
     private final Long cursorId;
-    private final Long memberId;
+    private final Long folderId;
 
     @Override
     public BooleanBuilder getCursor() {
@@ -28,7 +28,7 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
 
         Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
                 .from(wishListBoard)
-                .where(wishListBoard.memberId.eq(memberId)
+                .where(wishListBoard.wishlistFolderId.eq(folderId)
                     .and(wishListBoard.boardId.eq(cursorId)))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));

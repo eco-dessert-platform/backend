@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
@@ -16,6 +17,8 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -68,7 +71,7 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     void getBoardWithLowPriceWithoutCursor() {
         //given
         LowPriceCursorGenerator lowPriceCursorGenerator = new LowPriceCursorGenerator(queryFactory, DEFAULT_CURSOR_ID,
-            member.getId());
+            wishListFolder.getId());
 
         //when
         BooleanBuilder lowPriceConditionWithoutCursor = lowPriceCursorGenerator.getCursor();
@@ -82,13 +85,14 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     void getBoardWithLowPriceWithCursor() {
         //given
         LowPriceCursorGenerator lowPriceCursorGenerator = new LowPriceCursorGenerator(queryFactory, firstSavedId,
-            member.getId());
+            wishListFolder.getId());
 
         //when
         BooleanBuilder lowPriceConditionWithoutCursor = lowPriceCursorGenerator.getCursor();
         Board firstSavedBoard = boardRepository.findById(firstSavedId).get();
+        WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(firstSavedId, member.getId()).get();
         String expectedCursorCondition = new BooleanBuilder().and(board.price.goe(firstSavedBoard.getPrice()).and(
-            board.id.loe(firstSavedId))).toString();
+            wishListBoard.id.loe(wish.getId()))).toString();
 
         //then
         assertThat(lowPriceConditionWithoutCursor.getValue()).hasToString(expectedCursorCondition);

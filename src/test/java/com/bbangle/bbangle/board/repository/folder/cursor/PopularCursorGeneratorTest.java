@@ -1,14 +1,11 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
-import static com.bbangle.bbangle.ranking.domain.QRanking.*;
-import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -20,6 +17,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -88,13 +86,14 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
     void getBoardWithWishListRecentWithCursor() {
         //given
         PopularCursorGenerator popularCursorGenerator = new PopularCursorGenerator(queryFactory, lastSavedId,
-            member.getId());
+            wishListFolder.getId());
 
         //when
         BooleanBuilder popularCursor = popularCursorGenerator.getCursor();
         Ranking ranking = rankingRepository.findByBoardId(lastSavedId).get();
+        WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
         String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(ranking.getPopularScore()).and(
-            QBoard.board.id.loe(lastSavedId))).toString();
+            QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 
         //then
         assertThat(popularCursor.getValue()).hasToString(expectedCursorCondition);
