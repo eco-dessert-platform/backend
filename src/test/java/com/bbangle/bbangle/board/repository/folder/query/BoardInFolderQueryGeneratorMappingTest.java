@@ -8,10 +8,8 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 class BoardInFolderQueryGeneratorMappingTest {
