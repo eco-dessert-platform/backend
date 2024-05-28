@@ -7,6 +7,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
@@ -52,6 +53,8 @@ public abstract class AbstractIntegrationTest {
     protected MemberService memberService;
     @Autowired
     protected StoreService storeService;
+    @Autowired
+    protected BoardService boardService;
     @Autowired
     protected WishListStoreService wishListStoreService;
     @Autowired
