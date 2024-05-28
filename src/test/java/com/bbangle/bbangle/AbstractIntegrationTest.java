@@ -17,10 +17,12 @@ import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ public abstract class AbstractIntegrationTest {
     protected MockMvc mockMvc;
     @Autowired
     protected WebApplicationContext context;
+    @Autowired
+    protected JPAQueryFactory queryFactory;
 
     @Autowired
     protected MemberService memberService;
@@ -50,6 +54,8 @@ public abstract class AbstractIntegrationTest {
     protected StoreService storeService;
     @Autowired
     protected WishListStoreService wishListStoreService;
+    @Autowired
+    protected WishListBoardService wishListBoardService;
 
     @Autowired
     protected BoardRepository boardRepository;
