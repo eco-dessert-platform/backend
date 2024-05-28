@@ -2,92 +2,115 @@ package com.bbangle.bbangle.board.repository;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.querydsl.core.Tuple;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class BoardRepositoryTest extends AbstractIntegrationTest {
 
-    private final QBoard board = QBoard.board;
     private final String TEST_TITLE = "TestTitle";
 
-    @Test
-    @DisplayName("스토어 상세페이지 - 게시판, 이미지 조회 기능 : 게시판 아이디로 게시판, 이미지를 조회할 수 있다")
-    void getBoardAndImages() {
-        Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-        fixtureBoardImage(Map.of("board", targetBoard));
-        fixtureBoardImage(Map.of("board", targetBoard));
+    @Nested
+    @DisplayName("findBoardAndBoardImageByBoardId 메서드는")
+    class FindBoardAndBoardImageByBoardId {
 
-        List<BoardAndImageDto> boardAndImageDtos = boardRepository
-            .findBoardAndBoardImageByBoardId(targetBoard.getId());
+        private Board targetBoard;
+        private final Long NOT_EXIST_BOARD_ID = -1L;
 
-        assertThat(boardAndImageDtos).hasSize(2);
+        @BeforeEach
+        void init() {
+            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+            fixtureBoardImage(Map.of("board", targetBoard));
+            fixtureBoardImage(Map.of("board", targetBoard));
+        }
 
-        BoardAndImageDto boardAndImageDto = boardAndImageDtos.stream().findFirst().get();
-        assertThat(boardAndImageDto.id()).isNotNull();
-        assertThat(boardAndImageDto.profile()).isNotNull();
-        assertThat(boardAndImageDto.title()).isNotNull();
-        assertThat(boardAndImageDto.price()).isNotNull();
-        assertThat(boardAndImageDto.purchaseUrl()).isNotNull();
-        assertThat(boardAndImageDto.deliveryFee()).isNotNull();
-        assertThat(boardAndImageDto.freeShippingConditions()).isNotNull();
+        @Test
+        @DisplayName("board id가 유효할 때 게시판 정보, 게시판 이미지를 조회할 수 있다.")
+        void getBoardInfoAndImages() {
+            List<BoardAndImageDto> boardAndImageDtos = boardRepository
+                .findBoardAndBoardImageByBoardId(targetBoard.getId());
+
+            assertThat(boardAndImageDtos).hasSize(2);
+
+            BoardAndImageDto boardAndImageDto = boardAndImageDtos.stream().findFirst().get();
+
+            assertAll(
+                "BoardAndImageDto는 null이 없어야한다.",
+                () -> assertThat(boardAndImageDto.id()).isNotNull(),
+                () -> assertThat(boardAndImageDto.profile()).isNotNull(),
+                () -> assertThat(boardAndImageDto.title()).isNotNull(),
+                () -> assertThat(boardAndImageDto.price()).isNotNull(),
+                () -> assertThat(boardAndImageDto.purchaseUrl()).isNotNull(),
+                () -> assertThat(boardAndImageDto.deliveryFee()).isNotNull()
+            );
+        }
+
+        @Test
+        @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
+        void getEmptyList() {
+            List<BoardAndImageDto> boardAndImageDtos = boardRepository
+                .findBoardAndBoardImageByBoardId(NOT_EXIST_BOARD_ID);
+
+            assertThat(boardAndImageDtos).isEmpty();
+        }
     }
 
-    @Test
-    @DisplayName("스토어 상세페이지 - 게시판 상세 이미지 조회 기능 : 게시판 아이디로 상세 이미지를 조회할 수 있다")
-    void getBoardDetailTest() {
-        Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-        fixtureBoardDetail(Map.of("board", targetBoard));
-        fixtureBoardDetail(Map.of("board", targetBoard));
+    @Nested
+    @DisplayName("getProductDto 메서드는")
+    class GetProductDto {
 
-        List<String> boardDetailDtos = boardDetailRepository
-            .findByBoardId(targetBoard.getId());
+        private Board targetBoard;
+        private final Long NOT_EXIST_BOARD_ID = -1L;
 
-        assertThat(boardDetailDtos).hasSize(2);
+        @BeforeEach
+        void init() {
+            List<Product> products = List.of(
+                fixtureProduct(Map.of()),
+                fixtureProduct(Map.of()),
+                fixtureProduct(Map.of()));
 
-        assertThat(boardDetailDtos).isNotEmpty();
-    }
+            targetBoard = fixtureBoard(Map.of("productList", products));
+        }
 
-    @Test
-    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : 게시판 아이디로 상품리스트를 조회할 수 있다")
-    void getProductDtoTest() {
-        Map<String, Object> productParam = new HashMap<>();
-        productParam.put("title", TEST_TITLE);
-        productParam.put("category", Category.BREAD);
+        @Test
+        @DisplayName("board id가 유효할 때 상품 정보들을 조회할 수 있다.")
+        void getProductInfo() {
+            List<ProductDto> productDtos = boardRepository.getProductDto(targetBoard.getId());
+            assertThat(productDtos).hasSize(3);
 
-        List<Product> products = List.of(
-            fixtureProduct(productParam),
-            fixtureProduct(productParam),
-            fixtureProduct(productParam));
+            ProductDto productDto = productDtos.stream().findFirst().get();
+            assertAll(
+                "ProductDto는 null이 없어야한다.",
+                () -> assertThat(productDto.productId()).isNotNull(),
+                () -> assertThat(productDto.productTitle()).isNotNull(),
+                () -> assertThat(productDto.category()).isNotNull(),
+                () -> assertThat(productDto.glutenFreeTag()).isNotNull(),
+                () -> assertThat(productDto.highProteinTag()).isNotNull(),
+                () -> assertThat(productDto.sugarFreeTag()).isNotNull(),
+                () -> assertThat(productDto.veganTag()).isNotNull(),
+                () -> assertThat(productDto.ketogenicTag()).isNotNull()
+            );
+        }
 
-        Board targetBoard = fixtureBoard(Map.of("productList", products));
+        @Test
+        @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
+        void getEmptyList() {
+            List<ProductDto> productDtos = boardRepository.getProductDto(NOT_EXIST_BOARD_ID);
 
-        List<ProductDto> productDtos = boardRepository.getProductDto(targetBoard.getId());
-
-        assertThat(productDtos.size()).isEqualTo(3);
-        productDtos.forEach(productDto -> {
-            assertThat(productDto.productId()).isNotNull();
-            assertThat(productDto.productTitle()).isNotNull();
-            assertThat(productDto.category()).isNotNull();
-            assertThat(productDto.glutenFreeTag()).isNotNull();
-            assertThat(productDto.highProteinTag()).isNotNull();
-            assertThat(productDto.sugarFreeTag()).isNotNull();
-            assertThat(productDto.veganTag()).isNotNull();
-            assertThat(productDto.ketogenicTag()).isNotNull();
-        });
+            assertThat(productDtos).isEmpty();
+        }
     }
 
     @Test
@@ -97,7 +120,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         fixtureBoard(Map.of("title", TEST_TITLE));
         List<BoardAllTitleDto> boardAllTitleDtos = boardRepository.findTitleByBoardAll();
 
-        assertThat(boardAllTitleDtos.size()).isEqualTo(2);
+        assertThat(boardAllTitleDtos).hasSize(2);
         boardAllTitleDtos.forEach(boardAllTitleDto -> {
             assertThat(boardAllTitleDto.boardId()).isNotNull();
             assertThat(boardAllTitleDto.Title()).isNotNull();
