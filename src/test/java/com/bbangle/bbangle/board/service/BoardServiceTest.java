@@ -492,8 +492,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 wishListBoardService.wish(member.getId(), createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
             }
-
-            List<WishListBoard> all = wishListBoardRepository.findAll();
         }
 
         @Test
