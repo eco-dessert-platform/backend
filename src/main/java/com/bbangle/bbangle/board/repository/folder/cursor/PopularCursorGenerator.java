@@ -18,9 +18,11 @@ public class PopularCursorGenerator implements CursorGenerator{
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
+    private final Long cursorId;
+    private final Long memberId;
 
     @Override
-    public BooleanBuilder getCursor(Long cursorId) {
+    public BooleanBuilder getCursor() {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
         if(cursorId == null){
             return cursorBuilder;
@@ -28,7 +30,7 @@ public class PopularCursorGenerator implements CursorGenerator{
 
         Optional.ofNullable(queryFactory.select(wishListBoard.id)
                 .from(wishListBoard)
-                .where(wishListBoard.boardId.eq(cursorId))
+                .where(wishListBoard.boardId.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 

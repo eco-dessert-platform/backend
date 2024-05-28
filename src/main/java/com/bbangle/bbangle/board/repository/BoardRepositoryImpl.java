@@ -94,9 +94,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         WishListFolder folder,
         Long memberId
     ) {
-        BooleanBuilder cursorBuilder = new BoardInFolderCursorGeneratorMapping(memberId, queryFactory, sort)
+        BooleanBuilder cursorBuilder = new BoardInFolderCursorGeneratorMapping(memberId, cursorId, queryFactory, sort)
             .mappingCursorGenerator()
-            .getCursor(cursorId);
+            .getCursor();
         OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
 
         return BoardInFolderQueryGeneratorMapping.builder()

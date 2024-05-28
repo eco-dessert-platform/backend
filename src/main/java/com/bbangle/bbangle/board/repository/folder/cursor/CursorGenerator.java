@@ -4,6 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 
 public interface CursorGenerator {
 
-    BooleanBuilder getCursor(Long cursorId);
+    BooleanBuilder getCursor();
 
 }

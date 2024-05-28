@@ -8,23 +8,24 @@ import lombok.RequiredArgsConstructor;
 public class BoardInFolderCursorGeneratorMapping {
 
     private final Long memberId;
+    private final Long cursorId;
     private final JPAQueryFactory jpaQueryFactory;
     private final FolderBoardSortType sortType;
 
     public CursorGenerator mappingCursorGenerator() {
         if(sortType == null){
-            return new WishListRecentCursorGenerator(jpaQueryFactory, memberId);
+            return new WishListRecentCursorGenerator(jpaQueryFactory, cursorId, memberId);
         }
 
         if (sortType == FolderBoardSortType.LOW_PRICE) {
-            return new LowPriceCursorGenerator(jpaQueryFactory);
+            return new LowPriceCursorGenerator(jpaQueryFactory, cursorId, memberId);
         }
 
         if (sortType == FolderBoardSortType.POPULAR) {
-            return new PopularCursorGenerator(jpaQueryFactory);
+            return new PopularCursorGenerator(jpaQueryFactory, cursorId, memberId);
         }
 
-        return new WishListRecentCursorGenerator(jpaQueryFactory, memberId);
+        return new WishListRecentCursorGenerator(jpaQueryFactory, cursorId, memberId);
     }
 
 }

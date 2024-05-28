@@ -15,10 +15,11 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
+    private final Long cursorId;
     private final Long memberId;
 
     @Override
-    public BooleanBuilder getCursor(Long cursorId) {
+    public BooleanBuilder getCursor() {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
 
         if(cursorId == null){
