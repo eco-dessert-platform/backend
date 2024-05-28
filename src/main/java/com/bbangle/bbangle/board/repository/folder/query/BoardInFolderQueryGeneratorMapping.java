@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository.folder.query;
 
+import com.bbangle.bbangle.board.repository.folder.cursor.WishListRecentCursorGenerator;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
@@ -19,6 +20,10 @@ public class BoardInFolderQueryGeneratorMapping {
     private final FolderBoardSortType sortType;
 
     public QueryGenerator mappingQueryGenerator() {
+        if(sortType == null){
+            return new WishListRecentBoardQueryProvider(jpaQueryFactory, cursorBuilder, order, wishListFolder);
+        }
+
         if (sortType == FolderBoardSortType.LOW_PRICE) {
             return new LowPriceBoardQueryProvider(jpaQueryFactory, cursorBuilder, order, wishListFolder);
         }

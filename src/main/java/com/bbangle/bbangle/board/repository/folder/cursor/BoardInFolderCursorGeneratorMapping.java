@@ -12,6 +12,10 @@ public class BoardInFolderCursorGeneratorMapping {
     private final FolderBoardSortType sortType;
 
     public CursorGenerator mappingCursorGenerator() {
+        if(sortType == null){
+            return new WishListRecentCursorGenerator(jpaQueryFactory, memberId);
+        }
+
         if (sortType == FolderBoardSortType.LOW_PRICE) {
             return new LowPriceCursorGenerator(jpaQueryFactory);
         }
