@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Builder
 @RequiredArgsConstructor
-public class QueryGeneratorMapping {
+public class BoardInFolderQueryGeneratorMapping {
 
     private final BooleanBuilder cursorBuilder;
     private final JPAQueryFactory jpaQueryFactory;
