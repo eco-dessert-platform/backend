@@ -26,17 +26,13 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
             return cursorBuilder;
         }
 
-        Optional.ofNullable(queryFactory.select(wishListBoard.id)
-            .from(wishListBoard)
-            .where(wishListBoard.memberId.eq(memberId).and(wishListBoard.boardId.eq(cursorId)))
-            .fetchOne())
+        Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
+                .from(wishListBoard)
+                .where(wishListBoard.memberId.eq(memberId)
+                    .and(wishListBoard.boardId.eq(cursorId)))
+                .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
-        Long wishListBoardId = queryFactory
-            .select(wishListBoard.id)
-            .from(wishListBoard)
-            .where(wishListBoard.boardId.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
-            .fetchOne();
         return cursorBuilder.and(wishListBoard.id.loe(wishListBoardId));
     }
 
