@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -27,9 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-class BoardControllerTest {
+class BoardControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     StoreRepository storeRepository;
