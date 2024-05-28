@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
+import com.bbangle.bbangle.analytics.dto.QAnalyticsWishlistBoardRankingResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -35,21 +37,15 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -463,8 +459,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<Board> getWishlistRanking() {
-        return queryFactory.selectFrom(board)
+    public List<AnalyticsWishlistBoardRankingResponseDto> getWishlistRanking() {
+        return queryFactory.select(new QAnalyticsWishlistBoardRankingResponseDto(
+                    board.id,
+                    board.title,
+                    board.price,
+                    board.status,
+                    board.profile,
+                    board.purchaseUrl,
+                    board.view,
+                    board.wishCnt
+                ))
+                .from(board)
                 .orderBy(board.wishCnt.desc())
                 .fetch();
     }

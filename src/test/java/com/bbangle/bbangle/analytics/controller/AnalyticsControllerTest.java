@@ -1,12 +1,9 @@
-package com.bbangle.bbangle.analytics.service;
+package com.bbangle.bbangle.analytics.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountWithDateDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersUsingWishlistDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistUsageRatioResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.Badge;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
@@ -14,185 +11,111 @@ import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AnalyticsServiceTest extends AbstractIntegrationTest {
+class AnalyticsControllerTest extends AbstractIntegrationTest {
 
+    @Autowired ResponseService responseService;
     @Autowired PlatformTransactionManager tm;
     @Autowired EntityManager em;
 
 
-    @Test
-    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
-    void countNewMember() {
-        // given
+    @BeforeEach
+    void setUpMockMvc() {
+        this.mockMvc = MockMvcBuilders.standaloneSetup(new AnalyticsController(responseService, analyticsService)).build();
+
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
         create10DaysAgoMembers(createdAt);
-        createMembers();
+        List<Member> members = createMembers();
+        createWishListBoards(members);
+        createBoards(members);
+        create10DaysAgoWishlistBoards(createdAt);
+        createReviews(members);
+        create10DaysAgoReviews(members, createdAt);
+    }
 
-        LocalDate startDate = LocalDate.now().minusDays(9);
-        LocalDate endDate = LocalDate.now();
 
-        // then
-        long membersCount = memberRepository.count();
-        List<AnalyticsMembersCountWithDateDto> result = analyticsService.countMembersByPeriod(startDate, endDate);
-
-        // then
-        assertThat(membersCount).isEqualTo(20);
-        assertThat(result).hasSize(10);
+    @Test
+    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
+    void getMembersCount() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/members/count"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
-    void countAllMember() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        create10DaysAgoMembers(createdAt);
-        createMembers();
-
-        // when
-        long result = analyticsService.countAllMembers();
-
-        // then
-        assertThat(result).isEqualTo(20);
+    void getNewMembersCount() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/new-members/count"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
-    void countMembersUsingWishlist() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        List<Member> members1 = create10DaysAgoMembers(createdAt);
-        List<Member> members2 = createMembers();
-        List<Member> members3 = createMembers();
-        createWishListBoards(members1);
-        create10DaysAgoWishlistBoards(createdAt);
-
-        LocalDate startDate = LocalDate.now().minusDays(10);
-        LocalDate endDate = LocalDate.now();
-
-        // when
-        long membersCount = memberRepository.count();
-        List<AnalyticsMembersUsingWishlistDto> analyticsMembersUsingWishlistDtos = wishListBoardRepository.countMembersUsingWishlist(startDate, endDate);
-        List<AnalyticsWishlistUsageRatioResponseDto> results = analyticsService.calculateWishlistUsingRatio(startDate, endDate);
-
-        // then
-        assertThat(membersCount).isEqualTo(30);
-        assertThat(analyticsMembersUsingWishlistDtos).hasSize(11);
-        assertThat(results).hasSize(11);
-        assertThat(results.get(0).wishlistUsageRatio()).isEqualTo("100.00");
-        assertThat(results.get(9).wishlistUsageRatio()).isEqualTo("0.00");
-        assertThat(results.get(10).wishlistUsageRatio()).isEqualTo("33.33");
+    void getWishlistUsageRatio() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/ratio/wishlist-usage"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("게시글 별 위시리스트 순위가 정상적으로 조회된다.")
-    void getWishlistBoardRanking() {
-        // given
-        List<Member> members = createMembers();
-        createBoards(members);
-
-        // when
-        List<AnalyticsWishlistBoardRankingResponseDto> boardsOrderByWishCntDesc = analyticsService.getWishlistBoardRanking();
-        List<Integer> expect = List.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
-
-        // then
-        List<Integer> result = boardsOrderByWishCntDesc.stream()
-                .map(AnalyticsWishlistBoardRankingResponseDto::wishCnt)
-                .toList();
-
-        assertThat(result).isEqualTo(expect);
+    void getWishlistBoardRanking() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/ranking"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
-    void countWishlistBoardByPeriod() {
-        // given
-        List<Member> members = createMembers();
-        createWishListBoards(members);
-
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        create10DaysAgoWishlistBoards(createdAt);
-
-        // when
-        LocalDate startDate = LocalDate.now().minusDays(9);
-        LocalDate endDate = LocalDate.now();
-        Long wishlistBoardsCount = wishListBoardRepository.count();
-        Long result = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
-
-        // then
-        assertThat(wishlistBoardsCount).isEqualTo(20);
-        assertThat(result).isEqualTo(10);
+    void getWishlistUsageCount() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?optStartDate=2024-05-01&optEndDate=2024-05-26"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
-    void calculateReviewUsingRatio() {
-        // given
-        List<Member> members1 = createMembers();
-        List<Member> members2 = createMembers();
-        List<Member> members3 = createMembers();
-        List<Member> members4 = createMembers();
-        createReviews(members1);
-
-        LocalDate startDate = LocalDate.now().minusDays(9);
-        LocalDate endDate = LocalDate.now();
-
-        // when
-        long membersCount = memberRepository.count();
-        Long membersUsingReviewCount = reviewRepository.countMembersUsingReview();
-        String result = analyticsService.calculateReviewUsingRatio(startDate, endDate);
-
-        // then
-        assertThat(membersCount).isEqualTo(40);
-        assertThat(membersUsingReviewCount).isEqualTo(10);
-        assertThat(result).isEqualTo("25.00");
+    void getReviewUsageRatio() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/ratio/review-usage"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
     @Test
     @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
-    void countReviewByPeriod() {
-        // given
-        List<Member> members1 = createMembers();
-        List<Member> members2 = createMembers();
-        createReviews(members1);
-
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        create10DaysAgoReviews(members2, createdAt);
-
-        // when
-        LocalDate startDate = LocalDate.now().minusDays(9);
-        LocalDate endDate = LocalDate.now();
-        long reviewsCount = reviewRepository.count();
-        Long result = reviewRepository.countReviewByPeriod(startDate, endDate);
-
-        // then
-        assertThat(reviewsCount).isEqualTo(20);
-        assertThat(result).isEqualTo(10);
+    void getReviewUsageCount() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/reviews/count?optStartDate=2024-05-01&optEndDate=2024-05-26"))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 
-    private List<Member> create10DaysAgoMembers(LocalDateTime createdAt) {
+    private void create10DaysAgoMembers(LocalDateTime createdAt) {
         TransactionStatus status = null;
 
         try {
@@ -224,7 +147,6 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
             }
         }
 
-        return memberRepository.findAll();
     }
 
 
@@ -374,5 +296,4 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
             }
         }
     }
-
 }

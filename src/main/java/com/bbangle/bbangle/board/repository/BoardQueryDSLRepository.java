@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
@@ -37,6 +38,6 @@ public interface BoardQueryDSLRepository {
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
 
-    List<Board> getWishlistRanking();
+    List<AnalyticsWishlistBoardRankingResponseDto> getWishlistRanking();
 }
 

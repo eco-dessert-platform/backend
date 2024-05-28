@@ -24,11 +24,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     }
 
     @Override
-    public Long countReviewByPeriod(
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
-
+    public Long countReviewByPeriod(LocalDate startDate, LocalDate endDate) {
         DateTemplate<LocalDate> createdAt = Expressions.dateTemplate(LocalDate.class, "DATE({0})", review.createdAt);
 
         return queryFactory.select(review.id.count())
