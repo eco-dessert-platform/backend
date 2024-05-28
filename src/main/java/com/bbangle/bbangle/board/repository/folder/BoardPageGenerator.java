@@ -61,7 +61,7 @@ public class BoardPageGenerator {
     }
 
     private Map<Long, List<String>> getTagListFromBoardResponseDao(List<BoardResponseDao> boardResponseDaoList) {
-        Map<Long, List<String>> tagMapByBoardId = boardResponseDaoList.stream()
+        return boardResponseDaoList.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
                 board -> new ArrayList<>(Collections.singletonList(board.tagsDao())),
@@ -77,11 +77,10 @@ public class BoardPageGenerator {
                     .stream()
                     .toList()
             ));
-        return tagMapByBoardId;
     }
 
     private static Map<Long, Boolean> getIsBundled(List<BoardResponseDao> boardResponseDaoList) {
-        Map<Long, Boolean> isBundled = boardResponseDaoList
+        return boardResponseDaoList
             .stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
@@ -98,7 +97,6 @@ public class BoardPageGenerator {
                 entry -> entry.getValue()
                     .size() > 1)
             );
-        return isBundled;
     }
 
     private List<BoardResponseDao> removeDuplicatesByBoardId(List<BoardResponseDao> boardResponseDaos) {

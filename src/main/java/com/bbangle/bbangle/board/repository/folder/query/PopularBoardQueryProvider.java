@@ -60,11 +60,11 @@ public class PopularBoardQueryProvider implements QueryGenerator{
                     product.veganTag,
                     product.ketogenicTag
                 )).from(product)
-            .leftJoin(board)
+            .join(board)
             .on(product.board.id.eq(board.id))
-            .leftJoin(store)
+            .join(store)
             .on(board.store.id.eq(store.id))
-            .leftJoin(wishListBoard)
+            .join(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
             .join(ranking)
             .on(board.id.eq(ranking.board.id))

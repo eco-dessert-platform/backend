@@ -20,6 +20,7 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
     @Override
     public BooleanBuilder getCursor(Long cursorId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
+
         if(cursorId == null){
             return cursorBuilder;
         }
