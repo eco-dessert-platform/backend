@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.*;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -52,6 +50,9 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
             createdBoard = boardRepository.save(createdBoard);
             if (i == 0) {
                 firstSavedId = createdBoard.getId();
+            }
+            if(i == 11){
+                lastSavedId = createdBoard.getId();
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
@@ -103,7 +104,7 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
             member.getId());
 
         //when, then
-        assertThatThrownBy(() ->lowPriceCursorGenerator.getCursor())
+        assertThatThrownBy(lowPriceCursorGenerator::getCursor)
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 
