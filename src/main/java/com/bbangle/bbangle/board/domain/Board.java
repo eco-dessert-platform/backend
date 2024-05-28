@@ -38,19 +38,19 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private int price;
 
     @Column(name = "status", columnDefinition = "tinyint")
     private boolean status;
 
-    @Column(name = "profile")
+    @Column(name = "profile", nullable = false)
     private String profile;
 
-    @Column(name = "purchase_url")
+    @Column(name = "purchase_url", nullable = false)
     private String purchaseUrl;
 
     @Column(name = "view")
@@ -80,7 +80,7 @@ public class Board extends BaseEntity {
     @Column(name = "saturday", columnDefinition = "tinyint")
     private boolean saturday;
 
-    @Column(name = "delivery_fee")
+    @Column(name = "delivery_fee", nullable = false)
     private Integer deliveryFee;
 
     @Column(name = "free_shipping_conditions")
