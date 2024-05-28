@@ -11,6 +11,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.review.dto.ReviewResponse;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -134,7 +135,17 @@ public class BoardController {
         @PathVariable("boardId")
         Long boardId) {
         ProductResponse productResponse = boardService.getProductResponse(boardId);
-        return responseService.getSingleResult(productResponse);
+
+        return responseService.getSingleResult(ProductResponse.builder().build().toFixture());
+    }
+
+    @GetMapping("/{boardId}/review")
+    public CommonResult getReviewResponse(
+        @PathVariable("boardId")
+        Long boardId) {
+
+        // 프론트 API 연동 테스트를 위한 값입니다. 해당 기능 구현 시 삭제됩니다.
+        return responseService.getSingleResult(ReviewResponse.builder().build().toFixture());
     }
 
     @PatchMapping("/{boardId}/purchase")
