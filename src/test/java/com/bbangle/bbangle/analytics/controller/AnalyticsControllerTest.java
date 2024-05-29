@@ -53,7 +53,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
+    @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
     void getMembersCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/members/count"))
                 .andExpect(status().isOk())
@@ -62,7 +62,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
+    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
     void getNewMembersCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/new-members/count"))
                 .andExpect(status().isOk())
@@ -91,7 +91,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
     void getWishlistUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?optStartDate=2024-05-01&optEndDate=2024-05-26"))
+        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -109,7 +109,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
     void getReviewUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/reviews/count?optStartDate=2024-05-01&optEndDate=2024-05-26"))
+        mockMvc.perform(get("/api/v1/analytics/reviews/count?startDate=2024-05-01&endDate=2024-05-26"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }

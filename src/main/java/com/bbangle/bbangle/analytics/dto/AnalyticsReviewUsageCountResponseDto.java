@@ -1,9 +1,13 @@
 package com.bbangle.bbangle.analytics.dto;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-@Builder
+import java.sql.Date;
+
+
 public record AnalyticsReviewUsageCountResponseDto(
-        Long reviewCount
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        Date date,
+        String reviewUsageRatio
 ) {
 }

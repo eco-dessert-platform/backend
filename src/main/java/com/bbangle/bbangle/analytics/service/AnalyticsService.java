@@ -1,9 +1,6 @@
 package com.bbangle.bbangle.analytics.service;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountWithDateDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersUsingWishlistDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistUsageRatioResponseDto;
+import com.bbangle.bbangle.analytics.dto.*;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
@@ -38,7 +35,7 @@ public class AnalyticsService {
     public List<AnalyticsWishlistUsageRatioResponseDto> calculateWishlistUsingRatio(LocalDate startLocalDate, LocalDate endLocalDate) {
         List<AnalyticsMembersUsingWishlistDto> membersUsingWishlistDtos = wishListBoardRepository.countMembersUsingWishlist(startLocalDate, endLocalDate);
         List<AnalyticsMembersCountWithDateDto> membersCreatedBeforeDateDtos = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
-        List<AnalyticsWishlistUsageRatioResponseDto> analyticsWishlistUsageRatioResponseDtos = new ArrayList<>();
+        List<AnalyticsWishlistUsageRatioResponseDto> wishlistUsageRatioResponseDtos = new ArrayList<>();
 
         for (int i = 0; i < membersCreatedBeforeDateDtos.size(); i++) {
             if (membersCreatedBeforeDateDtos.get(i).count() == 0L) {
@@ -48,10 +45,10 @@ public class AnalyticsService {
             double result = ((double) membersUsingWishlistDtos.get(i).count() / membersCreatedBeforeDateDtos.get(i).count()) * 100;
             String wishlistUsageRatio = String.format("%.2f", result);
 
-            analyticsWishlistUsageRatioResponseDtos.add(new AnalyticsWishlistUsageRatioResponseDto(membersUsingWishlistDtos.get(i).date(), wishlistUsageRatio));
+            wishlistUsageRatioResponseDtos.add(new AnalyticsWishlistUsageRatioResponseDto(membersUsingWishlistDtos.get(i).date(), wishlistUsageRatio));
         }
 
-        return analyticsWishlistUsageRatioResponseDtos;
+        return wishlistUsageRatioResponseDtos;
     }
 
 
@@ -60,26 +57,32 @@ public class AnalyticsService {
     }
 
 
-    public Long countWishlistBoardByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsWishlistUsageCountResponseDto> countWishlistBoardByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         return wishListBoardRepository.countWishlistByPeriod(startLocalDate, endLocalDate);
     }
 
 
-    public String calculateReviewUsingRatio(LocalDate startLocalDate, LocalDate endLocalDate) {
-        Long reviewUsersCount = reviewRepository.countMembersUsingReview();
-        long membersCount = memberRepository.count();
+    public List<AnalyticsReviewUsageCountResponseDto> calculateReviewUsingRatio(LocalDate startLocalDate, LocalDate endLocalDate) {
+        List<AnalyticsReviewUsageCountDto> reviewUsageCountDtos = reviewRepository.countMembersUsingReview(startLocalDate, endLocalDate);
+        List<AnalyticsMembersCountWithDateDto> membersCreatedBeforeDateDtos = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
+        List<AnalyticsReviewUsageCountResponseDto> reviewUsageCountResponseDtos = new ArrayList<>();
 
-        if (membersCount == 0L) {
-            throw new IllegalArgumentException("0으로 나눌 수 없습니다.");
+        for (int i = 0; i < membersCreatedBeforeDateDtos.size(); i++) {
+            if (membersCreatedBeforeDateDtos.get(i).count() == 0L) {
+                throw new IllegalArgumentException("0으로 나눌 수 없습니다.");
+            }
+
+            double result = ((double) reviewUsageCountDtos.get(i).reviewCount() / membersCreatedBeforeDateDtos.get(i).count()) * 100;
+            String reviewUsageRatio = String.format("%.2f", result);
+
+            reviewUsageCountResponseDtos.add(new AnalyticsReviewUsageCountResponseDto(reviewUsageCountDtos.get(i).date(), reviewUsageRatio));
         }
 
-        double result = ((double) reviewUsersCount / membersCount) * 100;
-
-        return String.format("%.2f", result);
+        return reviewUsageCountResponseDtos;
     }
 
 
-    public Long countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsReviewUsageCountDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         return reviewRepository.countReviewByPeriod(startLocalDate, endLocalDate);
     }
 }

@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.wishlist.repository.impl;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersUsingWishlistDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsMembersUsingWishlistDto;
+import com.bbangle.bbangle.analytics.dto.*;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardQueryDSLRepository;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -11,8 +10,11 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
@@ -31,8 +33,8 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
         Date endDate = Date.valueOf(endLocalDate);
 
         List<AnalyticsMembersUsingWishlistDto> results = queryFactory.select(new QAnalyticsMembersUsingWishlistDto(
-                        createdAt,
-                        wishListBoard.id.count()
+                    createdAt,
+                    wishListBoard.id.count()
                 ))
                 .from(wishListBoard)
                 .where(createdAt.between(startDate, endDate))
@@ -40,34 +42,86 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
                 .orderBy(createdAt.asc())
                 .fetch();
 
-        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results);
+        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results,
+                AnalyticsMembersUsingWishlistDto::date, AnalyticsMembersUsingWishlistDto::count,
+                AnalyticsMembersUsingWishlistDto::new);
     }
 
 
     @Override
-    public Long countWishlistByPeriod(LocalDate startDate, LocalDate endDate) {
-        DateTemplate<LocalDate> createdAt = Expressions.dateTemplate(LocalDate.class, "DATE({0})", wishListBoard.createdAt);
+    public List<AnalyticsWishlistUsageCountResponseDto> countWishlistByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+        DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", wishListBoard.createdAt);
+        List<AnalyticsWishlistUsageCountResponseDto> mappedResults = new ArrayList<>();
 
-        return queryFactory.select(wishListBoard.id.count())
-                .from(wishListBoard)
-                .where(createdAt.between(startDate, endDate))
-                .fetchOne();
+        for (LocalDate date = startLocalDate; !date.isAfter(endLocalDate); date = date.plusDays(1)) {
+            Long count = queryFactory.select(wishListBoard.id.count())
+                    .from(wishListBoard)
+                    .where(createdAt.loe(Date.valueOf(date)))
+                    .fetchOne();
+
+            mappedResults.add(new AnalyticsWishlistUsageCountResponseDto(Date.valueOf(date), count));
+        }
+
+        for (AnalyticsWishlistUsageCountResponseDto mappedResult : mappedResults) {
+            System.out.println("mappedResult = " + mappedResult);
+        }
+
+        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults,
+                AnalyticsWishlistUsageCountResponseDto::date, AnalyticsWishlistUsageCountResponseDto::wishlistCount,
+                AnalyticsWishlistUsageCountResponseDto::new);
     }
 
 
-    private static List<AnalyticsMembersUsingWishlistDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsMembersUsingWishlistDto> results) {
+    private <T, R> List<R> mapResultsToDateRangeWithCount(
+            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
+            Function<T, Date> dateExtractor,
+            Function<T, Long> countExtractor,
+            BiFunction<Date, Long, R> constructor) {
+
         Map<Date, Long> mapResults = results.stream()
                 .collect(Collectors.toMap(
-                        AnalyticsMembersUsingWishlistDto::date,
-                        AnalyticsMembersUsingWishlistDto::count
+                        dateExtractor,
+                        countExtractor
                 ));
 
         List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
                 .toList();
 
         return dateRange.stream()
-                .map(date -> new AnalyticsMembersUsingWishlistDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+                .map(date -> constructor.apply(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
                 .toList();
     }
+
+
+//    private List<AnalyticsMembersUsingWishlistDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsMembersUsingWishlistDto> results) {
+//        Map<Date, Long> mapResults = results.stream()
+//                .collect(Collectors.toMap(
+//                        AnalyticsMembersUsingWishlistDto::date,
+//                        AnalyticsMembersUsingWishlistDto::count
+//                ));
+//
+//        List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
+//                .toList();
+//
+//        return dateRange.stream()
+//                .map(date -> new AnalyticsMembersUsingWishlistDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+//                .toList();
+//    }
+//
+//
+//    private List<AnalyticsWishlistUsageCountResponseDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsWishlistUsageCountResponseDto> results) {
+//        Map<Date, Long> mapResults = results.stream()
+//                .collect(Collectors.toMap(
+//                        AnalyticsWishlistUsageCountResponseDto::date,
+//                        AnalyticsWishlistUsageCountResponseDto::wishlistCount
+//                ));
+//
+//        List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
+//                .toList();
+//
+//        return dateRange.stream()
+//                .map(date -> new AnalyticsWishlistUsageCountResponseDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+//                .toList();
+//    }
 
 }

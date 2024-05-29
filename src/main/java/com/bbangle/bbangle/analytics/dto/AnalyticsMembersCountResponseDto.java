@@ -4,6 +4,6 @@ import lombok.Builder;
 
 @Builder
 public record AnalyticsMembersCountResponseDto(
-        Long memberCount
+        Long membersCount
 ) {
 }

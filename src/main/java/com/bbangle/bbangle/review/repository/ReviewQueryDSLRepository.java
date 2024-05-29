@@ -1,10 +1,13 @@
 package com.bbangle.bbangle.review.repository;
 
+import com.bbangle.bbangle.analytics.dto.AnalyticsReviewUsageCountDto;
+
 import java.time.LocalDate;
+import java.util.List;
 
 public interface ReviewQueryDSLRepository {
 
-    Long countMembersUsingReview();
+    List<AnalyticsReviewUsageCountDto> countMembersUsingReview(LocalDate startLocalDate, LocalDate endLocalDate);
 
-    Long countReviewByPeriod(LocalDate startDate, LocalDate endDate);
+    List<AnalyticsReviewUsageCountDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 }

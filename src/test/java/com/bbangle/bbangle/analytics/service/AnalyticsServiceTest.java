@@ -1,10 +1,7 @@
 package com.bbangle.bbangle.analytics.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountWithDateDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersUsingWishlistDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistUsageRatioResponseDto;
+import com.bbangle.bbangle.analytics.dto.*;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.member.domain.Member;
@@ -79,8 +76,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
         List<Member> members1 = create10DaysAgoMembers(createdAt);
-        List<Member> members2 = createMembers();
-        List<Member> members3 = createMembers();
+        createMembers();
+        createMembers();
         createWishListBoards(members1);
         create10DaysAgoWishlistBoards(createdAt);
 
@@ -136,11 +133,14 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         LocalDate startDate = LocalDate.now().minusDays(9);
         LocalDate endDate = LocalDate.now();
         Long wishlistBoardsCount = wishListBoardRepository.count();
-        Long result = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
+        List<AnalyticsWishlistUsageCountResponseDto> results = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
 
         // then
         assertThat(wishlistBoardsCount).isEqualTo(20);
-        assertThat(result).isEqualTo(10);
+        assertThat(results).hasSize(10);
+        assertThat(results.get(0).wishlistCount()).isEqualTo(10);
+        assertThat(results.get(8).wishlistCount()).isEqualTo(10);
+        assertThat(results.get(9).wishlistCount()).isEqualTo(20);
     }
 
 
@@ -148,24 +148,29 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     @DisplayName("회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
     void calculateReviewUsingRatio() {
         // given
-        List<Member> members1 = createMembers();
-        List<Member> members2 = createMembers();
-        List<Member> members3 = createMembers();
-        List<Member> members4 = createMembers();
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        List<Member> members1 = create10DaysAgoMembers(createdAt);
+        createMembers();
+        createMembers();
+        createMembers();
         createReviews(members1);
+        create10DaysAgoReviews(members1, createdAt);
 
-        LocalDate startDate = LocalDate.now().minusDays(9);
+        LocalDate startDate = LocalDate.now().minusDays(10);
         LocalDate endDate = LocalDate.now();
 
         // when
         long membersCount = memberRepository.count();
-        Long membersUsingReviewCount = reviewRepository.countMembersUsingReview();
-        String result = analyticsService.calculateReviewUsingRatio(startDate, endDate);
+        List<AnalyticsReviewUsageCountDto> analyticsReviewUsageCountDtos = reviewRepository.countMembersUsingReview(startDate, endDate);
+        List<AnalyticsReviewUsageCountResponseDto> results = analyticsService.calculateReviewUsingRatio(startDate, endDate);
 
         // then
         assertThat(membersCount).isEqualTo(40);
-        assertThat(membersUsingReviewCount).isEqualTo(10);
-        assertThat(result).isEqualTo("25.00");
+        assertThat(analyticsReviewUsageCountDtos).hasSize(11);
+        assertThat(results).hasSize(11);
+        assertThat(results.get(0).reviewUsageRatio()).isEqualTo("100.00");
+        assertThat(results.get(9).reviewUsageRatio()).isEqualTo("0.00");
+        assertThat(results.get(10).reviewUsageRatio()).isEqualTo("25.00");
     }
 
 
@@ -173,22 +178,23 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
     void countReviewByPeriod() {
         // given
-        List<Member> members1 = createMembers();
-        List<Member> members2 = createMembers();
-        createReviews(members1);
-
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        create10DaysAgoReviews(members2, createdAt);
+        List<Member> members1 = create10DaysAgoMembers(createdAt);
+        createReviews(members1);
+        create10DaysAgoReviews(members1, createdAt);
 
         // when
         LocalDate startDate = LocalDate.now().minusDays(9);
         LocalDate endDate = LocalDate.now();
         long reviewsCount = reviewRepository.count();
-        Long result = reviewRepository.countReviewByPeriod(startDate, endDate);
+        List<AnalyticsReviewUsageCountDto> results = reviewRepository.countReviewByPeriod(startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);
-        assertThat(result).isEqualTo(10);
+        assertThat(results).hasSize(10);
+        assertThat(results.get(0).reviewCount()).isEqualTo(10);
+        assertThat(results.get(8).reviewCount()).isEqualTo(10);
+        assertThat(results.get(9).reviewCount()).isEqualTo(20);
     }
 
 
