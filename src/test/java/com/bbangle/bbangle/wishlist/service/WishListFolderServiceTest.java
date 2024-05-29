@@ -36,32 +36,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class WishListFolderServiceTest extends AbstractIntegrationTest {
 
     private static final Faker faker = new Faker();
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
-    @Autowired
-    MemberRepository memberRepository;
-
-    @Autowired
-    WishListFolderRepository wishListFolderRepository;
-
-    @Autowired
-    MemberService memberService;
 
     @Autowired
     WishListFolderService wishListFolderService;
-
-    @Autowired
-    WishListBoardService wishListBoardService;
-
-    @Autowired
-    StoreRepository storeRepository;
-
-    @Autowired
-    BoardRepository boardRepository;
 
     @Autowired
     RankingRepository rankingRepository;

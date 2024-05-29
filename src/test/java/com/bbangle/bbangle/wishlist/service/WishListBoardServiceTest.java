@@ -29,31 +29,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
-
-    @Autowired
-    BoardRepository boardRepository;
-
-    @Autowired
-    StoreRepository storeRepository;
-
-    @Autowired
-    MemberRepository memberRepository;
 
     @Autowired
     WishListFolderRepository wishListFolderRepository;
 
     @Autowired
     WishListBoardRepository wishlistBoardRepository;
-
-    @Autowired
-    MemberService memberService;
-
-    @Autowired
-    WishListBoardService wishListBoardService;
 
     @Autowired
     WishListFolderService wishListFolderService;
@@ -68,8 +55,6 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setup() {
-        wishlistBoardRepository.deleteAll();
-        wishListFolderRepository.deleteAll();
         memberRepository.deleteAll();
 
         member = MemberFixture.createKakaoMember();
