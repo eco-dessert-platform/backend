@@ -2,14 +2,11 @@ package com.bbangle.bbangle.token.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.token.dto.CreateAccessTokenRequest;
 import com.bbangle.bbangle.token.dto.CreateAccessTokenResponse;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.service.TokenService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +25,7 @@ public class TokenApiController {
         CreateAccessTokenRequest request
     ) {
         if (!tokenProvider.isValidToken(request.getRefreshToken())) {
-            return responseService.getFailResult("Unexpected token", -1);
+            return responseService.getSuccessResult("Unexpected token", 0);
         }
 
         String newAccessToken = tokenService.createNewAccessToken(request.getRefreshToken());
