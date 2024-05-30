@@ -30,34 +30,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class BoardControllerTest extends AbstractIntegrationTest {
 
-    @Autowired
-    StoreRepository storeRepository;
-
-    @Autowired
-    BoardRepository boardRepository;
-
-    @Autowired
-    ProductRepository productRepository;
-
-    @Autowired
-    RankingRepository rankingRepository;
-
-    @Autowired
-    BoardService boardService;
-
-    @Autowired
-    MockMvc mockMvc;
-
     Board board;
     Board board2;
 
     @BeforeEach
     void setup() {
-        productRepository.deleteAll();
-        rankingRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-
         Store store = storeGenerator();
         storeRepository.save(store);
 
