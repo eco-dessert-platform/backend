@@ -81,11 +81,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setup() {
-        rankingRepository.deleteAll();
-        productRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-
         store = StoreFixture.storeGenerator();
         storeRepository.save(store);
         store2 = StoreFixture.storeGenerator();
