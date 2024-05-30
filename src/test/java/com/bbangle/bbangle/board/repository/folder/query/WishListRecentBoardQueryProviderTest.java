@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository.folder.query;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
@@ -8,6 +10,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
@@ -28,32 +31,35 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
     private static final boolean INGREDIENT_TRUE = true;
     private static final boolean INGREDIENT_FALSE = false;
 
+    Member member;
+    WishListFolder wishListFolder;
+    Long firstSavedId;
+    Long lastSavedId;
+    Long savedId;
+    Product product;
+    Product product2;
+    Board createdBoard;
+    Store store;
+
+    @BeforeEach
+    void generalSetUp(){
+        member = MemberFixture.createKakaoMember();
+        member = memberService.getFirstJoinedMember(member);
+        store = StoreFixture.storeGenerator();
+        store = storeRepository.save(store);
+
+        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
+    }
+
     @Nested
     @DisplayName("정상적인 DAO를 만드는지 확인하는 테스트")
     class CreateSuccessfulDao {
 
-        private static final Long DEFAULT_FOLDER_ID = 0L;
-
-        Member member;
-        WishListFolder wishListFolder;
-        Long savedId;
-        Product product;
-        Product product2;
-        Board createdBoard;
-        Store store;
-
         @BeforeEach
         void setup() {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
-            store = StoreFixture.storeGenerator();
-            store = storeRepository.save(store);
-
-            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
-
             createdBoard = BoardFixture.randomBoard(store);
             createdBoard = boardRepository.save(createdBoard);
             savedId = createdBoard.getId();
@@ -82,32 +88,32 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
 
             //then
             BoardResponseDao actual = boards.get(0);
-            Assertions.assertThat(actual.boardId()).isEqualTo(boardResponseDao.boardId());
-            Assertions.assertThat(actual.storeId()).isEqualTo(boardResponseDao.storeId());
-            Assertions.assertThat(actual.storeName()).isEqualTo(boardResponseDao.storeName());
-            Assertions.assertThat(actual.thumbnail()).isEqualTo(boardResponseDao.thumbnail());
-            Assertions.assertThat(actual.price()).isEqualTo(boardResponseDao.price());
-            Assertions.assertThat(actual.title()).isEqualTo(boardResponseDao.title());
-            Assertions.assertThat(actual.category()).isEqualTo(boardResponseDao.category());
-            Assertions.assertThat(actual.tagsDao().veganTag()).isEqualTo(boardResponseDao.tagsDao().veganTag());
-            Assertions.assertThat(actual.tagsDao().highProteinTag()).isEqualTo(boardResponseDao.tagsDao().highProteinTag());
-            Assertions.assertThat(actual.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao.tagsDao().ketogenicTag());
-            Assertions.assertThat(actual.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao.tagsDao().sugarFreeTag());
-            Assertions.assertThat(actual.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao.tagsDao().glutenFreeTag());
+            assertThat(actual.boardId()).isEqualTo(boardResponseDao.boardId());
+            assertThat(actual.storeId()).isEqualTo(boardResponseDao.storeId());
+            assertThat(actual.storeName()).isEqualTo(boardResponseDao.storeName());
+            assertThat(actual.thumbnail()).isEqualTo(boardResponseDao.thumbnail());
+            assertThat(actual.price()).isEqualTo(boardResponseDao.price());
+            assertThat(actual.title()).isEqualTo(boardResponseDao.title());
+            assertThat(actual.category()).isEqualTo(boardResponseDao.category());
+            assertThat(actual.tagsDao().veganTag()).isEqualTo(boardResponseDao.tagsDao().veganTag());
+            assertThat(actual.tagsDao().highProteinTag()).isEqualTo(boardResponseDao.tagsDao().highProteinTag());
+            assertThat(actual.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao.tagsDao().ketogenicTag());
+            assertThat(actual.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao.tagsDao().sugarFreeTag());
+            assertThat(actual.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao.tagsDao().glutenFreeTag());
 
             BoardResponseDao actual2 = boards.get(1);
-            Assertions.assertThat(actual2.boardId()).isEqualTo(boardResponseDao2.boardId());
-            Assertions.assertThat(actual2.storeId()).isEqualTo(boardResponseDao2.storeId());
-            Assertions.assertThat(actual2.storeName()).isEqualTo(boardResponseDao2.storeName());
-            Assertions.assertThat(actual2.thumbnail()).isEqualTo(boardResponseDao2.thumbnail());
-            Assertions.assertThat(actual2.price()).isEqualTo(boardResponseDao2.price());
-            Assertions.assertThat(actual2.title()).isEqualTo(boardResponseDao2.title());
-            Assertions.assertThat(actual2.category()).isEqualTo(boardResponseDao2.category());
-            Assertions.assertThat(actual2.tagsDao().veganTag()).isEqualTo(boardResponseDao2.tagsDao().veganTag());
-            Assertions.assertThat(actual2.tagsDao().highProteinTag()).isEqualTo(boardResponseDao2.tagsDao().highProteinTag());
-            Assertions.assertThat(actual2.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao2.tagsDao().ketogenicTag());
-            Assertions.assertThat(actual2.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao2.tagsDao().sugarFreeTag());
-            Assertions.assertThat(actual2.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao2.tagsDao().glutenFreeTag());
+            assertThat(actual2.boardId()).isEqualTo(boardResponseDao2.boardId());
+            assertThat(actual2.storeId()).isEqualTo(boardResponseDao2.storeId());
+            assertThat(actual2.storeName()).isEqualTo(boardResponseDao2.storeName());
+            assertThat(actual2.thumbnail()).isEqualTo(boardResponseDao2.thumbnail());
+            assertThat(actual2.price()).isEqualTo(boardResponseDao2.price());
+            assertThat(actual2.title()).isEqualTo(boardResponseDao2.title());
+            assertThat(actual2.category()).isEqualTo(boardResponseDao2.category());
+            assertThat(actual2.tagsDao().veganTag()).isEqualTo(boardResponseDao2.tagsDao().veganTag());
+            assertThat(actual2.tagsDao().highProteinTag()).isEqualTo(boardResponseDao2.tagsDao().highProteinTag());
+            assertThat(actual2.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao2.tagsDao().ketogenicTag());
+            assertThat(actual2.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao2.tagsDao().sugarFreeTag());
+            assertThat(actual2.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao2.tagsDao().glutenFreeTag());
 
         }
 
@@ -128,7 +134,57 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
 
     }
 
-    private static Product productWithVeganSugarFreeHighProteinBread(Board board) {
+    @Nested
+    @DisplayName("위시리스트에 담은 순으로 BoardDao를 정상적으로 담는다")
+    class BoardInFolderWithWishListRecentOrder{
+
+        @BeforeEach
+        void setup(){
+            for (int i = 0; i < 12; i++) {
+                Board createdBoard = BoardFixture.randomBoardWithPrice(store, i * 1000);
+                createdBoard = boardRepository.save(createdBoard);
+                if (i == 0) {
+                    firstSavedId = createdBoard.getId();
+                }
+                if (i == 11) {
+                    lastSavedId = createdBoard.getId();
+                }
+                Product product = ProductFixture.randomProduct(createdBoard);
+                Product product2 = ProductFixture.randomProduct(createdBoard);
+                productRepository.save(product);
+                productRepository.save(product2);
+                Ranking ranking = RankingFixture.newRanking(createdBoard);
+                rankingRepository.save(ranking);
+                wishListBoardService.wish(member.getId(), createdBoard.getId(),
+                    new WishListBoardRequest(wishListFolder.getId()));
+            }
+        }
+
+        @Test
+        @DisplayName("정상적으로 위시리스트에 담은 순으로 DAO를 조회한다.")
+        void getBoardResponseDaoWithWishListRecent(){
+            //given, when
+            List<BoardResponseDao> boardResponseDaoList = new WishListRecentBoardQueryProvider(
+                queryFactory,
+                new BooleanBuilder(),
+                FolderBoardSortType.WISHLIST_RECENT.getOrderSpecifier(),
+                wishListFolder)
+                .getBoards();
+
+            //then
+            assertThat(boardResponseDaoList).hasSize(22);
+            assertThat(boardResponseDaoList.stream().findFirst().get().boardId()).isEqualTo(lastSavedId);
+            for(long i = lastSavedId; i <= firstSavedId; i++){
+                final long finalizedId = i;
+                assertThat(boardResponseDaoList
+                    .stream()
+                    .filter(dao -> dao.boardId().equals(finalizedId))
+                    .count()).isEqualTo(2);
+            }
+        }
+    }
+
+    private Product productWithVeganSugarFreeHighProteinBread(Board board) {
         return Product.builder()
             .board(board)
             .title("test")
@@ -141,7 +197,7 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             .build();
     }
 
-    private static Product productWIthKetogenicYogurt(Board board) {
+    private Product productWIthKetogenicYogurt(Board board) {
         return Product.builder()
             .board(board)
             .title("test")
