@@ -15,6 +15,7 @@ import com.bbangle.bbangle.review.dto.*;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.wishlist.dto.ReviewImgDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -194,10 +195,10 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewImg getImage(Long imageId) {
+    public ReviewImgDto getImage(Long imageId) {
         ReviewImg reviewImg = reviewImgRepository.findById(imageId)
                 .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
-        return ReviewImg.builder()
+        return ReviewImgDto.builder()
                 .url(reviewImg.getUrl())
                 .build();
     }
