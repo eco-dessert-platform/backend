@@ -27,9 +27,10 @@ public class PopularCursorGenerator implements CursorGenerator{
             return cursorBuilder;
         }
 
-        Optional.ofNullable(queryFactory.select(wishListBoard.id)
+        Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
                 .from(wishListBoard)
-                .where(wishListBoard.boardId.eq(cursorId).and(wishListBoard.wishlistFolderId.eq(folderId)))
+                .where(wishListBoard.boardId.eq(cursorId)
+                    .and(wishListBoard.wishlistFolderId.eq(folderId)))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
@@ -39,7 +40,7 @@ public class PopularCursorGenerator implements CursorGenerator{
             .where(ranking.board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(ranking.popularScore.loe(score)
-            .and(wishListBoard.id.loe(cursorId)));
+            .and(wishListBoard.id.loe(wishListBoardId)));
 
         return cursorBuilder;
     }
