@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 public class PopularCursorGenerator implements CursorGenerator{
 
     private static final QRanking ranking = QRanking.ranking;
-    private static final QBoard board = QBoard.board;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
