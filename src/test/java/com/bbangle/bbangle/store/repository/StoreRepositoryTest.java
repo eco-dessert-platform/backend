@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.store.repository;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -36,32 +37,14 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest
-public class StoreRepositoryTest {
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private StoreRepository storeRepository;
-
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private BoardImgRepository boardImgRepository;
 
     @Autowired
-    private WishListFolderRepository wishListFolderRepository;
-
-    @Autowired
     private WishListBoardRepository wishListProductRepository;
 
-    @Autowired
-    private WishListStoreRepository wishListStoreRepository;
     @Autowired
     private RankingRepository rankingRepository;
 

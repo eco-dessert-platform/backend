@@ -31,22 +31,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
     @Autowired
-    WishListFolderRepository wishListFolderRepository;
-
-    @Autowired
-    WishListBoardRepository wishlistBoardRepository;
-
-    @Autowired
     WishListFolderService wishListFolderService;
-
-    @Autowired
-    RankingRepository rankingRepository;
 
     Member member;
     Store store;
@@ -55,8 +45,6 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setup() {
-        memberRepository.deleteAll();
-
         member = MemberFixture.createKakaoMember();
         member = memberService.getFirstJoinedMember(member);
 
