@@ -5,14 +5,14 @@ import com.querydsl.core.annotations.QueryProjection;
 
 import java.sql.Date;
 
-public record AnalyticsMembersUsingWishlistDto(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+public record AnalyticsCountWithDateResponseDto(
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         Date date,
         Long count
 ) {
 
     @QueryProjection
-    public AnalyticsMembersUsingWishlistDto {
+    public AnalyticsCountWithDateResponseDto {
     }
 
 }

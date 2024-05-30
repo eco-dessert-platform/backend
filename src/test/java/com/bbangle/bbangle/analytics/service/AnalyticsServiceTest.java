@@ -46,7 +46,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // then
         long membersCount = memberRepository.count();
-        List<AnalyticsMembersCountWithDateDto> result = analyticsService.countMembersByPeriod(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> result = analyticsService.countMembersByPeriod(startDate, endDate);
 
         // then
         assertThat(membersCount).isEqualTo(20);
@@ -71,7 +71,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
+    @DisplayName("기간 별 회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
     void countMembersUsingWishlist() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
@@ -86,21 +86,21 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // when
         long membersCount = memberRepository.count();
-        List<AnalyticsMembersUsingWishlistDto> analyticsMembersUsingWishlistDtos = wishListBoardRepository.countMembersUsingWishlist(startDate, endDate);
-        List<AnalyticsWishlistUsageRatioResponseDto> results = analyticsService.calculateWishlistUsingRatio(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> countWithDateResponseDtos = wishListBoardRepository.countMembersUsingWishlist(startDate, endDate);
+        List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateWishlistUsingRatio(startDate, endDate);
 
         // then
         assertThat(membersCount).isEqualTo(30);
-        assertThat(analyticsMembersUsingWishlistDtos).hasSize(11);
+        assertThat(countWithDateResponseDtos).hasSize(11);
         assertThat(results).hasSize(11);
-        assertThat(results.get(0).wishlistUsageRatio()).isEqualTo("100.00");
-        assertThat(results.get(9).wishlistUsageRatio()).isEqualTo("0.00");
-        assertThat(results.get(10).wishlistUsageRatio()).isEqualTo("33.33");
+        assertThat(results.get(0).ratio()).isEqualTo("100.00");
+        assertThat(results.get(9).ratio()).isEqualTo("0.00");
+        assertThat(results.get(10).ratio()).isEqualTo("33.33");
     }
 
 
     @Test
-    @DisplayName("게시글 별 위시리스트 순위가 정상적으로 조회된다.")
+    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
     void getWishlistBoardRanking() {
         // given
         List<Member> members = createMembers();
@@ -133,19 +133,19 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         LocalDate startDate = LocalDate.now().minusDays(9);
         LocalDate endDate = LocalDate.now();
         Long wishlistBoardsCount = wishListBoardRepository.count();
-        List<AnalyticsWishlistUsageCountResponseDto> results = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> results = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
 
         // then
         assertThat(wishlistBoardsCount).isEqualTo(20);
         assertThat(results).hasSize(10);
-        assertThat(results.get(0).wishlistCount()).isEqualTo(10);
-        assertThat(results.get(8).wishlistCount()).isEqualTo(10);
-        assertThat(results.get(9).wishlistCount()).isEqualTo(20);
+        assertThat(results.get(0).count()).isEqualTo(10);
+        assertThat(results.get(8).count()).isEqualTo(10);
+        assertThat(results.get(9).count()).isEqualTo(20);
     }
 
 
     @Test
-    @DisplayName("회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
+    @DisplayName("기간 별 회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
     void calculateReviewUsingRatio() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
@@ -161,16 +161,16 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // when
         long membersCount = memberRepository.count();
-        List<AnalyticsReviewUsageCountDto> analyticsReviewUsageCountDtos = reviewRepository.countMembersUsingReview(startDate, endDate);
-        List<AnalyticsReviewUsageCountResponseDto> results = analyticsService.calculateReviewUsingRatio(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> analyticsCountWithDateResponseDtos = reviewRepository.countMembersUsingReview(startDate, endDate);
+        List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateReviewUsingRatio(startDate, endDate);
 
         // then
         assertThat(membersCount).isEqualTo(40);
-        assertThat(analyticsReviewUsageCountDtos).hasSize(11);
+        assertThat(analyticsCountWithDateResponseDtos).hasSize(11);
         assertThat(results).hasSize(11);
-        assertThat(results.get(0).reviewUsageRatio()).isEqualTo("100.00");
-        assertThat(results.get(9).reviewUsageRatio()).isEqualTo("0.00");
-        assertThat(results.get(10).reviewUsageRatio()).isEqualTo("25.00");
+        assertThat(results.get(0).ratio()).isEqualTo("100.00");
+        assertThat(results.get(9).ratio()).isEqualTo("0.00");
+        assertThat(results.get(10).ratio()).isEqualTo("25.00");
     }
 
 
@@ -187,14 +187,14 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         LocalDate startDate = LocalDate.now().minusDays(9);
         LocalDate endDate = LocalDate.now();
         long reviewsCount = reviewRepository.count();
-        List<AnalyticsReviewUsageCountDto> results = reviewRepository.countReviewByPeriod(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> results = reviewRepository.countReviewByPeriod(startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);
         assertThat(results).hasSize(10);
-        assertThat(results.get(0).reviewCount()).isEqualTo(10);
-        assertThat(results.get(8).reviewCount()).isEqualTo(10);
-        assertThat(results.get(9).reviewCount()).isEqualTo(20);
+        assertThat(results.get(0).count()).isEqualTo(10);
+        assertThat(results.get(8).count()).isEqualTo(10);
+        assertThat(results.get(9).count()).isEqualTo(20);
     }
 
 

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.review.repository;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsReviewUsageCountDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsReviewUsageCountDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
+import com.bbangle.bbangle.analytics.dto.QAnalyticsCountWithDateResponseDto;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -27,12 +27,12 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
 
 
     @Override
-    public List<AnalyticsReviewUsageCountDto> countMembersUsingReview(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersUsingReview(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", review.createdAt);
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        List<AnalyticsReviewUsageCountDto> results = queryFactory.select(new QAnalyticsReviewUsageCountDto(
+        List<AnalyticsCountWithDateResponseDto> results = queryFactory.select(new QAnalyticsCountWithDateResponseDto(
                         createdAt,
                         review.memberId.countDistinct()
                 ))
@@ -43,15 +43,15 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                 .fetch();
 
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results,
-                AnalyticsReviewUsageCountDto::date, AnalyticsReviewUsageCountDto::reviewCount,
-                AnalyticsReviewUsageCountDto::new);
+                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
+                AnalyticsCountWithDateResponseDto::new);
     }
 
 
     @Override
-    public List<AnalyticsReviewUsageCountDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", review.createdAt);
-        List<AnalyticsReviewUsageCountDto> mappedResults = new ArrayList<>();
+        List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
 
         for (LocalDate date = startLocalDate; !date.isAfter(endLocalDate); date = date.plusDays(1)) {
             Long count = queryFactory.select(review.id.count())
@@ -59,12 +59,12 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                     .where(createdAt.loe(Date.valueOf(date)))
                     .fetchOne();
 
-            mappedResults.add(new AnalyticsReviewUsageCountDto(Date.valueOf(date), count));
+            mappedResults.add(new AnalyticsCountWithDateResponseDto(Date.valueOf(date), count));
         }
 
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults,
-                AnalyticsReviewUsageCountDto::date, AnalyticsReviewUsageCountDto::reviewCount,
-                AnalyticsReviewUsageCountDto::new);
+                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
+                AnalyticsCountWithDateResponseDto::new);
     }
 
 

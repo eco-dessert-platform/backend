@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.member.repository;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountWithDateDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsMembersCountWithDateDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
+import com.bbangle.bbangle.analytics.dto.QAnalyticsCountWithDateResponseDto;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
@@ -39,12 +39,12 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
 
 
     @Override
-    public List<AnalyticsMembersCountWithDateDto> countMembersCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", member.createdAt);
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        List<AnalyticsMembersCountWithDateDto> results = queryFactory.select(new QAnalyticsMembersCountWithDateDto(
+        List<AnalyticsCountWithDateResponseDto> results = queryFactory.select(new QAnalyticsCountWithDateResponseDto(
                         createdAt,
                         member.id.count()
                 ))
@@ -59,9 +59,9 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
 
 
     @Override
-    public List<AnalyticsMembersCountWithDateDto> countMembersCreatedBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersCreatedBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", member.createdAt);
-        List<AnalyticsMembersCountWithDateDto> mappedResults = new ArrayList<>();
+        List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
 
         for (LocalDate date = startLocalDate; !date.isAfter(endLocalDate); date = date.plusDays(1)) {
             Long count = queryFactory.select(member.id.count())
@@ -69,25 +69,25 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
                     .where(createdAt.loe(Date.valueOf(date)))
                     .fetchOne();
 
-            mappedResults.add(new AnalyticsMembersCountWithDateDto(Date.valueOf(date), count));
+            mappedResults.add(new AnalyticsCountWithDateResponseDto(Date.valueOf(date), count));
         }
 
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults);
     }
 
 
-    private static List<AnalyticsMembersCountWithDateDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsMembersCountWithDateDto> results) {
+    private static List<AnalyticsCountWithDateResponseDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsCountWithDateResponseDto> results) {
         Map<Date, Long> mapResults = results.stream()
                 .collect(Collectors.toMap(
-                        AnalyticsMembersCountWithDateDto::date,
-                        AnalyticsMembersCountWithDateDto::count
+                        AnalyticsCountWithDateResponseDto::date,
+                        AnalyticsCountWithDateResponseDto::count
                 ));
 
         List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
                 .toList();
 
         return dateRange.stream()
-                .map(date -> new AnalyticsMembersCountWithDateDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+                .map(date -> new AnalyticsCountWithDateResponseDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
                 .toList();
     }
 

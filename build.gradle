@@ -119,6 +119,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
     implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.apache.poi:poi:5.2.5'
 
     //QueryDSL 추가
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

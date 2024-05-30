@@ -27,12 +27,12 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
 
 
     @Override
-    public List<AnalyticsMembersUsingWishlistDto> countMembersUsingWishlist(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersUsingWishlist(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", wishListBoard.createdAt);
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        List<AnalyticsMembersUsingWishlistDto> results = queryFactory.select(new QAnalyticsMembersUsingWishlistDto(
+        List<AnalyticsCountWithDateResponseDto> results = queryFactory.select(new QAnalyticsCountWithDateResponseDto(
                     createdAt,
                     wishListBoard.id.count()
                 ))
@@ -43,15 +43,15 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
                 .fetch();
 
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results,
-                AnalyticsMembersUsingWishlistDto::date, AnalyticsMembersUsingWishlistDto::count,
-                AnalyticsMembersUsingWishlistDto::new);
+                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
+                AnalyticsCountWithDateResponseDto::new);
     }
 
 
     @Override
-    public List<AnalyticsWishlistUsageCountResponseDto> countWishlistByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countWishlistByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", wishListBoard.createdAt);
-        List<AnalyticsWishlistUsageCountResponseDto> mappedResults = new ArrayList<>();
+        List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
 
         for (LocalDate date = startLocalDate; !date.isAfter(endLocalDate); date = date.plusDays(1)) {
             Long count = queryFactory.select(wishListBoard.id.count())
@@ -59,16 +59,12 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
                     .where(createdAt.loe(Date.valueOf(date)))
                     .fetchOne();
 
-            mappedResults.add(new AnalyticsWishlistUsageCountResponseDto(Date.valueOf(date), count));
-        }
-
-        for (AnalyticsWishlistUsageCountResponseDto mappedResult : mappedResults) {
-            System.out.println("mappedResult = " + mappedResult);
+            mappedResults.add(new AnalyticsCountWithDateResponseDto(Date.valueOf(date), count));
         }
 
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults,
-                AnalyticsWishlistUsageCountResponseDto::date, AnalyticsWishlistUsageCountResponseDto::wishlistCount,
-                AnalyticsWishlistUsageCountResponseDto::new);
+                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
+                AnalyticsCountWithDateResponseDto::new);
     }
 
 

@@ -71,7 +71,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
+    @DisplayName("기간 별 회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
     void getWishlistUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/wishlist-usage"))
                 .andExpect(status().isOk())
@@ -80,7 +80,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("게시글 별 위시리스트 순위가 정상적으로 조회된다.")
+    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
     void getWishlistBoardRanking() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/wishlist/boards/ranking"))
                 .andExpect(status().isOk())
@@ -89,7 +89,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
+    @DisplayName("기간 별 기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
     void getWishlistUsageCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
+    @DisplayName("기간 별 회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
     void getReviewUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/review-usage"))
                 .andExpect(status().isOk())

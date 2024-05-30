@@ -6,9 +6,9 @@ import lombok.Builder;
 import java.sql.Date;
 
 @Builder
-public record AnalyticsWishlistUsageRatioResponseDto(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+public record AnalyticsRatioWithDateResponseDto(
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         Date date,
-        String wishlistUsageRatio
+        String ratio
 ) {
 }

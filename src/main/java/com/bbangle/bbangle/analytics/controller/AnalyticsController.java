@@ -28,7 +28,7 @@ public class AnalyticsController {
     @GetMapping(value = "/members/count")
     public CommonResult getMembersCount() {
         AnalyticsMembersCountResponseDto response = AnalyticsMembersCountResponseDto.builder()
-                .membersCount(analyticsService.countAllMembers())
+                .count(analyticsService.countAllMembers())
                 .build();
 
         return responseService.getSingleResult(response);
@@ -43,8 +43,8 @@ public class AnalyticsController {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsMembersCountWithDateDto> analyticsMembersByPeriodDtos = analyticsService.countMembersByPeriod(startLocalDate, endLocalDate);
-        return responseService.getListResult(analyticsMembersByPeriodDtos);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countMembersByPeriod(startLocalDate, endLocalDate);
+        return responseService.getListResult(response);
     }
 
 
@@ -56,8 +56,8 @@ public class AnalyticsController {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsWishlistUsageRatioResponseDto> analyticsWishlistUsageRatioResponseDtos = analyticsService.calculateWishlistUsingRatio(startLocalDate, endLocalDate);
-        return responseService.getListResult(analyticsWishlistUsageRatioResponseDtos);
+        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateWishlistUsingRatio(startLocalDate, endLocalDate);
+        return responseService.getListResult(response);
     }
 
 
@@ -75,10 +75,8 @@ public class AnalyticsController {
     ) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-        System.out.println("startLocalDate = " + startLocalDate);
-        System.out.println("endLocalDate = " + endLocalDate);
 
-        List<AnalyticsWishlistUsageCountResponseDto> response = analyticsService.countWishlistBoardByPeriod(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countWishlistBoardByPeriod(startLocalDate, endLocalDate);
         return responseService.getListResult(response);
     }
 
@@ -91,7 +89,7 @@ public class AnalyticsController {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsReviewUsageCountResponseDto> response = analyticsService.calculateReviewUsingRatio(startLocalDate, endLocalDate);
+        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateReviewUsingRatio(startLocalDate, endLocalDate);
         return responseService.getListResult(response);
     }
 
@@ -104,8 +102,8 @@ public class AnalyticsController {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsReviewUsageCountDto> analyticsReviewUsageCountDtos = analyticsService.countReviewByPeriod(startLocalDate, endLocalDate);
-        return responseService.getListResult(analyticsReviewUsageCountDtos);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countReviewByPeriod(startLocalDate, endLocalDate);
+        return responseService.getListResult(response);
     }
 
 }
