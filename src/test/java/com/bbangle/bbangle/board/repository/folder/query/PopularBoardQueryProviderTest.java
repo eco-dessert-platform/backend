@@ -25,8 +25,6 @@ import org.junit.jupiter.api.Test;
 
 class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
 
-    private static final Long DEFAULT_FOLDER_ID = 0L;
-
     Member member;
     Member anotherMember;
     WishListFolder wishListFolder;
@@ -110,7 +108,6 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
                 .filter(dao -> dao.boardId().equals(finalizedId))
                 .count()).isEqualTo(2);
         }
-
     }
 
 }
