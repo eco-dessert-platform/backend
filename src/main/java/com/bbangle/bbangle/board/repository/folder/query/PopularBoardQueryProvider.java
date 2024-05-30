@@ -41,7 +41,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .on(board.id.eq(ranking.board.id))
             .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursorBuilder))
-            .orderBy(order, board.id.desc())
+            .orderBy(order, wishListBoard.id.desc())
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
@@ -68,7 +68,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .on(board.id.eq(wishListBoard.boardId))
             .join(ranking)
             .on(board.id.eq(ranking.board.id))
-            .where(board.id.in(fetch))
+            .where(board.id.in(fetch).and(wishListBoard.wishlistFolderId.eq(folder.getId())))
             .orderBy(order, wishListBoard.id.desc())
             .fetch();
     }
