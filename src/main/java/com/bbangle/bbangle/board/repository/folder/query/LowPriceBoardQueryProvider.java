@@ -37,7 +37,7 @@ public class LowPriceBoardQueryProvider implements QueryGenerator{
             .on(board.id.eq(wishListBoard.boardId))
             .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursorBuilder))
-            .orderBy(order, board.id.desc())
+            .orderBy(order, wishListBoard.id.desc())
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
