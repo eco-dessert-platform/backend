@@ -21,14 +21,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BoardPageGenerator {
 
     private static final Long NO_NEXT_CURSOR = -1L;
     private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
-    public BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<BoardResponseDao> allByFolder) {
+    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<BoardResponseDao> allByFolder) {
         if (allByFolder.isEmpty()) {
             return BoardCustomPage.emptyPage();
         }
@@ -47,7 +46,7 @@ public class BoardPageGenerator {
             nextCursor, hasNext);
     }
 
-    private List<BoardResponseDto> convertToBoardResponse(List<BoardResponseDao> boardResponseDaoList) {
+    private static List<BoardResponseDto> convertToBoardResponse(List<BoardResponseDao> boardResponseDaoList) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(boardResponseDaoList);
 
         Map<Long, Boolean> isBundled = getIsBundled(boardResponseDaoList);
@@ -60,7 +59,7 @@ public class BoardPageGenerator {
             .toList();
     }
 
-    private Map<Long, List<String>> getTagListFromBoardResponseDao(List<BoardResponseDao> boardResponseDaoList) {
+    private static Map<Long, List<String>> getTagListFromBoardResponseDao(List<BoardResponseDao> boardResponseDaoList) {
         return boardResponseDaoList.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
@@ -99,7 +98,7 @@ public class BoardPageGenerator {
             );
     }
 
-    private List<BoardResponseDao> removeDuplicatesByBoardId(List<BoardResponseDao> boardResponseDaos) {
+    private static List<BoardResponseDao> removeDuplicatesByBoardId(List<BoardResponseDao> boardResponseDaos) {
         Map<Long, BoardResponseDao> uniqueBoardMap = boardResponseDaos.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
@@ -113,7 +112,7 @@ public class BoardPageGenerator {
             .toList();
     }
 
-    private List<String> extractTags(List<TagsDao> tagsDaoList) {
+    private static List<String> extractTags(List<TagsDao> tagsDaoList) {
         if (Objects.isNull(tagsDaoList) || tagsDaoList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -129,7 +128,7 @@ public class BoardPageGenerator {
         return new ArrayList<>(tags);
     }
 
-    private void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
+    private static void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
         if (condition) {
             tags.add(tag);
         }

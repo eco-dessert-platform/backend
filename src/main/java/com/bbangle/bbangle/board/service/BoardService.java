@@ -46,7 +46,6 @@ public class BoardService {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
     private final BoardRepository boardRepository;
-    private final BoardPageGenerator boardPageGenerator;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     @Qualifier("defaultRedisTemplate")
@@ -84,7 +83,7 @@ public class BoardService {
 
         List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
 
-        return boardPageGenerator.getBoardPage(allByFolder);
+        return BoardPageGenerator.getBoardPage(allByFolder);
     }
 
 
