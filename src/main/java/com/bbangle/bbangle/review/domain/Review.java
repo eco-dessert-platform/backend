@@ -3,9 +3,12 @@ package com.bbangle.bbangle.review.domain;
 
 import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.review.dto.ReviewRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,7 +51,6 @@ public class Review extends BaseEntity {
 
     private String content;
 
-    //TODO 리뷰는 일단 나중에 데이터로 필요할 꺼 같아 is_deleted 추가
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
@@ -56,7 +58,16 @@ public class Review extends BaseEntity {
         switch(badge){
             case GOOD, BAD -> this.badgeTaste = badge;
             case SWEET,PLAIN -> this.badgeBrix = badge;
-            case SOFT,HARD -> this.badgeTexture = badge;
+            case SOFT,DRY -> this.badgeTexture = badge;
         }
+    }
+
+    public void update(ReviewRequest reviewRequest) {
+        List<Badge> badges = reviewRequest.badges();
+        for (Badge badge : badges) {
+            this.insertBadge(badge);
+        }
+        this.rate = reviewRequest.rate();
+        this.content = reviewRequest.content();
     }
 }

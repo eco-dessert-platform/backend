@@ -41,7 +41,7 @@ public record ReviewRateResponse(
 
                 if(review.getBadgeTexture().equals(Badge.SOFT)){
                     soft++;
-                }else if (review.getBadgeTexture().equals(Badge.HARD)){
+                }else if (review.getBadgeTexture().equals(Badge.DRY)){
                     dry++;
                 }
             }
