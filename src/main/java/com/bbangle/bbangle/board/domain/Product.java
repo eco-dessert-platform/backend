@@ -37,29 +37,29 @@ public class Product {
     @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title")
     private String title;
 
     @Column(name = "price")
     private int price;
 
-    @Column(name = "category", columnDefinition = "varchar", nullable = false)
+    @Column(name = "category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @Column(name = "gluten_free_tag", columnDefinition = "tinyint", nullable = false)
+    @Column(name = "gluten_free_tag", columnDefinition = "tinyint")
     private boolean glutenFreeTag;
 
-    @Column(name = "high_protein_tag", columnDefinition = "tinyint", nullable = false)
+    @Column(name = "high_protein_tag", columnDefinition = "tinyint")
     private boolean highProteinTag;
 
-    @Column(name = "sugar_free_tag", columnDefinition = "tinyint", nullable = false)
+    @Column(name = "sugar_free_tag", columnDefinition = "tinyint")
     private boolean sugarFreeTag;
 
-    @Column(name = "vegan_tag", columnDefinition = "tinyint", nullable = false)
+    @Column(name = "vegan_tag", columnDefinition = "tinyint")
     private boolean veganTag;
 
-    @Column(name = "ketogenic_tag", columnDefinition = "tinyint", nullable = false)
+    @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
 
 }
