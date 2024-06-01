@@ -1,15 +1,12 @@
 package com.bbangle.bbangle.review.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+import static com.bbangle.bbangle.image.domain.ImageCategory.REVIEW;
 
 import com.bbangle.bbangle.common.domain.Badge;
-import com.bbangle.bbangle.common.image.service.S3Service;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.review.domain.ReviewImg;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
-import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import java.util.List;
 import java.util.Objects;
@@ -21,12 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
     private final ReviewRepository reviewRepository;
-    private final ReviewImgRepository reviewImgRepository;
     private final MemberRepository memberRepository;
-    private final S3Service s3Service;
-    private static final String BOARD_FOLDER = "board/";
-    private static final String REVIEW_FOLDER= "/review/";
+    private final ImageService imageService;
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
@@ -40,21 +35,17 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
-        if(Objects.isNull(reviewRequest.photos())){
+        if (Objects.isNull(reviewRequest.photos())) {
             return;
         }
-        makeReviewImg(reviewRequest, review);
+
+        saveReviewImage(reviewRequest, review);
     }
 
-    private void makeReviewImg(ReviewRequest reviewRequest, Review review) {
+    private void saveReviewImage(ReviewRequest reviewRequest, Review review) {
         Long reviewId = review.getId();
-        Long boardId = reviewRequest.boardId();
         List<MultipartFile> photos = reviewRequest.photos();
-        photos.stream()
-            .map(photo -> s3Service.saveImage(photo, BOARD_FOLDER + boardId + REVIEW_FOLDER + reviewId))
-            .forEach(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
-                                        .reviewId(reviewId)
-                                        .url(reviewImgPath)
-                                        .build()));
+
+        imageService.saveAll(REVIEW, photos, reviewId);
     }
 }

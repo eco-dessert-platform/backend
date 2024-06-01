@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.common.image.repository;
+package com.bbangle.bbangle.image.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -12,32 +12,27 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Repository
 @RequiredArgsConstructor
-public class ObjectStorageRepositoryImpl implements ObjectStorageRepository {
+class ObjectStorageRepositoryImpl {
 
     private final AmazonS3 s3;
 
-    @Override
-    public void downloadFile() {
+    private void downloadFile() {
 
     }
 
-    @Override
-    public void selectFile() {
+    private void selectFile() {
 
     }
 
-    @Override
-    public void deleteFile() {
+    private void deleteFile() {
 
     }
 
-    @Override
-    public void deleteFolder() {
+    private void deleteFolder() {
 
     }
 
-    @Override
-    public Boolean createFile(String bucketName, String objectName, MultipartFile file) {
+    public void createFile(String bucketName, String objectName, MultipartFile file) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType()); // 콘텐츠 타입 설정
         objectMetadata.setContentLength(file.getSize()); // 파일 크기 설정
@@ -46,19 +41,15 @@ public class ObjectStorageRepositoryImpl implements ObjectStorageRepository {
         } catch (IOException e) {
             throw new BbangleException(e);
         }
-        return true;
     }
 
 
-    @Override
-    public Boolean createFolder(String bucketName, String folderName) {
+    public void createFolder(String bucketName, String folderName) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(0L);
         objectMetadata.setContentType("application/x-directory");
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName,
             new ByteArrayInputStream(new byte[0]), objectMetadata);
         s3.putObject(putObjectRequest);
-        return true;
     }
-
 }
