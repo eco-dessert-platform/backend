@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.store.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -8,15 +12,14 @@ import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
-import com.bbangle.bbangle.page.StoreDetailCustomPage;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.store.dto.PopularBoardResponse;
-import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.page.StoreDetailCustomPage;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.PopularBoardResponse;
+import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.store.dto.StoreResponse;
-
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
@@ -25,19 +28,13 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
-@SpringBootTest
-public class StoreRepositoryTest {
+class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private MemberRepository memberRepository;
@@ -127,7 +124,8 @@ public class StoreRepositoryTest {
 
         Long memberId = null;
         Long storeId = store.getId();
-        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(memberId,
+        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(
+            memberId,
             storeId);
         List<String> boardTitles = popularBoardResponses.stream()
             .map(popularBoardDto -> popularBoardDto.getBoardTitle()).toList();

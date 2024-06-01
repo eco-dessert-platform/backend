@@ -22,7 +22,7 @@ public class OauthController {
 
     @GetMapping("/login/{oauthServerType}")
     CommonResult login(
-        @PathVariable
+        @PathVariable("oauthServerType")
         OauthServerType oauthServerType,
         @RequestParam("token")
         String token
