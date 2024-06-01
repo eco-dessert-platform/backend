@@ -37,7 +37,7 @@ public class ImageService {
     ) {
         String imagePath = s3Service.saveImage(image, imageFolderPathResolver(category, domainId));
 
-        Image entity = createEntity(category, image, domainId, imagePath, order);
+        Image entity = createEntity(category, domainId, imagePath, order);
         imageRepository.save(entity);
 
         return imagePath;
@@ -56,7 +56,7 @@ public class ImageService {
                 imageFolderPathResolver(category, domainId)
             );
 
-            return createEntity(category, image, domainId, imagePath, order.getAndIncrement());
+            return createEntity(category, domainId, imagePath, order.getAndIncrement());
         }).toList();
 
         imageRepository.saveAll(entities);
@@ -73,7 +73,6 @@ public class ImageService {
 
     private Image createEntity(
         ImageCategory category,
-        MultipartFile image,
         Long domainId,
         String imagePath,
         int order
@@ -81,7 +80,6 @@ public class ImageService {
         return Image.builder()
             .imageCategory(category)
             .domainId(domainId)
-            .fileName(image.getOriginalFilename())
             .path(imagePath)
             .order(order)
             .build();

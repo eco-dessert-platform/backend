@@ -37,9 +37,6 @@ public class Image extends BaseEntity {
     @Column(name = "order")
     private int order;
 
-    @Column(name = "file_name")
-    private String fileName;
-
     @Column(name = "path")
     private String path;
 
