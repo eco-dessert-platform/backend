@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.board.domain.Product;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -7,14 +9,13 @@ import lombok.Getter;
 @Builder
 public class OrderAvailableDate {
 
-    String startDate;
-    String endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
-    // fixed: 프론트 API 연동 테스트를 위한 값입니다. 해당 기능 구현 시 삭제됩니다.
-    public OrderAvailableDate toFixture() {
+    public static OrderAvailableDate from(Product product) {
         return OrderAvailableDate.builder()
-            .startDate("2024.05.29")
-            .endDate("2024.08.13")
+            .startDate(product.getOrderStartDate())
+            .endDate(product.getOrderEndDate())
             .build();
     }
 }
