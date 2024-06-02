@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.store.repository;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
@@ -27,10 +29,7 @@ import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,9 +38,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 
 class StoreRepositoryTest extends AbstractIntegrationTest {
 
@@ -124,18 +120,6 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 게시판 아이디로 스토어를 조회할 수 있다")
-    void getBoardDetailResponseTest() {
-        Store store = fixtureStore(Map.of("name", TEST_TITLE));
-        Board board = fixtureBoard(Map.of("store", store));
-
-        StoreDto storeDto = storeRepository.findByBoardId(board.getId());
-
-        AssertionsForClassTypes.assertThat(storeDto.getId()).isEqualTo(store.getId());
-        AssertionsForClassTypes.assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
-    }
-
-    @Test
     @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 스토어 아이디에 맞는 스토어 정보를 가져올 수 있다")
     void test0() {
         Store store = createStore();
@@ -176,7 +160,8 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
 
         Long memberId = null;
         Long storeId = store.getId();
-        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(memberId,
+        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(
+            memberId,
             storeId);
         List<String> boardTitles = popularBoardResponses.stream()
             .map(popularBoardDto -> popularBoardDto.getBoardTitle()).toList();

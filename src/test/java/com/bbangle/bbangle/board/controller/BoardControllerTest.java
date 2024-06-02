@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -10,8 +11,11 @@ import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -29,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class BoardControllerTest {
+class BoardControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     StoreRepository storeRepository;
@@ -182,6 +186,37 @@ class BoardControllerTest {
             .andDo(print());
     }
 
+    @Nested
+    @DisplayName("getProduct 메서드는")
+    class GetProduct {
+
+        @Test
+        @DisplayName("유효한 boardId로 상품 정보를 가져올 수 있다")
+        void getProductInfo() throws Exception {
+            Long boardId = board.getId();
+            mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
+                .andExpect(status().isOk())
+                .andDo(print());
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId를 요청 시 400에 에러를 발생시킨다")
+        void throwError() throws Exception {
+            mockMvc.perform(get("/api/v1/boards/9999/product"))
+                .andExpect(status().is4xxClientError())
+                .andDo(print());
+        }
+    }
+
+
+    @Test
+    @DisplayName("")
+    void getProductTest() throws Exception {
+        Long boardId = board.getId();
+        mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
+            .andExpect(status().isOk())
+            .andDo(print());
+    }
 
     private Board boardGenerator(
         Store store,

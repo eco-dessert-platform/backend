@@ -1,13 +1,14 @@
 package com.bbangle.bbangle.board.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
+import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
@@ -16,6 +17,7 @@ import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
@@ -27,9 +29,9 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -438,89 +440,98 @@ class BoardServiceTest extends AbstractIntegrationTest {
         assertThat(boardList.getBoardCount()).isEqualTo(14);
     }
 
-    @Test
-    @DisplayName("스토어 상세페이지 - 게시판, 게시판 이미지, 게시판 상세 정보 이미지 조회 기능 : 게시판, 게시판 이미지, 게시판 상세 정보 이미지 조회할 수 있다")
-    void getBoardDetailResponseTest() {
-        Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-        fixtureBoardDetail(Map.of("board", targetBoard));
-        fixtureBoardDetail(Map.of("board", targetBoard));
-        Long memberId = null;
+    @Nested
+    @DisplayName("getBoardDtos 메서드는")
+    class GetBoardDtos {
 
-        BoardImageDetailResponse boardDtos = boardService.getBoardDtos(memberId,
-            targetBoard.getId());
+        Board targetBoard;
+        final Long memberId = null;
+        final String TEST_URL = "www.TESTURL.com";
+        final Long NOT_EXSIST_ID = -1L;
 
-        System.out.println();
-//        AssertionsForClassTypes.assertThat(boardResponse.boardTitle()).isEqualTo(TEST_TITLE);
-//        AssertionsForClassTypes.assertThat(boardResponse.boardDetails().size()).isEqualTo(2);
+        @BeforeEach
+        void init() {
+            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
+        }
+
+        @Test
+        @DisplayName("유효한 boardId로 게시판, 게시판 이미지, 게시판 상세 정보 이미지 조회할 수 있다")
+        void getProductResponseTest() {
+            BoardImageDetailResponse boardDtos = boardService.getBoardDtos(memberId,
+                targetBoard.getId());
+
+            assertThat(boardDtos.getBoardImages()).hasSize(2);
+            assertThat(boardDtos.getBoardDetails()).hasSize(2);
+
+            String boardDetailUrl = boardDtos.getBoardDetails()
+                .stream()
+                .findFirst()
+                .get();
+
+            String boardImageUrl = boardDtos.getBoardImages()
+                .stream()
+                .findFirst()
+                .get();
+
+            assertThat(boardDetailUrl).isEqualTo(TEST_URL);
+            assertThat(boardImageUrl).isEqualTo(TEST_URL);
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
+        void throwNotBoard() {
+            assertThrows(BbangleException.class,
+                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+        }
     }
 
-    @Test
-    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : bundled Test")
-    void getIsBundledTest() {
-        // isBundled True Test
-        List<Product> differentCategotyProducts = List.of(
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.BREAD
-            )),
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.COOKIE
-            )));
 
-        Board differentCategotyBoard = fixtureBoard(
-            Map.of("productList", differentCategotyProducts));
+    @Nested
+    @DisplayName("getProductResponse 메서드는")
+    class GetProductResponse {
 
-        ProductResponse productResponse = boardService.getProductResponse(
-            differentCategotyBoard.getId());
-        assertThat(productResponse.boardIsBundled()).isTrue();
+        List<Product> products;
+        Board targetBoard;
+        final Long NOT_EXSIST_ID = -1L;
 
-        // isBundled False Test
-        List<Product> products = List.of(
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.BREAD
-            )),
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.BREAD
-            )));
+        @BeforeEach
+        void init() {
+            products = List.of(
+                fixtureProduct(Map.of(
+                    "title", TEST_TITLE,
+                    "category", Category.BREAD
+                )),
+                fixtureProduct(Map.of(
+                    "title", TEST_TITLE,
+                    "category", Category.COOKIE
+                )));
 
-        Board sameCategotyBoard = fixtureBoard(Map.of("productList", products));
+            targetBoard = fixtureBoard(Map.of("productList", products));
+        }
 
-        ProductResponse sameProductResponse = boardService.getProductResponse(
-            sameCategotyBoard.getId());
-        assertThat(sameProductResponse.boardIsBundled()).isFalse();
+        @Test
+        @DisplayName("유효한 boardId로 상품리스트를 조회할 수 있다")
+        void getProductResponseTest() {
+            ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
+            List<ProductDto> productList = productResponse.getProducts();
+
+            assertThat(productList).hasSize(2);
+            assertThat(productResponse.getBoardIsBundled()).isTrue();
+            productList.forEach(productDto -> {
+                assertThat(productDto.getId()).isNotNull();
+                assertThat(productDto.getTitle()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
+        void throwNotBoard() {
+            assertThrows(BbangleException.class,
+                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+        }
     }
-
-    @Test
-    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : 게시판 아이디로 상품리스트를 조회할 수 있다")
-    void getProductResponseTest() {
-        List<Product> products = List.of(
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.BREAD
-            )),
-            fixtureProduct(Map.of(
-                "title", TEST_TITLE,
-                "category", Category.COOKIE
-            )));
-
-        Board targetBoard = fixtureBoard(Map.of("productList", products));
-
-        ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
-        List<BoardDetailProductDto> productList = productResponse.products();
-
-        AssertionsForClassTypes.assertThat(productList.size()).isEqualTo(2);
-        productList.forEach(productDto -> {
-            assertThat(productDto.productId()).isNotNull();
-            assertThat(productDto.productTitle()).isNotNull();
-            assertThat(productDto.glutenFreeTag()).isNotNull();
-            assertThat(productDto.highProteinTag()).isNotNull();
-            assertThat(productDto.veganTag()).isNotNull();
-            assertThat(productDto.sugarFreeTag()).isNotNull();
-            assertThat(productDto.ketogenicTag()).isNotNull();
-        });
-    }
-
 }
