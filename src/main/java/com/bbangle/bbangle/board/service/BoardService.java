@@ -80,9 +80,9 @@ public class BoardService {
         return boards;
     }
 
-    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageTuples) {
-        return boardAndImageTuples.stream()
-            .map(BoardAndImageDto::purchaseUrl)
+    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
+        return boardAndImageDtos.stream()
+            .map(BoardAndImageDto::url)
             .toList();
     }
 
