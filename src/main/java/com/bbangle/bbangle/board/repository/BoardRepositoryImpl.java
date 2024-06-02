@@ -11,7 +11,6 @@ import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -48,7 +47,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public static final int BOARD_PAGE_SIZE = 10;
     private static final QBoard board = QBoard.board;
     private static final QProductImg productImage = QProductImg.productImg;
-
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
@@ -133,25 +131,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(productImage)
             .on(productImage.board.eq(board))
             .where(board.id.eq(boardId))
-            .fetch();
-    }
-
-    @Override
-    public List<ProductDto> getProductDto(Long boardId) {
-        return queryFactory.select(
-                Projections.constructor(
-                    ProductDto.class,
-                    product.id,
-                    product.title,
-                    product.category,
-                    product.glutenFreeTag,
-                    product.highProteinTag,
-                    product.sugarFreeTag,
-                    product.veganTag,
-                    product.ketogenicTag
-                ))
-            .from(product)
-            .where(product.board.id.eq(boardId))
             .fetch();
     }
 
