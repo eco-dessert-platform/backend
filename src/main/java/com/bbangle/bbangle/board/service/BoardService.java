@@ -4,17 +4,18 @@ package com.bbangle.bbangle.board.service;
 import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
+import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
@@ -25,6 +26,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
@@ -49,6 +51,8 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
+    private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     private final WishListBoardRepository wishListBoardRepository;
@@ -131,27 +135,28 @@ public class BoardService {
             .toList();
     }
 
-    private List<BoardDetailProductDto> convertToProductResponse(List<ProductDto> productDtos) {
-        return productDtos.stream()
-            .map(BoardDetailProductDto::from)
+    private List<ProductDto> convertToProductDtos(List<Product> products) {
+        return products.stream()
+            .map(ProductDto::from)
             .toList();
     }
 
-    private Boolean isBundled(List<ProductDto> productDtos) {
-        return productDtos.stream()
-            .map(ProductDto::category)
+    private Boolean isBundled(List<Product> products) {
+        return products.stream()
+            .map(Product::getCategory)
             .distinct()
             .count() > ONE_CATEGOTY;
     }
 
     public ProductResponse getProductResponse(Long boardId) {
-        List<ProductDto> productDtos = boardRepository.getProductDto(boardId);
-        validateListElementExist(productDtos, BOARD_NOT_FOUND);
+        List<Product> products = productRepository.findByBoardId(boardId);
 
-        List<BoardDetailProductDto> boardDetailProductDtos = convertToProductResponse(productDtos);
-        Boolean isBundled = isBundled(productDtos);
+        validateListElementExist(products, BOARD_NOT_FOUND);
 
-        return ProductResponse.of(isBundled, boardDetailProductDtos);
+        List<ProductDto> productDtos = convertToProductDtos(products);
+        Boolean isBundled = isBundled(products);
+
+        return ProductResponse.of(isBundled, productDtos);
     }
 
     public Slice<BoardResponseDto> getPostInFolder(

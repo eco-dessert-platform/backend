@@ -11,7 +11,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.review.dto.ReviewResponse;
+import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -109,6 +109,7 @@ public class BoardController {
         return responseService.getSuccessResult();
     }
 
+    @Operation(summary = "스토어 조회")
     @GetMapping("/{boardId}/store")
     public CommonResult getStoreInfoInBoardDetail(
         @PathVariable("boardId")
@@ -120,6 +121,7 @@ public class BoardController {
         return responseService.getSingleResult(storeDto);
     }
 
+    @Operation(summary = "게시판 조회")
     @GetMapping("/{boardId}")
     public CommonResult getBoardDetailResponse(
         @PathVariable("boardId")
@@ -130,13 +132,14 @@ public class BoardController {
         return responseService.getSingleResult(response);
     }
 
+    @Operation(summary = "상품 조회")
     @GetMapping("/{boardId}/product")
     public CommonResult getProductResponse(
         @PathVariable("boardId")
         Long boardId) {
         ProductResponse productResponse = boardService.getProductResponse(boardId);
 
-        return responseService.getSingleResult(ProductResponse.builder().build().toFixture());
+        return responseService.getSingleResult(productResponse);
     }
 
     @GetMapping("/{boardId}/review")
@@ -145,7 +148,8 @@ public class BoardController {
         Long boardId) {
 
         // 프론트 API 연동 테스트를 위한 값입니다. 해당 기능 구현 시 삭제됩니다.
-        return responseService.getSingleResult(ReviewResponse.builder().build().toFixture());
+        return responseService.getSingleResult(
+            SummarizedReviewResponse.builder().build().toFixture());
     }
 
     @PatchMapping("/{boardId}/purchase")
