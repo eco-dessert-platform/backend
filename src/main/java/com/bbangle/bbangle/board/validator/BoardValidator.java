@@ -22,7 +22,7 @@ public class BoardValidator {
         }
     }
 
-    public static void validateListElementExist(List result, BbangleErrorCode errorCode) {
+    public static void validateListNotEmpty(List result, BbangleErrorCode errorCode) {
         if (result.isEmpty()) {
             throw new BbangleException(errorCode);
         }

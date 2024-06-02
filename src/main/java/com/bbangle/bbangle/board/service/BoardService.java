@@ -95,7 +95,8 @@ public class BoardService {
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId) {
         List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
             boardId);
-        validateListElementExist(boardAndImageDtos, BOARD_NOT_FOUND);
+
+        validateListNotEmpty(boardAndImageDtos, BOARD_NOT_FOUND);
 
         BoardDto boardDto = BoardDto.from(
             getFirstBoardInfo(boardAndImageDtos));
@@ -151,7 +152,7 @@ public class BoardService {
     public ProductResponse getProductResponse(Long boardId) {
         List<Product> products = productRepository.findByBoardId(boardId);
 
-        validateListElementExist(products, BOARD_NOT_FOUND);
+        validateListNotEmpty(products, BOARD_NOT_FOUND);
 
         List<ProductDto> productDtos = convertToProductDtos(products);
         Boolean isBundled = isBundled(products);
