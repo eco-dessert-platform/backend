@@ -61,13 +61,6 @@ public class AnalyticsController {
     }
 
 
-    @GetMapping(value = "/wishlist/boards/ranking")
-    public CommonResult getWishlistBoardRanking() {
-        List<AnalyticsWishlistBoardRankingResponseDto> response = analyticsService.getWishlistBoardRanking();
-        return responseService.getListResult(response);
-    }
-
-
     @GetMapping(value = "/wishlist/boards/count")
     public CommonResult getWishlistUsageCount(
             @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,

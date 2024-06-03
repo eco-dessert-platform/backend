@@ -27,7 +27,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
 
 
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countMembersUsingReview(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", review.createdAt);
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
@@ -49,7 +49,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
 
 
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", review.createdAt);
         List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
 

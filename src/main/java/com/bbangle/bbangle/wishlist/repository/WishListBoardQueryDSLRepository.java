@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface WishListBoardQueryDSLRepository {
 
-    List<AnalyticsCountWithDateResponseDto> countMembersUsingWishlist(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<AnalyticsCountWithDateResponseDto> countMembersUsingWishlistBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 
-    List<AnalyticsCountWithDateResponseDto> countWishlistByPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<AnalyticsCountWithDateResponseDto> countWishlistCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 }

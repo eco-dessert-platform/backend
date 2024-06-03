@@ -27,7 +27,7 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
 
 
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countMembersUsingWishlist(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countMembersUsingWishlistBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", wishListBoard.createdAt);
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
@@ -49,7 +49,7 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
 
 
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countWishlistByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCountWithDateResponseDto> countWishlistCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = Expressions.dateTemplate(Date.class, "DATE({0})", wishListBoard.createdAt);
         List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
 

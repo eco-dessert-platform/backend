@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ReviewQueryDSLRepository {
 
-    List<AnalyticsCountWithDateResponseDto> countMembersUsingReview(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 
-    List<AnalyticsCountWithDateResponseDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<AnalyticsCountWithDateResponseDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 }

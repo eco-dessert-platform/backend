@@ -86,7 +86,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // when
         long membersCount = memberRepository.count();
-        List<AnalyticsCountWithDateResponseDto> countWithDateResponseDtos = wishListBoardRepository.countMembersUsingWishlist(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> countWithDateResponseDtos = wishListBoardRepository.countMembersUsingWishlistBetweenPeriod(startDate, endDate);
         List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateWishlistUsingRatio(startDate, endDate);
 
         // then
@@ -99,24 +99,24 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     }
 
 
-    @Test
-    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
-    void getWishlistBoardRanking() {
-        // given
-        List<Member> members = createMembers();
-        createBoards(members);
-
-        // when
-        List<AnalyticsWishlistBoardRankingResponseDto> boardsOrderByWishCntDesc = analyticsService.getWishlistBoardRanking();
-        List<Integer> expect = List.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
-
-        // then
-        List<Integer> result = boardsOrderByWishCntDesc.stream()
-                .map(AnalyticsWishlistBoardRankingResponseDto::wishCnt)
-                .toList();
-
-        assertThat(result).isEqualTo(expect);
-    }
+//    @Test
+//    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
+//    void getWishlistBoardRanking() {
+//        // given
+//        List<Member> members = createMembers();
+//        createBoards(members);
+//
+//        // when
+//        List<AnalyticsWishlistBoardRankingResponseDto> boardsOrderByWishCntDesc = analyticsService.getWishlistBoardRanking();
+//        List<Integer> expect = List.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+//
+//        // then
+//        List<Integer> result = boardsOrderByWishCntDesc.stream()
+//                .map(AnalyticsWishlistBoardRankingResponseDto::wishCnt)
+//                .toList();
+//
+//        assertThat(result).isEqualTo(expect);
+//    }
 
 
     @Test
@@ -161,7 +161,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // when
         long membersCount = memberRepository.count();
-        List<AnalyticsCountWithDateResponseDto> analyticsCountWithDateResponseDtos = reviewRepository.countMembersUsingReview(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> analyticsCountWithDateResponseDtos = reviewRepository.countMembersUsingReviewBetweenPeriod(startDate, endDate);
         List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateReviewUsingRatio(startDate, endDate);
 
         // then
@@ -187,7 +187,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         LocalDate startDate = LocalDate.now().minusDays(9);
         LocalDate endDate = LocalDate.now();
         long reviewsCount = reviewRepository.count();
-        List<AnalyticsCountWithDateResponseDto> results = reviewRepository.countReviewByPeriod(startDate, endDate);
+        List<AnalyticsCountWithDateResponseDto> results = reviewRepository.countReviewCreatedBetweenPeriod(startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);

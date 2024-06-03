@@ -1,24 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsWishlistBoardRankingResponseDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsWishlistBoardRankingResponseDto;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QBoardDetail;
-import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.domain.QProductImg;
-import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardAvailableDayDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardDetailSelectDto;
-import com.bbangle.bbangle.board.dto.BoardImgDto;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductDto;
-import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.domain.*;
+import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -456,23 +439,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         if (condition) {
             tags.add(tag);
         }
-    }
-
-    @Override
-    public List<AnalyticsWishlistBoardRankingResponseDto> getWishlistRanking() {
-        return queryFactory.select(new QAnalyticsWishlistBoardRankingResponseDto(
-                    board.id,
-                    board.title,
-                    board.price,
-                    board.status,
-                    board.profile,
-                    board.purchaseUrl,
-                    board.view,
-                    board.wishCnt
-                ))
-                .from(board)
-                .orderBy(board.wishCnt.desc())
-                .fetch();
     }
 
 }

@@ -37,7 +37,7 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public List<AnalyticsRatioWithDateResponseDto> calculateWishlistUsingRatio(LocalDate startLocalDate, LocalDate endLocalDate) {
-        List<AnalyticsCountWithDateResponseDto> membersUsingWishlistDtos = wishListBoardRepository.countMembersUsingWishlist(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> membersUsingWishlistDtos = wishListBoardRepository.countMembersUsingWishlistBetweenPeriod(startLocalDate, endLocalDate);
         List<AnalyticsCountWithDateResponseDto> membersCreatedBeforeDateDtos = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
         List<AnalyticsRatioWithDateResponseDto> ratioWithDateResponseDtos = new ArrayList<>();
 
@@ -57,20 +57,14 @@ public class AnalyticsService {
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsWishlistBoardRankingResponseDto> getWishlistBoardRanking() {
-        return boardRepository.getWishlistRanking();
-    }
-
-
-    @Transactional(readOnly = true)
     public List<AnalyticsCountWithDateResponseDto> countWishlistBoardByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
-        return wishListBoardRepository.countWishlistByPeriod(startLocalDate, endLocalDate);
+        return wishListBoardRepository.countWishlistCreatedBetweenPeriod(startLocalDate, endLocalDate);
     }
 
 
     @Transactional(readOnly = true)
     public List<AnalyticsRatioWithDateResponseDto> calculateReviewUsingRatio(LocalDate startLocalDate, LocalDate endLocalDate) {
-        List<AnalyticsCountWithDateResponseDto> reviewUsageCountDtos = reviewRepository.countMembersUsingReview(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> reviewUsageCountDtos = reviewRepository.countMembersUsingReviewBetweenPeriod(startLocalDate, endLocalDate);
         List<AnalyticsCountWithDateResponseDto> membersCreatedBeforeDateDtos = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
         List<AnalyticsRatioWithDateResponseDto> ratioWithDateResponseDtos = new ArrayList<>();
 
@@ -91,7 +85,7 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public List<AnalyticsCountWithDateResponseDto> countReviewByPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
-        return reviewRepository.countReviewByPeriod(startLocalDate, endLocalDate);
+        return reviewRepository.countReviewCreatedBetweenPeriod(startLocalDate, endLocalDate);
     }
 
 }
