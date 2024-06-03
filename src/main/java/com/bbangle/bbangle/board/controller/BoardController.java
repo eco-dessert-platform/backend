@@ -7,11 +7,13 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -76,15 +78,18 @@ public class BoardController {
     @GetMapping("/folders/{folderId}")
     public CommonResult getPostInFolder(
         @RequestParam(required = false, value = "sort")
-        String sort,
-        @PathVariable
+        FolderBoardSortType sort,
+        @PathVariable(value = "folderId")
         Long folderId,
-        @PageableDefault
-        Pageable pageable
+        @RequestParam(value = "cursorId", required = false)
+        Long cursorId,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
-        Slice<BoardResponseDto> boardResponseDto =
-            boardService.getPostInFolder(memberId, sort, folderId, pageable);
+        if(sort == null){
+            sort = FolderBoardSortType.WISHLIST_RECENT;
+        }
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }
 

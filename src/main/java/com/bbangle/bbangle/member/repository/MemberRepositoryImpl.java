@@ -31,6 +31,10 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
 
     @Override
     public Member findMemberById(Long memberId) {
+        if(memberId == null){
+            throw new BbangleException(NOTFOUND_MEMBER);
+        }
+
         return Optional.ofNullable(queryFactory.selectFrom(member)
             .where(member.id.eq(memberId))
             .fetchOne())

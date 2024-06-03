@@ -6,6 +6,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
@@ -17,10 +18,17 @@ import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,12 +36,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 
@@ -46,15 +48,21 @@ public abstract class AbstractIntegrationTest {
     protected MockMvc mockMvc;
     @Autowired
     protected WebApplicationContext context;
+    @Autowired
+    protected JPAQueryFactory queryFactory;
 
     @Autowired
     protected MemberService memberService;
     @Autowired
     protected StoreService storeService;
     @Autowired
+    protected BoardService boardService;
+    @Autowired
     protected WishListStoreService wishListStoreService;
     @Autowired
     protected AnalyticsService analyticsService;
+    @Autowired
+    protected WishListBoardService wishListBoardService;
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
