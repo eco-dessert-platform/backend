@@ -34,7 +34,23 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
+    @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
+    void countAllMember() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        create10DaysAgoMembers(createdAt);
+        createMembers();
+
+        // when
+        long result = analyticsService.countAllMembers();
+
+        // then
+        assertThat(result).isEqualTo(20);
+    }
+
+
+    @Test
+    @DisplayName("기간 내 가입한 회원의 수가 정상적으로 조회된다.")
     void countNewMember() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
@@ -55,23 +71,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
-    void countAllMember() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        create10DaysAgoMembers(createdAt);
-        createMembers();
-
-        // when
-        long result = analyticsService.countAllMembers();
-
-        // then
-        assertThat(result).isEqualTo(20);
-    }
-
-
-    @Test
-    @DisplayName("기간 별 회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
+    @DisplayName("기간 내 일별 위시리스트 이용 비율이 성공적으로 조회된다.")
     void countMembersUsingWishlist() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
@@ -101,7 +101,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
+    @DisplayName("기간 별 위시리스트 누적 개수가 정상적으로 조회된다.")
     void countWishlistBoardByPeriod() {
         // given
         List<Member> members = createMembers();
@@ -126,7 +126,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
+    @DisplayName("기간 내 일별 리뷰 이용 비율이 정상적으로 조회된다.")
     void calculateReviewUsingRatio() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
@@ -156,7 +156,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
+    @DisplayName("기간 별 리뷰 누적 개수가 정상적으로 조회된다.")
     void countReviewByPeriod() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
