@@ -99,25 +99,6 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     }
 
 
-//    @Test
-//    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
-//    void getWishlistBoardRanking() {
-//        // given
-//        List<Member> members = createMembers();
-//        createBoards(members);
-//
-//        // when
-//        List<AnalyticsWishlistBoardRankingResponseDto> boardsOrderByWishCntDesc = analyticsService.getWishlistBoardRanking();
-//        List<Integer> expect = List.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
-//
-//        // then
-//        List<Integer> result = boardsOrderByWishCntDesc.stream()
-//                .map(AnalyticsWishlistBoardRankingResponseDto::wishCnt)
-//                .toList();
-//
-//        assertThat(result).isEqualTo(expect);
-//    }
-
 
     @Test
     @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
