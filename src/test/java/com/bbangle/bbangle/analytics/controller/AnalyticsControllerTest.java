@@ -62,7 +62,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
+    @DisplayName("기간 내 가입한 회원의 수가 정상적으로 조회된다.")
     void getNewMembersCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/new-members/count"))
                 .andExpect(status().isOk())
@@ -71,7 +71,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
+    @DisplayName("기간 내 일별 위시리스트 이용 비율이 성공적으로 조회된다.")
     void getWishlistUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/wishlist-usage"))
                 .andExpect(status().isOk())
@@ -79,17 +79,9 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
     }
 
 
-    @Test
-    @DisplayName("기간 별 게시글 별 위시리스트 순위가 정상적으로 조회된다.")
-    void getWishlistBoardRanking() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/ranking"))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-
 
     @Test
-    @DisplayName("기간 별 기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
+    @DisplayName("기간 별 위시리스트 누적 개수가 정상적으로 조회된다.")
     void getWishlistUsageCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
                 .andExpect(status().isOk())
@@ -98,7 +90,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
+    @DisplayName("기간 내 일별 리뷰 이용 비율이 정상적으로 조회된다.")
     void getReviewUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/review-usage"))
                 .andExpect(status().isOk())
@@ -107,7 +99,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
+    @DisplayName("기간 별 리뷰 누적 개수가 정상적으로 조회된다.")
     void getReviewUsageCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/reviews/count?startDate=2024-05-01&endDate=2024-05-26"))
                 .andExpect(status().isOk())
