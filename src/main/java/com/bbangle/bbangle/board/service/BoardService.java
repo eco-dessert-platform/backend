@@ -1,19 +1,21 @@
 package com.bbangle.bbangle.board.service;
 
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.folder.BoardPageGenerator;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
@@ -23,12 +25,16 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +71,22 @@ public class BoardService {
         return boards;
     }
 
+    @Transactional(readOnly = true)
+    public BoardCustomPage<List<BoardResponseDto>> getPostInFolder(
+        Long memberId,
+        FolderBoardSortType sort,
+        Long folderId,
+        Long cursorId
+    ) {
+        WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+
+        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
+
+        return BoardPageGenerator.getBoardPage(allByFolder);
+    }
+
+
     private void updateLikeStatus(
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
         Long memberId
@@ -90,20 +112,6 @@ public class BoardService {
     @Transactional(readOnly = true)
     public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
-    }
-
-    public Slice<BoardResponseDto> getPostInFolder(
-        Long memberId,
-        String sort,
-        Long folderId,
-        Pageable pageable
-    ) {
-        Member member = memberRepository.findMemberById(memberId);
-
-        WishListFolder folder = folderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
-
-        return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }
 
     @Transactional
@@ -135,4 +143,6 @@ public class BoardService {
         redisTemplate.opsForValue()
             .set(purchaseCountKey, "true", Duration.ofMinutes(3));
     }
+
+
 }

@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -17,9 +18,11 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
+import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -46,9 +49,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -88,35 +88,26 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(
-        String sort, Pageable pageable, Long wishListFolderId,
-        WishListFolder selectedFolder
+    public List<BoardResponseDao> getAllByFolder(
+        FolderBoardSortType sort,
+        Long cursorId,
+        WishListFolder folder,
+        Long memberId
     ) {
-        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
+        BooleanBuilder cursorBuilder = new BoardInFolderCursorGeneratorMapping(folder.getId(), cursorId, queryFactory, sort)
+            .mappingCursorGenerator()
+            .getCursor();
+        OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
 
-        List<Board> boards = queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .leftJoin(board.store, store)
-            .fetchJoin()
-            .join(board)
-            .on(board.id.eq(wishListBoard.boardId))
-            .join(wishListBoard)
-            .on(wishListBoard.wishlistFolderId.eq(folder.id))
-            .where(wishListBoard.wishlistFolderId.eq(selectedFolder.getId()))
-            .offset(pageable.getOffset())
-            .orderBy(orderSpecifier)
-            .limit(pageable.getPageSize() + 1)
-            .fetch();
-
-        boolean hasNext = boards.size() > pageable.getPageSize();
-        List<BoardResponseDto> content = boards.stream()
-            .limit(pageable.getPageSize())
-            .map(board -> BoardResponseDto.inFolder(board, extractTags(board.getProductList())))
-            .toList();
-
-        return new SliceImpl<>(content, pageable, hasNext);
+        return BoardInFolderQueryGeneratorMapping.builder()
+            .order(sortBuilder)
+            .sortType(sort)
+            .wishListFolder(folder)
+            .jpaQueryFactory(queryFactory)
+            .cursorBuilder(cursorBuilder)
+            .build()
+            .mappingQueryGenerator()
+            .getBoards();
     }
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
@@ -157,7 +148,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(board.id.eq(boardId))
             .fetch();
 
-        return products.stream().map(product1 ->
+        return products.stream()
+            .map(product1 ->
                 ProductDto.builder()
                     .id(product1.getId())
                     .title(product1.getTitle())
@@ -240,7 +232,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(board)
             .where(board.id.eq(boardId))
             .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id));
+            .leftJoin(productImg)
+            .on(board.id.eq(productImg.board.id));
 
         if (memberId != null && memberId > 0) {
             setWishlistJoin(jpaQuery, memberId);
@@ -358,7 +351,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             return BoardCustomPage.emptyPage();
         }
 
-        Long boardCursor = content.get(content.size() - 1).getBoardId();
+        Long boardCursor = content.get(content.size() - 1)
+            .getBoardId();
         Double cursorScore = queryFactory
             .select(getScoreColumnBySortType(sort))
             .from(ranking)
@@ -412,21 +406,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return boards.size() >= BOARD_PAGE_SIZE + 1;
     }
 
-    private OrderSpecifier<?> sortTypeFolder(String sort) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            orderSpecifier = wishListBoard.createdAt.desc();
-            return orderSpecifier;
-        }
-        orderSpecifier = switch (SortType.fromString(sort)) {
-            case RECENT -> wishListBoard.createdAt.desc();
-            case LOW_PRICE -> BoardRepositoryImpl.board.price.asc();
-            case POPULAR -> BoardRepositoryImpl.board.wishCnt.desc();
-            default -> throw new BbangleException("Invalid SortType");
-        };
-        return orderSpecifier;
-    }
-
     private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
         Map<Long, List<String>> tagMapByBoardId = boards.stream()
             .collect(Collectors.toMap(
@@ -461,4 +440,5 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             tags.add(tag);
         }
     }
+
 }
