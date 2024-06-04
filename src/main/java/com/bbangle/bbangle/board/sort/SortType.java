@@ -1,19 +1,18 @@
-package com.bbangle.bbangle.common.sort;
+package com.bbangle.bbangle.board.sort;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum SortType {
-    RECENT("recent"),
-    LOW_PRICE("low-price"),
-    POPULAR("popular"),
-    RECOMMEND("recommend");
+    RECENT("최신순"),
+    LOW_PRICE("낮은 가격순"),
+    HIGH_PRICE("높은 가격순"),
+    RECOMMEND("추천"),
+    MOST_WISHED("찜 많은 순"),
+    MOST_REVIEWED("리뷰 많은 순"),
+    HIGHEST_RATED("만족도 순");
 
-    private static final String ERROR_WORD = "올바르지 않은 분류 값입니다. 다시 선택해주세요";
-    private final String value;
-
-    SortType(String value) {
-        this.value = value;
-    }
-    
+    private final String description;
 }
