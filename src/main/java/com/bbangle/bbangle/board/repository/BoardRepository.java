@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.basic;
+package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.ProductDto;

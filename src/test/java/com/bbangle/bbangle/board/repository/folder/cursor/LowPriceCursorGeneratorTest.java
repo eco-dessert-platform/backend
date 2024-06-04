@@ -17,7 +17,6 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -70,11 +69,11 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 없는 경우 가장 커서 관련 조건문 없이 BooleanBuilder를 반환한다.")
     void getBoardWithLowPriceWithoutCursor() {
         //given
-        LowPriceCursorGenerator lowPriceCursorGenerator = new LowPriceCursorGenerator(queryFactory, DEFAULT_CURSOR_ID,
+        LowPriceInFolderCursorGenerator lowPriceInFolderCursorGenerator = new LowPriceInFolderCursorGenerator(queryFactory, DEFAULT_CURSOR_ID,
             wishListFolder.getId());
 
         //when
-        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceCursorGenerator.getCursor();
+        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceInFolderCursorGenerator.getCursor();
 
         //then
         assertThat(lowPriceConditionWithoutCursor.getValue()).isNull();
@@ -84,11 +83,11 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 존재하는 경우 그 커서의 게시글 이하의 가격 이며 두 번째 조건으로 커서보다 작거나 같은 Id 값을 찾는 조건을 반환한다.")
     void getBoardWithLowPriceWithCursor() {
         //given
-        LowPriceCursorGenerator lowPriceCursorGenerator = new LowPriceCursorGenerator(queryFactory, firstSavedId,
+        LowPriceInFolderCursorGenerator lowPriceInFolderCursorGenerator = new LowPriceInFolderCursorGenerator(queryFactory, firstSavedId,
             wishListFolder.getId());
 
         //when
-        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceCursorGenerator.getCursor();
+        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceInFolderCursorGenerator.getCursor();
         Board firstSavedBoard = boardRepository.findById(firstSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(firstSavedId, member.getId()).get();
         String expectedCursorCondition = new BooleanBuilder().and(board.price.goe(firstSavedBoard.getPrice()).and(
@@ -104,11 +103,11 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
         //given
         Random random = new Random();
         long randomNum = random.nextLong(10000) + 1;
-        LowPriceCursorGenerator lowPriceCursorGenerator = new LowPriceCursorGenerator(queryFactory, lastSavedId + randomNum,
+        LowPriceInFolderCursorGenerator lowPriceInFolderCursorGenerator = new LowPriceInFolderCursorGenerator(queryFactory, lastSavedId + randomNum,
             member.getId());
 
         //when, then
-        assertThatThrownBy(lowPriceCursorGenerator::getCursor)
+        assertThatThrownBy(lowPriceInFolderCursorGenerator::getCursor)
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 

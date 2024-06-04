@@ -2,7 +2,7 @@ package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +80,7 @@ class BoardInFolderCursorGeneratorMappingTest {
         CursorGenerator cursorGenerator = mapper.mappingCursorGenerator();
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(LowPriceCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(LowPriceInFolderCursorGenerator.class);
     }
 
 }

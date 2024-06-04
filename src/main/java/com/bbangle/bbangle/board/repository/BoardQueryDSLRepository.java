@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.basic;
+package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;

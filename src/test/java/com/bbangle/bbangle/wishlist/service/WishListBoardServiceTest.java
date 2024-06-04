@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -13,23 +12,16 @@ import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 class WishListBoardServiceTest extends AbstractIntegrationTest {
 
