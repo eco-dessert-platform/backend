@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.review.service;
 
-import com.bbangle.bbangle.common.domain.Badge;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.domain.Review;

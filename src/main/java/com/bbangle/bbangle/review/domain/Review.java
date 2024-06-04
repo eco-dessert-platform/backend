@@ -49,7 +49,7 @@ public class Review extends BaseEntity {
     private BigDecimal rate;
 
     private String content;
-    
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
