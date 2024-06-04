@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository;
+package com.bbangle.bbangle.board.repository.basic;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
@@ -20,9 +20,9 @@ import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
-import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -75,16 +75,16 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
         FilterRequest filterRequest,
         SortType sort,
-        CursorInfo cursorInfo
+        Long cursorId
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
 
-        List<Board> boards = boardQueryProviderResolver.resolve(sort, cursorInfo)
+        List<Board> boards = boardQueryProviderResolver.resolve(sort, cursorId)
             .findBoards(filter);
 
         // FIXME: 요 아래부분은 service 에서 해야되지않나 싶은 부분... 레파지토리의 역할은 board 리스트 넘겨주는곳 까지가 아닐까 싶어서요
         List<BoardResponseDto> content = convertToBoardResponse(boards);
-        return getBoardCustomPage(sort, cursorInfo, filter, content, isHasNext(boards));
+        return getBoardCustomPage(sort, cursorId, filter, content, isHasNext(boards));
     }
 
     @Override

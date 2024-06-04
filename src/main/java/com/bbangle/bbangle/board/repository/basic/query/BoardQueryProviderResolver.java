@@ -12,10 +12,10 @@ public class BoardQueryProviderResolver {
 
     private final JPAQueryFactory queryFactory;
 
-    public BoardQueryProvider resolve(SortType sort, CursorInfo cursorInfo) {
+    public BoardQueryProvider resolve(SortType sort, Long cursorId) {
         // FIXME: 스프린트에서 정렬정보 받아서 적절한 쿼리 provider 내려주도록 변경 필요
         return switch (getSortType(sort)) {
-            case POPULAR -> new PopularBoardQueryProvider(queryFactory, cursorInfo);
+            case POPULAR -> new PopularBoardQueryProvider(queryFactory, cursorId);
             default -> new DefaultBoardQueryProvider(queryFactory, sort, cursorInfo);
         };
     }

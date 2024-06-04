@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository;
+package com.bbangle.bbangle.board.repository.basic;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;

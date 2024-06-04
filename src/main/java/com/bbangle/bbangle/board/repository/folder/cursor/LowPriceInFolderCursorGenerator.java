@@ -10,7 +10,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class LowPriceCursorGenerator implements CursorGenerator{
+public class LowPriceInFolderCursorGenerator implements CursorGenerator{
 
     private static final QBoard board = QBoard.board;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;

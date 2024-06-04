@@ -5,19 +5,21 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class PopularBoardQueryProvider implements BoardQueryProvider {
 
     private final JPAQueryFactory queryFactory;
-    private final CursorInfo cursorInfo;
+    private final Long cursorId;
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
@@ -54,13 +56,21 @@ public class PopularBoardQueryProvider implements BoardQueryProvider {
 
     private BooleanBuilder getCursorBuilder() {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
-        if (cursorInfo == null) {
+        if (cursorId == null) {
             return cursorBuilder;
         }
 
-        cursorBuilder.and(ranking.popularScore.lt(cursorInfo.targetScore()))
-            .or(ranking.popularScore.eq(cursorInfo.targetScore())
-                .and(board.id.lt(cursorInfo.targetId())));
+        Double targetScore = Optional.ofNullable(queryFactory.select(ranking.popularScore)
+                .from(ranking)
+                .where(ranking.board.id.eq(cursorId)))
+            .orElseThrow(() -> new BbangleException(
+                BbangleErrorCode.RANKING_NOT_FOUND))
+            .fetchOne();
+
+        cursorBuilder.and(ranking.popularScore.lt(targetScore))
+            .or(ranking.popularScore.eq(targetScore)
+                .and(board.id.lt(cursorId)));
         return cursorBuilder;
     }
+
 }
