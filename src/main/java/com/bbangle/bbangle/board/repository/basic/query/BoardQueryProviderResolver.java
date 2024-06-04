@@ -1,7 +1,6 @@
-package com.bbangle.bbangle.board.repository.query;
+package com.bbangle.bbangle.board.repository.basic.query;
 
-import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

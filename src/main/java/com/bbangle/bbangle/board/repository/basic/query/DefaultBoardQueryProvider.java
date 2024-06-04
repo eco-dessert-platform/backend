@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.query;
+package com.bbangle.bbangle.board.repository.basic.query;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.BooleanBuilder;

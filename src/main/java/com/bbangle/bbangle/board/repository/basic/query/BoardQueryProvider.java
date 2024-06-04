@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.query;
+package com.bbangle.bbangle.board.repository.basic.query;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.querydsl.core.BooleanBuilder;

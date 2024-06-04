@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.query;
+package com.bbangle.bbangle.board.repository.basic.query;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
