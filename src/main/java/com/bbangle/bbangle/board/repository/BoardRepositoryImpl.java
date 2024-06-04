@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.basic;
+package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
@@ -18,6 +18,8 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
+import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
 import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
@@ -78,6 +80,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Long cursorId
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
+        BooleanBuilder cursorInfo = new BoardCursorGeneratorMapping(sort)
+            .mappingCursorGenerator(cursorId, queryFactory)
+            .getCursor();
 
         List<Board> boards = boardQueryProviderResolver.resolve(sort, cursorId)
             .findBoards(filter);
