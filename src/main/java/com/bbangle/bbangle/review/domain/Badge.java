@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.common.domain;
+package com.bbangle.bbangle.review.domain;
 
 public enum Badge {
     GOOD("맛있어요"),

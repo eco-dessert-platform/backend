@@ -4,8 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record ReviewCursor(
-        Long nextCursor,
-        Long endCursor,
-        Long reviewId
+    Long nextCursor,
+    Long lastCursor,
+    Long reviewId
 ) {
 }
