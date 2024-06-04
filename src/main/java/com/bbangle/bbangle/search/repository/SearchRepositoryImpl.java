@@ -57,8 +57,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     // 빈 DTO 반환
-
-
     @Override
     public Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds){
         BooleanBuilder whereFilter = setFilteringCondition(boardRequest);
@@ -79,7 +77,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     // 정렬 기준 설정
     private OrderSpecifier<?> determineOrder(SearchBoardRequest boardRequest, List<Long> boardIds) {
-        return boardRequest.sort().equals(SortType.POPULAR.getValue()) ?
+        return boardRequest.sort().equals(SortType.POPULAR.name()) ?
                 board.view.add(board.wishCnt.multiply(10)).desc() :
                 orderByFieldList(boardIds, product.board.id);
     }

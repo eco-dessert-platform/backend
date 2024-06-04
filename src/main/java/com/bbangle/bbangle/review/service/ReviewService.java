@@ -2,7 +2,6 @@ package com.bbangle.bbangle.review.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
@@ -36,7 +35,6 @@ public class ReviewService {
     private final ReviewImgRepository reviewImgRepository;
     private final MemberRepository memberRepository;
     private final ReviewLikeRepository reviewLikeRepository;
-    private final S3Service s3Service;
     private final ReviewManager reviewManager;
 
     @Transactional

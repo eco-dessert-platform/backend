@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.common.sort;
 
-import com.bbangle.bbangle.exception.BbangleException;
 import lombok.Getter;
 
 @Getter
@@ -16,15 +15,5 @@ public enum SortType {
     SortType(String value) {
         this.value = value;
     }
-
-    public static SortType fromString(String value) {
-        for (SortType type : SortType.values()) {
-            if (type.getValue()
-                .equalsIgnoreCase(value)) {
-                return type;
-            }
-        }
-
-        throw new BbangleException(ERROR_WORD);
-    }
+    
 }
