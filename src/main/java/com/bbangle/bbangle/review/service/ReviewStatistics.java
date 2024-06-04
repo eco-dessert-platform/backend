@@ -1,8 +1,14 @@
 package com.bbangle.bbangle.review.service;
 
+import static com.bbangle.bbangle.review.domain.Badge.BAD;
+import static com.bbangle.bbangle.review.domain.Badge.GOOD;
+import static com.bbangle.bbangle.review.domain.Badge.HARD;
+import static com.bbangle.bbangle.review.domain.Badge.PLAIN;
+import static com.bbangle.bbangle.review.domain.Badge.SOFT;
+import static com.bbangle.bbangle.review.domain.Badge.SWEET;
 import static java.math.BigDecimal.ROUND_DOWN;
 
-import com.bbangle.bbangle.review.domain.BadgeEnum;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.dto.ReviewDto;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -39,25 +45,22 @@ public class ReviewStatistics {
     }
 
     private String getPopularTasteBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTaste, BadgeEnum.GOOD,
-            BadgeEnum.BAD);
+        return calculatePopularBadge(reviews, ReviewDto::getBadgeTaste, GOOD, BAD);
     }
 
     private String getPopularBrixBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeBrix, BadgeEnum.SWEET,
-            BadgeEnum.PLAIN);
+        return calculatePopularBadge(reviews, ReviewDto::getBadgeBrix, SWEET, PLAIN);
     }
 
     private String getPopularTextureBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, BadgeEnum.SOFT,
-            BadgeEnum.DRY);
+        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, SOFT, HARD);
     }
 
     private String calculatePopularBadge(
         List<ReviewDto> reviews,
         Function<ReviewDto, String> badgeFunction,
-        BadgeEnum badge1,
-        BadgeEnum badge2) {
+        Badge badge1,
+        Badge badge2) {
         Map<String, Integer> badgeMap = new HashMap<>();
 
         int halfReviewsSize = count(reviews) / 2;
@@ -75,7 +78,7 @@ public class ReviewStatistics {
             badgeMap.put(badge, badgeCount + 1);
         }
 
-        return badgeMap.getOrDefault(badge1.name(), 0) > badgeMap.getOrDefault(badge2.name(), 0) ?
+        return badgeMap.getOrDefault(badge1.name(), 0) >= badgeMap.getOrDefault(badge2.name(), 0) ?
             badge1.name() : badge2.name();
     }
 }
