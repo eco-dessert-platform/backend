@@ -12,6 +12,7 @@ import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
+import com.bbangle.bbangle.review.service.ReviewService;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -50,6 +51,7 @@ public class BoardController {
     private final ResponseService responseService;
     private final BoardService boardService;
     private final StoreService storeService;
+    private final ReviewService reviewService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -142,14 +144,14 @@ public class BoardController {
         return responseService.getSingleResult(productResponse);
     }
 
+    @Operation(summary = "리뷰 조회")
     @GetMapping("/{boardId}/review")
     public CommonResult getReviewResponse(
         @PathVariable("boardId")
         Long boardId) {
+        SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
-        // 프론트 API 연동 테스트를 위한 값입니다. 해당 기능 구현 시 삭제됩니다.
-        return responseService.getSingleResult(
-            SummarizedReviewResponse.builder().build().toFixture());
+        return responseService.getSingleResult(response);
     }
 
     @PatchMapping("/{boardId}/purchase")
