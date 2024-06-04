@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.review.domain;
 
-
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,16 +49,15 @@ public class Review extends BaseEntity {
     private BigDecimal rate;
 
     private String content;
-
-    //TODO 리뷰는 일단 나중에 데이터로 필요할 꺼 같아 is_deleted 추가
+    
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    public void insertBadge(Badge badge){
-        switch(badge){
+    public void insertBadge(Badge badge) {
+        switch (badge) {
             case GOOD, BAD -> this.badgeTaste = badge.name();
-            case SWEET,PLAIN -> this.badgeBrix = badge.name();
-            case SOFT,HARD -> this.badgeTexture = badge.name();
+            case SWEET, PLAIN -> this.badgeBrix = badge.name();
+            case SOFT, HARD -> this.badgeTexture = badge.name();
         }
     }
 }
