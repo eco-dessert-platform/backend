@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.review.domain;
 
 
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
 import jakarta.persistence.*;
@@ -49,6 +48,9 @@ public class Review extends BaseEntity {
     @NotNull
     private BigDecimal rate;
 
+    @Column(name = "is_best")
+    private Boolean isBest;
+
     private String content;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
@@ -69,5 +71,9 @@ public class Review extends BaseEntity {
         }
         this.rate = reviewRequest.rate();
         this.content = reviewRequest.content();
+    }
+
+    public void delete(){
+        this.isDeleted = true;
     }
 }

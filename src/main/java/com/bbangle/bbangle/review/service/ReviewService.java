@@ -2,7 +2,6 @@ package com.bbangle.bbangle.review.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -15,16 +14,13 @@ import com.bbangle.bbangle.review.dto.*;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import com.bbangle.bbangle.wishlist.dto.ReviewImgDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
@@ -32,15 +28,15 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    private static final Long PAGE_SIZE = 10L;
+    private static final Long NON_MEMBER = 0L;
+
     private final ReviewRepository reviewRepository;
     private final BoardRepository boardRepository;
     private final ReviewImgRepository reviewImgRepository;
     private final MemberRepository memberRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final S3Service s3Service;
-    private static final String BOARD_FOLDER = "board/";
-    private static final String REVIEW_FOLDER= "/review/";
-    private static final Long PAGE_SIZE = 10L;
     private final ReviewManager reviewManager;
 
     @Transactional
@@ -55,22 +51,11 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
+   /*     //FIXME 따로 구현!
         if(Objects.isNull(reviewRequest.photos())){
             return;
         }
-        makeReviewImg(reviewRequest, review);
-    }
-
-    private void makeReviewImg(ReviewRequest reviewRequest, Review review) {
-        Long reviewId = review.getId();
-        Long boardId = reviewRequest.boardId();
-        List<MultipartFile> photos = reviewRequest.photos();
-        photos.stream()
-            .map(photo -> s3Service.saveImage(photo, BOARD_FOLDER + boardId + REVIEW_FOLDER + reviewId))
-            .forEach(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
-                                        .reviewId(reviewId)
-                                        .url(reviewImgPath)
-                                        .build()));
+        makeReviewImg(reviewRequest, review);*/
     }
 
     @Transactional(readOnly = true)
@@ -83,26 +68,29 @@ public class ReviewService {
     public ReviewCustomPage<List<ReviewInfoResponse>> getReviews(Long boardId,
                                                                  Long cursorId,
                                                                  Long memberId) {
-        memberId = memberId != null ? memberId : 0L;
+        memberId = memberId != null ? memberId : NON_MEMBER;
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
         List<ReviewSingleDto> reviewSingleList = reviewRepository.getReviewSingleList(board.getId(), cursorId);
         int reviewSingListSize = reviewSingleList.size();
-        boolean hasNext = reviewSingListSize >= PAGE_SIZE + 1;
         Long nextCursor = null;
-        Long endCursor = null;
+        Long lastCursor = null;
         if(reviewSingListSize != 0){
             nextCursor = reviewSingleList.get(reviewSingListSize -1).id();
-            endCursor = reviewSingleList.get(0).id();
-        }
-        if (hasNext) {
-            reviewSingleList.remove(reviewSingleList.get(reviewSingListSize - 1));
+            lastCursor = reviewSingleList.stream()
+                    .findFirst()
+                    .get()
+                    .id();
         }
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .nextCursor(nextCursor)
-                .endCursor(endCursor)
+                .lastCursor(lastCursor)
                 .build();
-        Map<Long, List<String>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        boolean hasNext = checkHasNext(reviewSingListSize);
+        if (hasNext) {
+            reviewSingleList.remove(reviewSingleList.get(reviewSingListSize - 1));
+        }
+        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : reviewSingleList){
             reviewManager.getTagMap(reviewSingleDto, tagMap);
@@ -134,11 +122,12 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewInfoResponse getReviewDetail(Long reviewId, Long memberId) {
-        ReviewSingleDto reviewDetail = reviewRepository.getReviewDetail(reviewId, memberId);
+        memberId = memberId == null ? NON_MEMBER : memberId;
+        ReviewSingleDto reviewDetail = reviewRepository.getReviewDetail(reviewId);
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .reviewId(reviewId)
                 .build();
-        Map<Long, List<String>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         reviewManager.getTagMap(reviewDetail, tagMap);
         Map<Long, List<Long>> likeMap = makeLikeMap(reviewCursor);
@@ -163,21 +152,21 @@ public class ReviewService {
     public ReviewCustomPage<List<ReviewInfoResponse>> getMyReviews(Long memberId, Long cursorId) {
         List<ReviewSingleDto> myReviewList = reviewRepository.getMyReviews(memberId, cursorId);
         int myReviewListSize = myReviewList.size();
-        boolean hasNext = myReviewListSize >= PAGE_SIZE + 1;
         Long nextCursor = null;
-        Long endCursor = null;
+        Long lastCursor = null;
         if(myReviewListSize != 0){
             nextCursor = myReviewList.get(myReviewListSize -1).id();
-            endCursor = myReviewList.get(0).id();
-        }
-        if (hasNext) {
-            myReviewList.remove(myReviewList.get(myReviewListSize - 1));
+            lastCursor = myReviewList.stream().findFirst().get().id();
         }
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .nextCursor(nextCursor)
-                .endCursor(endCursor)
+                .lastCursor(lastCursor)
                 .build();
-        Map<Long, List<String>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        boolean hasNext = checkHasNext(myReviewListSize);
+        if (hasNext) {
+            myReviewList.remove(myReviewList.get(myReviewListSize - 1));
+        }
+        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : myReviewList){
             reviewManager.getTagMap(reviewSingleDto, tagMap);
@@ -189,9 +178,18 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ImageCustomPage<List<ReviewImg>> getAllImagesByBoardId(Long boardId) {
-        //Temporary
-        return ImageCustomPage.from(List.of(ReviewImg.builder().id(1L).url("image1").build()), 0L, false);
+    public ImageCustomPage<List<ReviewImgDto>> getAllImagesByBoardId(Long boardId, Long cursorId) {
+        List<ReviewImgDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
+        int allImagesSize = allImagesByBoardId.size();
+        boolean hasNext = checkHasNext(allImagesSize);
+        Long nextCursor = null;
+        if(allImagesSize != 0){
+            nextCursor = allImagesByBoardId.get(allImagesSize -1).getId();
+        }
+        if (hasNext) {
+            allImagesByBoardId.remove(allImagesByBoardId.get(allImagesSize - 1));
+        }
+        return ImageCustomPage.from(allImagesByBoardId, nextCursor, hasNext);
     }
 
     @Transactional(readOnly = true)
@@ -202,13 +200,51 @@ public class ReviewService {
                 .url(reviewImg.getUrl())
                 .build();
     }
-
+    @Transactional
     public void updateReview(ReviewRequest reviewRequest, Long reviewId, Long memberId) {
         memberRepository.findMemberById(memberId);
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.update(reviewRequest);
         makeReviewImg(reviewRequest, review);
-        //TODO 사진 삭제 API 필요
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, Long memberId) {
+        memberRepository.findMemberById(memberId);
+        List<ReviewImg> reviewImgs = reviewImgRepository.findByReviewId(reviewId);
+        List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
+        if (!reviewImgs.isEmpty()) {
+            reviewImgRepository.deleteAllInBatch(reviewImgs);
+        }
+        if(!reviewLikes.isEmpty()) {
+            reviewLikeRepository.deleteAllInBatch(reviewLikes);
+        }
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
+        review.delete();
+    }
+
+    @Transactional
+    public void deleteImage(Long imageId) {
+        ReviewImg reviewImg = reviewImgRepository.findById(imageId)
+                .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
+        reviewImgRepository.delete(reviewImg);
+    }
+
+    private void makeReviewImg(ReviewRequest reviewRequest, Review review) {
+//        Long reviewId = review.getId();
+//        Long boardId = reviewRequest.boardId();
+//        List<String> photos = reviewRequest.photos();
+//        photos.stream()
+//                .map(photo -> s3Service.saveImage(photo, BOARD_FOLDER + boardId + REVIEW_FOLDER + reviewId))
+//                .forEach(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
+//                        .reviewId(reviewId)
+//                        .url(reviewImgPath)
+//                        .build()));
+    }
+
+    private boolean checkHasNext(int size) {
+        return size >= PAGE_SIZE + 1;
     }
 }

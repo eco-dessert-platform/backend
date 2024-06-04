@@ -21,10 +21,10 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final ResponseService responseService;
 
-    @Operation(summary = "리뷰 작성")
+    @Operation(summary = "리뷰 작성(이미지 제외)")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public CommonResult createReview(
-        @Valid @ModelAttribute
+        @Valid @RequestBody
         ReviewRequest reviewRequest,
         @AuthenticationPrincipal
         Long memberId
@@ -56,8 +56,7 @@ public class ReviewController {
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){
-        //구현 예정
-        //reviewService.deleteReview(reviewId, memberId);
+        reviewService.deleteReview(reviewId, memberId);
         return responseService.getSuccessResult();
     }
 
@@ -129,13 +128,24 @@ public class ReviewController {
 
     @Operation(summary = "사진 리뷰 전체보기")
     @GetMapping(value = "/{boardId}/images")
-    public CommonResult getAllImagesByBoardId(@PathVariable Long boardId){
-        return responseService.getSingleResult(reviewService.getAllImagesByBoardId(boardId));
+    public CommonResult getAllImagesByBoardId(
+            @PathVariable
+            Long boardId,
+            @RequestParam(required = false, value = "cursorId")
+            Long cursorId){
+        return responseService.getSingleResult(reviewService.getAllImagesByBoardId(boardId, cursorId));
     }
 
     @Operation(summary = "사진 리뷰 크게보기")
     @GetMapping(value = "/image/{imageId}")
     public CommonResult getImage(@PathVariable Long imageId){
         return responseService.getSingleResult(reviewService.getImage(imageId));
+    }
+
+    @Operation(summary = "리뷰 수정 화면에서 사진 삭제")
+    @DeleteMapping(value = "/image/{imageId}")
+    public CommonResult deleteImage(@PathVariable Long imageId){
+        reviewService.deleteImage(imageId);
+        return responseService.getSuccessResult();
     }
 }

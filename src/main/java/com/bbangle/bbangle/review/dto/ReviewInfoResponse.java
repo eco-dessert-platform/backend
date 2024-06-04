@@ -12,19 +12,19 @@ import java.util.Map;
 @Getter
 public class ReviewInfoResponse {
     private Long id;
-    private List<String> images;
+    private List<ReviewImgDto> images;
     private String nickname;
     private BigDecimal rating;
-    private Boolean isBest;
     private List<String> tags;
     private Integer like;
     private Boolean isLiked;
     private String comment;
     private LocalDateTime date;
+    private Boolean isBest;
 
     public static List<ReviewInfoResponse> createList(
             List<ReviewSingleDto> reviewSingleList,
-            Map<Long, List<String>> imageMap,
+            Map<Long, List<ReviewImgDto>> imageMap,
             Map<Long, List<String>> tagMap,
             Map<Long, List<Long>> likeMap,
             final Long memberId) {
@@ -35,7 +35,7 @@ public class ReviewInfoResponse {
 
     public static ReviewInfoResponse create(
             ReviewSingleDto reviewSingle,
-            Map<Long, List<String>> imageMap,
+            Map<Long, List<ReviewImgDto>> imageMap,
             Map<Long, List<String>> tagMap,
             Map<Long, List<Long>> likeMap,
             final Long memberId) {
@@ -43,7 +43,7 @@ public class ReviewInfoResponse {
     }
 
     private static ReviewInfoResponse toReviewInfo(ReviewSingleDto reviewSingleDto,
-                                                   Map<Long, List<String>> imageMap,
+                                                   Map<Long, List<ReviewImgDto>> imageMap,
                                                    Map<Long, List<String>> tagMap,
                                                    Map<Long, List<Long>> likeMap,
                                                    final Long memberId){
@@ -52,8 +52,7 @@ public class ReviewInfoResponse {
                 .images(imageMap.get(reviewSingleDto.id()))
                 .nickname(reviewSingleDto.nickname())
                 .rating(reviewSingleDto.rate())
-                //FIXME 베스트 리뷰 추가하기
-                .isBest(false)
+                .isBest(reviewSingleDto.isBest())
                 .like(getLikeCount(reviewSingleDto, likeMap))
                 .isLiked(isContainMember(reviewSingleDto, likeMap, memberId))
                 .tags(tagMap.get(reviewSingleDto.id()))
