@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.review.dto;
 
-import com.bbangle.bbangle.common.domain.Badge;
+import com.bbangle.bbangle.review.domain.Badge;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
