@@ -4,21 +4,16 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
@@ -30,7 +25,6 @@ import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
@@ -49,7 +43,7 @@ import java.util.List;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
-    private static final CursorInfo NULL_CURSOR = null;
+    private static final Long NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
     private static final Long NULL_MEMBER = null;
 

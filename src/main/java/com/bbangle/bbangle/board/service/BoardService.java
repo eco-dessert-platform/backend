@@ -1,17 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.folder.BoardPageGenerator;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -25,14 +21,8 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -58,11 +48,11 @@ public class BoardService {
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
-        CursorInfo cursorInfo,
+        Long cursorId,
         Long memberId
     ) {
         BoardCustomPage<List<BoardResponseDto>> boards = boardRepository
-            .getBoardResponseList(filterRequest, sort, cursorInfo);
+            .getBoardResponseList(filterRequest, sort, cursorId);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
             updateLikeStatus(boards, memberId);
