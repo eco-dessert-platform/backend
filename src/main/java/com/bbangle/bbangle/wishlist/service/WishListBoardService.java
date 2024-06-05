@@ -67,7 +67,7 @@ public class WishListBoardService {
         wishlistBoardRepository.delete(wishedBoard);
         board.updateWishCnt(false);
 
-        updateRankingScore(boardId, -1.0);
+        updateRankingScore(boardId, -50.0);
     }
 
     @Transactional
@@ -102,7 +102,7 @@ public class WishListBoardService {
         WishListFolder wishlistFolder,
         Member member
     ) {
-        updateRankingScore(board.getId(), 1.0);
+        updateRankingScore(board.getId(), 50.0);
 
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
@@ -119,7 +119,6 @@ public class WishListBoardService {
             .orElseThrow(
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         ranking.updateRecommendScore(updatingScore);
-        ranking.updatePopularScore(updatingScore);
 
         boardLikeInfoRedisTemplate.opsForList()
             .rightPush(LocalDateTime.now()

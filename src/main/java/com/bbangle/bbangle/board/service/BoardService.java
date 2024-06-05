@@ -111,7 +111,7 @@ public class BoardService {
     public void updateCountView(Long boardId, String viewCountKey) {
         Ranking ranking = rankingRepository.findByBoardId(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        ranking.updatePopularScore(0.1);
+        ranking.updatePopularScore(1.0);
 
         boardLikeInfoRedisTemplate.opsForList()
             .rightPush(
