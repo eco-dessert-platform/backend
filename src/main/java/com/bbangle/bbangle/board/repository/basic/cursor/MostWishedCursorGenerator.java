@@ -2,9 +2,11 @@ package com.bbangle.bbangle.board.repository.basic.cursor;
 
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardCursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGenerator;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +24,14 @@ public class MostWishedCursorGenerator implements BoardCursorGenerator {
         if (cursorId == null) {
             return cursorBuilder;
         }
-        cursorBuilder.and(board.id.loe(cursorId));
+        Integer targetWishCount = Optional.ofNullable(jpaQueryFactory.select(board.wishCnt)
+                .from(board)
+                .where(board.id.eq(cursorId))
+                .fetchOne())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        cursorBuilder.and(board.wishCnt.loe(targetWishCount))
+            .and(board.id.loe(cursorId));
 
         return cursorBuilder;
     }
