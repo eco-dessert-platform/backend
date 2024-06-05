@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.board.repository.basic.query;
 
 import com.bbangle.bbangle.board.sort.SortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -9,18 +8,45 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BoardQueryProviderResolver {
 
-    private final JPAQueryFactory queryFactory;
+    private final RecommendBoardQueryProviderResolver boardQueryProviderResolver;
+    private final LowPriceBoardQueryProviderResolver lowPriceBoardQueryProviderResolver;
+    private final HighPriceBoardQueryProviderResolver highPriceBoardQueryProviderResolver;
+    private final RecentBoardQueryProviderResolver recentBoardQueryProviderResolver;
+    private final HighRatedBoardQueryProviderResolver highRatedBoardQueryProviderResolver;
+    private final MostWishedBoardQueryProviderResolver mostWishedBoardQueryProviderResolver;
+    private final MostReviewedBoardQueryProviderResolver mostReviewedBoardQueryProviderResolver;
 
-    public BoardQueryProvider resolve(SortType sort, Long cursorId) {
-        // FIXME: 스프린트에서 정렬정보 받아서 적절한 쿼리 provider 내려주도록 변경 필요
-        return switch (getSortType(sort)) {
-            case POPULAR -> new PopularBoardQueryProvider(queryFactory, cursorId);
-            default -> new DefaultBoardQueryProvider(queryFactory, sort, cursorInfo);
-        };
+
+    public BoardQueryProvider resolve(SortType sortType) {
+        if (sortType == null) {
+            return boardQueryProviderResolver;
+        }
+
+        if (sortType == SortType.LOW_PRICE) {
+            return lowPriceBoardQueryProviderResolver;
+        }
+
+        if (sortType == SortType.HIGH_PRICE) {
+            return highPriceBoardQueryProviderResolver;
+        }
+
+        if (sortType == SortType.RECENT) {
+            return recentBoardQueryProviderResolver;
+        }
+
+        if (sortType == SortType.HIGHEST_RATED) {
+            return highRatedBoardQueryProviderResolver;
+        }
+
+        if (sortType == SortType.MOST_WISHED) {
+            return mostWishedBoardQueryProviderResolver;
+        }
+
+        if(sortType == SortType.MOST_REVIEWED) {
+            return mostReviewedBoardQueryProviderResolver;
+        }
+
+        return boardQueryProviderResolver;
     }
 
-    private SortType getSortType(SortType sort) {
-        // FIXME: 정렬조건 없는경우는 컨트롤러에서 걸러주는게 나을듯함...
-        return sort != null ? sort : SortType.RECOMMEND;
-    }
 }
