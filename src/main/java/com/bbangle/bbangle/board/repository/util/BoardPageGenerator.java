@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.repository.folder;
+package com.bbangle.bbangle.board.repository.util;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
@@ -26,12 +26,12 @@ public class BoardPageGenerator {
     private static final Long NO_NEXT_CURSOR = -1L;
     private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
-    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<BoardResponseDao> allByFolder) {
-        if (allByFolder.isEmpty()) {
+    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<BoardResponseDao> boardDaos, Boolean isInFolder) {
+        if (boardDaos.isEmpty()) {
             return BoardCustomPage.emptyPage();
         }
 
-        List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(allByFolder);
+        List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(boardDaos, isInFolder);
 
         Long nextCursor = NO_NEXT_CURSOR;
         boolean hasNext = false;
@@ -41,20 +41,44 @@ public class BoardPageGenerator {
         }
         boardResponseDtos = boardResponseDtos.stream().limit(BOARD_PAGE_SIZE).toList();
 
-        return BoardCustomPage.from(boardResponseDtos,
-            nextCursor, hasNext);
+        return BoardCustomPage.from(boardResponseDtos, nextCursor, hasNext);
     }
 
-    private static List<BoardResponseDto> convertToBoardResponse(List<BoardResponseDao> boardResponseDaoList) {
+    private static List<BoardResponseDto> convertToBoardResponse(
+        List<BoardResponseDao> boardResponseDaoList,
+        Boolean isInFolder
+    ) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(boardResponseDaoList);
 
         Map<Long, Boolean> isBundled = getIsBundled(boardResponseDaoList);
 
         boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
 
+        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId);
+    }
+
+    private static List<BoardResponseDto> getBoardResponseDtos(
+        List<BoardResponseDao> boardResponseDaoList,
+        Boolean isInFolder,
+        Map<Long, Boolean> isBundled,
+        Map<Long, List<String>> tagMapByBoardId
+    ) {
+        if(isInFolder){
+            return boardResponseDaoList.stream()
+                .map(boardDao -> BoardResponseDto.from(
+                    boardDao,
+                    isBundled.get(boardDao.boardId()),
+                    tagMapByBoardId.get(boardDao.boardId()))
+                )
+                .toList();
+        }
+
         return boardResponseDaoList.stream()
-            .map(boardDao -> BoardResponseDto.inFolder(boardDao, isBundled.get(boardDao.boardId()),
-                tagMapByBoardId.get(boardDao.boardId())))
+            .map(boardDao -> BoardResponseDto.inFolder(
+                boardDao,
+                isBundled.get(boardDao.boardId()),
+                tagMapByBoardId.get(boardDao.boardId()))
+            )
             .toList();
     }
 
