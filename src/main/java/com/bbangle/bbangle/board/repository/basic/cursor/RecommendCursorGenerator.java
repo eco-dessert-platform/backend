@@ -39,7 +39,6 @@ public class RecommendCursorGenerator implements BoardCursorGenerator {
                 .and(board.id.loe(cursorId));
 
         return cursorBuilder;
-
     }
 
 }
