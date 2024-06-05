@@ -5,7 +5,7 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.folder.BoardPageGenerator;
+import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+    private static final Boolean DEFAULT_BOARD = false;
+    private static final Boolean BOARD_IN_FOLDER = true;
 
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
@@ -51,14 +53,15 @@ public class BoardService {
         Long cursorId,
         Long memberId
     ) {
-        BoardCustomPage<List<BoardResponseDto>> boards = boardRepository
+        List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(filterRequest, sort, cursorId);
+        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards, DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
-            updateLikeStatus(boards, memberId);
+            updateLikeStatus(boardPage, memberId);
         }
 
-        return boards;
+        return boardPage;
     }
 
     @Transactional(readOnly = true)
@@ -73,7 +76,7 @@ public class BoardService {
 
         List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
 
-        return BoardPageGenerator.getBoardPage(allByFolder);
+        return BoardPageGenerator.getBoardPage(allByFolder, BOARD_IN_FOLDER);
     }
 
 
