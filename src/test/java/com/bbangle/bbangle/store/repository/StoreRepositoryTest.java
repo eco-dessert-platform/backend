@@ -97,7 +97,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 5; count++) {
             Board board = createBoard(store, "TestBoardTitle" + count, 100 + count);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
         }
 
         updateRanking();
@@ -121,7 +121,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
             createWishlistProduct(member, board);
         }
 
@@ -145,7 +145,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
         }
 
         Long memberId = member.getId();
@@ -169,7 +169,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
             createProduct(board, Category.BREAD);
         }
 
@@ -196,7 +196,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            Product product = createProduct(board, Category.COOKIE);
+            Product product = createProduct(board, Category.SNACK);
             lastBoardId = board.getId();
         }
 
