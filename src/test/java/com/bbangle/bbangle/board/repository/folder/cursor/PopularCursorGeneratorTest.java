@@ -88,7 +88,7 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
         BooleanBuilder popularCursor = popularBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
         Ranking ranking = rankingRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(ranking.getPopularScore()).and(
+        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(ranking.getRecommendScore()).and(
             QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 
         //then
