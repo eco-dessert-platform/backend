@@ -6,6 +6,7 @@ import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.ranking.service.RankingService;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewImg;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
@@ -21,12 +22,16 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
+    private static final String BOARD_FOLDER = "board/";
+    private static final String REVIEW_FOLDER= "/review/";
+    private static final Double REVIEW_SCORE= 50.0;
+
+    private final RankingService rankingService;
     private final ReviewRepository reviewRepository;
     private final ReviewImgRepository reviewImgRepository;
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
-    private static final String BOARD_FOLDER = "board/";
-    private static final String REVIEW_FOLDER= "/review/";
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
@@ -40,6 +45,8 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
+        rankingService.updateRankingScore(reviewRequest.boardId(), REVIEW_SCORE);
+
         if(Objects.isNull(reviewRequest.photos())){
             return;
         }
