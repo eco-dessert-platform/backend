@@ -116,22 +116,6 @@ public class BoardController {
         return responseService.getSingleResult(boardDetailResponse);
     }
 
-    @PatchMapping("/{boardId}/purchase")
-    public CommonResult movePurchasePage(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
-        String ipAddress = request.getRemoteAddr();
-        String purchaseCountKey = "PURCHASE:" + boardId + ":" + ipAddress;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(purchaseCountKey))) {
-            return responseService.getFailResult();
-        }
-
-        boardService.adaptPurchaseReaction(boardId, purchaseCountKey);
-
-        return responseService.getSuccessResult();
-    }
-
     private SortType settingDefaultSortTypeIfNull(SortType sort) {
         if(sort == null){
             sort = SortType.RECOMMEND;
