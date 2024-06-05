@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface BoardQueryDSLRepository {
 
-    BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
+    List<BoardResponseDao> getBoardResponseList(
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId
