@@ -1,49 +1,54 @@
 package com.bbangle.bbangle.board.repository.basic.cursor;
 
-import com.bbangle.bbangle.board.repository.folder.cursor.CursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.LowPriceInFolderCursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.PopularCursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.WishListRecentCursorGenerator;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.repository.folder.cursor.BoardCursorGenerator;
+import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGenerator;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
 public class BoardCursorGeneratorMapping {
 
-    private final SortType sortType;
+    private final RecommendCursorGenerator recommendCursorGenerator;
+    private final LowPriceCursorGenerator lowPriceCursorGenerator;
+    private final HighPriceCursorGenerator highPriceCursorGenerator;
+    private final RecentCursorGenerator recentCursorGenerator;
+    private final HighRatedCursorGenerator highRatedCursorGenerator;
+    private final MostWishedCursorGenerator mostWishedCursorGenerator;
+    private final MostReviewedCursorGenerator mostReviewedCursorGenerator;
 
-    public CursorGenerator mappingCursorGenerator(Long cursorId, JPAQueryFactory jpaQueryFactory) {
+
+    public BoardCursorGenerator mappingCursorGenerator(SortType sortType) {
         if (sortType == null) {
-            return new RecommendCursorGenerator(jpaQueryFactory, cursorId);
+            return recommendCursorGenerator;
         }
 
         if (sortType == SortType.LOW_PRICE) {
-            return new LowPriceCursorGenerator(jpaQueryFactory, cursorId);
+            return lowPriceCursorGenerator;
         }
 
         if (sortType == SortType.HIGH_PRICE) {
-            return new HighPriceCursorGenerator(jpaQueryFactory, cursorId);
+            return highPriceCursorGenerator;
         }
 
         if (sortType == SortType.RECENT) {
-            return new RecentCursorGenerator(jpaQueryFactory, cursorId);
+            return recentCursorGenerator;
         }
 
         if (sortType == SortType.HIGHEST_RATED) {
-            return new HighRatedCursorGenerator(jpaQueryFactory, cursorId);
+            return highRatedCursorGenerator;
         }
 
         if (sortType == SortType.MOST_WISHED) {
-            return new MostWishedCursorGenerator(jpaQueryFactory, cursorId);
+            return mostWishedCursorGenerator;
         }
 
         if(sortType == SortType.MOST_REVIEWED) {
-            return new MostReviewedCursorGenerator(jpaQueryFactory, cursorId);
+            return mostReviewedCursorGenerator;
         }
 
-        return new RecommendCursorGenerator(jpaQueryFactory, cursorId);
+        return recommendCursorGenerator;
     }
 
 }

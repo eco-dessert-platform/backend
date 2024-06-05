@@ -1,26 +1,30 @@
 package com.bbangle.bbangle.board.repository.basic.cursor;
 
 import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.repository.folder.cursor.CursorGenerator;
+import com.bbangle.bbangle.board.repository.folder.cursor.BoardCursorGenerator;
+import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGenerator;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class LowPriceCursorGenerator implements CursorGenerator {
+public class LowPriceCursorGenerator implements BoardCursorGenerator {
 
     private static final QBoard board = QBoard.board;
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final Long cursorId;
 
     @Override
-    public BooleanBuilder getCursor() {
+    public BooleanBuilder getCursor(Long cursorId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
-
+        if (cursorId == null) {
+            return cursorBuilder;
+        }
         int targetPrice = Optional.ofNullable(jpaQueryFactory.select(board.price)
                 .from(board)
                 .where(board.id.eq(cursorId))
