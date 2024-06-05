@@ -61,6 +61,7 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
+        sort = settingDefaultSortTypeIfNull(sort);
         BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
             filterRequest,
             sort,
@@ -130,5 +131,14 @@ public class BoardController {
 
         return responseService.getSuccessResult();
     }
+
+    private SortType settingDefaultSortTypeIfNull(SortType sort) {
+        if(sort == null){
+            sort = SortType.RECOMMEND;
+        }
+
+        return sort;
+    }
+
 }
 
