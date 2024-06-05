@@ -65,7 +65,7 @@ public class BoardPageGenerator {
     ) {
         if(isInFolder){
             return boardResponseDaoList.stream()
-                .map(boardDao -> BoardResponseDto.from(
+                .map(boardDao -> BoardResponseDto.inFolder(
                     boardDao,
                     isBundled.get(boardDao.boardId()),
                     tagMapByBoardId.get(boardDao.boardId()))
@@ -74,7 +74,7 @@ public class BoardPageGenerator {
         }
 
         return boardResponseDaoList.stream()
-            .map(boardDao -> BoardResponseDto.inFolder(
+            .map(boardDao -> BoardResponseDto.from(
                 boardDao,
                 isBundled.get(boardDao.boardId()),
                 tagMapByBoardId.get(boardDao.boardId()))
