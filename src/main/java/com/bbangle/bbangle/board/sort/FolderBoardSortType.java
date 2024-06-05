@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public enum FolderBoardSortType {
     LOW_PRICE(QBoard.board.price::asc),
-    POPULAR(QRanking.ranking.popularScore::desc),
+    POPULAR(QRanking.ranking.recommendScore::desc),
     WISHLIST_RECENT(QWishListBoard.wishListBoard.id::desc);
 
     private final Supplier<OrderSpecifier<?>> setOrder;

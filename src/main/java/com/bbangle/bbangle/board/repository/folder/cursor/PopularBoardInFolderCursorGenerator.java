@@ -34,11 +34,11 @@ public class PopularBoardInFolderCursorGenerator implements BoardInFolderCursorG
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         Double score = queryFactory
-            .select(ranking.popularScore)
+            .select(ranking.recommendScore)
             .from(ranking)
             .where(ranking.board.id.eq(cursorId))
             .fetchOne();
-        cursorBuilder.and(ranking.popularScore.loe(score)
+        cursorBuilder.and(ranking.recommendScore.loe(score)
             .and(wishListBoard.id.loe(wishListBoardId)));
 
         return cursorBuilder;
