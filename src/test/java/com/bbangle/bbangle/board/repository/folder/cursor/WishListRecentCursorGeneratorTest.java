@@ -25,8 +25,12 @@ import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
+
+    @Autowired
+    WishListRecentBoardInFolderCursorGenerator wishListRecentBoardInFolderCursorGenerator;
 
     private static final Long DEFAULT_CURSOR_ID = null;
     private static final Long DEFAULT_FOLDER_ID = 0L;
@@ -75,12 +79,8 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("커서가 없는 경우 가장 커서 관련 조건문 없이 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithoutCursor() {
-        //given
-        WishListRecentCursorGenerator wishListCursor = new WishListRecentCursorGenerator(queryFactory, DEFAULT_CURSOR_ID,
-            member.getId());
-
-        //when
-        BooleanBuilder wishListCursorCondition = wishListCursor.getCursor();
+        //given, when
+        BooleanBuilder wishListCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(DEFAULT_CURSOR_ID, wishListFolder.getId());
 
         //then
         assertThat(wishListCursorCondition.getValue()).isNull();
@@ -89,12 +89,8 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("커서가 존재하는 경우 그 커서보다 늦거나 같게 찜한 게시글 목록 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithCursor() {
-        //given
-        WishListRecentCursorGenerator wishListRecentCursor = new WishListRecentCursorGenerator(queryFactory, lastSavedId,
-            wishListFolder.getId());
-
-        //when
-        BooleanBuilder wishListRecentCursorCursorCondition = wishListRecentCursor.getCursor();
+        //given, when
+        BooleanBuilder wishListRecentCursorCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
         WishListBoard lastWishListBoard = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
         String expectedCursorCondition = new BooleanBuilder().and(wishListBoard.id.loe(lastWishListBoard.getId())).toString();
 
@@ -108,11 +104,9 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
         //given
         Random random = new Random();
         long randomNum = random.nextLong(10000) + 1;
-        WishListRecentCursorGenerator wishListRecentCursor = new WishListRecentCursorGenerator(queryFactory, lastSavedId + randomNum,
-            member.getId());
 
         //when, then
-        assertThatThrownBy(wishListRecentCursor::getCursor)
+        assertThatThrownBy(() ->wishListRecentBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum, wishListFolder.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 
