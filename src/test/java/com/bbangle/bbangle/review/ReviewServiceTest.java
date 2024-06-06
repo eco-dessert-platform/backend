@@ -3,7 +3,6 @@ package com.bbangle.bbangle.review;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
