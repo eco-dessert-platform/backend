@@ -57,8 +57,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     // 빈 DTO 반환
-
-
     @Override
     public Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds){
         BooleanBuilder whereFilter = setFilteringCondition(boardRequest);

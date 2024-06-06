@@ -1,10 +1,8 @@
 package com.bbangle.bbangle.member.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
-import com.bbangle.bbangle.common.image.service.S3Service;
-import com.bbangle.bbangle.common.image.validation.ImageValidator;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
@@ -17,11 +15,11 @@ import com.bbangle.bbangle.member.repository.WithdrawalRepository;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListFolderService;
+import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +37,7 @@ public class MemberService {
     private static final String DEFAULT_MEMBER_EMAIL = "example@xxxxx.com";
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
-    private final S3Service imageService;
+    private final ImageService imageService;
     private final MemberRepository memberRepository;
     private final SignatureAgreementRepository signatureAgreementRepository;
     private final WishListStoreService wishListStoreServiceImpl;
@@ -64,9 +62,9 @@ public class MemberService {
             );
     }
 
-  public Member findById(Long id) {
-    return memberRepository.findMemberById(id);
-  }
+    public Member findById(Long id) {
+        return memberRepository.findMemberById(id);
+    }
 
     @Transactional
     public void updateMemberInfo(
@@ -76,9 +74,8 @@ public class MemberService {
     ) {
         Member loginedMember = findById(memberId);
         if (profileImg != null && !profileImg.isEmpty()) {
-            ImageValidator.validateImage(profileImg);
-            String profileImgUrl = imageService.saveImage(profileImg);
-            loginedMember.updateProfile(profileImgUrl);
+            String imagePath = imageService.save(MEMBER_PROFILE, profileImg, loginedMember.getId());
+            loginedMember.updateProfile(imagePath);
         }
         loginedMember.updateFirst(request);
 
@@ -130,17 +127,17 @@ public class MemberService {
         wishListFolderService.deletedByDeletedMember(memberId);
     }
 
-  @Transactional
-  public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
-    Member member = memberRepository.findMemberById(memberId);
-    String[] reasons = withdrawalRequestDto.getReasons().split(",");
-    for (String reason : reasons) {
-      withdrawalRepository.save(Withdrawal.builder()
-          .reason(reason)
-          .member(member)
-          .build());
+    @Transactional
+    public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
+        Member member = memberRepository.findMemberById(memberId);
+        String[] reasons = withdrawalRequestDto.getReasons().split(",");
+        for (String reason : reasons) {
+            withdrawalRepository.save(Withdrawal.builder()
+                .reason(reason)
+                .member(member)
+                .build());
+        }
     }
-  }
 
     public Member getFirstJoinedMember(Member oauthMember) {
         Member newMember = saveNewJoinedOauthMember(oauthMember);

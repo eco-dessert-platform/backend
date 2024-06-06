@@ -1,10 +1,10 @@
 package com.bbangle.bbangle.member.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
-import com.bbangle.bbangle.common.image.service.S3Service;
-import com.bbangle.bbangle.common.image.validation.ImageValidator;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final S3Service imageService;
+    private final ImageService imageService;
 
     @Override
     public ProfileInfoResponseDto getProfileInfo(Long memberId) {
@@ -43,8 +43,7 @@ public class ProfileServiceImpl implements ProfileService {
         Member member = profileRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
         if (profileImg != null && !profileImg.isEmpty()) {
-            ImageValidator.validateImage(profileImg);
-            String imgUrl = imageService.saveImage(profileImg);
+            String imgUrl = imageService.save(MEMBER_PROFILE, profileImg, memberId);
             member.updateProfile(imgUrl);
         }
         member.update(request);

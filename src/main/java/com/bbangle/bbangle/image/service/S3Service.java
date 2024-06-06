@@ -1,11 +1,12 @@
-package com.bbangle.bbangle.common.image.service;
+package com.bbangle.bbangle.image.service;
+
+import static com.bbangle.bbangle.image.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.bbangle.bbangle.exception.BbangleException;
-import io.jsonwebtoken.lang.Assert;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
-public class S3Service {
+class S3Service {
 
   private final AmazonS3 amazonS3;
 
@@ -25,22 +26,22 @@ public class S3Service {
 
   @Transactional
   public String saveImage(MultipartFile request) {
-    Assert.notNull(request);
+    validateImage(request);
+
     final String originName = request.getOriginalFilename();
     final String ext = originName.substring(originName.lastIndexOf("."));
     final String changedImageName = changeImageName(ext);
-    final String storeImagePath = uploadImage(request, ext, changedImageName);
-    return storeImagePath;
+    return uploadImage(request, ext, changedImageName);
   }
 
   @Transactional
   public String saveImage(MultipartFile request, String folder) {
-    Assert.notNull(request);
+    validateImage(request);
+
     final String originName = request.getOriginalFilename();
     final String ext = originName.substring(originName.lastIndexOf("."));
     final String changedImageName = folder +"/"+ changeImageName(ext);
-    final String storeImagePath = uploadImage(request, ext, changedImageName);
-    return storeImagePath;
+    return uploadImage(request, ext, changedImageName);
   }
 
   private String uploadImage(

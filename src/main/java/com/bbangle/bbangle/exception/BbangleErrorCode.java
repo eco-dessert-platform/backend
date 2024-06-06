@@ -46,6 +46,8 @@ public enum BbangleErrorCode {
     PREFERENCE_NOT_FOUND(-28, "존재하지 않는 선호타입입니다.", BAD_REQUEST),
     PREFERENCE_ALREADY_ASSIGNED(-29, "이미 선호타입을 등록하였습니다.", BAD_REQUEST),
     MEMBER_PREFERENCE_NOT_FOUND(-30, "유저의 선호타입 내역을 확인할 수 없습니다.", BAD_REQUEST),
+    IMAGE_NOT_FOUND(-31, "해당하는 이미지를 찾을 수 없습니다.", NOT_FOUND),
+    REVIEW_NOT_FOUND(-32, "존재하지 않는 리뷰입니다", BAD_REQUEST),
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
