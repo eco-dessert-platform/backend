@@ -1,7 +1,6 @@
-package com.bbangle.bbangle.etc.repository;
+package com.bbangle.bbangle.image.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.exception.BbangleException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +11,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ObjectStorageRepositoryTest extends AbstractIntegrationTest {
 
-    private final ObjectStorageRepository objectStorageRepository;
+    private final ObjectStorageRepositoryImpl objectStorageRepository;
     private final String BUCKET_NAME = "bbangle-bucket";
     private final String STORE_ID = "1";
-//    private String IMAGE = "img";
     private final String BOARD_ID = "2";
     private final String FOLDER_PATH = String.format("%s/%s/", STORE_ID, BOARD_ID);
     private final String HTML_FILE_NAME = "detail.html";
@@ -28,7 +24,7 @@ class ObjectStorageRepositoryTest extends AbstractIntegrationTest {
 
     ObjectStorageRepositoryTest(
         @Autowired
-        ObjectStorageRepository objectStorageRepository
+        ObjectStorageRepositoryImpl objectStorageRepository
     ) {
         this.objectStorageRepository = objectStorageRepository;
     }
@@ -58,8 +54,7 @@ class ObjectStorageRepositoryTest extends AbstractIntegrationTest {
             content // 파일 내용
         );
 
-        var result = objectStorageRepository.createFile(BUCKET_NAME, OBJECT_NAME, HTML_FILE);
-        assertThat(result).isEqualTo(true);
+        objectStorageRepository.createFile(BUCKET_NAME, OBJECT_NAME, HTML_FILE);
     }
 
 }

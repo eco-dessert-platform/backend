@@ -1,12 +1,5 @@
 package com.bbangle.bbangle.review;
 
-import static com.bbangle.bbangle.common.domain.Badge.BAD;
-import static com.bbangle.bbangle.common.domain.Badge.GOOD;
-import static com.bbangle.bbangle.common.domain.Badge.PLAIN;
-import static com.bbangle.bbangle.common.domain.Badge.SOFT;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -14,6 +7,7 @@ import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewImg;
@@ -21,16 +15,18 @@ import com.bbangle.bbangle.review.dto.ReviewRequest;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.review.service.ReviewService;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.bbangle.bbangle.review.domain.Badge.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
@@ -52,9 +48,6 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        memberRepository.deleteAll();
-        boardRepository.deleteAll();
-        reviewRepository.deleteAll();
         Member testUser = Member.builder()
             .name("testUser")
             .email("test@test.com")
@@ -89,9 +82,9 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //then
         assertThat(reviewList).hasSize(1);
-        assertThat(reviewList.get(0).getBadgeTaste()).isEqualTo("GOOD");
-        assertThat(reviewList.get(0).getBadgeBrix()).isEqualTo("PLAIN");
-        assertThat(reviewList.get(0).getBadgeTexture()).isEqualTo("SOFT");
+        assertThat(reviewList.get(0).getBadgeTaste()).isEqualTo(GOOD);
+        assertThat(reviewList.get(0).getBadgeBrix()).isEqualTo(PLAIN);
+        assertThat(reviewList.get(0).getBadgeTexture()).isEqualTo(SOFT);
         assertThat(reviewImg).hasSize(1);
     }
 
@@ -130,14 +123,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
     private ReviewRequest makeReviewRequest(List<Badge> badges) {
         List<Board> board = boardRepository.findAll();
-        List<MultipartFile> photos = new ArrayList<>();
-        MockMultipartFile photo = new MockMultipartFile(
-            "test",
-            "test.png",
-            MediaType.IMAGE_PNG_VALUE,
-            "test".getBytes()
-        );
-        photos.add(photo);
+        List<String> photos = new ArrayList<>();
+        photos.add("test");
         return new ReviewRequest(badges, new BigDecimal("4.0"), null,
             board.get(0).getId(), photos);
     }

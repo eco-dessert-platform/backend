@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.common.image.config;
+package com.bbangle.bbangle.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
