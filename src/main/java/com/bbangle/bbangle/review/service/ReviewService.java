@@ -31,9 +31,6 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-
-    private static final String BOARD_FOLDER = "board/";
-    private static final String REVIEW_FOLDER= "/review/";
     private static final Double REVIEW_SCORE= 50.0;
 
     private final RankingService rankingService;
