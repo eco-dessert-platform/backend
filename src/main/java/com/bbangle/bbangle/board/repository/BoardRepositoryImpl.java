@@ -24,7 +24,7 @@ import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
@@ -35,7 +35,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +59,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QProductImg productImg = QProductImg.productImg;
     private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
     private static final QWishListStore wishlistStore = QWishListStore.wishListStore;
-    private static final QRanking ranking = QRanking.ranking;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
     private final JPAQueryFactory queryFactory;
@@ -317,9 +316,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public List<Board> checkingNullRanking() {
         return queryFactory.select(board)
             .from(board)
-            .leftJoin(ranking)
-            .on(board.eq(ranking.board))
-            .where(ranking.id.isNull())
+            .leftJoin(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
+            .where(boardStatistic.id.isNull())
             .fetch();
     }
 
@@ -348,12 +347,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Long boardCursor = content.get(content.size() - 1)
             .getBoardId();
         Double cursorScore = queryFactory
-            .select(getScoreColumnBySortType(sort))
-            .from(ranking)
+            .select(boardStatistic.basicScore)
+            .from(boardStatistic)
             .join(board)
-            .on(ranking.board.eq(board))
+            .on(boardStatistic.boardId.eq(board.id))
             .fetchJoin()
-            .where(ranking.board.id.eq(boardCursor))
+            .where(boardStatistic.boardId.eq(boardCursor))
             .fetchFirst();
 
         if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
@@ -390,10 +389,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 storeCnt);
         }
         return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext);
-    }
-
-    private NumberPath<Double> getScoreColumnBySortType(SortType sort) {
-        return SortType.POPULAR.equals(sort) ? ranking.popularScore : ranking.recommendScore;
     }
 
     private boolean isHasNext(List<Board> boards) {

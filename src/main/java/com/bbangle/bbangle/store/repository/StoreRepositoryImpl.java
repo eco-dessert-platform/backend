@@ -1,13 +1,12 @@
 package com.bbangle.bbangle.store.repository;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
-import static com.bbangle.bbangle.ranking.domain.QRanking.ranking;
 
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
+import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.QPopularBoardDto;
@@ -52,6 +51,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private static final Long PAGE_SIZE = 20L;
     private static final Long EMPTY_PAGE_CURSOR = -1L;
     private static final Boolean EMPTY_PAGE_HAS_NEXT = false;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private final QStore store = QStore.store;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
@@ -108,9 +108,10 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     }
 
     private List<Long> getTopThreeBoardIds(Long storeId) {
-        return queryFactory.select(ranking.id)
-            .from(ranking)
-            .join(ranking.board, board)
+        return queryFactory.select(boardStatistic.id)
+            .from(boardStatistic)
+            .join(board)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.store.id.eq(storeId))
             .limit(3)
             .fetch();
@@ -124,7 +125,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         JPAQuery<PopularBoardDto> queryBeforeFetch = queryFactory
             .select(
                 new QPopularBoardDto(
-                    ranking.id,
+                    boardStatistic.id,
                     board.id,
                     board.profile,
                     board.title,
@@ -132,11 +133,11 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                     product.category,
                     conditionalWhislistProduct))
             .distinct()
-            .from(ranking)
-            .join(product).on(ranking.board.eq(product.board))
+            .from(boardStatistic)
+            .join(product).on(boardStatistic.boardId.eq(product.board.id))
             .join(board).on(product.board.eq(board))
-            .where(ranking.id.in(topBoardIds))
-            .orderBy(ranking.board.id.desc());
+            .where(boardStatistic.id.in(topBoardIds))
+            .orderBy(boardStatistic.boardId.desc());
 
         Optional.ofNullable(memberId).ifPresent(mId -> checkWishlistBoard(queryBeforeFetch, mId));
 
