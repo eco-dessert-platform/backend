@@ -83,6 +83,8 @@ public abstract class AbstractIntegrationTest {
     protected WishListBoardRepository wishListBoardRepository;
     @Autowired
     protected WishListStoreRepository wishListStoreRepository;
+    @Autowired
+    protected ReviewRepository reviewRepository;
 
     @BeforeEach
     void before() {
@@ -97,6 +99,7 @@ public abstract class AbstractIntegrationTest {
         wishListFolderRepository.deleteAllInBatch();
         wishListBoardRepository.deleteAllInBatch();
         wishListStoreRepository.deleteAllInBatch();
+        reviewRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
