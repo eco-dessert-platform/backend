@@ -4,8 +4,8 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsRatioWithDateResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -302,9 +302,9 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
             Review review = Review.builder()
                     .memberId(members.get(i - 1).getId())
                     .boardId((long) i)
-                    .badgeBrix(String.valueOf(Badge.SWEET))
-                    .badgeTaste(String.valueOf(Badge.GOOD))
-                    .badgeTexture(String.valueOf(Badge.HARD))
+                    .badgeBrix(Badge.SWEET)
+                    .badgeTaste(Badge.GOOD)
+                    .badgeTexture(Badge.DRY)
                     .rate(BigDecimal.valueOf(5))
                     .build();
 
@@ -325,9 +325,9 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
                 Review review = Review.builder()
                         .memberId(members.get(i - 1).getId())
                         .boardId((long) i + 20)
-                        .badgeBrix(String.valueOf(Badge.SWEET))
-                        .badgeTaste(String.valueOf(Badge.GOOD))
-                        .badgeTexture(String.valueOf(Badge.HARD))
+                        .badgeBrix(Badge.SWEET)
+                        .badgeTaste(Badge.GOOD)
+                        .badgeTexture(Badge.DRY)
                         .rate(BigDecimal.valueOf(5))
                         .build();
 
