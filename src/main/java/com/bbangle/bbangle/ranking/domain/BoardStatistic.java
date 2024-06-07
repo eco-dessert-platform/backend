@@ -38,6 +38,9 @@ public class BoardStatistic {
     @Column(name = "board_view_count")
     private int boardViewCount;
 
+    @Column(name = "board_review_grade")
+    private Double boardReviewGrade;
+
     public void updateBasicScore(Double score) {
         this.basicScore += score;
     }

@@ -26,6 +26,7 @@ public class RankingService {
                 .boardReviewCount(0)
                 .boardWishCount(0)
                 .boardViewCount(0)
+                .boardReviewGrade(0.0)
                 .build())
             .forEach(boardStatistics::add);
         rankingRepository.saveAll(boardStatistics);
