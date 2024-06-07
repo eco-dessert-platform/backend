@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -12,19 +11,14 @@ import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +30,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 class WishListFolderServiceTest extends AbstractIntegrationTest {
 
@@ -327,8 +320,8 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             for(int i = 0; i < 10; i++){
                 Board board = BoardFixture.randomBoard(store);
                 board = boardRepository.save(board);
-                Ranking ranking = Ranking.builder().board(board).popularScore(0.0).recommendScore(0.0).build();
-                rankingRepository.save(ranking);
+                BoardStatistic boardStatistic = BoardStatistic.builder().board(board).popularScore(0.0).recommendScore(0.0).build();
+                rankingRepository.save(boardStatistic);
 
                 if(i < 3) {
                     wishListBoardService.wish(member.getId(), board.getId(),

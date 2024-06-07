@@ -156,7 +156,7 @@ CREATE TABLE refresh_token
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
-CREATE TABLE ranking
+CREATE TABLE boardStatistic
 (
     id               BIGINT AUTO_INCREMENT,
     product_board_id BIGINT NOT NULL,

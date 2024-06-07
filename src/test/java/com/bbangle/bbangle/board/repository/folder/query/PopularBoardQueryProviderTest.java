@@ -13,7 +13,7 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -66,8 +66,8 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
             Product product2 = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
             productRepository.save(product2);
-            Ranking ranking = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+            rankingRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
 

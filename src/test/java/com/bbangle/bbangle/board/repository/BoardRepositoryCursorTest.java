@@ -58,7 +58,7 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
             Board board = fixtureBoard(emptyMap());
             idList.add(board.getId());
 
-            fixtureRanking(Map.of("board", board, "popularScore", (double) score));
+            fixtureRanking(Map.of("board", board, "basicScore", (double) score));
         }
 
         FilterRequest filter = FilterRequest.builder()

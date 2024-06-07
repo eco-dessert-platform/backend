@@ -1,11 +1,9 @@
 package com.bbangle.bbangle.config.ranking;
 
-import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.util.RedisKeyUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -14,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,13 +48,12 @@ public class RankingUpdate {
                     }
                     for (Object ele : range) {
                         BoardLikeInfo info = (BoardLikeInfo) ele;
-                        Ranking ranking = rankingRepository.findByBoardId(info.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+                        BoardStatistic boardStatistic = rankingRepository.findByBoardId(info.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
                         if (info.scoreType() == ScoreType.WISH) {
-                            ranking.updatePopularScore(-info.score());
-                            ranking.updateRecommendScore(-info.score());
+                            boardStatistic.updateBasicScore(-info.score());
                             continue;
                         }
-                        ranking.updatePopularScore(-info.score());
+                        boardStatistic.updateBasicScore(-info.score());
                     }
                     boardLikeInfoRedisTemplate.delete(key);
                 }

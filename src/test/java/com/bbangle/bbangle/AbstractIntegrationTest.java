@@ -9,7 +9,7 @@ import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
@@ -126,8 +126,8 @@ public abstract class AbstractIntegrationTest {
         return productRepository.save(sample);
     }
 
-    protected Ranking fixtureRanking(Map<String, Object> params) {
-        ArbitraryBuilder<Ranking> builder = fixtureMonkey.giveMeBuilder(Ranking.class);
+    protected BoardStatistic fixtureRanking(Map<String, Object> params) {
+        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(BoardStatistic.class);
         setBuilderParams(params, builder);
 
         if (!params.containsKey("board")) {

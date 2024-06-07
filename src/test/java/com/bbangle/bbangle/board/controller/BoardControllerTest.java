@@ -4,20 +4,17 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.Duration;
-import java.util.List;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,12 +69,12 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 true);
             Board save1 = boardRepository.save(board);
             Board save2 = boardRepository.save(board2);
-            rankingRepository.save(Ranking.builder()
+            rankingRepository.save(BoardStatistic.builder()
                 .board(save1)
                 .popularScore(0.0)
                 .recommendScore(0.0)
                 .build());
-            rankingRepository.save(Ranking.builder()
+            rankingRepository.save(BoardStatistic.builder()
                 .board(save2)
                 .popularScore(0.0)
                 .recommendScore(0.0)
@@ -270,8 +267,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
             product = productWIthKetogenicYogurt(createdBoard);
             productRepository.save(product);
 
-            Ranking ranking = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+            rankingRepository.save(boardStatistic);
 
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));

@@ -1,9 +1,6 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
@@ -18,21 +15,15 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -116,9 +107,9 @@ public class BoardService {
 
     @Transactional
     public void updateCountView(Long boardId, String viewCountKey) {
-        Ranking ranking = rankingRepository.findByBoardId(boardId)
+        BoardStatistic boardStatistic = rankingRepository.findByBoardId(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        ranking.updatePopularScore(0.1);
+        boardStatistic.updateBasicScore(0.1);
 
         boardLikeInfoRedisTemplate.opsForList()
             .rightPush(
@@ -131,9 +122,9 @@ public class BoardService {
 
     @Transactional
     public void adaptPurchaseReaction(Long boardId, String purchaseCountKey) {
-        Ranking ranking = rankingRepository.findByBoardId(boardId)
+        BoardStatistic boardStatistic = rankingRepository.findByBoardId(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        ranking.updatePopularScore(1.0);
+        boardStatistic.updateBasicScore(1.0);
 
         boardLikeInfoRedisTemplate.opsForList()
             .rightPush(LocalDateTime.now()

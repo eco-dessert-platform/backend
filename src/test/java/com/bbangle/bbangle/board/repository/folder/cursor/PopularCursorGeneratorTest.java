@@ -14,8 +14,8 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
@@ -59,8 +59,8 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
-            Ranking ranking = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+            rankingRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
@@ -90,9 +90,10 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
 
         //when
         BooleanBuilder popularCursor = popularCursorGenerator.getCursor();
-        Ranking ranking = rankingRepository.findByBoardId(lastSavedId).get();
+        BoardStatistic boardStatistic = rankingRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(ranking.getPopularScore()).and(
+        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(
+            boardStatistic.getBasicScore()).and(
             QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 
         //then

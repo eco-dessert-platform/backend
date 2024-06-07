@@ -5,7 +5,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +33,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         // given
         Board fixtureBoard = fixtureBoard(emptyMap());
         Board fixtureBoard2 = fixtureBoard(emptyMap());
-        Ranking target = fixtureRanking(Map.of("board", fixtureBoard));
-        Ranking nonTarget = fixtureRanking(Map.of("board", fixtureBoard2));
+        BoardStatistic target = fixtureRanking(Map.of("board", fixtureBoard));
+        BoardStatistic nonTarget = fixtureRanking(Map.of("board", fixtureBoard2));
 
         nonTarget.setBoard(null);
         rankingRepository.save(nonTarget);

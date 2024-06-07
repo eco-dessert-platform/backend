@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -13,23 +12,16 @@ import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 class WishListBoardServiceTest extends AbstractIntegrationTest {
 
@@ -56,19 +48,19 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
         boardRepository.save(board);
         boardRepository.save(board2);
 
-        Ranking ranking = Ranking.builder()
+        BoardStatistic boardStatistic = BoardStatistic.builder()
             .board(board)
             .popularScore(0.0)
             .recommendScore(0.0)
             .build();
-        Ranking ranking2 = Ranking.builder()
+        BoardStatistic boardStatistic2 = BoardStatistic.builder()
             .board(board2)
             .popularScore(0.0)
             .recommendScore(0.0)
             .build();
 
-        rankingRepository.save(ranking2);
-        rankingRepository.save(ranking);
+        rankingRepository.save(boardStatistic2);
+        rankingRepository.save(boardStatistic);
     }
 
     @Nested
@@ -99,10 +91,10 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
-            Ranking ranking = rankingRepository.findByBoardId(board.getId())
+            BoardStatistic boardStatistic = rankingRepository.findByBoardId(board.getId())
                 .get();
-            assertThat(ranking.getRecommendScore()).isEqualTo(1.0);
-            assertThat(ranking.getPopularScore()).isEqualTo(1.0);
+            assertThat(boardStatistic.getRecommendScore()).isEqualTo(1.0);
+            assertThat(boardStatistic.getBasicScore()).isEqualTo(1.0);
         }
 
         @Test
@@ -164,10 +156,10 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(0);
-            Ranking ranking = rankingRepository.findByBoardId(board.getId())
+            BoardStatistic boardStatistic = rankingRepository.findByBoardId(board.getId())
                 .get();
-            assertThat(ranking.getRecommendScore()).isEqualTo(0.0);
-            assertThat(ranking.getPopularScore()).isEqualTo(0.0);
+            assertThat(boardStatistic.getRecommendScore()).isEqualTo(0.0);
+            assertThat(boardStatistic.getBasicScore()).isEqualTo(0.0);
         }
 
         @Test
