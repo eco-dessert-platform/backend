@@ -5,14 +5,14 @@ import lombok.Builder;
 
 @Builder
 public record AnalyticsWishlistBoardRankingResponseDto(
-    Long id,
-    String title,
-    int price,
-    boolean status,
-    String profile,
-    String purchaseUrl,
-    int view,
-    int wishCnt
+        Long id,
+        String title,
+        int price,
+        boolean status,
+        String profile,
+        String purchaseUrl,
+        int view,
+        int wishCnt
 ) {
 
     @QueryProjection

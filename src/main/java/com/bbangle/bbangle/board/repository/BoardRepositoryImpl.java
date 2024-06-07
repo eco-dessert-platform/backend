@@ -1,7 +1,22 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.domain.*;
-import com.bbangle.bbangle.board.dto.*;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.board.domain.QBoardDetail;
+import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.board.domain.QProductImg;
+import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardAvailableDayDto;
+import com.bbangle.bbangle.board.dto.BoardDetailDto;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse;
+import com.bbangle.bbangle.board.dto.BoardDetailSelectDto;
+import com.bbangle.bbangle.board.dto.BoardImgDto;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.QBoardDetailDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -52,14 +67,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
-        FilterRequest filterRequest,
-        SortType sort,
-        CursorInfo cursorInfo
+            FilterRequest filterRequest,
+            SortType sort,
+            CursorInfo cursorInfo
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
 
         List<Board> boards = boardQueryProviderResolver.resolve(sort, cursorInfo)
-            .findBoards(filter);
+                .findBoards(filter);
 
         // FIXME: 요 아래부분은 service 에서 해야되지않나 싶은 부분... 레파지토리의 역할은 board 리스트 넘겨주는곳 까지가 아닐까 싶어서요
         List<BoardResponseDto> content = convertToBoardResponse(boards);
@@ -68,45 +83,45 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public Slice<BoardResponseDto> getAllByFolder(
-        String sort, Pageable pageable, Long wishListFolderId,
-        WishListFolder selectedFolder
+            String sort, Pageable pageable, Long wishListFolderId,
+            WishListFolder selectedFolder
     ) {
         OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
 
         List<Board> boards = queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .leftJoin(board.store, store)
-            .fetchJoin()
-            .join(board)
-            .on(board.id.eq(wishListBoard.boardId))
-            .join(wishListBoard)
-            .on(wishListBoard.wishlistFolderId.eq(folder.id))
-            .where(wishListBoard.wishlistFolderId.eq(selectedFolder.getId()))
-            .offset(pageable.getOffset())
-            .orderBy(orderSpecifier)
-            .limit(pageable.getPageSize() + 1)
-            .fetch();
+                .selectFrom(board)
+                .leftJoin(board.productList, product)
+                .fetchJoin()
+                .leftJoin(board.store, store)
+                .fetchJoin()
+                .join(board)
+                .on(board.id.eq(wishListBoard.boardId))
+                .join(wishListBoard)
+                .on(wishListBoard.wishlistFolderId.eq(folder.id))
+                .where(wishListBoard.wishlistFolderId.eq(selectedFolder.getId()))
+                .offset(pageable.getOffset())
+                .orderBy(orderSpecifier)
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
 
         boolean hasNext = boards.size() > pageable.getPageSize();
         List<BoardResponseDto> content = boards.stream()
-            .limit(pageable.getPageSize())
-            .map(board -> BoardResponseDto.inFolder(board, extractTags(board.getProductList())))
-            .toList();
+                .limit(pageable.getPageSize())
+                .map(board -> BoardResponseDto.inFolder(board, extractTags(board.getProductList())))
+                .toList();
 
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
         return queryFactory.select(new QBoardDetailDto(
-                boardDetail.id,
-                boardDetail.imgIndex,
-                boardDetail.url
-            ))
-            .from(boardDetail)
-            .where(board.id.eq(boardId))
-            .fetch();
+                        boardDetail.id,
+                        boardDetail.imgIndex,
+                        boardDetail.url
+                ))
+                .from(boardDetail)
+                .where(board.id.eq(boardId))
+                .fetch();
     }
 
     private List<String> getTagsToStringList(Product product) {
@@ -133,33 +148,33 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public List<ProductDto> fetchProductDtoByBoardId(Long boardId) {
         List<Product> products = queryFactory.selectFrom(product)
-            .where(board.id.eq(boardId))
-            .fetch();
+                .where(board.id.eq(boardId))
+                .fetch();
 
         return products.stream().map(product1 ->
-                ProductDto.builder()
-                    .id(product1.getId())
-                    .title(product1.getTitle())
-                    .tags(getTagsToStringList(product1))
-                    .category(product1.getCategory())
-                    .build())
-            .toList();
+                        ProductDto.builder()
+                                .id(product1.getId())
+                                .title(product1.getTitle())
+                                .tags(getTagsToStringList(product1))
+                                .category(product1.getCategory())
+                                .build())
+                .toList();
     }
 
     public List<String> getProductDtosToDuplicatedTags(List<ProductDto> productDtos) {
         return productDtos.stream()
-            .map(ProductDto::tags)
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(ProductDto::tags)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public boolean isBundleBoard(List<ProductDto> productDtos) {
         return productDtos.stream()
-            .map(ProductDto::category)
-            .distinct()
-            .count() > 1;
+                .map(ProductDto::category)
+                .distinct()
+                .count() > 1;
     }
 
     private void setWishlistBoard(List<Expression<?>> columns) {
@@ -207,19 +222,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
         jpaQuery.leftJoin(wishListBoard)
-            .on(wishListBoard.boardId.eq(board.id),
-                wishListBoard.memberId.eq(memberId))
-            .leftJoin(wishlistStore)
-            .on(wishlistStore.store.id.eq(store.id),
-                wishlistStore.member.id.eq(memberId),
-                wishlistStore.isDeleted.eq(false));
+                .on(wishListBoard.boardId.eq(board.id),
+                        wishListBoard.memberId.eq(memberId))
+                .leftJoin(wishlistStore)
+                .on(wishlistStore.store.id.eq(store.id),
+                        wishlistStore.member.id.eq(memberId),
+                        wishlistStore.isDeleted.eq(false));
     }
 
     public List<Tuple> fetchStoreAndBoardAndImageTuple(Long memberId, Long boardId) {
         JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(board)
-            .where(board.id.eq(boardId))
-            .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id));
+                .where(board.id.eq(boardId))
+                .join(board.store, store)
+                .leftJoin(productImg).on(board.id.eq(productImg.board.id));
 
         if (memberId != null && memberId > 0) {
             setWishlistJoin(jpaQuery, memberId);
@@ -232,10 +247,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         List<BoardImgDto> boardImgDtos = new ArrayList<>();
         for (Tuple tupleReleteBoard : tuplesRelateBoard) {
             boardImgDtos.add(
-                BoardImgDto.builder()
-                    .id(tupleReleteBoard.get(productImg.id))
-                    .url(tupleReleteBoard.get(productImg.url))
-                    .build()
+                    BoardImgDto.builder()
+                            .id(tupleReleteBoard.get(productImg.id))
+                            .url(tupleReleteBoard.get(productImg.url))
+                            .build()
             );
         }
 
@@ -254,50 +269,50 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         List<BoardImgDto> boardImgDtos = getBoardImageToDto(tuplesRelateBoard);
 
         StoreDto storeDto = StoreDto.builder()
-            .storeId(tupleReleteBoard.get(store.id))
-            .storeName(tupleReleteBoard.get(store.name))
-            .profile(tupleReleteBoard.get(store.profile))
-            .isWished(tupleReleteBoard.get(wishlistStore.id) != null)
-            .build();
+                .storeId(tupleReleteBoard.get(store.id))
+                .storeName(tupleReleteBoard.get(store.name))
+                .profile(tupleReleteBoard.get(store.profile))
+                .isWished(tupleReleteBoard.get(wishlistStore.id) != null)
+                .build();
 
         BoardDetailSelectDto boardDto = BoardDetailSelectDto.builder()
-            .boardId(tupleReleteBoard.get(board.id))
-            .thumbnail(tupleReleteBoard.get(board.profile))
-            .title(tupleReleteBoard.get(board.title))
-            .price(tupleReleteBoard.get(board.price))
-            .orderAvailableDays(
-                BoardAvailableDayDto.builder()
-                    .mon(tupleReleteBoard.get(board.monday))
-                    .tue(tupleReleteBoard.get(board.tuesday))
-                    .wed(tupleReleteBoard.get(board.wednesday))
-                    .thu(tupleReleteBoard.get(board.thursday))
-                    .fri(tupleReleteBoard.get(board.friday))
-                    .sat(tupleReleteBoard.get(board.saturday))
-                    .sun(tupleReleteBoard.get(board.sunday))
-                    .build()
-            )
-            .purchaseUrl(tupleReleteBoard.get(board.purchaseUrl))
-            .detail(boardDetails)
-            .products(productDtos)
-            .images(boardImgDtos.stream()
-                .toList())
-            .tags(duplicatedTags)
-            .isWished(tupleReleteBoard.get(wishListBoard.id) != null)
-            .isBundled(isBundled)
-            .build();
+                .boardId(tupleReleteBoard.get(board.id))
+                .thumbnail(tupleReleteBoard.get(board.profile))
+                .title(tupleReleteBoard.get(board.title))
+                .price(tupleReleteBoard.get(board.price))
+                .orderAvailableDays(
+                        BoardAvailableDayDto.builder()
+                                .mon(tupleReleteBoard.get(board.monday))
+                                .tue(tupleReleteBoard.get(board.tuesday))
+                                .wed(tupleReleteBoard.get(board.wednesday))
+                                .thu(tupleReleteBoard.get(board.thursday))
+                                .fri(tupleReleteBoard.get(board.friday))
+                                .sat(tupleReleteBoard.get(board.saturday))
+                                .sun(tupleReleteBoard.get(board.sunday))
+                                .build()
+                )
+                .purchaseUrl(tupleReleteBoard.get(board.purchaseUrl))
+                .detail(boardDetails)
+                .products(productDtos)
+                .images(boardImgDtos.stream()
+                        .toList())
+                .tags(duplicatedTags)
+                .isWished(tupleReleteBoard.get(wishListBoard.id) != null)
+                .isBundled(isBundled)
+                .build();
 
         return BoardDetailResponse.builder()
-            .store(storeDto)
-            .board(boardDto)
-            .build();
+                .store(storeDto)
+                .board(boardDto)
+                .build();
     }
 
     @Override
     public HashMap<Long, String> getAllBoardTitle() {
         List<Tuple> fetch = queryFactory
-            .select(board.id, board.title)
-            .from(board)
-            .fetch();
+                .select(board.id, board.title)
+                .from(board)
+                .fetch();
 
         HashMap<Long, String> boardMap = new HashMap<>();
         fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
@@ -308,30 +323,30 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public List<Board> checkingNullRanking() {
         return queryFactory.select(board)
-            .from(board)
-            .leftJoin(ranking)
-            .on(board.eq(ranking.board))
-            .where(ranking.id.isNull())
-            .fetch();
+                .from(board)
+                .leftJoin(ranking)
+                .on(board.eq(ranking.board))
+                .where(ranking.id.isNull())
+                .fetch();
     }
 
     @Override
     public List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
-            .from(board)
-            .leftJoin(wishListBoard)
-            .on(board.id.eq(wishListBoard.boardId))
-            .where(board.id.in(responseList)
-                .and(wishListBoard.memberId.eq(memberId)))
-            .fetch();
+                .from(board)
+                .leftJoin(wishListBoard)
+                .on(board.id.eq(wishListBoard.boardId))
+                .where(board.id.in(responseList)
+                        .and(wishListBoard.memberId.eq(memberId)))
+                .fetch();
     }
 
     private BoardCustomPage<List<BoardResponseDto>> getBoardCustomPage(
-        SortType sort,
-        CursorInfo cursorInfo,
-        BooleanBuilder filter,
-        List<BoardResponseDto> content,
-        boolean hasNext
+            SortType sort,
+            CursorInfo cursorInfo,
+            BooleanBuilder filter,
+            List<BoardResponseDto> content,
+            boolean hasNext
     ) {
         if (content.isEmpty()) {
             return BoardCustomPage.emptyPage();
@@ -339,46 +354,46 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         Long boardCursor = content.get(content.size() - 1).getBoardId();
         Double cursorScore = queryFactory
-            .select(getScoreColumnBySortType(sort))
-            .from(ranking)
-            .join(board)
-            .on(ranking.board.eq(board))
-            .fetchJoin()
-            .where(ranking.board.id.eq(boardCursor))
-            .fetchFirst();
+                .select(getScoreColumnBySortType(sort))
+                .from(ranking)
+                .join(board)
+                .on(ranking.board.eq(board))
+                .fetchJoin()
+                .where(ranking.board.id.eq(boardCursor))
+                .fetchFirst();
 
         if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
             // FIXME: count 쿼리 분리 필요
             Long boardCnt = queryFactory
-                .select(board.countDistinct())
-                .from(store)
-                .join(board)
-                .on(board.store.eq(store))
-                .join(product)
-                .on(product.board.eq(board))
-                .where(filter)
-                .fetchOne();
+                    .select(board.countDistinct())
+                    .from(store)
+                    .join(board)
+                    .on(board.store.eq(store))
+                    .join(product)
+                    .on(product.board.eq(board))
+                    .where(filter)
+                    .fetchOne();
 
             if (Objects.isNull(boardCnt)) {
                 boardCnt = 0L;
             }
 
             Long storeCnt = queryFactory
-                .select(store.countDistinct())
-                .from(store)
-                .join(board)
-                .on(board.store.eq(store))
-                .join(product)
-                .on(product.board.eq(board))
-                .where(filter)
-                .fetchOne();
+                    .select(store.countDistinct())
+                    .from(store)
+                    .join(board)
+                    .on(board.store.eq(store))
+                    .join(product)
+                    .on(product.board.eq(board))
+                    .where(filter)
+                    .fetchOne();
 
             if (Objects.isNull(storeCnt)) {
                 storeCnt = 0L;
             }
 
             return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext, boardCnt,
-                storeCnt);
+                    storeCnt);
         }
         return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext);
     }
@@ -408,15 +423,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
         Map<Long, List<String>> tagMapByBoardId = boards.stream()
-            .collect(Collectors.toMap(
-                Board::getId,
-                board -> extractTags(board.getProductList())
-            ));
+                .collect(Collectors.toMap(
+                        Board::getId,
+                        board -> extractTags(board.getProductList())
+                ));
 
         return boards.stream()
-            .limit(BOARD_PAGE_SIZE)
-            .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
-            .toList();
+                .limit(BOARD_PAGE_SIZE)
+                .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
+                .toList();
     }
 
     private List<String> extractTags(List<Product> products) {

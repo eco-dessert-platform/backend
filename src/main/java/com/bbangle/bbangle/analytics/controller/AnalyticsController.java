@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.analytics.controller;
 
 
-import com.bbangle.bbangle.analytics.dto.*;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsRatioWithDateResponseDto;
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -27,75 +28,76 @@ public class AnalyticsController {
 
     @GetMapping(value = "/members/count")
     public CommonResult getMembersCount() {
-        AnalyticsMembersCountResponseDto response = AnalyticsMembersCountResponseDto.builder()
-                .count(analyticsService.countAllMembers())
-                .build();
-
-        return responseService.getSingleResult(response);
+        return responseService.getSingleResult(analyticsService.countAllMembers());
     }
 
 
     @GetMapping(value = "/new-members/count")
     public CommonResult getNewMembersCount(
-            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countMembersByPeriod(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countMembersByPeriod(startDate, endDate);
         return responseService.getListResult(response);
     }
 
 
     @GetMapping(value = "/ratio/wishlist-usage")
     public CommonResult getWishlistUsageRatio(
-            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateWishlistUsingRatio(startLocalDate, endLocalDate);
+        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateWishlistUsingRatio(startDate, endDate);
         return responseService.getListResult(response);
     }
 
 
     @GetMapping(value = "/wishlist/boards/count")
     public CommonResult getWishlistUsageCount(
-            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countWishlistBoardByPeriod(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
         return responseService.getListResult(response);
     }
 
 
     @GetMapping(value = "/ratio/review-usage")
     public CommonResult getReviewUsageRatio(
-            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateReviewUsingRatio(startLocalDate, endLocalDate);
+        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateReviewUsingRatio(startDate, endDate);
         return responseService.getListResult(response);
     }
 
 
     @GetMapping(value = "/reviews/count")
     public CommonResult getReviewUsageCount(
-            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countReviewByPeriod(startLocalDate, endLocalDate);
+        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countReviewByPeriod(startDate, endDate);
         return responseService.getListResult(response);
     }
 

@@ -10,6 +10,8 @@ public interface MemberQueryDSLRepository {
 
     Member findMemberById(Long memberId);
 
+    Long countMembers();
+
     List<AnalyticsCountWithDateResponseDto> countMembersCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 
     List<AnalyticsCountWithDateResponseDto> countMembersCreatedBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate);
