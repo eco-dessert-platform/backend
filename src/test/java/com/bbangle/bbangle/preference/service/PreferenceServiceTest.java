@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PreferenceServiceTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -46,23 +46,10 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
     @Autowired
     private PreferenceRepository preferenceRepository;
 
-    @Autowired
-    private MemberPreferenceRepository memberPreferenceRepository;
-
-    @Autowired
-    private WishListFolderRepository wishListFolderRepository;
-
     Member member;
-    @Autowired
-    private WishListBoardRepository wishListBoardRepository;
 
     @BeforeEach
     public void setup() {
-        wishListBoardRepository.deleteAll();
-        wishListFolderRepository.deleteAll();
-        memberPreferenceRepository.deleteAll();
-        memberRepository.deleteAll();
-
         member = MemberFixture.createKakaoMember();
         member = memberService.getFirstJoinedMember(member);
     }
@@ -82,7 +69,6 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
             //when, then
             Assertions.assertDoesNotThrow(
                 () -> preferenceService.register(request, member.getId()));
-
         }
 
         @Test
@@ -108,7 +94,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
         @ParameterizedTest
         @EnumSource(PreferenceType.class)
         @DisplayName("멤버는 정상적으로 등록된 취향을 조회한다")
-        public void getPreference(PreferenceType preferenceType) throws Exception {
+        void getPreference(PreferenceType preferenceType) {
             //given
             PreferenceSelectRequest request = new PreferenceSelectRequest(
                 preferenceType);
@@ -122,7 +108,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("취향을 등록하지 않은 멤버는 취향을 조회할 수 없다")
-        public void cannotUpdatePreferenceWithOutSavedPreference() throws Exception {
+        void cannotUpdatePreferenceWithOutSavedPreference() {
             //given, when, then
             assertThatThrownBy(
                 () -> preferenceService.getPreference(member.getId()))
@@ -138,7 +124,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("멤버는 정상적으로 등록된 취향을 조회한다")
-        public void updatePreference() throws Exception {
+        void updatePreference() {
             //given
             PreferenceSelectRequest request = new PreferenceSelectRequest(
                 PreferenceType.DIET);
@@ -158,7 +144,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("취향을 등록하지 않은 멤버는 취향을 업데이트할 수 없다")
-        public void cannotUpdatePreferenceWithOutSavedPreference() throws Exception {
+        void cannotUpdatePreferenceWithOutSavedPreference() {
             //given
             PreferenceSelectRequest request = new PreferenceSelectRequest(
                 PreferenceType.DIET);

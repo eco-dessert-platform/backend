@@ -1,6 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -10,19 +17,28 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -30,8 +46,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
@@ -55,6 +69,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     BoardService boardService;
 
     @Autowired
+    WishListBoardService wishListBoardService;
+
+    @Autowired
     EntityManager entityManager;
 
     Board board;
@@ -64,11 +81,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setup() {
-        rankingRepository.deleteAll();
-        productRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-
         store = StoreFixture.storeGenerator();
         storeRepository.save(store);
         store2 = StoreFixture.storeGenerator();
@@ -285,7 +297,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
             NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        if(category.equals(Category.ETC)){
+        if (category.equals(Category.ETC)) {
             assertThat(boardList.getContent()).hasSize(2);
             return;
         }
@@ -351,7 +363,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList =
             boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
-        FilterRequest filterRequest2 =  FilterRequest.builder()
+        FilterRequest filterRequest2 = FilterRequest.builder()
             .minPrice(1000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList2 =
@@ -383,7 +395,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList7 =
             boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
-        FilterRequest filterRequest8 = FilterRequest.builder().build();
+        FilterRequest filterRequest8 = FilterRequest.builder()
+            .build();
         BoardCustomPage<List<BoardResponseDto>> boardList8 =
             boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
@@ -423,13 +436,130 @@ class BoardServiceTest extends AbstractIntegrationTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        FilterRequest filterRequest = FilterRequest.builder().build();
+        FilterRequest filterRequest = FilterRequest.builder()
+            .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
         assertThat(boardList.getBoardCount()).isEqualTo(14);
+    }
+
+    @Nested
+    @DisplayName("폴더 안의 게시글 조회 테스트")
+    class BoardInFolder {
+
+        private static final FolderBoardSortType DEFAULT_SORT_TYPE = FolderBoardSortType.WISHLIST_RECENT;
+        private static final Long DEFAULT_CURSOR_ID = null;
+        private static final Long DEFAULT_FOLDER_ID = 0L;
+
+        Member member;
+        WishListFolder wishListFolder;
+        Long lastSavedId;
+        Long firstSavedId;
+
+        @BeforeEach
+        void setup() {
+            member = MemberFixture.createKakaoMember();
+            member = memberService.getFirstJoinedMember(member);
+            Store store = StoreFixture.storeGenerator();
+            store = storeRepository.save(store);
+
+            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
+
+            for (int i = 0; i < 12; i++) {
+                Board createdBoard = BoardFixture.randomBoardWithPrice(store, i * 1000);
+                createdBoard = boardRepository.save(createdBoard);
+                if (i == 0) {
+                    firstSavedId = createdBoard.getId();
+                }
+                if (i == 11) {
+                    lastSavedId = createdBoard.getId();
+                }
+                Product product = ProductFixture.randomProduct(createdBoard);
+                productRepository.save(product);
+                Ranking ranking = RankingFixture.newRanking(createdBoard);
+                rankingRepository.save(ranking);
+                wishListBoardService.wish(member.getId(), createdBoard.getId(),
+                    new WishListBoardRequest(wishListFolder.getId()));
+            }
+        }
+
+        @Test
+        @DisplayName("wishlist 추가 순으로 폴더 내의 찜한 게시글을 조회한다.")
+        void getBoardInFolderWithDefaultOrder() {
+            // given, when
+            BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
+                member.getId(),
+                DEFAULT_SORT_TYPE,
+                wishListFolder.getId(),
+                DEFAULT_CURSOR_ID);
+            List<BoardResponseDto> contents = response.getContent();
+
+            // then
+            assertThat(contents).hasSize(10);
+            for (int i = 0; i < contents.size(); i++) {
+                assertThat(contents.get(i)
+                    .getBoardId()).isEqualTo(lastSavedId - i);
+            }
+            assertThat(response.getNextCursor()).isEqualTo(lastSavedId - 10);
+        }
+
+        @Test
+        @DisplayName("낮은 가격 순으로 폴더 내 찜한 게시글을 조회한다.")
+        void getBoardInFolderWithLowPriceOrder() {
+            // given, when
+            BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
+                member.getId(),
+                FolderBoardSortType.LOW_PRICE,
+                wishListFolder.getId(),
+                DEFAULT_CURSOR_ID);
+            List<BoardResponseDto> contents = response.getContent();
+
+            // then
+            assertThat(contents).hasSize(10);
+            for (int i = 0; i < contents.size(); i++) {
+                assertThat(contents.get(i).getPrice()).isEqualTo(i * 1000);
+            }
+            assertThat(response.getNextCursor()).isEqualTo(firstSavedId + 10);
+        }
+
+        @Test
+        @DisplayName("인기 순으로 폴더 내 찜한 게시글을 조회한다.")
+        void getBoardInFolderWithPopularOrder() {
+            // given, when
+            Member member2 = MemberFixture.createKakaoMember();
+            member2 = memberService.getFirstJoinedMember(member2);
+
+            BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
+                member.getId(),
+                FolderBoardSortType.LOW_PRICE,
+                wishListFolder.getId(),
+                DEFAULT_CURSOR_ID);
+            Long targetId = response.getContent()
+                .get(response.getContent().size() - 1)
+                .getBoardId();
+
+            wishListBoardService.wish(member2.getId(), targetId, new WishListBoardRequest(DEFAULT_FOLDER_ID));
+
+            // then
+            BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(
+                member.getId(),
+                FolderBoardSortType.POPULAR,
+                wishListFolder.getId(),
+                DEFAULT_CURSOR_ID);
+            List<BoardResponseDto> contents = responseAfterWish.getContent();
+
+            assertThat(contents).hasSize(10);
+            assertThat(contents.stream().findFirst()
+                .orElseThrow(IllegalArgumentException::new)
+                .getBoardId()).isEqualTo(targetId);
+        }
+
     }
 
 }

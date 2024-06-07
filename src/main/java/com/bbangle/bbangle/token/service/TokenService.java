@@ -1,12 +1,12 @@
 package com.bbangle.bbangle.token.service;
 
-import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.service.MemberService;
-import java.time.Duration;
+import com.bbangle.bbangle.token.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 /**
  * The type Token service.
