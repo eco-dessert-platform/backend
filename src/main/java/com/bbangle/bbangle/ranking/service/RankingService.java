@@ -2,7 +2,7 @@ package com.bbangle.bbangle.ranking.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +18,17 @@ public class RankingService {
 
     public void updatingNonRankedBoards() {
         List<Board> unRankedBoards = boardRepository.checkingNullRanking();
-        List<Ranking> rankings = new ArrayList<>();
+        List<BoardStatistic> boardStatistics = new ArrayList<>();
         unRankedBoards.stream()
-            .map(board -> Ranking.builder()
-                .board(board)
-                .popularScore(0.0)
-                .recommendScore(0.0)
+            .map(board -> BoardStatistic.builder()
+                .boardId(board.getId())
+                .basicScore(0.0)
+                .boardReviewCount(0)
+                .boardWishCount(0)
+                .boardViewCount(0)
                 .build())
-            .forEach(rankings::add);
-        rankingRepository.saveAll(rankings);
+            .forEach(boardStatistics::add);
+        rankingRepository.saveAll(boardStatistics);
     }
 
 }
