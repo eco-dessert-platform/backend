@@ -49,14 +49,20 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
         boardRepository.save(board2);
 
         BoardStatistic boardStatistic = BoardStatistic.builder()
-            .board(board)
-            .popularScore(0.0)
-            .recommendScore(0.0)
+            .boardId(board.getId())
+            .basicScore(0.0)
+            .boardViewCount(0)
+            .boardWishCount(0)
+            .boardReviewCount(0)
+            .boardReviewGrade(0.0)
             .build();
         BoardStatistic boardStatistic2 = BoardStatistic.builder()
-            .board(board2)
-            .popularScore(0.0)
-            .recommendScore(0.0)
+            .boardId(board2.getId())
+            .basicScore(0.0)
+            .boardViewCount(0)
+            .boardWishCount(0)
+            .boardReviewCount(0)
+            .boardReviewGrade(0.0)
             .build();
 
         rankingRepository.save(boardStatistic2);

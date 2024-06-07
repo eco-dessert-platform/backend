@@ -7,9 +7,12 @@ public class RankingFixture {
 
     public static BoardStatistic newRanking(Board board) {
         return BoardStatistic.builder()
-            .board(board)
-            .recommendScore(0.0)
-            .popularScore(0.0)
+            .boardId(board.getId())
+            .basicScore(0.0)
+            .boardViewCount(0)
+            .boardWishCount(0)
+            .boardReviewCount(0)
+            .boardReviewGrade(0.0)
             .build();
     }
 
