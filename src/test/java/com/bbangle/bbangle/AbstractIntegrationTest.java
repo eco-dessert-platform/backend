@@ -1,7 +1,6 @@
 package com.bbangle.bbangle;
 
-import static java.util.Collections.emptyMap;
-
+import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
@@ -38,6 +37,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import static java.util.Collections.emptyMap;
+
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -59,8 +60,9 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected WishListStoreService wishListStoreService;
     @Autowired
+    protected AnalyticsService analyticsService;
+    @Autowired
     protected WishListBoardService wishListBoardService;
-
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
@@ -71,6 +73,8 @@ public abstract class AbstractIntegrationTest {
     protected ProductRepository productRepository;
     @Autowired
     protected MemberRepository memberRepository;
+    @Autowired
+    protected ReviewRepository reviewRepository;
     @Autowired
     protected BoardImgRepository boardImgRepository;
     @Autowired
@@ -89,6 +93,7 @@ public abstract class AbstractIntegrationTest {
         rankingRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         boardRepository.deleteAllInBatch();
+        reviewRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         boardImgRepository.deleteAllInBatch();
         wishListFolderRepository.deleteAllInBatch();

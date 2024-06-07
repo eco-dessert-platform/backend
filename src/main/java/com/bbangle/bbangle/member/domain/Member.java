@@ -7,7 +7,15 @@ import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.OneToMany;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,8 +77,8 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Builder
     public Member(
-        Long id, String email, String phone, String name, String nickname,
-        String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
+            Long id, String email, String phone, String name, String nickname,
+            String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
     ) {
         this.id = id;
         this.email = email;
