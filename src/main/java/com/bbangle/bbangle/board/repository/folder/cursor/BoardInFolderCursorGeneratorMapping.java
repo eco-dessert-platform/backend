@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class BoardInFolderCursorGeneratorMapping {
 
     private final WishListRecentBoardInFolderCursorGenerator wishListRecentBoardInFolderCursorGenerator;
-    private final LowPriceInFolderBoardInFolderCursorGenerator lowPriceInFolderBoardInFolderCursorGenerator;
+    private final LowPriceBoardInFolderCursorGenerator lowPriceBoardInFolderCursorGenerator;
     private final PopularBoardInFolderCursorGenerator popularBoardInFolderCursorGenerator;
 
     public BoardInFolderCursorGenerator mappingCursorGenerator(FolderBoardSortType sortType) {
@@ -20,7 +18,7 @@ public class BoardInFolderCursorGeneratorMapping {
         }
 
         if (sortType == FolderBoardSortType.LOW_PRICE) {
-            return lowPriceInFolderBoardInFolderCursorGenerator;
+            return lowPriceBoardInFolderCursorGenerator;
         }
 
         if (sortType == FolderBoardSortType.POPULAR) {

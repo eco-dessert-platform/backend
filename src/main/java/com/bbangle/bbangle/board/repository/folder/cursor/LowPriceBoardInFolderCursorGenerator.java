@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class LowPriceInFolderBoardInFolderCursorGenerator implements BoardInFolderCursorGenerator {
+public class LowPriceBoardInFolderCursorGenerator implements BoardInFolderCursorGenerator {
 
     private static final QBoard board = QBoard.board;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;

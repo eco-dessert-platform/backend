@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,7 +82,7 @@ class BoardInFolderCursorGeneratorMappingTest extends AbstractIntegrationTest {
         BoardInFolderCursorGenerator cursorGenerator = mapper.mappingCursorGenerator(folderBoardSortType);
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(LowPriceInFolderBoardInFolderCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(LowPriceBoardInFolderCursorGenerator.class);
     }
 
 }
