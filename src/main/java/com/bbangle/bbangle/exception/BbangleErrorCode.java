@@ -48,6 +48,7 @@ public enum BbangleErrorCode {
     MEMBER_PREFERENCE_NOT_FOUND(-30, "유저의 선호타입 내역을 확인할 수 없습니다.", BAD_REQUEST),
     IMAGE_NOT_FOUND(-31, "해당하는 이미지를 찾을 수 없습니다.", NOT_FOUND),
     REVIEW_NOT_FOUND(-32, "존재하지 않는 리뷰입니다", BAD_REQUEST),
+    ZERO_REGISTERED_USERS(-33, "현재 가입한 사용자의 수는 0명입니다.", BAD_REQUEST),
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
@@ -56,17 +57,17 @@ public enum BbangleErrorCode {
 
     public static BbangleErrorCode of(int code) {
         return Stream.of(BbangleErrorCode.values())
-            .filter(message -> message.getCode() == code)
-            .findFirst()
-            .orElseThrow(BbangleException::new);
+                .filter(message -> message.getCode() == code)
+                .findFirst()
+                .orElseThrow(BbangleException::new);
     }
 
     public static BbangleErrorCode of(String message) {
         return Stream.of(BbangleErrorCode.values())
-            .filter(error -> error.getMessage()
-                .equals(message))
-            .findFirst()
-            .orElseThrow(BbangleException::new);
+                .filter(error -> error.getMessage()
+                        .equals(message))
+                .findFirst()
+                .orElseThrow(BbangleException::new);
     }
 
 

@@ -12,6 +12,8 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,5 +47,6 @@ public interface BoardQueryDSLRepository {
     List<Board> checkingNullRanking();
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
+
 }
 
