@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.store.dto;
 
-import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
-import net.datafaker.providers.base.Bool;
 
 @Builder
 public record StoreDetailBoardDto(
@@ -11,8 +9,16 @@ public record StoreDetailBoardDto(
     String boardProfile,
     String boardTitle,
     Integer boardPrice,
-    Integer boardView,
     Boolean isWished
 ) {
 
+    public static StoreDetailBoardDto of(BoardsInStoreDto boardsInStoreDto) {
+        return StoreDetailBoardDto.builder()
+            .boardId(boardsInStoreDto.getBoardId())
+            .boardTitle(boardsInStoreDto.getBoardTitle())
+            .boardProfile(boardsInStoreDto.getBoardProfile())
+            .boardPrice(boardsInStoreDto.getBoardPrice())
+            .isWished(boardsInStoreDto.getIsWished())
+            .build();
+    }
 }
