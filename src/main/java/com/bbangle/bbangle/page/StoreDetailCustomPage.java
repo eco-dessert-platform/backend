@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.page;
 
-import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
+import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
@@ -11,12 +12,17 @@ public class StoreDetailCustomPage<T> extends CustomPage<T> {
         super(content, requestCursor, hasNext);
     }
 
-    public static StoreDetailCustomPage<List<StoreBoardsResponse>> from(
-        List<StoreBoardsResponse> storeBoardsResponse,
-        Long requestCursor,
+    public static StoreDetailCustomPage<List<BoardsInStoreResponse>> from(
+        List<BoardsInStoreResponse> boardsInStoreResponse,
+        List<Long> boardIds,
         Boolean hasNext
     ) {
-        return new StoreDetailCustomPage<>(storeBoardsResponse, requestCursor, hasNext);
+        Long cursorId = boardIds.get(boardIds.size() - 1);
+        return new StoreDetailCustomPage<>(boardsInStoreResponse, cursorId, hasNext);
+    }
+
+    public static StoreDetailCustomPage<List<BoardsInStoreResponse>> empty(Long cursorId) {
+        return new StoreDetailCustomPage<>(Collections.emptyList(), cursorId, false);
     }
 
 }
