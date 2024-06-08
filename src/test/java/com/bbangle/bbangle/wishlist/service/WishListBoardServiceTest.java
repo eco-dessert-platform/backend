@@ -65,8 +65,8 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             .boardReviewGrade(0.0)
             .build();
 
-        rankingRepository.save(boardStatistic2);
-        rankingRepository.save(boardStatistic);
+        boardStatisticRepository.save(boardStatistic2);
+        boardStatisticRepository.save(boardStatistic);
     }
 
     @Nested
@@ -97,7 +97,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
-            BoardStatistic boardStatistic = rankingRepository.findByBoardId(board.getId())
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .get();
             assertThat(boardStatistic.getRecommendScore()).isEqualTo(1.0);
             assertThat(boardStatistic.getBasicScore()).isEqualTo(1.0);
@@ -162,7 +162,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(0);
-            BoardStatistic boardStatistic = rankingRepository.findByBoardId(board.getId())
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .get();
             assertThat(boardStatistic.getRecommendScore()).isEqualTo(0.0);
             assertThat(boardStatistic.getBasicScore()).isEqualTo(0.0);

@@ -14,7 +14,7 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -36,7 +36,7 @@ public class WishListBoardService {
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
-    private final RankingRepository rankingRepository;
+    private final BoardStatisticRepository boardStatisticRepository;
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
@@ -115,7 +115,7 @@ public class WishListBoardService {
     }
 
     private void updateRankingScore(Long boardId, Double updatingScore) {
-        BoardStatistic boardStatistic = rankingRepository.findByBoardId(boardId)
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
             .orElseThrow(
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         boardStatistic.updateBasicScore(updatingScore);

@@ -321,7 +321,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
                 Board board = BoardFixture.randomBoard(store);
                 board = boardRepository.save(board);
                 BoardStatistic boardStatistic = BoardStatistic.builder().board(board).popularScore(0.0).recommendScore(0.0).build();
-                rankingRepository.save(boardStatistic);
+                boardStatisticRepository.save(boardStatistic);
 
                 if(i < 3) {
                     wishListBoardService.wish(member.getId(), board.getId(),

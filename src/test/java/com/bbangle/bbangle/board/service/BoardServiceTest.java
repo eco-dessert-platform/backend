@@ -23,7 +23,7 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -58,7 +58,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
     ProductRepository productRepository;
 
     @Autowired
-    RankingRepository rankingRepository;
+    BoardStatisticRepository boardStatisticRepository;
 
     @Autowired
     BoardService boardService;
@@ -88,10 +88,10 @@ class BoardServiceTest extends AbstractIntegrationTest {
         Board save2 = boardRepository.save(board2);
         boardRepository.save(board2);
 
-        rankingRepository.save(
+        boardStatisticRepository.save(
             RankingFixture.newRanking(save1)
         );
-        rankingRepository.save(
+        boardStatisticRepository.save(
             RankingFixture.newRanking(save2)
         );
     }
@@ -418,7 +418,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         for (int i = 0; i < 12; i++) {
             board = BoardFixture.randomBoard(store);
             Board newSavedBoard = boardRepository.save(board);
-            rankingRepository.save(
+            boardStatisticRepository.save(
                 RankingFixture.newRanking(newSavedBoard)
             );
 
@@ -478,7 +478,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 Product product = ProductFixture.randomProduct(createdBoard);
                 productRepository.save(product);
                 BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
-                rankingRepository.save(boardStatistic);
+                boardStatisticRepository.save(boardStatistic);
                 wishListBoardService.wish(member.getId(), createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
             }

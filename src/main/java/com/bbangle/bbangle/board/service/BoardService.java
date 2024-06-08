@@ -16,7 +16,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
@@ -43,7 +43,7 @@ public class BoardService {
     private final RedisTemplate<String, Object> redisTemplate;
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
-    private final RankingRepository rankingRepository;
+    private final BoardStatisticRepository boardStatisticRepository;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -107,7 +107,7 @@ public class BoardService {
 
     @Transactional
     public void updateCountView(Long boardId, String viewCountKey) {
-        BoardStatistic boardStatistic = rankingRepository.findByBoardId(boardId)
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         boardStatistic.updateBasicScore(0.1);
 
@@ -122,7 +122,7 @@ public class BoardService {
 
     @Transactional
     public void adaptPurchaseReaction(Long boardId, String purchaseCountKey) {
-        BoardStatistic boardStatistic = rankingRepository.findByBoardId(boardId)
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         boardStatistic.updateBasicScore(1.0);
 

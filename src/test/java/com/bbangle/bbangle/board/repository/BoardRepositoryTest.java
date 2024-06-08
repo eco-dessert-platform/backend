@@ -37,7 +37,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         BoardStatistic nonTarget = fixtureRanking(Map.of("board", fixtureBoard2));
 
         nonTarget.setBoard(null);
-        rankingRepository.save(nonTarget);
+        boardStatisticRepository.save(nonTarget);
 
         // when
         List<Board> result = boardRepository.checkingNullRanking();

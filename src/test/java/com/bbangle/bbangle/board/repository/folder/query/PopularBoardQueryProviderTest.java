@@ -67,7 +67,7 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(product);
             productRepository.save(product2);
             BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(boardStatistic);
+            boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
 

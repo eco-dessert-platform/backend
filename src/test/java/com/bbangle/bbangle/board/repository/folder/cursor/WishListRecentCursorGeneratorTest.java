@@ -62,7 +62,7 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
             BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(boardStatistic);
+            boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
             if(createdBoard.getId() % 2 == 1) {

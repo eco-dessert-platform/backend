@@ -60,7 +60,7 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
             BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(boardStatistic);
+            boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
@@ -90,7 +90,7 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
 
         //when
         BooleanBuilder popularCursor = popularCursorGenerator.getCursor();
-        BoardStatistic boardStatistic = rankingRepository.findByBoardId(lastSavedId).get();
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
         String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(
             boardStatistic.getBasicScore()).and(

@@ -13,7 +13,7 @@ import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.repository.SearchRepository;
@@ -46,7 +46,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
     @Autowired
     SearchService searchService;
     @Autowired
-    RankingRepository rankingRepository;
+    BoardStatisticRepository boardStatisticRepository;
     @Autowired
     EntityManager entityManager;
 
@@ -69,7 +69,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
     void deleteAllEntity() {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
-        rankingRepository.deleteAll();
+        boardStatisticRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
         boardRepository.deleteAll();

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.config.ranking;
 
-import com.bbangle.bbangle.ranking.service.RankingService;
+import com.bbangle.bbangle.ranking.service.BoardStatisticService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class BoardWishListConfig {
 
-    private final RankingService rankingService;
+    private final BoardStatisticService boardStatisticService;
 
     @PostConstruct
     public void init() {
-        rankingService.updatingNonRankedBoards();
+        boardStatisticService.updatingNonRankedBoards();
     }
 
 }

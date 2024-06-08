@@ -3,7 +3,7 @@ package com.bbangle.bbangle.config.ranking;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RankingUpdate {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
-    private final RankingRepository rankingRepository;
+    private final BoardStatisticRepository boardStatisticRepository;
     @Autowired
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
@@ -48,7 +48,7 @@ public class RankingUpdate {
                     }
                     for (Object ele : range) {
                         BoardLikeInfo info = (BoardLikeInfo) ele;
-                        BoardStatistic boardStatistic = rankingRepository.findByBoardId(info.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+                        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(info.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
                         if (info.scoreType() == ScoreType.WISH) {
                             boardStatistic.updateBasicScore(-info.score());
                             continue;

@@ -69,12 +69,12 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 true);
             Board save1 = boardRepository.save(board);
             Board save2 = boardRepository.save(board2);
-            rankingRepository.save(BoardStatistic.builder()
+            boardStatisticRepository.save(BoardStatistic.builder()
                 .board(save1)
                 .popularScore(0.0)
                 .recommendScore(0.0)
                 .build());
-            rankingRepository.save(BoardStatistic.builder()
+            boardStatisticRepository.save(BoardStatistic.builder()
                 .board(save2)
                 .popularScore(0.0)
                 .recommendScore(0.0)
@@ -268,7 +268,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
             productRepository.save(product);
 
             BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(boardStatistic);
+            boardStatisticRepository.save(boardStatistic);
 
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));

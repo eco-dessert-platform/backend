@@ -10,7 +10,7 @@ import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -68,7 +68,7 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected StoreRepository storeRepository;
     @Autowired
-    protected RankingRepository rankingRepository;
+    protected BoardStatisticRepository boardStatisticRepository;
     @Autowired
     protected ProductRepository productRepository;
     @Autowired
@@ -88,7 +88,7 @@ public abstract class AbstractIntegrationTest {
     void before() {
         // 이거 없으면 데이터가 꼬여서 테스트 너무 힘들어서 넣었습니다 살려주세요
         storeRepository.deleteAllInBatch();
-        rankingRepository.deleteAllInBatch();
+        boardStatisticRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         boardRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
@@ -135,7 +135,7 @@ public abstract class AbstractIntegrationTest {
             builder = builder.set("board", board);
         }
 
-        return rankingRepository.save(builder.sample());
+        return boardStatisticRepository.save(builder.sample());
     }
 
     protected Board fixtureBoard(Map<String, Object> params) {
