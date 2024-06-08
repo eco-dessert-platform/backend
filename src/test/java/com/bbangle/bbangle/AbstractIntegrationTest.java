@@ -127,22 +127,12 @@ public abstract class AbstractIntegrationTest {
         ArbitraryBuilder<Ranking> builder = fixtureMonkey.giveMeBuilder(Ranking.class);
         setBuilderParams(params, builder);
 
-        if (!params.containsKey("board")) {
-            Board board = fixtureBoard(emptyMap());
-            builder = builder.set("board", board);
-        }
-
         return rankingRepository.save(builder.sample());
     }
 
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
         setBuilderParams(params, builder);
-
-        if (!params.containsKey("store")) {
-            Store store = fixtureStore(emptyMap());
-            builder = builder.set("store", store);
-        }
 
         List<Product> products;
         if (!params.containsKey("productList")) {
