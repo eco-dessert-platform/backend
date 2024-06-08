@@ -1,15 +1,18 @@
 package com.bbangle.bbangle.store.dto;
 
+import com.bbangle.bbangle.board.common.TagUtils;
+import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Builder;
+
+import java.util.List;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class PopularBoardResponse {
+public class BoardsInStoreResponse {
 
     private Long boardId;
     private String thumbnail;
@@ -17,28 +20,29 @@ public class PopularBoardResponse {
     private Integer price;
     private Boolean isWished;
     private Boolean isBundled;
+    private List<String> tags;
 
-    public static PopularBoardResponse from(PopularBoardDto boardDto,
-        Map<Long, Set<Category>> categorys) {
-        return PopularBoardResponse.builder()
+    public static BoardsInStoreResponse from(
+        BoardsInStoreDto boardDto,
+        List<TagsDao> tags,
+        Set<Category> categories
+    ) {
+        return BoardsInStoreResponse.builder()
             .boardId(boardDto.getBoardId())
             .thumbnail(boardDto.getBoardProfile())
             .title(boardDto.getBoardTitle())
             .price(boardDto.getBoardPrice())
             .isWished(boardDto.getIsWished())
-            .isBundled(checkCategotyCount(boardDto, categorys))
+            .isBundled(checkMoreThenOne(categories))
+            .tags(TagUtils.convertToStrings(tags))
             .build();
     }
 
-    private static boolean checkCategotyCount(PopularBoardDto boardDto,
-        Map<Long, Set<Category>> categorys) {
-        Set<Category> targetCategories = categorys.get(boardDto.getBoardId());
-
-        if (Objects.isNull(targetCategories)) {
+    private static boolean checkMoreThenOne(Set<Category> categories) {
+        if (Objects.isNull(categories)) {
             return false;
         }
 
-        return categorys.get(boardDto.getBoardId()).size() > 1;
+        return categories.size() > 1;
     }
-
 }

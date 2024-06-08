@@ -1,14 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.folder.BoardPageGenerator;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -20,19 +19,18 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.store.dto.PopularBoardDto;
+import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -44,8 +42,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+    public static final int SINGLE_CATEGORY_COUNT = 1;
 
     private final BoardRepository boardRepository;
+    private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     @Qualifier("defaultRedisTemplate")
@@ -81,7 +81,8 @@ public class BoardService {
         WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
-        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
+        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder,
+            memberId);
 
         return BoardPageGenerator.getBoardPage(allByFolder);
     }
@@ -142,6 +143,38 @@ public class BoardService {
 
         redisTemplate.opsForValue()
             .set(purchaseCountKey, "true", Duration.ofMinutes(3));
+    }
+
+    public List<PopularBoardResponse> getTopBoardInfo(Long memberId, Long storeId) {
+        List<Long> boardIds = boardRepository.getTopBoardIds(storeId);
+
+        if (boardIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<PopularBoardDto> boardDtos = boardRepository.getTopBoardInfo(boardIds, memberId);
+        Map<Long, Set<Category>> categorys = productRepository.getCategoryInfoByBoardId(boardIds);
+
+        boardDtos = sortByPopularity(boardIds, boardDtos); // 인기순 정렬
+
+        return combineBaseOnBoardId(boardDtos, categorys);
+    }
+
+    private List<PopularBoardDto> sortByPopularity(List<Long> orders,
+        List<PopularBoardDto> popularBoardDtos) {
+        return orders.stream().map(
+                id -> popularBoardDtos.stream()
+                    .filter(popularBoardDto -> popularBoardDto.getBoardId().equals(id))
+                    .findFirst()
+                    .get())
+            .toList();
+    }
+
+    private List<PopularBoardResponse> combineBaseOnBoardId(
+        List<PopularBoardDto> popularBoardDtos, Map<Long, Set<Category>> categorys) {
+        return popularBoardDtos.stream()
+            .map(popularBoardDto -> PopularBoardResponse.from(popularBoardDto, categorys))
+            .toList();
     }
 
 

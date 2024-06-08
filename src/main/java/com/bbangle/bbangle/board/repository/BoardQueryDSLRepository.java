@@ -9,6 +9,8 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
+import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,14 @@ public interface BoardQueryDSLRepository {
 
     HashMap<Long, String> getAllBoardTitle();
 
+    List<Long> getTopBoardIds(Long storeId);
+
+    List<PopularBoardDto> getTopBoardInfo(List<Long> boardIds, Long memberId);
+
+    List<Long> getBoardIds(Long boardIdAsCursorId, Long storeId);
+
+    List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
+        Long memberId);
     List<Board> checkingNullRanking();
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
