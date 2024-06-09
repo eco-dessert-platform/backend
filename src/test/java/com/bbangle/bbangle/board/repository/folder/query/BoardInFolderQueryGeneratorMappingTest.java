@@ -2,8 +2,7 @@ package com.bbangle.bbangle.board.repository.folder.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;

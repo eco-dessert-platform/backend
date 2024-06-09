@@ -8,8 +8,19 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
-import com.bbangle.bbangle.review.domain.*;
-import com.bbangle.bbangle.review.dto.*;
+import com.bbangle.bbangle.ranking.service.RankingService;
+import com.bbangle.bbangle.review.domain.Badge;
+import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.review.domain.ReviewCursor;
+import com.bbangle.bbangle.review.domain.ReviewImg;
+import com.bbangle.bbangle.review.domain.ReviewLike;
+import com.bbangle.bbangle.review.domain.ReviewManager;
+import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
+import com.bbangle.bbangle.review.dto.ReviewImgDto;
+import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
+import com.bbangle.bbangle.review.dto.ReviewRateResponse;
+import com.bbangle.bbangle.review.dto.ReviewRequest;
+import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
@@ -27,6 +38,9 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    private static final Double REVIEW_SCORE= 50.0;
+
+    private final RankingService rankingService;
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
 
@@ -49,6 +63,8 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
+        rankingService.updateRankingScore(reviewRequest.boardId(), REVIEW_SCORE);
+
    /*     //FIXME 따로 구현!
         if(Objects.isNull(reviewRequest.photos())){
             return;
