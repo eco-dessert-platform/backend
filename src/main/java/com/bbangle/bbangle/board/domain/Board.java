@@ -84,6 +84,11 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    //TODO: 임시로 남겨놓음 다음 pr에서 제거 예정(by 중원)
+    @Builder.Default
+    @OneToMany(mappedBy = "board")
+    private List<Product> productList = new ArrayList<>();
+
     public void updateWishCnt(boolean status) {
         if (status) {
             this.wishCnt++;
