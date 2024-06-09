@@ -32,7 +32,7 @@ public class HighPriceCursorGenerator implements BoardCursorGenerator {
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        cursorBuilder.and(board.price.loe(targetPrice).and(board.id.loe(cursorId)));
+        cursorBuilder.and(board.price.loe(targetPrice).or(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }

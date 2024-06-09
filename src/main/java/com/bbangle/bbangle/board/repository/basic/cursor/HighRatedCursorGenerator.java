@@ -36,7 +36,7 @@ public class HighRatedCursorGenerator implements BoardCursorGenerator {
                 BbangleErrorCode.RANKING_NOT_FOUND));
 
         cursorBuilder.and(ranking.recommendScore.loe(targetScore))
-            .and(board.id.loe(cursorId));
+            .or(board.id.loe(cursorId));
 
         return cursorBuilder;
     }
