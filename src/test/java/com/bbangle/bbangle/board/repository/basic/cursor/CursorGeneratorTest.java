@@ -99,7 +99,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.loe(price))
-                .and(QBoard.board.id.loe(firstSavedBoardId))
+                .or(QBoard.board.id.loe(firstSavedBoardId))
                 .toString();
 
             //then
@@ -148,7 +148,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.goe(price))
-                .and(QBoard.board.id.loe(firstSavedBoardId))
+                .or(QBoard.board.id.loe(firstSavedBoardId))
                 .toString();
 
             //then
@@ -241,7 +241,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(expectedScore))
-                .and(QBoard.board.id.loe(firstSavedBoardId))
+                .or(QBoard.board.id.loe(firstSavedBoardId))
                 .toString();
 
             //then
