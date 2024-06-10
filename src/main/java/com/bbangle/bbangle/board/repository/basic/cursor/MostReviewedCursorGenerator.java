@@ -34,8 +34,8 @@ public class MostReviewedCursorGenerator implements BoardCursorGenerator {
             .orElseThrow(() -> new BbangleException(
                 BbangleErrorCode.RANKING_NOT_FOUND));
 
-        cursorBuilder.and(boardStatistic.basicScore.loe(targetScore))
-            .or(board.id.loe(cursorId));
+        cursorBuilder.and(boardStatistic.basicScore.lt(targetScore))
+            .or(boardStatistic.basicScore.eq(targetScore).and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }

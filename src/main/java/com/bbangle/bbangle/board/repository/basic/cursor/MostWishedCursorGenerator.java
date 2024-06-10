@@ -30,8 +30,8 @@ public class MostWishedCursorGenerator implements BoardCursorGenerator {
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        cursorBuilder.and(board.wishCnt.loe(targetWishCount))
-            .or(board.id.loe(cursorId));
+        cursorBuilder.and(board.wishCnt.lt(targetWishCount))
+            .or(board.wishCnt.eq(targetWishCount).and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }
