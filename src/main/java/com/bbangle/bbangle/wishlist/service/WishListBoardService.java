@@ -60,9 +60,6 @@ public class WishListBoardService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
-        board.updateWishCnt(false);
-
-        boardStatisticService.updateRankingScore(boardId, WISH_CANCEL_SCORE);
     }
 
     @Transactional
@@ -105,16 +102,6 @@ public class WishListBoardService {
             .build();
 
         wishlistBoardRepository.save(wishlistBoard);
-        boardStatisticService.updateRankingScore(board.getId(), WISH_SCORE);
-
-        board.updateWishCnt(true);
-    }
-
-    private void updateRankingScore(Long boardId, Double updatingScore) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(
-                () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        boardStatistic.updateBasicScore(updatingScore);
     }
 
 }
