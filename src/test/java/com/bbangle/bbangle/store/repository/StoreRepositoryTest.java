@@ -227,7 +227,6 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
             .status(true)
             .profile("TestProfile.jpg")
             .purchaseUrl("TestPurchaseUrl")
-            .view(view)
             .sunday(false).monday(false).tuesday(false).wednesday(false).thursday(true)
             .sunday(false)
             .build());

@@ -183,7 +183,6 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .status(true)
                 .profile("profile")
                 .purchaseUrl("purchaseUrl")
-                .view(1)
                 .sunday(sunday)
                 .monday(monday)
                 .tuesday(tuesday)

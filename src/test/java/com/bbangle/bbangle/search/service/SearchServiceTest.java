@@ -206,7 +206,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
                             .profile(
                                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                             .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .view(100).sunday(true).monday(true).tuesday(true).wednesday(true)
+                            .sunday(true).monday(true).tuesday(true).wednesday(true)
                             .thursday(true).friday(true).saturday(true).build());
 
             productRepository.saveAll(List.of(Product.builder().board(board).title("콩볼").price(3600)

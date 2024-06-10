@@ -201,7 +201,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                     .id((long) i + 1)
                     .store(store)
                     .title("title" + i)
-                    .wishCnt(i)
                     .build();
             boardRepository.save(board);
         }
