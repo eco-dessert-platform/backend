@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.review.controller;
 
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
@@ -18,8 +19,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Reviews", description = "리뷰 API")
 public class ReviewController {
 
+    private static final Boolean WRITE = true;
+    private static final Boolean DELETE = false;
+
     private final ReviewService reviewService;
     private final ResponseService responseService;
+    private final BoardStatisticService boardStatisticService;
 
     @Operation(summary = "리뷰 작성(이미지 제외)")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -30,6 +35,7 @@ public class ReviewController {
         Long memberId
     ){
         reviewService.makeReview(reviewRequest, memberId);
+        boardStatisticService.updateReviewCount(reviewRequest.boardId(), WRITE);
         return responseService.getSuccessResult();
     }
 
@@ -56,7 +62,8 @@ public class ReviewController {
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){
-        reviewService.deleteReview(reviewId, memberId);
+        Long deletedBoardId = reviewService.deleteReview(reviewId, memberId);
+        boardStatisticService.updateReviewCount(deletedBoardId, DELETE);
         return responseService.getSuccessResult();
     }
 
