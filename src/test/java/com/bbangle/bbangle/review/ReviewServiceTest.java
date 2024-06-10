@@ -3,11 +3,11 @@ package com.bbangle.bbangle.review;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewImg;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
@@ -59,8 +59,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             .title("board1")
             .build();
         boardRepository.save(board);
-        Ranking ranking = RankingFixture.newRanking(board);
-        rankingRepository.save(ranking);
+        BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
+        boardStatisticRepository.save(boardStatistic);
     }
 
     @Test

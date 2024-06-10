@@ -11,7 +11,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
@@ -63,7 +63,7 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
-            BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));

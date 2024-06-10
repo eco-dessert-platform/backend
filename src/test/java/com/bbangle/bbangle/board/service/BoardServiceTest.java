@@ -17,7 +17,7 @@ import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
@@ -88,10 +88,10 @@ class BoardServiceTest extends AbstractIntegrationTest {
         boardRepository.save(board2);
 
         boardStatisticRepository.save(
-            RankingFixture.newRanking(save1)
+            BoardStatisticFixture.newBoardStatistic(save1)
         );
         boardStatisticRepository.save(
-            RankingFixture.newRanking(save2)
+            BoardStatisticFixture.newBoardStatistic(save2)
         );
     }
 
@@ -423,7 +423,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
             board = BoardFixture.randomBoard(store);
             Board newSavedBoard = boardRepository.save(board);
             boardStatisticRepository.save(
-                RankingFixture.newRanking(newSavedBoard)
+                BoardStatisticFixture.newBoardStatistic(newSavedBoard)
             );
 
             Product product4 = ProductFixture.randomProduct(board);
@@ -480,7 +480,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 }
                 Product product = ProductFixture.randomProduct(createdBoard);
                 productRepository.save(product);
-                BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
                 boardStatisticRepository.save(boardStatistic);
                 wishListBoardService.wish(member.getId(), createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));

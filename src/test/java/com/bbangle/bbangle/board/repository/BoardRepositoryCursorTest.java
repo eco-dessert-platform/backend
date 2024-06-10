@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 
 class BoardRepositoryCursorTest extends AbstractIntegrationTest {
 
+    private static final Long NULL_MEMBER_ID = null;
+
     @Test
     @DisplayName("[게시글조회] 추천순 점수 내림차순 정렬 & 커서 정상 확인")
     void test1() {
@@ -35,8 +37,8 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
         Long cursorId = idList.get(3); // 아마도 3
 
         // when
-        BoardCustomPage<List<BoardResponseDto>> resultPage = boardRepository
-            .getBoardResponseList(filter, SortType.RECOMMEND, cursorId);
+        BoardCustomPage<List<BoardResponseDto>> resultPage = boardService.getBoardList(filter,
+            SortType.RECOMMEND, cursorId, NULL_MEMBER_ID);
         List<BoardResponseDto> result = resultPage.getContent();
 
         // then
@@ -62,12 +64,10 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
         FilterRequest filter = FilterRequest.builder()
             .build();
         Long cursorId = idList.get(3); // 아마도 3
-        Double cursorScore = 3.0;
-        CursorInfo cursor = new CursorInfo(cursorId, cursorScore);
 
         // when
-        BoardCustomPage<List<BoardResponseDto>> resultPage = boardRepository
-            .getBoardResponseList(filter, SortType.POPULAR, cursor);
+        BoardCustomPage<List<BoardResponseDto>> resultPage = boardService.getBoardList(filter,
+            SortType.RECOMMEND, cursorId, NULL_MEMBER_ID);
         List<BoardResponseDto> result = resultPage.getContent();
 
         // then

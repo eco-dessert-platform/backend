@@ -13,11 +13,11 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -49,8 +49,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
             member = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
-            Ranking ranking = RankingFixture.newRanking(savedBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
+            boardStatisticRepository.save(boardStatistic);
             if (i == 0) {
                 firstSavedBoardId = savedBoard.getId();
             }

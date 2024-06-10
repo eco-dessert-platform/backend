@@ -12,11 +12,11 @@ import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.domain.BoardStatistic;
+import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -57,8 +57,8 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
             member = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
-            Ranking ranking = RankingFixture.newRanking(savedBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
+            boardStatisticRepository.save(boardStatistic);
             if (i == 0) {
                 firstSavedBoardId = savedBoard.getId();
             }
@@ -316,10 +316,10 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                 .findFirst()
                 .map(BoardResponseDao::boardId)
                 .orElseThrow();
-            List<Ranking> ranking = queryFactory.select(QRanking.ranking)
-                .from(QRanking.ranking)
+            List<BoardStatistic> ranking = queryFactory.select(QBoardStatistic.boardStatistic)
+                .from(QBoardStatistic.boardStatistic)
                 .join(QBoard.board)
-                .on(QRanking.ranking.board.eq(QBoard.board))
+                .on(QBoardStatistic.boardStatistic.boardId.eq(QBoard.board.id))
                 .fetchJoin()
                 .fetch();
 
@@ -331,10 +331,9 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                 }
                 Long boardId = actualBoards.get(i).boardId();
                 Double boardScore = ranking.stream()
-                    .filter(rank -> rank.getBoard()
-                        .getId()
+                    .filter(boardStatistic -> boardStatistic.getBoardId()
                         .equals(boardId))
-                    .map(Ranking::getRecommendScore)
+                    .map(BoardStatistic::getBasicScore)
                     .findFirst()
                     .orElseThrow();
                 assertThat(boardScore).isEqualTo(ONE_WISH_SCORE);

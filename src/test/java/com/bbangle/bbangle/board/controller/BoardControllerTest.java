@@ -4,10 +4,9 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
@@ -70,16 +69,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 true);
             Board save1 = boardRepository.save(board);
             Board save2 = boardRepository.save(board2);
-            boardStatisticRepository.save(BoardStatistic.builder()
-                .board(save1)
-                .popularScore(0.0)
-                .recommendScore(0.0)
-                .build());
-            boardStatisticRepository.save(BoardStatistic.builder()
-                .board(save2)
-                .popularScore(0.0)
-                .recommendScore(0.0)
-                .build());
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(save1));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(save2));
 
             Product product1 = productGenerator(board,
                 false,
@@ -268,7 +259,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
             product = productWIthKetogenicYogurt(createdBoard);
             productRepository.save(product);
 
-            BoardStatistic boardStatistic = RankingFixture.newRanking(createdBoard);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
 
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
