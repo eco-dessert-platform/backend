@@ -5,10 +5,8 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
-import com.bbangle.bbangle.board.repository.BoardImgRepository;
-import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
@@ -18,13 +16,10 @@ import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -32,33 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 public class StoreRepositoryTest extends AbstractIntegrationTest {
-
-    @Autowired
-    private BoardImgRepository boardImgRepository;
-
-    @Autowired
-    private WishListBoardRepository wishListProductRepository;
-
-    @Autowired
-    private BoardStatisticRepository boardStatisticRepository;
-
-    @Autowired
-    private BoardWishListConfig boardWishListConfig;
-
-    @AfterEach
-    void afterEach() {
-        boardStatisticRepository.deleteAll();
-        wishListProductRepository.deleteAll();
-        wishListFolderRepository.deleteAll();
-        wishListStoreRepository.deleteAll();
-        memberRepository.deleteAll();
-        productRepository.deleteAll();
-        boardImgRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 스토어 아이디에 맞는 스토어 정보를 가져올 수 있다")
@@ -98,9 +66,8 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         for (int count = 0; count < 5; count++) {
             Board board = createBoard(store, "TestBoardTitle" + count, 100 + count);
             createProduct(board, Category.SNACK);
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
-
-        updateRanking();
 
         Long memberId = null;
         Long storeId = store.getId();
@@ -123,6 +90,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
             Board board = createBoard(store, "TestBoardTitle", 0);
             createProduct(board, Category.SNACK);
             createWishlistProduct(member, board);
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
 
         Long memberId = member.getId();
@@ -146,6 +114,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
             createProduct(board, Category.SNACK);
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
 
         Long memberId = member.getId();
@@ -171,6 +140,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
             Board board = createBoard(store, "TestBoardTitle", 0);
             createProduct(board, Category.SNACK);
             createProduct(board, Category.BREAD);
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
 
         Long cursorId = null;
@@ -196,6 +166,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
             Product product = createProduct(board, Category.SNACK);
             lastBoardId = board.getId();
         }
@@ -271,7 +242,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
                 member(member).
                 build());
 
-        return wishListProductRepository.save(
+        return wishListBoardRepository.save(
             WishListBoard.builder().boardId(board.getId())
                 .memberId(member.getId())
                 .wishlistFolderId(wishlistFolder.getId())
@@ -286,7 +257,4 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
                 .build());
     }
 
-    private void updateRanking() {
-        boardWishListConfig.init();
-    }
 }
