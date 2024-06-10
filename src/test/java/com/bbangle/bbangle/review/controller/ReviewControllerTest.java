@@ -2,7 +2,11 @@ package com.bbangle.bbangle.review.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.bbangle.bbangle.review.domain.Badge;
@@ -43,6 +47,8 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @BeforeEach
     public void setUp() {
         Board board = boardRepository.save(fixtureBoard(emptyMap()));
+        productRepository.save(ProductFixture.randomProduct(board));
+        boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         Long boardId = board.getId();
         Member kakaoMember = MemberFixture.createKakaoMember();
         Member savedMember = memberRepository.save(kakaoMember);
