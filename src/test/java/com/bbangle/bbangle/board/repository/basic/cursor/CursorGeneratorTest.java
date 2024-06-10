@@ -98,8 +98,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .where(QBoard.board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.loe(price))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.lt(price))
+                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -147,8 +147,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .where(QBoard.board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.goe(price))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.gt(price))
+                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -185,7 +185,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("존재하는 cursorId로 조회하는 경우 정상적으로 BooleanBuilder를 반환한다")
-        void getLowPriceCursorWithCursorId() {
+        void getRecentPriceCursorWithCursorId() {
             //given, when
             BooleanBuilder recentCursor = boardCursorGeneratorMapping
                 .mappingCursorGenerator(SortType.RECENT)
@@ -240,8 +240,9 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .where(QBoardStatistic.boardStatistic.boardId.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoardStatistic.boardStatistic.basicScore.loe(expectedScore))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder()
+                .and(QBoardStatistic.boardStatistic.basicScore.lt(expectedScore))
+                .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
