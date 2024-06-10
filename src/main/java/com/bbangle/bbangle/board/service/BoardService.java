@@ -13,11 +13,9 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +30,10 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-    private static final Double VIEW_COUNT_SCORE = 1.0;
 
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
-    @Qualifier("defaultRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final BoardStatisticService boardStatisticService;
-    private final BoardStatisticRepository boardStatisticRepository;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -102,28 +95,5 @@ public class BoardService {
     public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
-
-    @Transactional
-    public void updateCountView(Long boardId, String viewCountKey) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        boardStatistic.updateBasicScore(0.1);
-
-        boardStatisticService.updateRankingScore(boardId, VIEW_COUNT_SCORE);
-
-        redisTemplate.opsForValue()
-            .set(viewCountKey, "true", Duration.ofMinutes(3));
-    }
-
-    @Transactional
-    public void adaptPurchaseReaction(Long boardId, String purchaseCountKey) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        boardStatistic.updateBasicScore(1.0);
-
-        redisTemplate.opsForValue()
-            .set(purchaseCountKey, "true", Duration.ofMinutes(3));
-    }
-
 
 }
