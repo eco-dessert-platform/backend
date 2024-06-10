@@ -2,13 +2,13 @@ package com.bbangle.bbangle.review.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
-import com.bbangle.bbangle.boardstatistic.service.RankingService;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
@@ -40,10 +40,10 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 public class ReviewService {
     private static final Double REVIEW_SCORE= 50.0;
 
-    private final RankingService rankingService;
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
 
+    private final BoardStatisticService boardStatisticService;
     private final ReviewRepository reviewRepository;
     private final BoardRepository boardRepository;
     private final ReviewImgRepository reviewImgRepository;
@@ -63,7 +63,7 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
-        rankingService.updateRankingScore(reviewRequest.boardId(), REVIEW_SCORE);
+        boardStatisticService.updateRankingScore(reviewRequest.boardId(), REVIEW_SCORE);
 
    /*     //FIXME 따로 구현!
         if(Objects.isNull(reviewRequest.photos())){

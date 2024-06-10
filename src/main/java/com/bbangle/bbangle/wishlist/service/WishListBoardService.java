@@ -2,11 +2,11 @@ package com.bbangle.bbangle.wishlist.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.boardstatistic.service.RankingService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -33,7 +33,7 @@ public class WishListBoardService {
     private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
     private final BoardStatisticRepository boardStatisticRepository;
-    private final RankingService rankingService;
+    private final BoardStatisticService boardStatisticService;
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
@@ -62,7 +62,7 @@ public class WishListBoardService {
         wishlistBoardRepository.delete(wishedBoard);
         board.updateWishCnt(false);
 
-        rankingService.updateRankingScore(boardId, WISH_CANCEL_SCORE);
+        boardStatisticService.updateRankingScore(boardId, WISH_CANCEL_SCORE);
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class WishListBoardService {
             .build();
 
         wishlistBoardRepository.save(wishlistBoard);
-        rankingService.updateRankingScore(board.getId(), WISH_SCORE);
+        boardStatisticService.updateRankingScore(board.getId(), WISH_SCORE);
 
         board.updateWishCnt(true);
     }

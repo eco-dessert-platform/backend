@@ -8,11 +8,11 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.boardstatistic.service.RankingService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -39,7 +39,7 @@ public class BoardService {
     private final WishListFolderRepository folderRepository;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RankingService rankingService;
+    private final BoardStatisticService boardStatisticService;
     private final BoardStatisticRepository boardStatisticRepository;
 
     @Transactional(readOnly = true)
@@ -109,7 +109,7 @@ public class BoardService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         boardStatistic.updateBasicScore(0.1);
 
-        rankingService.updateRankingScore(boardId, VIEW_COUNT_SCORE);
+        boardStatisticService.updateRankingScore(boardId, VIEW_COUNT_SCORE);
 
         redisTemplate.opsForValue()
             .set(viewCountKey, "true", Duration.ofMinutes(3));
