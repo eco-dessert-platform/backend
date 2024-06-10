@@ -38,7 +38,9 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-    private static final Double REVIEW_SCORE= 50.0;
+
+    private static final Boolean WRITE = true;
+    private static final Boolean DELETE = false;
 
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
@@ -63,6 +65,7 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
+        boardStatisticService.updateReviewCount(reviewRequest.boardId(), WRITE);
 
    /*     //FIXME 따로 구현!
         if(Objects.isNull(reviewRequest.photos())){
@@ -223,7 +226,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public Long deleteReview(Long reviewId, Long memberId) {
+    public void deleteReview(Long reviewId, Long memberId) {
         memberRepository.findMemberById(memberId);
         List<ReviewImg> reviewImgs = reviewImgRepository.findByReviewId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
@@ -236,7 +239,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.delete();
-        return review.getBoardId();
+        boardStatisticService.updateReviewCount(review.getBoardId(), DELETE);
     }
 
     @Transactional

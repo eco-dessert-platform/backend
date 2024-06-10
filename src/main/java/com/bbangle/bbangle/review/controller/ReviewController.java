@@ -19,12 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Reviews", description = "리뷰 API")
 public class ReviewController {
 
-    private static final Boolean WRITE = true;
-    private static final Boolean DELETE = false;
-
     private final ReviewService reviewService;
     private final ResponseService responseService;
-    private final BoardStatisticService boardStatisticService;
 
     @Operation(summary = "리뷰 작성(이미지 제외)")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -35,7 +31,6 @@ public class ReviewController {
         Long memberId
     ){
         reviewService.makeReview(reviewRequest, memberId);
-        boardStatisticService.updateReviewCount(reviewRequest.boardId(), WRITE);
         return responseService.getSuccessResult();
     }
 
@@ -62,8 +57,7 @@ public class ReviewController {
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){
-        Long deletedBoardId = reviewService.deleteReview(reviewId, memberId);
-        boardStatisticService.updateReviewCount(deletedBoardId, DELETE);
+        reviewService.deleteReview(reviewId, memberId);
         return responseService.getSuccessResult();
     }
 
