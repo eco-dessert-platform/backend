@@ -7,13 +7,11 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishListBoardService {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
-    private static final Double WISH_SCORE = 50.0;
-    private static final Double WISH_CANCEL_SCORE = -50.0;
+    private static final Boolean WISH = true;
+    private static final Boolean WISH_CANCEL = false;
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
-    private final BoardStatisticRepository boardStatisticRepository;
     private final BoardStatisticService boardStatisticService;
 
     @Transactional
@@ -47,6 +44,7 @@ public class WishListBoardService {
         validateIsWishAvailable(board.getId(), member.getId());
 
         makeNewWish(board, wishlistFolder, member);
+        boardStatisticService.updateWishCount(boardId, WISH);
     }
 
 
@@ -60,6 +58,7 @@ public class WishListBoardService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
+        boardStatisticService.updateWishCount(boardId, WISH_CANCEL);
     }
 
     @Transactional
