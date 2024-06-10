@@ -20,7 +20,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BoardStatistic {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "board_id")
@@ -41,8 +42,32 @@ public class BoardStatistic {
     @Column(name = "board_review_grade")
     private Double boardReviewGrade;
 
-    public void updateBasicScore(Double score) {
-        this.basicScore += score;
+    public void updateBasicScore(Double score, boolean createAction) {
+        if (createAction) {
+            this.basicScore += score;
+            return;
+        }
+        basicScore += score;
+    }
+
+    public void updateViewCount() {
+        this.boardViewCount++;
+    }
+
+    public void updateWishCount(boolean isWish) {
+        if (isWish) {
+            this.boardWishCount++;
+            return;
+        }
+        boardWishCount--;
+    }
+
+    public void updateReviewCount(boolean isCreate) {
+        if (isCreate) {
+            this.boardReviewCount++;
+            return;
+        }
+        boardReviewCount--;
     }
 
 }
