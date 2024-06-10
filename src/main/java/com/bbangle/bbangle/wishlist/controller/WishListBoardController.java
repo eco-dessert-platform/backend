@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.wishlist.controller;
 
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -19,8 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WishListBoardController {
 
+    private static final Boolean WISH = true;
+    private static final Boolean WISH_CANCEL = false;
+
     private final WishListBoardService wishListBoardService;
     private final ResponseService responseService;
+    private final BoardStatisticService boardStatisticService;
 
     @PostMapping("/wish")
     public CommonResult wish(
@@ -32,7 +37,7 @@ public class WishListBoardController {
         WishListBoardRequest wishRequest
     ) {
         wishListBoardService.wish(memberId, boardId, wishRequest);
-
+        boardStatisticService.updateWishCount(boardId, WISH);
         return responseService.getSuccessResult();
     }
 
@@ -44,7 +49,7 @@ public class WishListBoardController {
         Long boardId
     ) {
         wishListBoardService.cancel(memberId, boardId);
-
+        boardStatisticService.updateWishCount(boardId, WISH_CANCEL);
         return responseService.getSuccessResult();
     }
 
