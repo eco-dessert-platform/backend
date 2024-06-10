@@ -2,6 +2,8 @@ package com.bbangle.bbangle.board.repository.basic.cursor;
 
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardCursorGenerator;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.querydsl.core.BooleanBuilder;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class MostWishedCursorGenerator implements BoardCursorGenerator {
 
     private static final QBoard board = QBoard.board;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -24,14 +27,15 @@ public class MostWishedCursorGenerator implements BoardCursorGenerator {
         if (cursorId == null) {
             return cursorBuilder;
         }
-        Integer targetWishCount = Optional.ofNullable(jpaQueryFactory.select(board.wishCnt)
-                .from(board)
-                .where(board.id.eq(cursorId))
+        Integer targetWishCount = Optional.ofNullable(jpaQueryFactory
+                .select(boardStatistic.boardWishCount)
+                .from(boardStatistic)
+                .where(boardStatistic.boardId.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        cursorBuilder.and(board.wishCnt.lt(targetWishCount))
-            .or(board.wishCnt.eq(targetWishCount).and(board.id.loe(cursorId)));
+        cursorBuilder.and(boardStatistic.boardWishCount.lt(targetWishCount))
+            .or(boardStatistic.boardWishCount.eq(targetWishCount).and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }

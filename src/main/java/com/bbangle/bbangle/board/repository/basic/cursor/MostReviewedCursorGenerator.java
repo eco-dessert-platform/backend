@@ -27,15 +27,15 @@ public class MostReviewedCursorGenerator implements BoardCursorGenerator {
             return cursorBuilder;
         }
 
-        Double targetScore = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.basicScore)
+        int boardReviewCount = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.boardReviewCount)
                 .from(boardStatistic)
                 .where(boardStatistic.boardId.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(
                 BbangleErrorCode.RANKING_NOT_FOUND));
 
-        cursorBuilder.and(boardStatistic.basicScore.lt(targetScore))
-            .or(boardStatistic.basicScore.eq(targetScore).and(board.id.loe(cursorId)));
+        cursorBuilder.and(boardStatistic.boardReviewCount.lt(boardReviewCount))
+            .or(boardStatistic.boardReviewCount.eq(boardReviewCount).and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }
