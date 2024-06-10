@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.sort;
 
 import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.querydsl.core.types.OrderSpecifier;
 import java.util.function.Supplier;

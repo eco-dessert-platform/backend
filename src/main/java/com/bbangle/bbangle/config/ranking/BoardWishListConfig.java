@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.config.ranking;
 
-import com.bbangle.bbangle.ranking.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

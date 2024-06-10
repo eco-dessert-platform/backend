@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
-import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;

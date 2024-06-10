@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.ranking.domain;
+package com.bbangle.bbangle.boardstatistic.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

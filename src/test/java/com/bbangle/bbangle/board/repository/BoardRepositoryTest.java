@@ -5,7 +5,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.ranking.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.ranking.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 
 public class BoardStatisticFixture {
 

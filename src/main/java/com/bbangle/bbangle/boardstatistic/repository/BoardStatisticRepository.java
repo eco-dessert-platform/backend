@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.ranking.repository;
+package com.bbangle.bbangle.boardstatistic.repository;
 
-import com.bbangle.bbangle.ranking.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -21,7 +21,7 @@ import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMap
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -43,8 +43,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-
-import java.util.stream.Collectors;
 
 @Repository
 @Slf4j

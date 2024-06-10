@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.ranking.service;
+package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.ranking.domain.BoardStatistic;
-import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardCursorGenerator;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.ranking.domain.QBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
