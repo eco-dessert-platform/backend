@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
@@ -41,6 +42,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final BoardStatisticService boardStatisticService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -88,32 +90,28 @@ public class BoardController {
         return responseService.getSingleResult(boardResponseDto);
     }
 
-    @PatchMapping("/{boardId}")
-    public CommonResult countView(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
-        String ipAddress = request.getRemoteAddr();
-        String viewCountKey = "VIEW:" + boardId + ":" + ipAddress;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
-            return responseService.getFailResult();
-        }
-
-        boardService.updateCountView(boardId, viewCountKey);
-
-        return responseService.getSuccessResult();
-    }
-
     @GetMapping("/{id}")
     public CommonResult getBoardDetailResponse(
         @PathVariable("id")
         Long boardId,
         @AuthenticationPrincipal
-        Long memberId
+        Long memberId,
+        HttpServletRequest httpServletRequest
     ) {
         BoardDetailResponse boardDetailResponse =
             boardService.getBoardDetailResponse(memberId, boardId);
+        String viewCountKey = getViewCountKey(boardId, httpServletRequest);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
+            return responseService.getFailResult();
+        }
+        boardStatisticService.updateViewCount(boardId);
+        redisTemplate.opsForValue().set(viewCountKey, "true");
         return responseService.getSingleResult(boardDetailResponse);
+    }
+
+    private static String getViewCountKey(Long boardId, HttpServletRequest httpServletRequest) {
+        String ipAddress = httpServletRequest.getRemoteAddr();
+        return "VIEW:" + boardId + ":" + ipAddress;
     }
 
     private SortType settingDefaultSortTypeIfNull(SortType sort) {

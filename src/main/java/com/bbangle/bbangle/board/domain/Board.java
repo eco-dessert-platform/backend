@@ -54,12 +54,6 @@ public class Board extends BaseEntity {
     @Column(name = "purchase_url")
     private String purchaseUrl;
 
-    @Column(name = "view")
-    private int view;
-
-    @Column(name = "wish_cnt")
-    private int wishCnt;
-
     @Column(name = "sunday", columnDefinition = "tinyint")
     private boolean sunday;
 
@@ -88,15 +82,6 @@ public class Board extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
-
-    public void updateWishCnt(boolean status) {
-        if (status) {
-            this.wishCnt++;
-        }
-        if (!status) {
-            this.wishCnt--;
-        }
-    }
 
     public Board updateProfile(String profile) {
         this.profile = profile;
