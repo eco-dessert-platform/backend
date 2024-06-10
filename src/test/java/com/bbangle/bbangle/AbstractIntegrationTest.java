@@ -83,8 +83,6 @@ public abstract class AbstractIntegrationTest {
     protected WishListBoardRepository wishListBoardRepository;
     @Autowired
     protected WishListStoreRepository wishListStoreRepository;
-    @Autowired
-    protected ReviewRepository reviewRepository;
 
     @BeforeEach
     void before() {

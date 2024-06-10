@@ -1,11 +1,12 @@
 package com.bbangle.bbangle.analytics.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsRatioWithDateResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsAccumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -44,7 +45,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         createMembers();
 
         // when
-        long result = analyticsService.countAllMembers().count();
+        long result = analyticsService.countMembers().count();
 
         // then
         assertThat(result).isEqualTo(20);
@@ -64,49 +65,17 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // then
         long membersCount = memberRepository.count();
-        List<AnalyticsCountWithDateResponseDto> result = analyticsService.countMembersByPeriod(startDate, endDate);
+        AnalyticsMembersCountResponseDto result = analyticsService.countMembersByPeriod(startDate, endDate);
 
         // then
         assertThat(membersCount).isEqualTo(20);
-        assertThat(result).hasSize(10);
+        assertThat(result.count()).isEqualTo(10);
     }
 
 
     @Test
-    @DisplayName("기간 내 일별 위시리스트 이용 비율이 성공적으로 조회된다.")
-    void countMembersUsingWishlist() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        List<Member> members1 = create10DaysAgoMembers(createdAt);
-        createMembers();
-        createMembers();
-        createWishListBoards(members1);
-        create10DaysAgoWishlistBoards(members1, createdAt);
-
-        Optional<LocalDate> optStartDate = Optional.of(LocalDate.now().minusDays(10));
-        Optional<LocalDate> optEndDate = Optional.of(LocalDate.now());
-        LocalDate startDate = LocalDate.now().minusDays(10);
-        LocalDate endDate = LocalDate.now();
-
-        // when
-        long membersCount = memberRepository.count();
-        List<AnalyticsCountWithDateResponseDto> countWithDateResponseDtos = wishListBoardRepository.countMembersUsingWishlistBetweenPeriod(startDate, endDate);
-        List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateWishlistUsingRatio(optStartDate, optEndDate);
-
-        // then
-        assertThat(membersCount).isEqualTo(30);
-        assertThat(countWithDateResponseDtos).hasSize(11);
-        assertThat(results).hasSize(11);
-        assertThat(results.get(0).ratio()).isEqualTo("100.00");
-        assertThat(results.get(9).ratio()).isEqualTo("0.00");
-        assertThat(results.get(10).ratio()).isEqualTo("33.33");
-    }
-
-
-
-    @Test
-    @DisplayName("기간 별 위시리스트 누적 개수가 정상적으로 조회된다.")
-    void countWishlistBoardByPeriod() {
+    @DisplayName("기간 내 날짜 별 생성된 위시리스트 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
+    void analyzeWishlistBoardByPeriod() {
         // given
         List<Member> members = createMembers();
         createWishListBoards(members);
@@ -115,55 +84,25 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         create10DaysAgoWishlistBoards(members, createdAt);
 
         // when
-        Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(9));
+        Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
         Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         Long wishlistBoardsCount = wishListBoardRepository.count();
-        List<AnalyticsCountWithDateResponseDto> results = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
+        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeWishlistBoardByPeriod(startDate, endDate);
 
         // then
         assertThat(wishlistBoardsCount).isEqualTo(20);
-        assertThat(results).hasSize(10);
-        assertThat(results.get(0).count()).isEqualTo(10);
-        assertThat(results.get(8).count()).isEqualTo(10);
-        assertThat(results.get(9).count()).isEqualTo(20);
+        assertThat(result.dateAndCount()).hasSize(11);
+        assertThat(result.dateAndCount().get(0).count()).isEqualTo(10);
+        assertThat(result.dateAndCount().get(9).count()).isZero();
+        assertThat(result.dateAndCount().get(10).count()).isEqualTo(10);
+        assertThat(result.total()).isEqualTo(20);
+        assertThat(result.average()).isEqualTo("1.82");
     }
 
 
     @Test
-    @DisplayName("기간 내 일별 리뷰 이용 비율이 정상적으로 조회된다.")
-    void calculateReviewUsingRatio() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
-        List<Member> members1 = create10DaysAgoMembers(createdAt);
-        createMembers();
-        createMembers();
-        createMembers();
-        createReviews(members1);
-        create10DaysAgoReviews(members1, createdAt);
-
-        Optional<LocalDate> optStartDate = Optional.of(LocalDate.now().minusDays(10));
-        Optional<LocalDate> optEndDate = Optional.of(LocalDate.now());
-        LocalDate startDate = LocalDate.now().minusDays(10);
-        LocalDate endDate = LocalDate.now();
-
-        // when
-        long membersCount = memberRepository.count();
-        List<AnalyticsCountWithDateResponseDto> analyticsCountWithDateResponseDtos = reviewRepository.countMembersUsingReviewBetweenPeriod(startDate, endDate);
-        List<AnalyticsRatioWithDateResponseDto> results = analyticsService.calculateReviewUsingRatio(optStartDate, optEndDate);
-
-        // then
-        assertThat(membersCount).isEqualTo(40);
-        assertThat(analyticsCountWithDateResponseDtos).hasSize(11);
-        assertThat(results).hasSize(11);
-        assertThat(results.get(0).ratio()).isEqualTo("100.00");
-        assertThat(results.get(9).ratio()).isEqualTo("0.00");
-        assertThat(results.get(10).ratio()).isEqualTo("25.00");
-    }
-
-
-    @Test
-    @DisplayName("기간 별 리뷰 누적 개수가 정상적으로 조회된다.")
-    void countReviewByPeriod() {
+    @DisplayName("기간 내 날짜 별 생성된 리뷰 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
+    void analyzeReviewByPeriod() {
         // given
         LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
         List<Member> members1 = create10DaysAgoMembers(createdAt);
@@ -171,17 +110,43 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         create10DaysAgoReviews(members1, createdAt);
 
         // when
-        LocalDate startDate = LocalDate.now().minusDays(9);
-        LocalDate endDate = LocalDate.now();
+        Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
+        Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         long reviewsCount = reviewRepository.count();
-        List<AnalyticsCountWithDateResponseDto> results = reviewRepository.countReviewCreatedBetweenPeriod(startDate, endDate);
+        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeReviewByPeriod(startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);
-        assertThat(results).hasSize(10);
+        assertThat(result.dateAndCount()).hasSize(11);
+        assertThat(result.dateAndCount().get(0).count()).isEqualTo(10);
+        assertThat(result.dateAndCount().get(9).count()).isZero();
+        assertThat(result.dateAndCount().get(10).count()).isEqualTo(10);
+        assertThat(result.total()).isEqualTo(20);
+        assertThat(result.average()).isEqualTo("1.82");
+    }
+
+
+    @Test
+    @DisplayName("기간 내 날짜 별 누적된 리뷰 수가 정상적으로 조회된다.")
+    void countAccumulatedReviewsByPeriod() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        List<Member> members1 = create10DaysAgoMembers(createdAt);
+        createReviews(members1);
+        create10DaysAgoReviews(members1, createdAt);
+
+        // when
+        Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
+        Optional<LocalDate> endDate = Optional.of(LocalDate.now());
+        long reviewsCount = reviewRepository.count();
+        List<AnalyticsAccumulationResponseDto> results = analyticsService.countAccumulatedReviewsByPeriod(startDate, endDate);
+
+        // then
+        assertThat(reviewsCount).isEqualTo(20);
+        assertThat(results).hasSize(11);
         assertThat(results.get(0).count()).isEqualTo(10);
-        assertThat(results.get(8).count()).isEqualTo(10);
-        assertThat(results.get(9).count()).isEqualTo(20);
+        assertThat(results.get(9).count()).isEqualTo(10);
+        assertThat(results.get(10).count()).isEqualTo(20);
     }
 
 
@@ -302,9 +267,9 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
             Review review = Review.builder()
                     .memberId(members.get(i - 1).getId())
                     .boardId((long) i)
-                    .badgeBrix(String.valueOf(Badge.SWEET))
-                    .badgeTaste(String.valueOf(Badge.GOOD))
-                    .badgeTexture(String.valueOf(Badge.HARD))
+                    .badgeBrix(Badge.SWEET)
+                    .badgeTaste(Badge.GOOD)
+                    .badgeTexture(Badge.DRY)
                     .rate(BigDecimal.valueOf(5))
                     .build();
 
@@ -325,9 +290,9 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
                 Review review = Review.builder()
                         .memberId(members.get(i - 1).getId())
                         .boardId((long) i + 20)
-                        .badgeBrix(String.valueOf(Badge.SWEET))
-                        .badgeTaste(String.valueOf(Badge.GOOD))
-                        .badgeTexture(String.valueOf(Badge.HARD))
+                        .badgeBrix(Badge.SWEET)
+                        .badgeTaste(Badge.GOOD)
+                        .badgeTexture(Badge.DRY)
                         .rate(BigDecimal.valueOf(5))
                         .build();
 

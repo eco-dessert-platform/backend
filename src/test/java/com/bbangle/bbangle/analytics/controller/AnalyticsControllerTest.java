@@ -2,9 +2,9 @@ package com.bbangle.bbangle.analytics.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -71,37 +71,27 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
 
     @Test
-    @DisplayName("기간 내 일별 위시리스트 이용 비율이 성공적으로 조회된다.")
-    void getWishlistUsageRatio() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/ratio/wishlist-usage"))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-
-
-
-    @Test
-    @DisplayName("기간 별 위시리스트 누적 개수가 정상적으로 조회된다.")
-    void getWishlistUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
+    @DisplayName("기간 내 날짜 별 생성된 위시리스트 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
+    void getWishlistBoardAnalytics() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/wishlistboards?startDate=2024-06-01&endDate=2024-06-08"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
 
     @Test
-    @DisplayName("기간 내 일별 리뷰 이용 비율이 정상적으로 조회된다.")
-    void getReviewUsageRatio() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/ratio/review-usage"))
+    @DisplayName("기간 내 날짜 별 생성된 리뷰 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
+    void getReviewAnalytics() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/reviews?startDate=2024-06-01&endDate=2024-06-08"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
 
     @Test
-    @DisplayName("기간 별 리뷰 누적 개수가 정상적으로 조회된다.")
-    void getReviewUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/reviews/count?startDate=2024-05-01&endDate=2024-05-26"))
+    @DisplayName("기간 내 날짜 별 누적된 리뷰 수가 정상적으로 조회된다.")
+    void getAccumulatedReviewsCount() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/accumulated-reviews/count?startDate=2024-06-01&endDate=2024-06-08"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -243,9 +233,9 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             Review review = Review.builder()
                     .memberId(members.get(i - 1).getId())
                     .boardId((long) i)
-                    .badgeBrix(String.valueOf(Badge.SWEET))
-                    .badgeTaste(String.valueOf(Badge.GOOD))
-                    .badgeTexture(String.valueOf(Badge.HARD))
+                    .badgeBrix(Badge.SWEET)
+                    .badgeTaste(Badge.GOOD)
+                    .badgeTexture(Badge.DRY)
                     .rate(BigDecimal.valueOf(5))
                     .build();
 
@@ -266,9 +256,9 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 Review review = Review.builder()
                         .memberId(members.get(i - 1).getId())
                         .boardId((long) i + 20)
-                        .badgeBrix(String.valueOf(Badge.SWEET))
-                        .badgeTaste(String.valueOf(Badge.GOOD))
-                        .badgeTexture(String.valueOf(Badge.HARD))
+                        .badgeBrix(Badge.SWEET)
+                        .badgeTaste(Badge.GOOD)
+                        .badgeTexture(Badge.DRY)
                         .rate(BigDecimal.valueOf(5))
                         .build();
 
@@ -288,4 +278,5 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             }
         }
     }
+
 }
