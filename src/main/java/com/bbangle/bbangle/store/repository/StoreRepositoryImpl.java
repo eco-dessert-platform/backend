@@ -235,7 +235,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                     board.profile,
                     board.title,
                     board.price,
-                    board.view,
+                    boardStatistic.boardViewCount,
                     product.id,
                     product.glutenFreeTag,
                     product.highProteinTag,
@@ -246,6 +246,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                     conditionalWhislistProduct))
             .from(product)
             .join(product.board, board)
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
             .where(board.id.in(cursorIdToBoardIds))
             .orderBy(board.id.desc());
 

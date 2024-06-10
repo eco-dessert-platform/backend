@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
@@ -45,16 +46,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
-    private final JPAQueryFactory queryFactory;
+
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishListStore wishListStore = QWishListStore.wishListStore;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QSearch search = QSearch.search;
-    private final int ONEDAY = 24;
-    private final int DEFAULT_ITEM_SIZE = 10;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
+    private static final int ONEDAY = 24;
+    private static final int DEFAULT_ITEM_SIZE = 10;
 
+    private final JPAQueryFactory queryFactory;
 
     // 빈 DTO 반환
     @Override
@@ -78,7 +81,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     // 정렬 기준 설정
     private OrderSpecifier<?> determineOrder(SearchBoardRequest boardRequest, List<Long> boardIds) {
         return boardRequest.sort().equals(SortType.RECOMMEND.name()) ?
-                board.view.add(board.wishCnt.multiply(10)).desc() :
+            boardStatistic.boardWishCount.add(boardStatistic.boardWishCount.multiply(10)).desc() :
                 orderByFieldList(boardIds, product.board.id);
     }
 
