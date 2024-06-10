@@ -8,19 +8,19 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class LowPriceCursorGenerator implements CursorGenerator{
+public class LowPriceBoardInFolderCursorGenerator implements BoardInFolderCursorGenerator {
 
     private static final QBoard board = QBoard.board;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
-    private final Long cursorId;
-    private final Long folderId;
 
     @Override
-    public BooleanBuilder getCursor() {
+    public BooleanBuilder getCursor(Long cursorId, Long folderId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
         if(cursorId == null){
             return cursorBuilder;

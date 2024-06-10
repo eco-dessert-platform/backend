@@ -4,10 +4,9 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
@@ -17,7 +16,6 @@ import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.Duration;
-import java.util.List;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -147,14 +145,14 @@ class BoardControllerTest extends AbstractIntegrationTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT", "ETC"})
+        @EnumSource
         @DisplayName("순서가 없고 필터링 조건 둘 이상 있어도 정상적으로 조회한다.")
-        void getBoardListSuccessWithCategoryAndIngredientCondition(String ingredient)
+        void getBoardListSuccessWithCategoryAndIngredientCondition(Category category)
             throws Exception {
             // given
             MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
             info.add("ketogenicTag", "true");
-            info.add("category", ingredient);
+            info.add("category", category.name());
             // TODO: 이 부분 sort가 추가되면 500 error가 발생하는 문제
             // info.add("sort", "POPULAR");
 
@@ -300,8 +298,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.result.content[0].isBundled").value(false))
                 .andExpect(jsonPath("$.result.content[0].tags[0]").value("ketogenic"))
                 .andExpect(jsonPath("$.result.nextCursor").value(-1))
-                .andExpect(jsonPath("$.result.hasNext").value(false))
-                .andExpect(jsonPath("$.result.cursorScore").value(nullValue()));
+                .andExpect(jsonPath("$.result.hasNext").value(false));
         }
 
         private String getAuthentication(Member member) {

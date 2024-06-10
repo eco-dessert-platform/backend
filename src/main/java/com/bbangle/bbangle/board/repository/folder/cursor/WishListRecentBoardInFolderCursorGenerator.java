@@ -9,17 +9,16 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class WishListRecentCursorGenerator implements CursorGenerator{
+public class WishListRecentBoardInFolderCursorGenerator implements BoardInFolderCursorGenerator {
 
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
-    private final Long cursorId;
-    private final Long folderId;
 
     @Override
-    public BooleanBuilder getCursor() {
+    public BooleanBuilder getCursor(Long cursorId, Long folderId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
 
         if(cursorId == null){

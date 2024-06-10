@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.fixture.TagDaoFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import java.util.List;
@@ -27,11 +28,11 @@ class BoardPageGeneratorTest {
         new BoardResponseDao(2L, 2L, "store2", "thumbnail2", "title2", 2000,
             Category.BREAD, TagDaoFixture.getKetogenicTagDao()),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
-            Category.COOKIE, TagDaoFixture.getSugarFreeAndVeganTagDao()),
+            Category.SNACK, TagDaoFixture.getSugarFreeAndVeganTagDao()),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
             Category.JAM, TagDaoFixture.getGlutenFreeTagAndHighProteinTagDao()),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
-            Category.COOKIE, TagDaoFixture.getVeganTagDao())
+            Category.SNACK, TagDaoFixture.getVeganTagDao())
     );
 
     List<String> tag1 = List.of("sugarFree", "glutenFree", "highProtein");
@@ -43,7 +44,7 @@ class BoardPageGeneratorTest {
     void convertToBoardResponseDtoPageFromBoardResponseDao() {
         //given, when
         BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(
-            testList);
+            testList, false);
 
         //then
         assertAll(

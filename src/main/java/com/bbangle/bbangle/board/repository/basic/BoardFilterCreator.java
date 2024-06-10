@@ -1,5 +1,6 @@
-package com.bbangle.bbangle.board.repository;
+package com.bbangle.bbangle.board.repository.basic;
 
+import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -46,7 +47,7 @@ public class BoardFilterCreator {
     }
 
     private void addCategoryCondition() {
-        if (filterRequest.category() != null) {
+        if (filterRequest.category() != null && filterRequest.category() != Category.ALL) {
             builder.and(product.category.eq(filterRequest.category()));
         }
     }

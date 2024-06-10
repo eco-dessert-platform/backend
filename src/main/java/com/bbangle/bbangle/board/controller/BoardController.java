@@ -2,18 +2,15 @@ package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,10 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -62,15 +56,16 @@ public class BoardController {
         FilterRequest filterRequest,
         @RequestParam(required = false, value = "sort")
         SortType sort,
-        @ParameterObject
-        CursorInfo cursorInfo,
+        @RequestParam(required = false, value = "cursorId")
+        Long cursorId,
         @AuthenticationPrincipal
         Long memberId
     ) {
+        sort = settingDefaultSortTypeIfNull(sort);
         BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
             filterRequest,
             sort,
-            cursorInfo,
+            cursorId,
             memberId);
         return responseService.getSingleResult(boardResponseList);
     }
@@ -121,20 +116,13 @@ public class BoardController {
         return responseService.getSingleResult(boardDetailResponse);
     }
 
-    @PatchMapping("/{boardId}/purchase")
-    public CommonResult movePurchasePage(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
-        String ipAddress = request.getRemoteAddr();
-        String purchaseCountKey = "PURCHASE:" + boardId + ":" + ipAddress;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(purchaseCountKey))) {
-            return responseService.getFailResult();
+    private SortType settingDefaultSortTypeIfNull(SortType sort) {
+        if(sort == null){
+            sort = SortType.RECOMMEND;
         }
 
-        boardService.adaptPurchaseReaction(boardId, purchaseCountKey);
-
-        return responseService.getSuccessResult();
+        return sort;
     }
+
 }
 

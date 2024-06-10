@@ -2,12 +2,15 @@ package com.bbangle.bbangle.ranking.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,14 @@ public class RankingService {
                 .build())
             .forEach(rankings::add);
         rankingRepository.saveAll(rankings);
+    }
+
+    @Transactional
+    public void updateRankingScore(Long boardId, Double updatingScore) {
+        Ranking ranking = rankingRepository.findByBoardId(boardId)
+            .orElseThrow(
+                () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+        ranking.updateRecommendScore(updatingScore);
     }
 
 }

@@ -2,20 +2,22 @@ package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-class BoardInFolderCursorGeneratorMappingTest {
+class BoardInFolderCursorGeneratorMappingTest extends AbstractIntegrationTest {
 
     private BoardInFolderCursorGeneratorMapping mapper;
 
     private Long testMemberId;
 
-    private JPAQueryFactory queryFactory;
+    @Autowired
+    BoardInFolderCursorGeneratorMapping boardInFolderCursorGeneratorMapping;
 
     @BeforeEach
     void setup(){
@@ -29,13 +31,13 @@ class BoardInFolderCursorGeneratorMappingTest {
         //given
         FolderBoardSortType folderBoardSortType = null;
 
-        mapper = new BoardInFolderCursorGeneratorMapping(testMemberId, testMemberId, queryFactory, folderBoardSortType);
+        mapper = boardInFolderCursorGeneratorMapping;
 
         //when
-        CursorGenerator cursorGenerator = mapper.mappingCursorGenerator();
+        BoardInFolderCursorGenerator cursorGenerator = mapper.mappingCursorGenerator(folderBoardSortType);
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(WishListRecentCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(WishListRecentBoardInFolderCursorGenerator.class);
     }
 
     @Test
@@ -44,13 +46,13 @@ class BoardInFolderCursorGeneratorMappingTest {
         //given
         FolderBoardSortType folderBoardSortType = FolderBoardSortType.WISHLIST_RECENT;
 
-        mapper = new BoardInFolderCursorGeneratorMapping(testMemberId, testMemberId, queryFactory, folderBoardSortType);
+        mapper = boardInFolderCursorGeneratorMapping;
 
         //when
-        CursorGenerator cursorGenerator = mapper.mappingCursorGenerator();
+        BoardInFolderCursorGenerator cursorGenerator = mapper.mappingCursorGenerator(folderBoardSortType);
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(WishListRecentCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(WishListRecentBoardInFolderCursorGenerator.class);
     }
 
     @Test
@@ -59,13 +61,13 @@ class BoardInFolderCursorGeneratorMappingTest {
         //given
         FolderBoardSortType folderBoardSortType = FolderBoardSortType.POPULAR;
 
-        mapper = new BoardInFolderCursorGeneratorMapping(testMemberId, testMemberId, queryFactory, folderBoardSortType);
+        mapper = boardInFolderCursorGeneratorMapping;
 
         //when
-        CursorGenerator cursorGenerator = mapper.mappingCursorGenerator();
+        BoardInFolderCursorGenerator cursorGenerator = mapper.mappingCursorGenerator(folderBoardSortType);
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(PopularCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(PopularBoardInFolderCursorGenerator.class);
     }
 
     @Test
@@ -74,13 +76,13 @@ class BoardInFolderCursorGeneratorMappingTest {
         //given
         FolderBoardSortType folderBoardSortType = FolderBoardSortType.LOW_PRICE;
 
-        mapper = new BoardInFolderCursorGeneratorMapping(testMemberId, testMemberId, queryFactory, folderBoardSortType);
+        mapper = boardInFolderCursorGeneratorMapping;
 
         //when
-        CursorGenerator cursorGenerator = mapper.mappingCursorGenerator();
+        BoardInFolderCursorGenerator cursorGenerator = mapper.mappingCursorGenerator(folderBoardSortType);
 
         //then
-        assertThat(cursorGenerator).isInstanceOf(LowPriceCursorGenerator.class);
+        assertThat(cursorGenerator).isInstanceOf(LowPriceBoardInFolderCursorGenerator.class);
     }
 
 }

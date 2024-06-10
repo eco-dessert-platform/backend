@@ -2,8 +2,8 @@ package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import com.querydsl.core.BooleanBuilder;
 
-public interface CursorGenerator {
+public interface BoardCursorGenerator {
 
-    BooleanBuilder getCursor();
+    BooleanBuilder getCursor(Long cursorId);
 
 }
