@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
@@ -77,7 +77,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     // 정렬 기준 설정
     private OrderSpecifier<?> determineOrder(SearchBoardRequest boardRequest, List<Long> boardIds) {
-        return boardRequest.sort().equals(SortType.POPULAR.name()) ?
+        return boardRequest.sort().equals(SortType.RECOMMEND.name()) ?
                 board.view.add(board.wishCnt.multiply(10)).desc() :
                 orderByFieldList(boardIds, product.board.id);
     }

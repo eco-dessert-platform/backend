@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;

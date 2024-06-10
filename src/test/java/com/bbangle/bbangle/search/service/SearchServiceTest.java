@@ -116,7 +116,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
         String SEARCH_KEYWORD = "비건 베이커리";
         var searchBoardRequest = SearchBoardRequest.builder().keyword(SEARCH_KEYWORD).sort("LATEST")
                 .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
-                .ketogenicTag(false).orderAvailableToday(true).category(Category.COOKIE.name())
+                .ketogenicTag(false).orderAvailableToday(true).category(Category.SNACK.name())
                 .minPrice(0).maxPrice(6000).page(0).build();
 
         var searchBoardResult = searchService.getSearchBoardDtos(member.getId(),
@@ -210,7 +210,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
                             .thursday(true).friday(true).saturday(true).build());
 
             productRepository.saveAll(List.of(Product.builder().board(board).title("콩볼").price(3600)
-                            .category(Category.COOKIE).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
+                            .category(Category.SNACK).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
                             .ketogenicTag(true).build(),
                     Product.builder().board(board).title("카카모카").price(5000)
                             .category(Category.BREAD).glutenFreeTag(true).veganTag(true).build(),

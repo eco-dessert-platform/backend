@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.board.repository.folder.query;
 
-import com.bbangle.bbangle.board.repository.folder.cursor.WishListRecentCursorGenerator;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;

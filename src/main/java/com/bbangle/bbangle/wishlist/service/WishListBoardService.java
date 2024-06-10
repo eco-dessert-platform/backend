@@ -2,12 +2,11 @@ package com.bbangle.bbangle.wishlist.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
-import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.ranking.service.RankingService;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -20,8 +19,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,16 +26,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WishListBoardService {
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
+    private static final Double WISH_SCORE = 50.0;
+    private static final Double WISH_CANCEL_SCORE = -50.0;
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
     private final BoardStatisticRepository boardStatisticRepository;
-    @Qualifier("boardLikeInfoRedisTemplate")
-    private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
+    private final RankingService rankingService;
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
@@ -67,7 +64,7 @@ public class WishListBoardService {
         wishlistBoardRepository.delete(wishedBoard);
         board.updateWishCnt(false);
 
-        updateRankingScore(boardId, -1.0);
+        rankingService.updateRankingScore(boardId, WISH_CANCEL_SCORE);
     }
 
     @Transactional
@@ -102,7 +99,6 @@ public class WishListBoardService {
         WishListFolder wishlistFolder,
         Member member
     ) {
-        updateRankingScore(board.getId(), 1.0);
 
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
@@ -111,6 +107,8 @@ public class WishListBoardService {
             .build();
 
         wishlistBoardRepository.save(wishlistBoard);
+        rankingService.updateRankingScore(board.getId(), WISH_SCORE);
+
         board.updateWishCnt(true);
     }
 
@@ -119,11 +117,6 @@ public class WishListBoardService {
             .orElseThrow(
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         boardStatistic.updateBasicScore(updatingScore);
-
-        boardLikeInfoRedisTemplate.opsForList()
-            .rightPush(LocalDateTime.now()
-                    .format(formatter),
-                new BoardLikeInfo(boardId, updatingScore, LocalDateTime.now(), ScoreType.WISH));
     }
 
 }

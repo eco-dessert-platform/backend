@@ -11,6 +11,8 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.BoardStatistic;
 import com.bbangle.bbangle.ranking.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.notification.repository.NotificationRepository;
+import com.bbangle.bbangle.notification.service.NotificationService;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -83,6 +85,8 @@ public abstract class AbstractIntegrationTest {
     protected WishListBoardRepository wishListBoardRepository;
     @Autowired
     protected WishListStoreRepository wishListStoreRepository;
+    @Autowired
+    protected NotificationRepository notificationRepository;
 
     @BeforeEach
     void before() {
@@ -98,6 +102,7 @@ public abstract class AbstractIntegrationTest {
         wishListBoardRepository.deleteAllInBatch();
         wishListStoreRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
+        notificationRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()

@@ -99,8 +99,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
             BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .get();
-            assertThat(boardStatistic.getRecommendScore()).isEqualTo(1.0);
-            assertThat(boardStatistic.getBasicScore()).isEqualTo(1.0);
+            assertThat(boardStatistic.getBasicScore()).isEqualTo(50.0);
         }
 
         @Test
@@ -164,7 +163,6 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             assertThat(afterWishDefaultFolder.productImages()).hasSize(0);
             BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .get();
-            assertThat(boardStatistic.getRecommendScore()).isEqualTo(0.0);
             assertThat(boardStatistic.getBasicScore()).isEqualTo(0.0);
         }
 

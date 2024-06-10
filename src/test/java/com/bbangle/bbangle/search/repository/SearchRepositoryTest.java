@@ -92,7 +92,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
                 .glutenFreeTag(true)
                 .highProteinTag(false)
                 .orderAvailableToday(true)
-                .category(Category.COOKIE.name())
+                .category(Category.SNACK.name())
                 .maxPrice(6000)
                 .page(0)
                 .build();
@@ -116,7 +116,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
                 .glutenFreeTag(true)
                 .highProteinTag(false)
                 .orderAvailableToday(true)
-                .category(Category.COOKIE.name())
+                .category(Category.SNACK.name())
                 .maxPrice(6000)
                 .page(0)
                 .build();
@@ -238,7 +238,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
                             .board(board)
                             .title("콩볼")
                             .price(3600)
-                            .category(Category.COOKIE)
+                            .category(Category.SNACK)
                             .glutenFreeTag(true)
                             .sugarFreeTag(true)
                             .highProteinTag(true)
