@@ -13,13 +13,11 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +31,9 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
+    private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -92,8 +92,15 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
-        return boardRepository.getBoardDetailResponse(memberId, boardId);
+    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId,
+        String viewCountKey
+    ) {
+        BoardDetailResponse boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, boardId);
+        boardStatisticService.updateViewCount(boardId);
+        if(viewCountKey != null) {
+            redisTemplate.opsForValue().set(viewCountKey, "true");
+        }
+        return boardDetailResponse;
     }
 
 }

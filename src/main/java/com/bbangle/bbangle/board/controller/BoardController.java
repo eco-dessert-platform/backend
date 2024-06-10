@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BoardController {
 
+    private static final String NON_VIEW_KEY = null;
+
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
@@ -98,14 +100,12 @@ public class BoardController {
         Long memberId,
         HttpServletRequest httpServletRequest
     ) {
-        BoardDetailResponse boardDetailResponse =
-            boardService.getBoardDetailResponse(memberId, boardId);
         String viewCountKey = getViewCountKey(boardId, httpServletRequest);
         if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
-            return responseService.getFailResult();
+            BoardDetailResponse boardDetailResponse = boardService.getBoardDetailResponse(memberId, boardId, NON_VIEW_KEY);
+            return responseService.getSingleResult(boardDetailResponse);
         }
-        boardStatisticService.updateViewCount(boardId);
-        redisTemplate.opsForValue().set(viewCountKey, "true");
+        BoardDetailResponse boardDetailResponse = boardService.getBoardDetailResponse(memberId, boardId, viewCountKey);
         return responseService.getSingleResult(boardDetailResponse);
     }
 
