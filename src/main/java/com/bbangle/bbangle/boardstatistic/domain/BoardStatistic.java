@@ -47,7 +47,7 @@ public class BoardStatistic {
             this.basicScore += score;
             return;
         }
-        basicScore += score;
+        basicScore -= score;
     }
 
     public void updateViewCount() {
