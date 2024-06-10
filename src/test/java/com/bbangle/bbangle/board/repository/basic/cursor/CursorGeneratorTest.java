@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -17,7 +18,6 @@ import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.domain.QRanking;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -235,12 +235,12 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .mappingCursorGenerator(SortType.RECOMMEND)
                 .getCursor(firstSavedBoardId);
 
-            Double expectedScore = queryFactory.select(QRanking.ranking.recommendScore)
-                .from(QRanking.ranking)
-                .where(QRanking.ranking.board.id.eq(firstSavedBoardId))
+            Double expectedScore = queryFactory.select(QBoardStatistic.boardStatistic.basicScore)
+                .from(QBoardStatistic.boardStatistic)
+                .where(QBoardStatistic.boardStatistic.boardId.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(expectedScore))
+            String expectedBuilder = new BooleanBuilder().and(QBoardStatistic.boardStatistic.basicScore.loe(expectedScore))
                 .or(QBoard.board.id.loe(firstSavedBoardId))
                 .toString();
 

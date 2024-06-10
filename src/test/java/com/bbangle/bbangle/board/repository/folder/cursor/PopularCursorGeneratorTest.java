@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -15,7 +16,6 @@ import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.domain.QRanking;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
@@ -88,7 +88,7 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
         BooleanBuilder popularCursor = popularBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(
+        String expectedCursorCondition = new BooleanBuilder().and(QBoardStatistic.boardStatistic.basicScore.loe(
             boardStatistic.getBasicScore()).and(
             QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 

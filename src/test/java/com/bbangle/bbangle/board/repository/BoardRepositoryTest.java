@@ -6,6 +6,10 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
+import com.bbangle.bbangle.fixture.StoreFixture;
+import com.bbangle.bbangle.store.domain.Store;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +35,13 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("checkingNullRanking 정상 확인")
     void checkingNullRanking() {
         // given
-        Board fixtureBoard = fixtureBoard(emptyMap());
-        Board fixtureBoard2 = fixtureBoard(emptyMap());
-        BoardStatistic target = fixtureRanking(Map.of("board", fixtureBoard));
-        BoardStatistic nonTarget = fixtureRanking(Map.of("board", fixtureBoard2));
-
-        nonTarget.setBoard(null);
+        Store store = StoreFixture.storeGenerator();
+        storeRepository.save(store);
+        Board fixtureBoard = BoardFixture.randomBoard(store);
+        Board fixtureBoard2 = BoardFixture.randomBoard(store);
+        List<Board> boards = List.of(fixtureBoard, fixtureBoard2);
+        boardRepository.saveAll(boards);
+        BoardStatistic nonTarget = BoardStatisticFixture.newBoardStatistic(fixtureBoard2);
         boardStatisticRepository.save(nonTarget);
 
         // when

@@ -1,18 +1,20 @@
 package com.bbangle.bbangle.board.repository;
 
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
+import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,12 +27,19 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
     void test1() {
         // given
         List<Long> idList = new ArrayList<>();
+        Store store  = StoreFixture.storeGenerator();
+        storeRepository.save(store);
+        List<BoardStatistic> boardStatistics = new ArrayList<>();
         for (int score = 0; score < 5; score++) {
-            Board board = fixtureBoard(emptyMap());
+            Board board = BoardFixture.randomBoard(store);
+            board = boardRepository.save(board);
             idList.add(board.getId());
 
-            fixtureRanking(Map.of("board", board, "recommendScore", (double) score));
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(board, (double) score);
+            boardStatistics.add(boardStatistic);
         }
+        boardStatisticRepository.saveAll(boardStatistics);
+        List<BoardStatistic> all = boardStatisticRepository.findAll();
 
         FilterRequest filter = FilterRequest.builder()
             .build();
@@ -54,12 +63,19 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
     void test2() {
         // given
         List<Long> idList = new ArrayList<>();
+        Store store  = StoreFixture.storeGenerator();
+        storeRepository.save(store);
+        List<BoardStatistic> boardStatistics = new ArrayList<>();
         for (int score = 0; score < 5; score++) {
-            Board board = fixtureBoard(emptyMap());
+            Board board = BoardFixture.randomBoard(store);
+            board = boardRepository.save(board);
             idList.add(board.getId());
 
-            fixtureRanking(Map.of("board", board, "basicScore", (double) score));
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(board, (double) score);
+            boardStatistics.add(boardStatistic);
         }
+        boardStatisticRepository.saveAll(boardStatistics);
+        List<BoardStatistic> all = boardStatisticRepository.findAll();
 
         FilterRequest filter = FilterRequest.builder()
             .build();
