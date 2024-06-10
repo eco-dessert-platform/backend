@@ -63,7 +63,6 @@ public class ReviewService {
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         reviewRepository.save(review);
-        boardStatisticService.updateRankingScore(reviewRequest.boardId(), REVIEW_SCORE);
 
    /*     //FIXME 따로 구현!
         if(Objects.isNull(reviewRequest.photos())){
@@ -224,7 +223,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public void deleteReview(Long reviewId, Long memberId) {
+    public Long deleteReview(Long reviewId, Long memberId) {
         memberRepository.findMemberById(memberId);
         List<ReviewImg> reviewImgs = reviewImgRepository.findByReviewId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
@@ -237,6 +236,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.delete();
+        return review.getBoardId();
     }
 
     @Transactional
