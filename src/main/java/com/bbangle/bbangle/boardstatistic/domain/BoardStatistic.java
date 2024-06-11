@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +42,7 @@ public class BoardStatistic {
     private int boardViewCount;
 
     @Column(name = "board_review_grade")
-    private Double boardReviewGrade;
+    private BigDecimal boardReviewGrade;
 
     public void updateBasicScore(Double score, boolean createAction) {
         if (createAction) {
@@ -68,6 +70,35 @@ public class BoardStatistic {
             return;
         }
         boardReviewCount--;
+    }
+
+    public void updateReviewGrade(BigDecimal rate, boolean isCreate) {
+        if(isCreate && boardReviewCount == 0){
+            this.boardReviewGrade = rate;
+            return;
+        }
+
+        if(isCreate && boardReviewCount > 0){
+            BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
+            this.boardReviewGrade = (wrappedReviewCount
+                .multiply(this.boardReviewGrade)
+                .add(rate))
+                .divide(wrappedReviewCount.add(BigDecimal.ONE), RoundingMode.HALF_UP);
+            return;
+        }
+
+        if(!isCreate && boardReviewCount > 1){
+            BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
+            this.boardReviewGrade = (wrappedReviewCount
+                .multiply(this.boardReviewGrade)
+                .subtract(rate))
+                .divide(wrappedReviewCount.subtract(BigDecimal.ONE), RoundingMode.HALF_UP);
+            return;
+        }
+
+        if(!isCreate && boardReviewCount == 1){
+            this.boardReviewGrade = boardReviewGrade.subtract(rate);
+        }
     }
 
 }
