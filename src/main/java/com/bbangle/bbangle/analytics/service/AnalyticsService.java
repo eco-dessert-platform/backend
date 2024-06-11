@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.analytics.service;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsAccumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -57,10 +57,10 @@ public class AnalyticsService {
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsAccumulationResponseDto> countAccumulatedReviewsByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
+    public List<AnalyticsCumulationResponseDto> countCumulatedReviewsByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        return reviewRepository.countAccumulatedReviewBeforeEndDate(startLocalDate, endLocalDate);
+        return reviewRepository.countCumulatedReviewBeforeEndDate(startLocalDate, endLocalDate);
     }
 }

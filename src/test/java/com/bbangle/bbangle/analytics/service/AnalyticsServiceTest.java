@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.analytics.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsAccumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
@@ -139,7 +139,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
         Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         long reviewsCount = reviewRepository.count();
-        List<AnalyticsAccumulationResponseDto> results = analyticsService.countAccumulatedReviewsByPeriod(startDate, endDate);
+        List<AnalyticsCumulationResponseDto> results = analyticsService.countCumulatedReviewsByPeriod(startDate, endDate);
+
 
         // then
         assertThat(reviewsCount).isEqualTo(20);

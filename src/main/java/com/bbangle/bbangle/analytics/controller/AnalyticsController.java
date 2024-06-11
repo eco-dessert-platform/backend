@@ -78,7 +78,7 @@ public class AnalyticsController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             Optional<LocalDate> endDate
     ) {
-        return responseService.getListResult(analyticsService.countAccumulatedReviewsByPeriod(startDate, endDate));
+        return responseService.getListResult(analyticsService.countCumulatedReviewsByPeriod(startDate, endDate));
     }
 
 }

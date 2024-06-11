@@ -1,11 +1,24 @@
 package com.bbangle.bbangle.review.repository;
 
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsAccumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.review.domain.*;
-import com.bbangle.bbangle.review.dto.*;
+import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
+import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.review.domain.QReview;
+import com.bbangle.bbangle.review.domain.QReviewImg;
+import com.bbangle.bbangle.review.domain.ReviewCursor;
+import com.bbangle.bbangle.review.domain.ReviewLike;
+import com.bbangle.bbangle.review.domain.QReviewLike;
+import com.bbangle.bbangle.review.dto.QReviewImgDto;
+import com.bbangle.bbangle.review.dto.QReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewImgDto;
+import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.bbangle.bbangle.member.domain.QMember;
@@ -20,11 +33,14 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.time.LocalDate;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -215,45 +231,48 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     @Override
     public AnalyticsCreatedWithinPeriodResponseDto countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = getDateCreatedAt();
-        List<DateAndCountDto> dateAndCount = new ArrayList<>();
-        Long total = 0L;
+        Date startDate = Date.valueOf(startLocalDate);
+        Date endDate = Date.valueOf(endLocalDate);
+
+        List<DateAndCountDto> rawResults = queryFactory.select(new QDateAndCountDto(
+                        createdAt, review.id.count()
+                ))
+                .from(review)
+                .where(createdAt.between(startDate, endDate))
+                .groupBy(createdAt)
+                .orderBy(createdAt.asc())
+                .fetch();
+
+        List<DateAndCountDto> results = mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, rawResults,
+                DateAndCountDto::date, DateAndCountDto::count, DateAndCountDto::new);
+
+        Long total = rawResults.stream()
+                .mapToLong(DateAndCountDto::count)
+                .sum();
         Double daysBetween = calculateDaysBetween(startLocalDate, endLocalDate);
-
-        for (LocalDate localDate = startLocalDate; !localDate.isAfter(endLocalDate); localDate = localDate.plusDays(1)) {
-            Date date = Date.valueOf(localDate);
-
-            Long count = queryFactory.select(review.id.count())
-                    .from(review)
-                    .where(createdAt.eq(date))
-                    .fetchOne();
-
-            dateAndCount.add(new DateAndCountDto(date, count));
-            total += count;
-        }
 
         Double rawAverage = (total / daysBetween);
         String average = String.format("%.2f", rawAverage);
 
-        return new AnalyticsCreatedWithinPeriodResponseDto(dateAndCount, total, average);
+        return new AnalyticsCreatedWithinPeriodResponseDto(results, total, average);
     }
 
     @Override
-    public List<AnalyticsAccumulationResponseDto> countAccumulatedReviewBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCumulationResponseDto> countCumulatedReviewBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = getDateCreatedAt();
-        List<AnalyticsAccumulationResponseDto> results = new ArrayList<>();
+        Date endDate = Date.valueOf(endLocalDate);
 
-        for (LocalDate localDate = startLocalDate; !localDate.isAfter(endLocalDate); localDate = localDate.plusDays(1)) {
-            Date date = Date.valueOf(localDate);
+        List<AnalyticsCumulationResponseDto> rawResults = queryFactory.select(new QAnalyticsCumulationResponseDto(
+                        createdAt, review.id.count()
+                ))
+                .from(review)
+                .where(createdAt.loe(endDate))
+                .groupBy(createdAt)
+                .orderBy(createdAt.asc())
+                .fetch();
 
-            Long count = queryFactory.select(review.id.count())
-                    .from(review)
-                    .where(createdAt.loe(date))
-                    .fetchOne();
-
-            results.add(new AnalyticsAccumulationResponseDto(date, count));
-        }
-
-        return results;
+        return mapResultsToDateRangeWithCumulativeCount(startLocalDate, endLocalDate, rawResults,
+                AnalyticsCumulationResponseDto::date, AnalyticsCumulationResponseDto::count, AnalyticsCumulationResponseDto::new);
     }
 
     private BooleanBuilder getImageCondition(ReviewCursor reviewCursor) {
@@ -316,6 +335,51 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
 
     public Double calculateDaysBetween(LocalDate startDate, LocalDate endDate) {
         return (double) (ChronoUnit.DAYS.between(startDate, endDate) + 1);
+    }
+
+    private <T, R> List<R> mapResultsToDateRangeWithCount(
+            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
+            Function<T, Date> dateExtractor,
+            Function<T, Long> countExtractor,
+            BiFunction<Date, Long, R> constructor) {
+
+        Map<Date, Long> mapResults = results.stream()
+                .collect(Collectors.toMap(
+                        dateExtractor,
+                        countExtractor
+                ));
+
+        List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
+                .toList();
+
+        return dateRange.stream()
+                .map(date -> constructor.apply(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+                .toList();
+    }
+
+    private <T, R> List<R> mapResultsToDateRangeWithCumulativeCount(
+            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
+            Function<T, Date> dateExtractor,
+            Function<T, Long> countExtractor,
+            BiFunction<Date, Long, R> constructor) {
+
+        Map<Date, Long> mapResults = results.stream()
+                .collect(Collectors.toMap(
+                        dateExtractor,
+                        countExtractor
+                ));
+
+        List<R> finalResults = new ArrayList<>();
+        Long cumulativeCount = 0L;
+
+        for (LocalDate localDate = startLocalDate; !localDate.isAfter(endLocalDate); localDate = localDate.plusDays(1)) {
+            Date date = Date.valueOf(localDate);
+
+            cumulativeCount += mapResults.getOrDefault(date, 0L);
+            finalResults.add(constructor.apply(date, cumulativeCount));
+        }
+
+        return finalResults;
     }
 
 }
