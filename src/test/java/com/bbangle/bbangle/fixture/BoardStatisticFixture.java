@@ -2,6 +2,7 @@ package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import java.math.BigDecimal;
 
 public class BoardStatisticFixture {
 
@@ -12,7 +13,7 @@ public class BoardStatisticFixture {
             .boardViewCount(0)
             .boardWishCount(0)
             .boardReviewCount(0)
-            .boardReviewGrade(0.0)
+            .boardReviewGrade(BigDecimal.ZERO)
             .build();
     }
 
@@ -23,7 +24,7 @@ public class BoardStatisticFixture {
             .boardViewCount(0)
             .boardWishCount(0)
             .boardReviewCount(0)
-            .boardReviewGrade(0.0)
+            .boardReviewGrade(BigDecimal.ZERO)
             .build();
     }
 
