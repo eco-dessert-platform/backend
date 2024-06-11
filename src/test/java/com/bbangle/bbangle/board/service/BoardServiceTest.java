@@ -83,15 +83,14 @@ class BoardServiceTest extends AbstractIntegrationTest {
         board = BoardFixture.randomBoardWithMoney(store, 1000);
         board2 = BoardFixture.randomBoardWithMoney(store, 10000);
 
-        Board save1 = boardRepository.save(board);
-        Board save2 = boardRepository.save(board2);
-        boardRepository.save(board2);
+        board = boardRepository.save(board);
+        board2 = boardRepository.save(board2);
 
         boardStatisticRepository.save(
-            BoardStatisticFixture.newBoardStatistic(save1)
+            BoardStatisticFixture.newBoardStatistic(board)
         );
         boardStatisticRepository.save(
-            BoardStatisticFixture.newBoardStatistic(save2)
+            BoardStatisticFixture.newBoardStatistic(board2)
         );
     }
 
@@ -480,7 +479,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 }
                 Product product = ProductFixture.randomProduct(createdBoard);
                 productRepository.save(product);
-                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(
+                    createdBoard);
                 boardStatisticRepository.save(boardStatistic);
                 wishListBoardService.wish(member.getId(), createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
@@ -521,7 +521,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
             // then
             assertThat(contents).hasSize(10);
             for (int i = 0; i < contents.size(); i++) {
-                assertThat(contents.get(i).getPrice()).isEqualTo(i * 1000);
+                assertThat(contents.get(i)
+                    .getPrice()).isEqualTo(i * 1000);
             }
             assertThat(response.getNextCursor()).isEqualTo(firstSavedId + 10);
         }
@@ -539,10 +540,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
             Long targetId = response.getContent()
-                .get(response.getContent().size() - 1)
+                .get(response.getContent()
+                    .size() - 1)
                 .getBoardId();
 
-            wishListBoardService.wish(member2.getId(), targetId, new WishListBoardRequest(DEFAULT_FOLDER_ID));
+            wishListBoardService.wish(member2.getId(), targetId,
+                new WishListBoardRequest(DEFAULT_FOLDER_ID));
 
             // then
             BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(
@@ -553,9 +556,31 @@ class BoardServiceTest extends AbstractIntegrationTest {
             List<BoardResponseDto> contents = responseAfterWish.getContent();
 
             assertThat(contents).hasSize(10);
-            assertThat(contents.stream().findFirst()
+            assertThat(contents.stream()
+                .findFirst()
                 .orElseThrow(IllegalArgumentException::new)
                 .getBoardId()).isEqualTo(targetId);
+        }
+
+    }
+
+    @DisplayName("상세보기 서비스 로직 테스트")
+    @Nested
+    class BoardDetail {
+
+        @Test
+        @DisplayName("상세페이지 접속 시 boardViewCount가 올라간다")
+        void updateCountView() {
+            //given
+            String viewKey = "viewKey";
+
+            //when
+            boardService.getBoardDetailResponse(NULL_MEMBER, board.getId(), viewKey);
+            BoardStatistic boardInfo = boardStatisticRepository.findByBoardId(board.getId())
+                .orElseThrow();
+
+            //then
+            assertThat(boardInfo.getBoardViewCount()).isOne();
         }
 
     }
