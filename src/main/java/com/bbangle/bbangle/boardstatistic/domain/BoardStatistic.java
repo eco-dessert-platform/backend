@@ -52,6 +52,10 @@ public class BoardStatistic {
         basicScore -= score;
     }
 
+    public void setBoardWishCountWhenInit(int boardViewCount) {
+        this.boardWishCount = boardViewCount;
+    }
+
     public void updateViewCount() {
         this.boardViewCount++;
     }
@@ -73,12 +77,12 @@ public class BoardStatistic {
     }
 
     public void updateReviewGrade(BigDecimal rate, boolean isCreate) {
-        if(isCreate && boardReviewCount == 0){
+        if (isCreate && boardReviewCount == 0) {
             this.boardReviewGrade = rate;
             return;
         }
 
-        if(isCreate && boardReviewCount > 0){
+        if (isCreate && boardReviewCount > 0) {
             BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
             this.boardReviewGrade = (wrappedReviewCount
                 .multiply(this.boardReviewGrade)
@@ -87,7 +91,7 @@ public class BoardStatistic {
             return;
         }
 
-        if(!isCreate && boardReviewCount > 1){
+        if (!isCreate && boardReviewCount > 1) {
             BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
             this.boardReviewGrade = (wrappedReviewCount
                 .multiply(this.boardReviewGrade)
@@ -96,9 +100,21 @@ public class BoardStatistic {
             return;
         }
 
-        if(!isCreate && boardReviewCount == 1){
+        if (!isCreate && boardReviewCount == 1) {
             this.boardReviewGrade = boardReviewGrade.subtract(rate);
         }
+    }
+
+    public void setBoardReviewCountWhenInit(int count) {
+        this.boardReviewCount = count;
+    }
+
+    public void setBoardReviewRateWhenInit(BigDecimal grade) {
+        this.boardReviewGrade = grade;
+    }
+
+    public void updateBasicScoreWhenInit() {
+        this.basicScore = (double) (boardReviewCount * 50 + boardViewCount + boardWishCount * 50);
     }
 
 }
