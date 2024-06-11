@@ -6,6 +6,8 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +36,7 @@ public class BoardStatisticService {
                 .boardReviewCount(0)
                 .boardWishCount(0)
                 .boardViewCount(0)
-                .boardReviewGrade(0.0)
+                .boardReviewGrade(BigDecimal.ZERO)
                 .build())
             .forEach(boardStatistics::add);
         boardStatisticRepository.saveAll(boardStatistics);
@@ -63,10 +65,15 @@ public class BoardStatisticService {
 
     @Async
     @Transactional
-    public void updateReviewCount(Long boardId, boolean isCreate) {
+    public void updateReviewCount(
+        Long boardId,
+        BigDecimal rate,
+        boolean isCreate
+    ) {
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
             .orElseThrow(
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+        boardStatistic.updateReviewGrade(rate, isCreate);
         boardStatistic.updateReviewCount(isCreate);
         boardStatistic.updateBasicScore(BOARD_REVIEW_SCORE, isCreate);
     }
