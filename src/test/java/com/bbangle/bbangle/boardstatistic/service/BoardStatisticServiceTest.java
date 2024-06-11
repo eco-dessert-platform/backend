@@ -119,6 +119,25 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("정상적으로 Board의 review 여러 개삭제 시 reviewCount를 업데이트한다")
+    void updateReviewRemoveCountWithManySource() {
+        //given, when
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(0).getRate(), IS_CREATE);
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(1).getRate(), IS_CREATE);
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(2).getRate(), IS_CREATE);
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(3).getRate(), IS_CREATE);
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(1).getRate(), IS_REMOVE);
+        boardStatisticService.updateReviewCount(board.getId(), reviewList.get(2).getRate(), IS_REMOVE);
+
+        BigDecimal expectedScore = getAvgScore(List.of(reviewList.get(0), reviewList.get(3)));
+        //then
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
+            .orElseThrow();
+        assertThat(boardStatistic.getBoardReviewCount()).isEqualTo(2);
+        assertThat(boardStatistic.getBoardReviewGrade().doubleValue()).isEqualTo(expectedScore.doubleValue());
+    }
+
+    @Test
     @DisplayName("정상적으로 Board를 찜할 시 wishCount를 업데이트한다")
     void updateWishCount() {
         //given, when
