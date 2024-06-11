@@ -2,11 +2,10 @@ package com.bbangle.bbangle.wishlist.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
+import com.bbangle.bbangle.config.ranking.BoardStatisticConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
@@ -21,8 +20,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -43,7 +40,7 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
     WishListStoreRepositoryImpl wishListStoreRepositoryImpl;
 
     @MockBean
-    BoardWishListConfig boardWishListConfig;
+    BoardStatisticConfig boardWishListConfig;
 
     @Autowired
     ResponseService responseService;
