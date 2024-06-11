@@ -2,7 +2,7 @@ package com.bbangle.bbangle.review.repository;
 
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
@@ -25,6 +25,6 @@ public interface ReviewQueryDSLRepository {
     List<LikeCountPerReviewIdDto> getLikeCount(Long minimumBestReviewStandard);
     Map<Long, List<Long>> getBestReview(List<Long> reviewIds);
     void updateBestReview(List<Long> bestReviewIds);
-    AnalyticsCreatedWithinPeriodResponseDto countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<DateAndCountDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
     List<AnalyticsCumulationResponseDto> countCumulatedReviewBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate);
 }

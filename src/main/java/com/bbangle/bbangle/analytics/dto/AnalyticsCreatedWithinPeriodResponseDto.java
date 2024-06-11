@@ -8,12 +8,8 @@ public record AnalyticsCreatedWithinPeriodResponseDto(
         String average
 ) {
 
-    public static AnalyticsCreatedWithinPeriodResponseDto from(AnalyticsCreatedWithinPeriodResponseDto analyticsCountWithDateResponseDto) {
-        return new AnalyticsCreatedWithinPeriodResponseDto(
-                analyticsCountWithDateResponseDto.dateAndCount(),
-                analyticsCountWithDateResponseDto.total(),
-                analyticsCountWithDateResponseDto.average()
-        );
+    public static AnalyticsCreatedWithinPeriodResponseDto from(List<DateAndCountDto> results, Long total, String average) {
+        return new AnalyticsCreatedWithinPeriodResponseDto(results, total, average);
     }
 
 }

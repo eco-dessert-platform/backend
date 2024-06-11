@@ -1,10 +1,11 @@
 package com.bbangle.bbangle.wishlist.repository;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface WishListBoardQueryDSLRepository {
 
-    AnalyticsCreatedWithinPeriodResponseDto countWishlistCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<DateAndCountDto> countWishlistCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 }
