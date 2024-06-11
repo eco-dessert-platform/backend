@@ -20,6 +20,6 @@ public record ReviewRequest(
     String content,
     @NotNull
     Long boardId,
-    List<MultipartFile> photos
+    List<String> photos
 ) {
 }

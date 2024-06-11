@@ -6,7 +6,6 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.bbangle.bbangle.notification.service.NotificationService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,19 +31,12 @@ class NotificationControllerTest extends AbstractIntegrationTest {
     NotificationRepository notificationRepository;
     @Autowired
     MockMvc mockMvc;
-    @Autowired
-    DatabaseCleaner databaseCleaner;
 
+    private Long firstSavedId;
 
     @BeforeEach
     void setUp(){
-        notificationRepository.deleteAll();
         createNotification();
-    }
-
-    @AfterEach
-    void tearDown() {
-        databaseCleaner.clear();
     }
 
     private void createNotification() {
@@ -57,7 +49,11 @@ class NotificationControllerTest extends AbstractIntegrationTest {
                 .content("content" + i)
                 .createdAt(testLocalDateTime)
                 .build();
-            notificationRepository.save(notification);
+            Notice saveNotice = notificationRepository.save(notification);
+
+            if(i == 1){
+                firstSavedId = saveNotice.getId();
+            }
         }
     }
 
@@ -76,7 +72,7 @@ class NotificationControllerTest extends AbstractIntegrationTest {
     @WithMockUser
     void notHasNextPage() throws Exception{
         mockMvc.perform(get("/api/v1/notification")
-            .param("cursorId", "3"))
+            .param("cursorId", String.valueOf(firstSavedId)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result.hasNext").value(false))
             .andDo(print());

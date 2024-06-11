@@ -10,15 +10,12 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
@@ -27,8 +24,6 @@ import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,31 +34,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-class StoreRepositoryTest extends AbstractIntegrationTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private StoreRepository storeRepository;
-
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private BoardImgRepository boardImgRepository;
 
     @Autowired
-    private WishListFolderRepository wishListFolderRepository;
-
-    @Autowired
     private WishListBoardRepository wishListProductRepository;
 
-    @Autowired
-    private WishListStoreRepository wishListStoreRepository;
     @Autowired
     private RankingRepository rankingRepository;
 
@@ -153,7 +134,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 5; count++) {
             Board board = createBoard(store, "TestBoardTitle" + count, 100 + count);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
         }
 
         updateRanking();
@@ -178,7 +159,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
 
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
             createWishlistProduct(member, board);
         }
 
@@ -202,7 +183,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
         }
 
         Long memberId = member.getId();
@@ -226,7 +207,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            createProduct(board, Category.COOKIE);
+            createProduct(board, Category.SNACK);
             createProduct(board, Category.BREAD);
         }
 
@@ -253,7 +234,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
 
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
-            Product product = createProduct(board, Category.COOKIE);
+            Product product = createProduct(board, Category.SNACK);
             lastBoardId = board.getId();
         }
 

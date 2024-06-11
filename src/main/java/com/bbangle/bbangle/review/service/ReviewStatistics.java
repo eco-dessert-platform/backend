@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.review.service;
 
 import static com.bbangle.bbangle.review.domain.Badge.BAD;
+import static com.bbangle.bbangle.review.domain.Badge.DRY;
 import static com.bbangle.bbangle.review.domain.Badge.GOOD;
-import static com.bbangle.bbangle.review.domain.Badge.HARD;
 import static com.bbangle.bbangle.review.domain.Badge.PLAIN;
 import static com.bbangle.bbangle.review.domain.Badge.SOFT;
 import static com.bbangle.bbangle.review.domain.Badge.SWEET;
@@ -53,20 +53,20 @@ public class ReviewStatistics {
     }
 
     private String getPopularTextureBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, SOFT, HARD);
+        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, SOFT, DRY);
     }
 
     private String calculatePopularBadge(
         List<ReviewDto> reviews,
-        Function<ReviewDto, String> badgeFunction,
+        Function<ReviewDto, Badge> badgeFunction,
         Badge badge1,
         Badge badge2) {
-        Map<String, Integer> badgeMap = new HashMap<>();
+        Map<Badge, Integer> badgeMap = new HashMap<>();
 
         int halfReviewsSize = count(reviews) / 2;
 
         for (ReviewDto review : reviews) {
-            String badge = badgeFunction.apply(review);
+            Badge badge = badgeFunction.apply(review);
 
             int badgeCount = badgeMap.getOrDefault(badge, 0);
 
@@ -78,7 +78,7 @@ public class ReviewStatistics {
             badgeMap.put(badge, badgeCount + 1);
         }
 
-        return badgeMap.getOrDefault(badge1.name(), 0) >= badgeMap.getOrDefault(badge2.name(), 0) ?
+        return badgeMap.getOrDefault(badge1, 0) >= badgeMap.getOrDefault(badge2, 0) ?
             badge1.name() : badge2.name();
     }
 }

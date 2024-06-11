@@ -1,7 +1,6 @@
 package com.bbangle.bbangle;
 
-import static java.util.Collections.emptyMap;
-
+import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
@@ -10,13 +9,16 @@ import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.notification.repository.NotificationRepository;
+import com.bbangle.bbangle.notification.service.NotificationService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
@@ -24,10 +26,12 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +45,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import static java.util.Collections.emptyMap;
+
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,14 +56,20 @@ public abstract class AbstractIntegrationTest {
     protected MockMvc mockMvc;
     @Autowired
     protected WebApplicationContext context;
-
+    @Autowired
+    protected JPAQueryFactory queryFactory;
     @Autowired
     protected MemberService memberService;
     @Autowired
     protected StoreService storeService;
     @Autowired
+    protected BoardService boardService;
+    @Autowired
     protected WishListStoreService wishListStoreService;
-
+    @Autowired
+    protected AnalyticsService analyticsService;
+    @Autowired
+    protected WishListBoardService wishListBoardService;
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
@@ -69,22 +81,23 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected MemberRepository memberRepository;
     @Autowired
+    protected BoardImgRepository boardImgRepository;
+    @Autowired
     protected WishListFolderRepository wishListFolderRepository;
     @Autowired
     protected WishListBoardRepository wishListBoardRepository;
     @Autowired
     protected WishListStoreRepository wishListStoreRepository;
     @Autowired
-    protected BoardImgRepository boardImgRepository;
-    @Autowired
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
     protected ReviewRepository reviewRepository;
+    @Autowired
+    protected NotificationRepository notificationRepository;
 
     @BeforeEach
     void before() {
         // 이거 없으면 데이터가 꼬여서 테스트 너무 힘들어서 넣었습니다 살려주세요
-        boardImgRepository.deleteAllInBatch();
         storeRepository.deleteAllInBatch();
         rankingRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
@@ -95,6 +108,7 @@ public abstract class AbstractIntegrationTest {
         wishListBoardRepository.deleteAllInBatch();
         wishListStoreRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
+        notificationRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()

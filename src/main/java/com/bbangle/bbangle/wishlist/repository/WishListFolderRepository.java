@@ -15,6 +15,9 @@ public interface WishListFolderRepository extends JpaRepository<WishListFolder, 
 
     boolean existsByFolderNameAndMember(String folderName, Member member);
 
+    @Query(value = "select folder from WishListFolder folder where folder.id = :folderId and folder.member.id = :memberId")
+    Optional<WishListFolder> findByMemberIdAndId(Long memberId, Long folderId);
+
     Optional<WishListFolder> findByMemberAndId(Member member, Long folderId);
 
     Optional<WishListFolder> findByMemberAndFolderName(Member member, String FolderName);

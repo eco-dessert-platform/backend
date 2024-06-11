@@ -74,7 +74,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                     .requestMatchers(GET, "/api/v1/notification/**").permitAll()
                     //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
                     .requestMatchers(GET, "/api/v1/boards/notification/**").permitAll()
-
+                    .requestMatchers(GET, "/api/v1/review/**").permitAll()
                     .requestMatchers(GET, "/api/v1/boards/folders/**").authenticated()
                     .requestMatchers("/api/**").authenticated()
                     .anyRequest().permitAll())

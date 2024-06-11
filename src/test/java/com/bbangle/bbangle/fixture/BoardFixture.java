@@ -70,4 +70,33 @@ public class BoardFixture {
             .build();
     }
 
+    public static Board randomBoardWithPrice(
+        Store store,
+        int price
+    ) {
+        List<Boolean> orderAvailable = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            int random = (int) (Math.random() + 1);
+            boolean isAvailable = random == 1;
+            orderAvailable.add(isAvailable);
+        }
+        return Board.builder()
+            .store(store)
+            .title(CommonFaker.faker.book().title())
+            .price(price)
+            .status(true)
+            .profile(CommonFaker.faker.internet().url())
+            .purchaseUrl(CommonFaker.faker.internet().url())
+            .view(0)
+            .sunday(orderAvailable.get(0))
+            .monday(orderAvailable.get(1))
+            .tuesday(orderAvailable.get(2))
+            .wednesday(orderAvailable.get(3))
+            .thursday(orderAvailable.get(4))
+            .friday(orderAvailable.get(5))
+            .saturday(orderAvailable.get(6))
+            .isDeleted(false)
+            .build();
+    }
+
 }
