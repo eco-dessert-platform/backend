@@ -13,6 +13,7 @@ import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.QPopularBoardDto;
 import com.bbangle.bbangle.store.dto.QStoreBoardListDto;
 import com.bbangle.bbangle.store.dto.QStoreDetailStoreDto;
+import com.bbangle.bbangle.store.dto.QStoreDto;
 import com.bbangle.bbangle.store.dto.QStoreResponseDto;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
@@ -23,6 +24,7 @@ import com.bbangle.bbangle.store.dto.StoreDetailBoardDto;
 import com.bbangle.bbangle.store.dto.StoreDetailProductDto;
 import com.bbangle.bbangle.store.dto.StoreBoardListDto;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
@@ -98,6 +100,20 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         }
 
         return storeDetailStoreDto.fetchFirst();
+    }
+
+    @Override
+    public StoreDto findByBoardId(Long boardId) {
+        return queryFactory.select(
+                new QStoreDto(
+                    store.id,
+                    store.name,
+                    store.profile
+                )
+            ).from(board)
+            .join(store).on(store.eq(board.store))
+            .where(board.id.eq(boardId))
+            .fetchFirst();
     }
 
     @Override

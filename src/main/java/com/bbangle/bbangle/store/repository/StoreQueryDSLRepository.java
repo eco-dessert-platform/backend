@@ -4,6 +4,7 @@ import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.page.StoreCustomPage;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.HashMap;
 
 
 public interface StoreQueryDSLRepository {
+
+    StoreDto findByBoardId(Long boardId);
 
     StoreResponse getStoreResponse(Long meberId, Long storeId);
 

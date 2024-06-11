@@ -1,8 +1,9 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
+import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -10,6 +11,10 @@ import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
+import com.bbangle.bbangle.review.service.ReviewService;
+import com.bbangle.bbangle.store.dto.StoreDto;
+import com.bbangle.bbangle.store.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,6 +46,8 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final StoreService storeService;
+    private final ReviewService reviewService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -81,10 +88,11 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        if(sort == null){
+        if (sort == null) {
             sort = FolderBoardSortType.WISHLIST_RECENT;
         }
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(memberId, sort, folderId, cursorId);
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(
+            memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }
 
@@ -104,25 +112,55 @@ public class BoardController {
         return responseService.getSuccessResult();
     }
 
-    @GetMapping("/{id}")
-    public CommonResult getBoardDetailResponse(
-        @PathVariable("id")
+    @Operation(summary = "스토어 조회")
+    @GetMapping("/{boardId}/store")
+    public CommonResult getStoreInfoInBoardDetail(
+        @PathVariable("boardId")
         Long boardId,
         @AuthenticationPrincipal
         Long memberId
     ) {
-        BoardDetailResponse boardDetailResponse =
-            boardService.getBoardDetailResponse(memberId, boardId);
-        return responseService.getSingleResult(boardDetailResponse);
+        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, boardId);
+        return responseService.getSingleResult(storeDto);
+    }
+
+    @Operation(summary = "게시판 조회")
+    @GetMapping("/{boardId}")
+    public CommonResult getBoardDetailResponse(
+        @PathVariable("boardId")
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId) {
+        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId);
+        return responseService.getSingleResult(response);
+    }
+
+    @Operation(summary = "상품 조회")
+    @GetMapping("/{boardId}/product")
+    public CommonResult getProductResponse(
+        @PathVariable("boardId")
+        Long boardId) {
+        ProductResponse productResponse = boardService.getProductResponse(boardId);
+
+        return responseService.getSingleResult(productResponse);
+    }
+
+    @Operation(summary = "리뷰 조회")
+    @GetMapping("/{boardId}/review")
+    public CommonResult getReviewResponse(
+        @PathVariable("boardId")
+        Long boardId) {
+        SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
+
+        return responseService.getSingleResult(response);
     }
 
     private SortType settingDefaultSortTypeIfNull(SortType sort) {
-        if(sort == null){
+        if (sort == null) {
             sort = SortType.RECOMMEND;
         }
 
         return sort;
     }
-
 }
 

@@ -55,7 +55,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
 
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();
-        Long requestCursor = size != 0 ? responseDtos.get(size -1).getStoreId() : 0L;
+        Long requestCursor = size != 0 ? responseDtos.get(size - 1).getStoreId() : 0L;
 
         if (hasNext) {
             responseDtos.remove(responseDtos.get(size - 1));

@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.review.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
+
+import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -9,10 +13,10 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
 import com.bbangle.bbangle.ranking.service.RankingService;
-import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewImg;
+import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.ReviewManager;
 import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
@@ -20,20 +24,18 @@ import com.bbangle.bbangle.review.dto.ReviewImgDto;
 import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
 import com.bbangle.bbangle.review.dto.ReviewRateResponse;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
+import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +52,7 @@ public class ReviewService {
     private final MemberRepository memberRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewManager reviewManager;
+    private final ReviewStatistics reviewStatistics;
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
@@ -74,7 +77,7 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewRateResponse getReviewRate(Long boardId) {
-        List<Review> reviews = reviewRepository.findByBoardId(boardId);
+        List<ReviewDto> reviews = reviewRepository.findByBoardId(boardId);
         return ReviewRateResponse.from(reviews);
     }
 
@@ -260,5 +263,19 @@ public class ReviewService {
 
     private boolean checkHasNext(int size) {
         return size >= PAGE_SIZE + 1;
+    }
+
+    public SummarizedReviewResponse getSummarizedReview(Long boardId) {
+        List<ReviewDto> reviews = reviewRepository.findByBoardId(boardId);
+
+        if (reviews.isEmpty()) {
+            return SummarizedReviewResponse.getEmpty();
+        }
+
+        BigDecimal averageRatingScore = reviewStatistics.getAverageRatingScore(reviews);
+        int reviewCount = reviewStatistics.count(reviews);
+        List<String> popularBadgeList = reviewStatistics.getPopularBadgeList(reviews);
+
+        return SummarizedReviewResponse.of(averageRatingScore, reviewCount, popularBadgeList);
     }
 }

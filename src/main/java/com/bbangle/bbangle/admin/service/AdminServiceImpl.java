@@ -44,7 +44,8 @@ public class AdminServiceImpl implements AdminService {
 
         Long storeId = store.getId();
         String imagePath = imageService.save(STORE, profile, storeId);
-        adminStoreRepository.save(store.updateProfile(imagePath)); // FIXME: 업데이트 해주지 말고 따로 가져오도록 변경 필요
+        adminStoreRepository.save(
+            store.updateProfile(imagePath)); // FIXME: 업데이트 해주지 말고 따로 가져오도록 변경 필요
 
         return storeId;
     }

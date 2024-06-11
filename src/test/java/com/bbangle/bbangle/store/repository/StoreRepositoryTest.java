@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.store.repository;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
@@ -13,16 +17,18 @@ import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,6 +51,8 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     private BoardWishListConfig boardWishListConfig;
 
+    private final String TEST_TITLE = "TestTitle";
+
     @AfterEach
     void afterEach() {
         rankingRepository.deleteAll();
@@ -60,9 +68,41 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
         storeRepository.deleteAll();
     }
 
+    @Nested
+    @DisplayName("findByBoardId 메서드는")
+    class FindByBoardId {
+
+        private Board targetBoard;
+        private Store targetStore;
+        private final Long NOT_EXIST_BOARD_ID = -1L;
+
+        @BeforeEach
+        void init() {
+            targetStore = fixtureStore(Map.of("name", TEST_TITLE));
+            targetBoard = fixtureBoard(Map.of("store", targetStore));
+        }
+
+        @Test
+        @DisplayName("board id가 유효할 때 스토어 정보를 조회할 수 있다.")
+        void getStoreInfo() {
+            StoreDto storeDto = storeRepository.findByBoardId(targetBoard.getId());
+
+            assertThat(storeDto.getId()).isEqualTo(targetStore.getId());
+            assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
+        }
+
+        @Test
+        @DisplayName("board id가 유효하지 않을 때, null을 반환한다")
+        void getNull() {
+            StoreDto storeDto = storeRepository.findByBoardId(NOT_EXIST_BOARD_ID);
+
+            assertThat(storeDto).isNull();
+        }
+    }
+
     @Test
     @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 스토어 아이디에 맞는 스토어 정보를 가져올 수 있다")
-    public void test0() {
+    void test0() {
         Store store = createStore();
 
         Long memberId = null;
@@ -75,7 +115,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 스토어 위시리스트 정보를 조회할 수 있다")
-    public void test1() {
+    void test1() {
         Store store = createStore();
         Member member = createMember();
         createWishlistStore(store, member);
@@ -90,10 +130,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 베스트 게시글 조회 기능 : 가장 높은 점수 게시글을 3개 가져올 수 있다")
-    public void test2() {
-        Collection bestBoardTitles = Arrays.asList("TestBoardTitle4", "TestBoardTitle3",
-            "TestBoardTitle2");
-
+    void test2() {
         Store store = createStore();
         for (int count = 0; count < 5; count++) {
             Board board = createBoard(store, "TestBoardTitle" + count, 100 + count);
@@ -104,7 +141,8 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
         Long memberId = null;
         Long storeId = store.getId();
-        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(memberId,
+        List<PopularBoardResponse> popularBoardResponses = storeRepository.getPopularBoardResponses(
+            memberId,
             storeId);
         List<String> boardTitles = popularBoardResponses.stream()
             .map(popularBoardDto -> popularBoardDto.getBoardTitle()).toList();
@@ -115,7 +153,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 전체 게시글 조회 기능 : 회원은 스토어가 가진 첫 20개의 게시판 데이터를 가져올 수 있다")
-    public void test3() {
+    void test3() {
         Store store = createStore();
         Member member = createMember();
 
@@ -140,7 +178,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 전체 게시글 조회 기능 : 비회원은 스토어가 가진 첫 20개의 게시판 데이터를 가져올 수 있다")
-    public void test4() {
+    void test4() {
         Member member = createMember();
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
@@ -165,7 +203,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 전체 게시글 조회 기능 : 스토어가 가진 첫 20개의 게시판 데이터 중 묶음상품이 여부를 조회할 수 있다")
-    public void test5() {
+    void test5() {
         Store store = createStore();
         for (int count = 0; count < 25; count++) {
             Board board = createBoard(store, "TestBoardTitle", 0);
@@ -189,7 +227,7 @@ public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("스토어 상세페이지 - 전체 게시판 조회 기능 : 무한스크롤 다음 페이지 게시판들을 가져올 수 있다")
-    public void test6() {
+    void test6() {
         Store store = createStore();
         Long lastBoardId = 0L;
         Integer pageCount = 5;

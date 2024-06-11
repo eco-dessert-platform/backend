@@ -1,19 +1,21 @@
 package com.bbangle.bbangle.board.service;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
+import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
@@ -22,13 +24,12 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import jakarta.persistence.EntityManager;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +47,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
     private static final Long NULL_CURSOR = null;
     private static final SortType DEFAULT_SORT_TYPE = SortType.RECOMMEND;
     private static final Long NULL_MEMBER = null;
+    private final String TEST_TITLE = "TestTitle";
 
     @Autowired
     BoardService boardService;
@@ -548,4 +550,98 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
     }
 
+    @Nested
+    @DisplayName("getBoardDtos 메서드는")
+    class GetBoardDtos {
+
+        Board targetBoard;
+        final Long memberId = null;
+        final String TEST_URL = "www.TESTURL.com";
+        final Long NOT_EXSIST_ID = -1L;
+
+        @BeforeEach
+        void init() {
+            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
+            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
+        }
+
+        @Test
+        @DisplayName("유효한 boardId로 게시판, 게시판 이미지, 게시판 상세 정보 이미지 조회할 수 있다")
+        void getProductResponseTest() {
+            BoardImageDetailResponse boardDtos = boardService.getBoardDtos(memberId,
+                targetBoard.getId());
+
+            assertThat(boardDtos.getBoardImages()).hasSize(2);
+            assertThat(boardDtos.getBoardDetails()).hasSize(2);
+
+            String boardDetailUrl = boardDtos.getBoardDetails()
+                .stream()
+                .findFirst()
+                .get();
+
+            String boardImageUrl = boardDtos.getBoardImages()
+                .stream()
+                .findFirst()
+                .get();
+
+            assertThat(boardDetailUrl).isEqualTo(TEST_URL);
+            assertThat(boardImageUrl).isEqualTo(TEST_URL);
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
+        void throwNotBoard() {
+            assertThrows(BbangleException.class,
+                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+        }
+    }
+
+
+    @Nested
+    @DisplayName("getProductResponse 메서드는")
+    class GetProductResponse {
+
+        List<Product> products;
+        Board targetBoard;
+        final Long NOT_EXSIST_ID = -1L;
+
+        @BeforeEach
+        void init() {
+            products = List.of(
+                fixtureProduct(Map.of(
+                    "title", TEST_TITLE,
+                    "category", Category.BREAD
+                )),
+                fixtureProduct(Map.of(
+                    "title", TEST_TITLE,
+                    "category", Category.SNACK
+                )));
+
+            targetBoard = fixtureBoard(Map.of("productList", products));
+        }
+
+        @Test
+        @DisplayName("유효한 boardId로 상품리스트를 조회할 수 있다")
+        void getProductResponseTest() {
+            ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
+            List<ProductDto> productList = productResponse.getProducts();
+
+            assertThat(productList).hasSize(2);
+            assertThat(productResponse.getBoardIsBundled()).isTrue();
+            productList.forEach(productDto -> {
+                assertThat(productDto.getId()).isNotNull();
+                assertThat(productDto.getTitle()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
+        void throwNotBoard() {
+            assertThrows(BbangleException.class,
+                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+        }
+    }
 }

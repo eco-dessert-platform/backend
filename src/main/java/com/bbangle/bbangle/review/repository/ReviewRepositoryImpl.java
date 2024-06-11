@@ -3,6 +3,7 @@ package com.bbangle.bbangle.review.repository;
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
 import com.bbangle.bbangle.analytics.dto.QAnalyticsCountWithDateResponseDto;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.bbangle.bbangle.member.domain.QMember;
@@ -28,8 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
-
-import static com.bbangle.bbangle.review.domain.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
@@ -214,7 +213,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
         em.flush();
         em.clear();
     }
-  
+
     @Override
     public List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = getDateCreatedAt();
@@ -332,6 +331,21 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
         return dateRange.stream()
                 .map(date -> constructor.apply(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
                 .toList();
+    }
+
+    @Override
+    public List<ReviewDto> findByBoardId(Long boardId) {
+        return queryFactory.select(
+                Projections.constructor(
+                    ReviewDto.class,
+                    review.badgeTaste,
+                    review.badgeBrix,
+                    review.badgeTexture,
+                    review.rate
+                )
+            ).from(review)
+            .where(review.boardId.eq(boardId))
+            .fetch();
     }
 
 }
