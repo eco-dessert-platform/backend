@@ -91,7 +91,7 @@ public class BoardService {
             .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId,
         String viewCountKey
     ) {
