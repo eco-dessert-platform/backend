@@ -64,7 +64,7 @@ public class StoreService {
         return StoreDetailCustomPage.from(boardsInStoreResponse, boardIds, hasNext);
     }
 
-    public Map<Long, List<TagsDao>> getTags(List<TagCategoryDto> tagCategorys) {
+    private Map<Long, List<TagsDao>> getTags(List<TagCategoryDto> tagCategorys) {
         return tagCategorys.stream()
             .collect(Collectors.groupingBy(
                 TagCategoryDto::getBoardId,
@@ -72,7 +72,7 @@ public class StoreService {
             ));
     }
 
-    public Map<Long, Set<Category>> getCategories(List<TagCategoryDto> tagCategorys) {
+    private Map<Long, Set<Category>> getCategories(List<TagCategoryDto> tagCategorys) {
         return tagCategorys.stream()
             .collect(Collectors.groupingBy(
                 TagCategoryDto::getBoardId,
@@ -80,7 +80,7 @@ public class StoreService {
             ));
     }
 
-    public List<BoardsInStoreResponse> combineBaseOnBoardId(
+    private List<BoardsInStoreResponse> combineBaseOnBoardId(
         List<BoardsInStoreDto> boardsInStoreDtos,
         Map<Long, List<TagsDao>> tags,
         Map<Long, Set<Category>> categories
