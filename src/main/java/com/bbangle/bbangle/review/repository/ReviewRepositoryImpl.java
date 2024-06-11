@@ -3,6 +3,7 @@ package com.bbangle.bbangle.review.repository;
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
 import com.bbangle.bbangle.analytics.dto.QAnalyticsCountWithDateResponseDto;
+import com.bbangle.bbangle.config.ranking.BoardGrade;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.bbangle.bbangle.member.domain.QMember;
@@ -14,6 +15,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -254,6 +256,22 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
         return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults,
                 AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
                 AnalyticsCountWithDateResponseDto::new);
+    }
+
+    @Override
+    public List<BoardGrade> groupByBoardIdAndGetReviewCountAndReviewRate() {
+        return queryFactory.select(review.boardId, review.id.count(), review.rate.avg())
+            .from(review)
+            .groupBy(review.boardId)
+            .orderBy(review.boardId.asc())
+            .fetch()
+            .stream()
+            .map(tuple -> BoardGrade.builder()
+                .boardId(tuple.get(review.boardId))
+                .count(tuple.get(review.id.count()).intValue())
+                .grade(BigDecimal.valueOf(tuple.get(review.rate.avg())))
+                .build())
+            .toList();
     }
 
     private BooleanBuilder getImageCondition(ReviewCursor reviewCursor) {

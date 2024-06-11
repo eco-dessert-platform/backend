@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.review.repository;
 
 
+import com.bbangle.bbangle.config.ranking.BoardGrade;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
@@ -26,4 +27,6 @@ public interface ReviewQueryDSLRepository {
     void updateBestReview(List<Long> bestReviewIds);
     List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
     List<AnalyticsCountWithDateResponseDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
+    List<BoardGrade> groupByBoardIdAndGetReviewCountAndReviewRate();
+
 }
