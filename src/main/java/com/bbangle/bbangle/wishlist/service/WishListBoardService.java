@@ -51,8 +51,6 @@ public class WishListBoardService {
     @Transactional
     public void cancel(Long memberId, Long boardId) {
         Member member = memberRepository.findMemberById(memberId);
-        Board board = boardRepository.findById(boardId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId, member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
