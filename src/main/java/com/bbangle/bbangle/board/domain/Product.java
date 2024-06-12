@@ -108,4 +108,7 @@ public class Product {
     @Column(name = "order_end_date")
     private LocalDateTime orderEndDate;
 
+    @Column(name = "soldout", columnDefinition = "tinyint")
+    private boolean soldout;
+
 }

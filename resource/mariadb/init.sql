@@ -156,6 +156,7 @@ create table product
     fat              int               null,
     weight           int               null,
     calories         int               null,
+    soldout          tinyint default 0 not null,
     constraint fk_product_board_product
         foreign key (product_board_id) references product_board (id)
 ) charset = utf8mb4;
