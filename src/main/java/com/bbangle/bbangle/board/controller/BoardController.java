@@ -123,10 +123,10 @@ public class BoardController {
     ) {
         String viewCountKey = getViewCountKey(boardId, httpServletRequest);
         if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
-            BoardDetailResponse response = boardService.getBoardDtos(memberId, boardId, NON_VIEW_KEY);
+            BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, NON_VIEW_KEY);
             return responseService.getSingleResult(response);
         }
-        BoardDetailResponse response = boardService.getBoardDtos(memberId, boardId, viewCountKey);
+        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, viewCountKey);
         return responseService.getSingleResult(response);
     }
 
