@@ -588,6 +588,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @BeforeEach
         void init() {
             targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(targetBoard));
             fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
             fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
             fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
