@@ -1,31 +1,31 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
+@Component
 public class BoardInFolderCursorGeneratorMapping {
 
-    private final Long folderId;
-    private final Long cursorId;
-    private final JPAQueryFactory jpaQueryFactory;
-    private final FolderBoardSortType sortType;
+    private final WishListRecentBoardInFolderCursorGenerator wishListRecentBoardInFolderCursorGenerator;
+    private final LowPriceBoardInFolderCursorGenerator lowPriceBoardInFolderCursorGenerator;
+    private final PopularBoardInFolderCursorGenerator popularBoardInFolderCursorGenerator;
 
-    public CursorGenerator mappingCursorGenerator() {
+    public BoardInFolderCursorGenerator mappingCursorGenerator(FolderBoardSortType sortType) {
         if(sortType == null){
-            return new WishListRecentCursorGenerator(jpaQueryFactory, cursorId, folderId);
+            return wishListRecentBoardInFolderCursorGenerator;
         }
 
         if (sortType == FolderBoardSortType.LOW_PRICE) {
-            return new LowPriceCursorGenerator(jpaQueryFactory, cursorId, folderId);
+            return lowPriceBoardInFolderCursorGenerator;
         }
 
         if (sortType == FolderBoardSortType.POPULAR) {
-            return new PopularCursorGenerator(jpaQueryFactory, cursorId, folderId);
+            return popularBoardInFolderCursorGenerator;
         }
 
-        return new WishListRecentCursorGenerator(jpaQueryFactory, cursorId, folderId);
+        return wishListRecentBoardInFolderCursorGenerator;
     }
 
 }

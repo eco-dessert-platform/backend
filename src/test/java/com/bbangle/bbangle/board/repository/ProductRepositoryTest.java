@@ -32,7 +32,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
 
             List<Product> products = List.of(
                 fixtureProduct(Map.of("category", Category.BREAD)),
-                fixtureProduct(Map.of("category", Category.COOKIE)));
+                fixtureProduct(Map.of("category", Category.SNACK)));
 
             board = fixtureBoard(Map.of("store", store, "productList", products));
         }
@@ -44,7 +44,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
             Map<Long, Set<Category>> products = productRepository.getCategoryInfoByBoardId(boardIds);
 
             Set<Category> actualCategories = products.get(board.getId());
-            Category[]  expectCatetegories = new Category[] {Category.BREAD, Category.COOKIE};
+            Category[]  expectCatetegories = new Category[] {Category.BREAD, Category.SNACK};
 
             assertThat(actualCategories).containsExactlyInAnyOrder(expectCatetegories);
         }

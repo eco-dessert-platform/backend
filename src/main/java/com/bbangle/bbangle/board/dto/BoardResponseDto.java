@@ -43,28 +43,20 @@ public final class BoardResponseDto {
         this.tags = tags;
     }
 
-    public static BoardResponseDto from(Board board, List<String> tags) {
-        boolean isBundled = isBundled(board);
-
+    public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags) {
         return BoardResponseDto.builder()
-            .boardId(board.getId())
-            .storeId(board.getStore()
-                .getId())
-            .storeName(board.getStore()
-                .getName())
-            .thumbnail(board.getProfile())
-            .title(board.getTitle())
-            .price(board.getPrice())
+            .boardId(board.boardId())
+            .storeId(board.storeId())
+            .storeName(board.storeName())
+            .thumbnail(board.thumbnail())
+            .title(board.title())
+            .price(board.price())
             .isWished(false)
             .isBundled(isBundled)
             .tags(tags)
             .build();
     }
 
-    private static boolean isBundled(Board board) {
-        return !Objects.isNull(board.getProductList()) && board.getProductList()
-            .size() != 1;
-    }
 
     public static BoardResponseDto inFolder(BoardResponseDao board, boolean isBundled, List<String> tags) {
         return BoardResponseDto.builder()

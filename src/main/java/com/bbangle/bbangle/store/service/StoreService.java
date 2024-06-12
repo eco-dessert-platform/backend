@@ -5,19 +5,26 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.TagCategoryDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import static com.bbangle.bbangle.board.validator.BoardValidator.validateNotNull;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
 
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
+import com.bbangle.bbangle.store.dto.StoreDto;
+import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import java.util.ArrayList;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +35,21 @@ public class StoreService {
     private static final Long PAGE_SIZE = 10L;
 
     private final StoreRepository storeRepository;
+    private final WishListStoreRepository wishListStoreRepository;
     private final BoardRepository boardRepository;
     private final ProductRepository productRepository;
+
+    public StoreDto getStoreDtoByBoardId(Long memberId, Long boardId) {
+        StoreDto storeDto = storeRepository.findByBoardId(boardId);
+        validateNotNull(storeDto, BOARD_NOT_FOUND);
+
+        boolean isWished = Objects.nonNull(memberId)
+            && wishListStoreRepository.findWishListStore(memberId, storeDto.getId()).isPresent();
+
+        storeDto.updateWished(isWished);
+
+        return storeDto;
+    }
 
     public StoreDetailStoreDto getStoreResponse(Long memberId, Long storeId) {
         return storeRepository.getStoreResponse(memberId, storeId);

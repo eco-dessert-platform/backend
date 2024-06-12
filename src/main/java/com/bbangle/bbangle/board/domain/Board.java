@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
 
 @Table(name = "product_board")
 @Entity
@@ -45,7 +44,7 @@ public class Board extends BaseEntity {
     @Column(name = "price")
     private int price;
 
-    @Column(name = "status", columnDefinition = "tinyint")
+    @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean status;
 
     @Column(name = "profile")
@@ -81,9 +80,16 @@ public class Board extends BaseEntity {
     @Column(name = "saturday", columnDefinition = "tinyint")
     private boolean saturday;
 
+    @Column(name = "delivery_fee")
+    private Integer deliveryFee;
+
+    @Column(name = "free_shipping_conditions")
+    private Integer freeShippingConditions;
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    //TODO: 임시로 남겨놓음 다음 pr에서 제거 예정(by 중원)
     @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();

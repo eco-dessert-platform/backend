@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
@@ -45,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
+
     private final JPAQueryFactory queryFactory;
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
@@ -58,17 +59,17 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     // 빈 DTO 반환
     @Override
-    public Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds){
+    public Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds) {
         BooleanBuilder whereFilter = setFilteringCondition(boardRequest);
 
         return queryFactory
-                .select(product.board.id)
-                .distinct()
-                .from(product)
-                .where(
-                        board.id.in(boardIds),
-                        whereFilter
-                ).fetchCount();
+            .select(product.board.id)
+            .distinct()
+            .from(product)
+            .where(
+                board.id.in(boardIds),
+                whereFilter
+            ).fetchCount();
     }
 
     private SearchBoardResponse returnEmptyResponse(Pageable pageable, long total) {
@@ -77,14 +78,16 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     // 정렬 기준 설정
     private OrderSpecifier<?> determineOrder(SearchBoardRequest boardRequest, List<Long> boardIds) {
-        return boardRequest.sort().equals(SortType.POPULAR.name()) ?
-                board.view.add(board.wishCnt.multiply(10)).desc() :
-                orderByFieldList(boardIds, product.board.id);
+        return boardRequest.sort().equals(SortType.RECOMMEND.getOrderExpression()) ?
+            board.view.add(board.wishCnt.multiply(10)).desc() :
+            orderByFieldList(boardIds, product.board.id);
     }
 
     // 페이징 적용된 조회
-    private List<Long> fetchFilteredQuery(JPAQuery<Long> query, OrderSpecifier<?> orderBy, Pageable pageable) {
-        return query.orderBy(orderBy).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
+    private List<Long> fetchFilteredQuery(JPAQuery<Long> query, OrderSpecifier<?> orderBy,
+        Pageable pageable) {
+        return query.orderBy(orderBy).offset(pageable.getOffset()).limit(pageable.getPageSize())
+            .fetch();
     }
 
     private OrderSpecifier<String> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
@@ -93,24 +96,25 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         return Expressions.stringTemplate("FIELD({0}, " + ids + ")", id).asc();
     }
 
-    public List<Long> getFilteredBoardIds(SearchBoardRequest boardRequest, List<Long> boardIds, Pageable pageable){
+    public List<Long> getFilteredBoardIds(SearchBoardRequest boardRequest, List<Long> boardIds,
+        Pageable pageable) {
         BooleanBuilder whereFilter =
-                setFilteringCondition(boardRequest);
+            setFilteringCondition(boardRequest);
 
         var defaultQuery = queryFactory
-                .select(product.board.id)
-                .distinct()
-                .from(product)
-                .where(
-                        board.id.in(boardIds),
-                        whereFilter
-                );
+            .select(product.board.id)
+            .distinct()
+            .from(product)
+            .where(
+                board.id.in(boardIds),
+                whereFilter
+            );
 
         var orderBy = determineOrder(boardRequest, boardIds);
         return fetchFilteredQuery(defaultQuery, orderBy, pageable);
     }
 
-    private List<Expression<?>> getColumnsForBoardDetails(Long memberId){
+    private List<Expression<?>> getColumnsForBoardDetails(Long memberId) {
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(product.board.store.id);
         columns.add(product.board.store.name);
@@ -132,16 +136,16 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         return columns;
     }
 
-    public List<Tuple> fetchBoardDetailsByBoardIds(Long memberId, List<Long> filteredBoardIds){
+    public List<Tuple> fetchBoardDetailsByBoardIds(Long memberId, List<Long> filteredBoardIds) {
         List<Expression<?>> columns = getColumnsForBoardDetails(memberId);
 
         var boards = queryFactory
-                .select(columns.toArray(new Expression[0]))
-                .from(product)
-                .join(product.board, board)
-                .join(product.board.store, store)
-                .where(product.board.id.in(filteredBoardIds))
-                .orderBy(orderByFieldList(filteredBoardIds, product.board.id));
+            .select(columns.toArray(new Expression[0]))
+            .from(product)
+            .join(product.board, board)
+            .join(product.board.store, store)
+            .where(product.board.id.in(filteredBoardIds))
+            .orderBy(orderByFieldList(filteredBoardIds, product.board.id));
 
         // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
@@ -151,25 +155,29 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         return boards.fetch();
     }
 
-    private void putBoardResponseAtBoardIdToResponseMap(Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId, Set<Category> categories){
+    private void putBoardResponseAtBoardIdToResponseMap(
+        Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId,
+        Set<Category> categories) {
         boardIdToResponseMap.put(boardId,
-                BoardResponseDto.builder()
-                        .boardId(boardId)
-                        .storeId(boardDetail.get(product.board.store.id))
-                        .storeName(boardDetail.get(product.board.store.name))
-                        .thumbnail(boardDetail.get(product.board.profile))
-                        .title(boardDetail.get(product.board.title))
-                        .price(boardDetail.get(product.board.price))
-                        .isBundled(categories.size() > 1)
-                        .tags(new ArrayList<>())
-                        .isWished(false)
-                        .build());
+            BoardResponseDto.builder()
+                .boardId(boardId)
+                .storeId(boardDetail.get(product.board.store.id))
+                .storeName(boardDetail.get(product.board.store.name))
+                .thumbnail(boardDetail.get(product.board.profile))
+                .title(boardDetail.get(product.board.title))
+                .price(boardDetail.get(product.board.price))
+                .isBundled(categories.size() > 1)
+                .tags(new ArrayList<>())
+                .isWished(false)
+                .build());
 
         categories.clear();
     }
 
-    private BoardResponseDto getBoardTagsByboardDetailTuple(Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId){
-        BoardResponseDto boardResponseDto = boardIdToResponseMap.get(boardDetail.get(product.board.id));
+    private BoardResponseDto getBoardTagsByboardDetailTuple(
+        Map<Long, BoardResponseDto> boardIdToResponseMap, Tuple boardDetail, Long boardId) {
+        BoardResponseDto boardResponseDto = boardIdToResponseMap.get(
+            boardDetail.get(product.board.id));
 
         if (boardDetail.get(product.glutenFreeTag)) {
             boardIdToResponseMap.get(boardId).getTags().add(TagEnum.GLUTEN_FREE.label());
@@ -190,26 +198,29 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         return boardResponseDto;
     }
 
-    private List<BoardResponseDto> duplicateBoardResponse(Map<Long, BoardResponseDto> boardIdToResponseMap){
+    private List<BoardResponseDto> duplicateBoardResponse(
+        Map<Long, BoardResponseDto> boardIdToResponseMap) {
         return boardIdToResponseMap.entrySet().stream().map(
-                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
+            longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
         ).map(
-                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
+            boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
         ).toList();
     }
 
-    private List<BoardResponseDto> getResponseContentByBoardDetails(List<Tuple> boardDetails){
+    private List<BoardResponseDto> getResponseContentByBoardDetails(List<Tuple> boardDetails) {
         Map<Long, BoardResponseDto> boardIdToResponseMap = new LinkedHashMap<>();
         Set<Category> categories = new HashSet<>();
 
-        for (Tuple boardDetail:boardDetails) {
-            Long boardId =  boardDetail.get(product.board.id);
+        for (Tuple boardDetail : boardDetails) {
+            Long boardId = boardDetail.get(product.board.id);
 
             if (!boardIdToResponseMap.containsKey(boardId)) {
-                putBoardResponseAtBoardIdToResponseMap(boardIdToResponseMap, boardDetail, boardId, categories);
+                putBoardResponseAtBoardIdToResponseMap(boardIdToResponseMap, boardDetail, boardId,
+                    categories);
             }
             categories.add(boardDetail.get(product.category));
-            BoardResponseDto boardTags = getBoardTagsByboardDetailTuple(boardIdToResponseMap, boardDetail, boardId);
+            BoardResponseDto boardTags = getBoardTagsByboardDetailTuple(boardIdToResponseMap,
+                boardDetail, boardId);
             boardIdToResponseMap.put(boardDetail.get(product.board.id), boardTags);
         }
 
@@ -218,12 +229,12 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public SearchBoardResponse getSearchedBoard(
-            Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest,
-            Pageable pageable, Long searchedBoardAllCount
+        Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest,
+        Pageable pageable, Long searchedBoardAllCount
     ) {
         List<Long> filteredBoardIds = getFilteredBoardIds(boardRequest, boardIds, pageable);
 
-        if (filteredBoardIds.size() <= 0){
+        if (filteredBoardIds.size() <= 0) {
             return returnEmptyResponse(pageable, searchedBoardAllCount);
         }
 
@@ -232,17 +243,19 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         List<BoardResponseDto> content = getResponseContentByBoardDetails(boardDetails);
 
         return SearchBoardResponse.builder()
-                .content(content)
-                .pageNumber(pageable.getPageNumber())
-                .itemAllCount(searchedBoardAllCount)
-                .limitItemCount(DEFAULT_ITEM_SIZE)
-                .currentItemCount(content.size())
-                .existNextPage(searchedBoardAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
-                .build();
+            .content(content)
+            .pageNumber(pageable.getPageNumber())
+            .itemAllCount(searchedBoardAllCount)
+            .limitItemCount(DEFAULT_ITEM_SIZE)
+            .currentItemCount(content.size())
+            .existNextPage(
+                searchedBoardAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
+            .build();
     }
 
     @Override
-    public List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable){
+    public List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList,
+        Pageable pageable) {
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(store.id);
         columns.add(store.name);
@@ -250,61 +263,63 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         columns.add(store.profile);
 
         // 회원이라면 위시리스트 유무 확인
-        if (memberId > 1L){
+        if (memberId > 1L) {
             columns.add(wishListStore.id);
         }
 
         var stores = queryFactory
-                .select(columns.toArray(new Expression[0]))
-                .from(store)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .where(store.id.in(storeIndexList))
-                .orderBy(orderByFieldList(storeIndexList, store.id));
+            .select(columns.toArray(new Expression[0]))
+            .from(store)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .where(store.id.in(storeIndexList))
+            .orderBy(orderByFieldList(storeIndexList, store.id));
 
         // 회원이라면 위시리스트 테이블 Join
-        if (memberId > 1L){
-            stores.leftJoin(wishListStore).on(wishListStore.store.eq(store), wishListStore.member.id.eq(memberId), wishListStore.isDeleted.eq(false));
+        if (memberId > 1L) {
+            stores.leftJoin(wishListStore)
+                .on(wishListStore.store.eq(store), wishListStore.member.id.eq(memberId),
+                    wishListStore.isDeleted.eq(false));
         }
 
         return stores.fetch().stream().map(
-                tuple -> StoreResponseDto.builder()
-                        .storeId(tuple.get(store.id))
-                        .storeName(tuple.get(store.name))
-                        .introduce(tuple.get(store.introduce))
-                        .profile(tuple.get(store.profile))
-                        .isWished(tuple.get(wishListStore.id)!=null?true:false)
-                        .build()).toList();
+            tuple -> StoreResponseDto.builder()
+                .storeId(tuple.get(store.id))
+                .storeName(tuple.get(store.name))
+                .introduce(tuple.get(store.introduce))
+                .profile(tuple.get(store.profile))
+                .isWished(tuple.get(wishListStore.id) != null ? true : false)
+                .build()).toList();
     }
 
 
-
     private static BoardResponseDto removeDuplicatesFromDto(BoardResponseDto boardResponseDto) {
-        List<String> uniqueTags = boardResponseDto.getTags().stream().distinct().collect(Collectors.toList());
+        List<String> uniqueTags = boardResponseDto.getTags().stream().distinct()
+            .collect(Collectors.toList());
 
         return BoardResponseDto.builder()
-                .boardId(boardResponseDto.getBoardId())
-                .storeId(boardResponseDto.getStoreId())
-                .storeName(boardResponseDto.getStoreName())
-                .thumbnail(boardResponseDto.getThumbnail())
-                .title(boardResponseDto.getTitle())
-                .price(boardResponseDto.getPrice())
-                .isBundled(boardResponseDto.getIsBundled())
-                .isWished(boardResponseDto.getIsWished())
-                .tags(uniqueTags)
-                .build();
+            .boardId(boardResponseDto.getBoardId())
+            .storeId(boardResponseDto.getStoreId())
+            .storeName(boardResponseDto.getStoreName())
+            .thumbnail(boardResponseDto.getThumbnail())
+            .title(boardResponseDto.getTitle())
+            .price(boardResponseDto.getPrice())
+            .isBundled(boardResponseDto.getIsBundled())
+            .isWished(boardResponseDto.getIsWished())
+            .tags(uniqueTags)
+            .build();
     }
 
     @Override
     public List<KeywordDto> getRecencyKeyword(Member member) {
         return queryFactory.select(search.keyword, search.createdAt.max())
-                .from(search)
-                .where(search.isDeleted.eq(false), search.member.eq(member))
-                .groupBy(search.keyword)
-                .orderBy(search.createdAt.max().desc())
-                .limit(7)
-                .fetch().stream().map(tuple -> new KeywordDto(tuple.get(search.keyword)))
-                .toList();
+            .from(search)
+            .where(search.isDeleted.eq(false), search.member.eq(member))
+            .groupBy(search.keyword)
+            .orderBy(search.createdAt.max().desc())
+            .limit(7)
+            .fetch().stream().map(tuple -> new KeywordDto(tuple.get(search.keyword)))
+            .toList();
     }
 
     @Override
@@ -316,25 +331,25 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 현재시간으로부터 24시간 전 검색어를 검색수 내림 차순으로 7개 가져옴
         return queryFactory.select(search.keyword)
-                .from(search)
-                .where(search.createdAt.gt(beforeOneDayTime))
-                .groupBy(search.keyword)
-                .orderBy(search.count().desc())
-                .limit(7)
-                .fetch()
-                .toArray(new String[0]);
+            .from(search)
+            .where(search.createdAt.gt(beforeOneDayTime))
+            .groupBy(search.keyword)
+            .orderBy(search.count().desc())
+            .limit(7)
+            .fetch()
+            .toArray(new String[0]);
     }
 
     @Override
     public void markAsDeleted(String keyword, Member member) {
         QSearch search = QSearch.search;
         queryFactory.update(search)
-                .set(search.isDeleted, true)
-                .where(
-                        search.member.eq(member)
-                                .and(search.keyword.eq(keyword))
-                )
-                .execute();
+            .set(search.isDeleted, true)
+            .where(
+                search.member.eq(member)
+                    .and(search.keyword.eq(keyword))
+            )
+            .execute();
     }
 
     private static BooleanBuilder setFilteringCondition(SearchBoardRequest request) {
@@ -357,7 +372,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         if (request.orderAvailableToday() != null && request.orderAvailableToday() == true) {
             LocalDate currentDate = LocalDate.now();
             String dayOfWeek = currentDate.getDayOfWeek().toString().substring(0, 3);
-            switch (dayOfWeek){
+            switch (dayOfWeek) {
                 case "MON":
                     filterBuilder.and(board.monday.eq(true));
                     break;
@@ -389,10 +404,10 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             filterBuilder.and(product.category.eq(Category.valueOf(request.category())));
         }
 
-        if (request.minPrice() != null && request.minPrice()!=0) {
+        if (request.minPrice() != null && request.minPrice() != 0) {
             filterBuilder.and(board.price.goe(request.minPrice()));
         }
-        if (request.maxPrice() != null && request.maxPrice()!=0) {
+        if (request.maxPrice() != null && request.maxPrice() != 0) {
             filterBuilder.and(board.price.loe(request.maxPrice()));
         }
         return filterBuilder;

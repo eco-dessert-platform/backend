@@ -16,22 +16,6 @@ class ObjectStorageRepositoryImpl {
 
     private final AmazonS3 s3;
 
-    private void downloadFile() {
-
-    }
-
-    private void selectFile() {
-
-    }
-
-    private void deleteFile() {
-
-    }
-
-    private void deleteFolder() {
-
-    }
-
     public void createFile(String bucketName, String objectName, MultipartFile file) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType()); // 콘텐츠 타입 설정

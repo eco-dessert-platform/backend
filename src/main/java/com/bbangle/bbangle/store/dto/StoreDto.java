@@ -1,17 +1,29 @@
 package com.bbangle.bbangle.store.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.Getter;
+import lombok.ToString;
 
-@Builder
-public record StoreDto(
-    Long storeId,
-    String storeName,
-    String profile,
-    Boolean isWished,
+@Getter
+@ToString
+public class StoreDto {
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String introduce
-) {
-    // 아이디, 이름, 프로필, isWished의 값이 없다면 예외 발생
+    private Long id;
+    private String title;
+    private String profile;
+    private Boolean isWished;
+
+    @QueryProjection
+    public StoreDto(
+        Long id,
+        String title,
+        String profile) {
+        this.id = id;
+        this.title = title;
+        this.profile = profile;
+    }
+
+    public void updateWished(Boolean isWished) {
+        this.isWished = isWished;
+    }
 }

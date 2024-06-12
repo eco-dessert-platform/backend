@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,5 +62,50 @@ public class Product {
 
     @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
+
+    @Column(name = "sugars")
+    private Integer sugars;
+
+    @Column(name = "protein")
+    private Integer protein;
+
+    @Column(name = "carbohydrates")
+    private Integer carbohydrates;
+
+    @Column(name = "fat")
+    private Integer fat;
+
+    @Column(name = "weight")
+    private Integer weight;
+
+    @Column(name = "calories")
+    private Integer calories;
+
+    @Column(name = "monday", columnDefinition = "tinyint")
+    private boolean monday;
+
+    @Column(name = "tuesday", columnDefinition = "tinyint")
+    private boolean tuesday;
+
+    @Column(name = "wednesday", columnDefinition = "tinyint")
+    private boolean wednesday;
+
+    @Column(name = "thursday", columnDefinition = "tinyint")
+    private boolean thursday;
+
+    @Column(name = "friday", columnDefinition = "tinyint")
+    private boolean friday;
+
+    @Column(name = "saturday", columnDefinition = "tinyint")
+    private boolean saturday;
+
+    @Column(name = "sunday", columnDefinition = "tinyint")
+    private boolean sunday;
+
+    @Column(name = "order_start_date")
+    private LocalDateTime orderStartDate;
+
+    @Column(name = "order_end_date")
+    private LocalDateTime orderEndDate;
 
 }

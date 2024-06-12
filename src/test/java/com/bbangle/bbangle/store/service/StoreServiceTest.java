@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class StoreServiceTest extends AbstractIntegrationTest {
 
@@ -134,7 +135,6 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 .orElseThrow(Exception::new);
             assertThat(wishedContent.getIsWished()).isTrue();
         }
-
     }
 
     @Nested
@@ -161,7 +161,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                         "highProteinTag", true,
                         "veganTag", false,
                         "ketogenicTag", false,
-                        "category", Category.COOKIE)),
+                        "category", Category.SNACK)),
 
                 fixtureProduct(
                     Map.of(
@@ -180,7 +180,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                         "highProteinTag", false,
                         "veganTag", false,
                         "ketogenicTag", false,
-                        "category", Category.COOKIE)),
+                        "category", Category.SNACK)),
                 fixtureProduct(
                     Map.of(
                         "glutenFreeTag", true,
@@ -189,7 +189,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                         "veganTag", false,
                         "ketogenicTag", false,
                         "category",
-                        Category.COOKIE))
+                        Category.SNACK))
             );
 
             List<Product> products3 = new ArrayList<>();

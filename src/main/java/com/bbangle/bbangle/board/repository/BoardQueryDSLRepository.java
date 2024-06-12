@@ -2,27 +2,24 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.common.sort.FolderBoardSortType;
-import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import java.util.HashMap;
 import java.util.List;
 
 public interface BoardQueryDSLRepository {
 
-    BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
+    List<BoardAllTitleDto> findTitleByBoardAll();
+
+    List<BoardResponseDao> getBoardResponseList(
         FilterRequest filterRequest,
         SortType sort,
-        CursorInfo cursorInfo
+        Long cursorId
     );
 
     List<BoardResponseDao> getAllByFolder(
@@ -32,9 +29,7 @@ public interface BoardQueryDSLRepository {
         Long memberId
     );
 
-    BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);
-
-    HashMap<Long, String> getAllBoardTitle();
+    List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
 
     List<Long> getTopBoardIds(Long storeId);
 
@@ -44,6 +39,7 @@ public interface BoardQueryDSLRepository {
 
     List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
         Long memberId);
+
     List<Board> checkingNullRanking();
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);

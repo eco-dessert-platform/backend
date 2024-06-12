@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.wishlist.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_WISH_INFO;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
@@ -29,7 +28,8 @@ public class WishListStoreService {
     private final WishListStoreRepositoryImpl wishListStoreRepositoryImpl;
 
     @Transactional(readOnly = true)
-    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoresResponse(Long memberId, Long cursorId) {
+    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoresResponse(
+        Long memberId, Long cursorId) {
         return wishListStoreRepositoryImpl.getWishListStoreResponse(memberId, cursorId);
 
     }
@@ -40,11 +40,11 @@ public class WishListStoreService {
             .orElseThrow(() -> new BbangleException(STORE_NOT_FOUND));
         Member member = memberRepository.findMemberById(memberId);
         wishListStoreRepositoryImpl.findWishListStore(memberId, storeId)
-                .ifPresentOrElse(wishlistStore -> wishlistStore.changeDeletedFalse(),
-                    () -> wishListStoreRepository.save(WishListStore.builder()
-                        .member(member)
-                        .store(store)
-                        .build()));
+            .ifPresentOrElse(WishListStore::changeDeletedFalse,
+                () -> wishListStoreRepository.save(WishListStore.builder()
+                    .member(member)
+                    .store(store)
+                    .build()));
     }
 
     @Transactional
@@ -57,8 +57,9 @@ public class WishListStoreService {
 
     @Transactional
     public void deletedByDeletedMember(Long memberId) {
-        List<WishListStore> wishListStores = wishListStoreRepositoryImpl.findWishListStores(memberId);
-        if (wishListStores.size() !=0){
+        List<WishListStore> wishListStores = wishListStoreRepositoryImpl.findWishListStores(
+            memberId);
+        if (wishListStores.size() != 0) {
             for (WishListStore wishListStore : wishListStores) {
                 wishListStore.delete();
             }

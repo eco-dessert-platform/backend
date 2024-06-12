@@ -26,10 +26,14 @@ import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class PopularCursorGeneratorTest extends AbstractIntegrationTest {
 
     private static final Long DEFAULT_CURSOR_ID = null;
+
+    @Autowired
+    PopularBoardInFolderCursorGenerator popularBoardInFolderCursorGenerator;
 
     Member member;
     WishListFolder wishListFolder;
@@ -70,12 +74,8 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("커서가 없는 경우 가장 커서 관련 조건문 없이 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithoutCursor() {
-        //given
-        PopularCursorGenerator popularCursorGenerator = new PopularCursorGenerator(queryFactory, DEFAULT_CURSOR_ID,
-            member.getId());
-
-        //when
-        BooleanBuilder popularCursor = popularCursorGenerator.getCursor();
+        //given, when
+        BooleanBuilder popularCursor = popularBoardInFolderCursorGenerator.getCursor(DEFAULT_CURSOR_ID, wishListFolder.getId());
 
         //then
         assertThat(popularCursor.getValue()).isNull();
@@ -84,15 +84,11 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("커서가 존재하는 경우 그 커서보다 인기점수가 낮거나 같은 게시글 목록 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithCursor() {
-        //given
-        PopularCursorGenerator popularCursorGenerator = new PopularCursorGenerator(queryFactory, lastSavedId,
-            wishListFolder.getId());
-
-        //when
-        BooleanBuilder popularCursor = popularCursorGenerator.getCursor();
+        //given, when
+        BooleanBuilder popularCursor = popularBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
         Ranking ranking = rankingRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.popularScore.loe(ranking.getPopularScore()).and(
+        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(ranking.getRecommendScore()).and(
             QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 
         //then
@@ -105,11 +101,9 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
         //given
         Random random = new Random();
         long randomNum = random.nextLong(10000) + 1;
-        PopularCursorGenerator popularCursorGenerator = new PopularCursorGenerator(queryFactory, lastSavedId + randomNum,
-            member.getId());
 
         //when, then
-        assertThatThrownBy(popularCursorGenerator::getCursor)
+        assertThatThrownBy(() -> popularBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum, wishListFolder.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 

@@ -1,32 +1,21 @@
 package com.bbangle.bbangle.store.repository;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
-import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 
-import com.bbangle.bbangle.wishlist.domain.WishListBoard;
-import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import java.util.Map;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

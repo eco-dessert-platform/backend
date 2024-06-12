@@ -15,7 +15,7 @@ public record ReviewRateResponse(
         BrixDto brix,
         TextureDto texture
 ) {
-    public static ReviewRateResponse from(List<Review> reviews){
+    public static ReviewRateResponse from(List<ReviewDto> reviews){
         int good = 0;
         int bad = 0;
         int sweet = 0;
@@ -25,7 +25,7 @@ public record ReviewRateResponse(
         int count = 0;
         BigDecimal rateSum = BigDecimal.ZERO;
         if (reviews != null && !reviews.isEmpty()){
-            for (Review review : reviews) {
+            for (ReviewDto review : reviews) {
                 rateSum = rateSum.add(review.getRate());
                 if(review.getBadgeTaste().equals(Badge.GOOD)){
                     good++;
