@@ -2,20 +2,26 @@ package com.bbangle.bbangle;
 
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
+import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
@@ -51,7 +57,6 @@ public abstract class AbstractIntegrationTest {
     protected WebApplicationContext context;
     @Autowired
     protected JPAQueryFactory queryFactory;
-
     @Autowired
     protected MemberService memberService;
     @Autowired
@@ -85,6 +90,10 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected WishListStoreRepository wishListStoreRepository;
     @Autowired
+    protected BoardDetailRepository boardDetailRepository;
+    @Autowired
+    protected ReviewRepository reviewRepository;
+    @Autowired
     protected NotificationRepository notificationRepository;
 
     @BeforeEach
@@ -111,9 +120,34 @@ public abstract class AbstractIntegrationTest {
     /**
      * NOTE: param 에 변경하고자 하는 필드명 : 값 형식으로 주입하면 변경되어 insert 됨
      */
+
+    protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
+        ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
+            WishListFolder.class);
+        setBuilderParams(params, builder);
+
+        if (!params.containsKey("member")) {
+            Member member = fixtureMember(emptyMap());
+            builder = builder.set("member", member); // store wishlist가 없으면 에러나서 추가
+        }
+
+        return wishListFolderRepository.save(builder.sample());
+    }
+
+    protected Member fixtureMember(Map<String, Object> params) {
+        ArbitraryBuilder<Member> builder = fixtureMonkey.giveMeBuilder(Member.class);
+        setBuilderParams(params, builder);
+
+        return memberRepository.save(builder.sample());
+    }
+
     protected Store fixtureStore(Map<String, Object> params) {
         ArbitraryBuilder<Store> builder = fixtureMonkey.giveMeBuilder(Store.class);
         setBuilderParams(params, builder);
+
+        if (!params.containsKey("wishListStoreList")) {
+            builder = builder.set("wishListStores", null); // store wishlist가 없으면 에러나서 추가
+        }
 
         return storeRepository.save(builder.sample());
     }
@@ -128,6 +162,30 @@ public abstract class AbstractIntegrationTest {
 
         Product sample = builder.sample();
         return productRepository.save(sample);
+    }
+
+    protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
+        ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
+        setBuilderParams(params, builder);
+
+        if (!params.containsKey("board")) {
+            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
+        }
+
+        BoardDetail sample = builder.sample();
+        return boardDetailRepository.save(sample);
+    }
+
+    protected ProductImg fixtureBoardImage(Map<String, Object> params) {
+        ArbitraryBuilder<ProductImg> builder = fixtureMonkey.giveMeBuilder(ProductImg.class);
+        setBuilderParams(params, builder);
+
+        if (!params.containsKey("board")) {
+            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
+        }
+
+        ProductImg sample = builder.sample();
+        return boardImgRepository.save(sample);
     }
 
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
@@ -167,6 +225,13 @@ public abstract class AbstractIntegrationTest {
         );
 
         return board;
+    }
+
+    protected Review fixtureReview(Map<String, Object> params) {
+        ArbitraryBuilder<Review> builder = fixtureMonkey.giveMeBuilder(Review.class);
+        setBuilderParams(params, builder);
+
+        return reviewRepository.save(builder.sample());
     }
 
     private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder) {

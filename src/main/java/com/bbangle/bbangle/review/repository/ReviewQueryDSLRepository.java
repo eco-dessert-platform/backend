@@ -6,6 +6,7 @@ import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewImgDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
@@ -28,5 +29,5 @@ public interface ReviewQueryDSLRepository {
     List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
     List<AnalyticsCountWithDateResponseDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
     List<BoardGrade> groupByBoardIdAndGetReviewCountAndReviewRate();
-
+    List<ReviewDto> findByBoardId(Long boardId);
 }

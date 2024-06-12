@@ -32,16 +32,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class AnalyticsControllerTest extends AbstractIntegrationTest {
 
-    @Autowired ResponseService responseService;
-    @Autowired PlatformTransactionManager tm;
-    @Autowired EntityManager em;
-
+    @Autowired
+    ResponseService responseService;
+    @Autowired
+    PlatformTransactionManager tm;
+    @Autowired
+    EntityManager em;
 
     @BeforeEach
     void setUpMockMvc() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(new AnalyticsController(responseService, analyticsService)).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(
+                new AnalyticsController(responseService, analyticsService))
+            .build();
 
-        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        LocalDateTime createdAt = LocalDateTime.now()
+            .minusDays(10);
         create10DaysAgoMembers(createdAt);
         List<Member> members = createMembers();
         createWishListBoards(members);
@@ -51,82 +56,78 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         create10DaysAgoReviews(members, createdAt);
     }
 
-
     @Test
     @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
     void getMembersCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/members/count"))
-                .andExpect(status().isOk())
-                .andDo(print());
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
 
     @Test
     @DisplayName("기간 내 가입한 회원의 수가 정상적으로 조회된다.")
     void getNewMembersCount() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/new-members/count"))
-                .andExpect(status().isOk())
-                .andDo(print());
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
 
     @Test
     @DisplayName("기간 내 일별 위시리스트 이용 비율이 성공적으로 조회된다.")
     void getWishlistUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/wishlist-usage"))
-                .andExpect(status().isOk())
-                .andDo(print());
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
-
 
     @Test
     @DisplayName("기간 별 위시리스트 누적 개수가 정상적으로 조회된다.")
     void getWishlistUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
-                .andExpect(status().isOk())
-                .andDo(print());
+        mockMvc.perform(
+                get("/api/v1/analytics/wishlist/boards/count?startDate=2024-05-01&endDate=2024-05-26"))
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
 
     @Test
     @DisplayName("기간 내 일별 리뷰 이용 비율이 정상적으로 조회된다.")
     void getReviewUsageRatio() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/ratio/review-usage"))
-                .andExpect(status().isOk())
-                .andDo(print());
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
 
     @Test
     @DisplayName("기간 별 리뷰 누적 개수가 정상적으로 조회된다.")
     void getReviewUsageCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/reviews/count?startDate=2024-05-01&endDate=2024-05-26"))
-                .andExpect(status().isOk())
-                .andDo(print());
+        mockMvc.perform(
+                get("/api/v1/analytics/reviews/count?startDate=2024-05-01&endDate=2024-05-26"))
+            .andExpect(status().isOk())
+            .andDo(print());
     }
-
 
     private void create10DaysAgoMembers(LocalDateTime createdAt) {
         TransactionStatus status = null;
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 1; i <= 10; i++) {
                 Member member = Member.builder()
-                        .email("test" + i + "@email.com")
-                        .name("testUser" + i)
-                        .provider(OauthServerType.KAKAO)
-                        .isDeleted(false)
-                        .build();
+                    .email("test" + i + "@email.com")
+                    .name("testUser" + i)
+                    .provider(OauthServerType.KAKAO)
+                    .isDeleted(false)
+                    .build();
 
                 memberRepository.save(member);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE Member as m SET m.createdAt = :createdAt WHERE m.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE Member as m SET m.createdAt = :createdAt WHERE m.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", member.getId());
                 query.executeUpdate();
@@ -138,20 +139,18 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 tm.rollback(status);
             }
         }
-
     }
-
 
     private List<Member> createMembers() {
         List<Member> members = new ArrayList<>();
 
-        for(int i = 1; i <= 10; i++){
+        for (int i = 1; i <= 10; i++) {
             Member member = Member.builder()
-                    .email("test" + i + "@email.com")
-                    .name("testUser" + i)
-                    .provider(OauthServerType.KAKAO)
-                    .isDeleted(false)
-                    .build();
+                .email("test" + i + "@email.com")
+                .name("testUser" + i)
+                .provider(OauthServerType.KAKAO)
+                .isDeleted(false)
+                .build();
 
             members.add(member);
         }
@@ -159,70 +158,70 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         return memberRepository.saveAll(members);
     }
 
-
     private void createWishListBoards(List<Member> members) {
         for (int i = 0; i < members.size(); i++) {
             Store store = Store.builder()
-                    .id((long) i + 1)
-                    .name("test" + i)
-                    .introduce("introduce" + i)
-                    .isDeleted(false)
-                    .build();
+                .id((long) i + 1)
+                .name("test" + i)
+                .introduce("introduce" + i)
+                .isDeleted(false)
+                .build();
             storeRepository.save(store);
 
             Board board = Board.builder()
-                    .id((long) i + 1)
-                    .store(store)
-                    .title("title" + i)
-                    .build();
+                .id((long) i + 1)
+                .store(store)
+                .title("title" + i)
+                .build();
             boardRepository.save(board);
 
             WishListBoard wishListBoard = WishListBoard.builder()
-                    .id((long) i + 1)
-                    .memberId(members.get(i).getId())
-                    .boardId(board.getId())
-                    .build();
+                .id((long) i + 1)
+                .memberId(members.get(i)
+                    .getId())
+                .boardId(board.getId())
+                .build();
             wishListBoardRepository.save(wishListBoard);
         }
     }
 
-
     private void createBoards(List<Member> members) {
         for (int i = 1; i <= members.size(); i++) {
             Store store = Store.builder()
-                    .id((long) i + 1)
-                    .name("test" + i)
-                    .introduce("introduce" + i)
-                    .isDeleted(false)
-                    .build();
+                .id((long) i + 1)
+                .name("test" + i)
+                .introduce("introduce" + i)
+                .isDeleted(false)
+                .build();
             storeRepository.save(store);
 
             Board board = Board.builder()
-                    .id((long) i + 1)
-                    .store(store)
-                    .title("title" + i)
-                    .build();
+                .id((long) i + 1)
+                .store(store)
+                .title("title" + i)
+                .build();
             boardRepository.save(board);
         }
     }
-
 
     private void create10DaysAgoWishlistBoards(LocalDateTime createdAt) {
         TransactionStatus status = null;
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 1; i <= 10; i++) {
                 WishListBoard wishListBoard = WishListBoard.builder()
-                        .build();
+                    .build();
 
                 wishListBoardRepository.save(wishListBoard);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE WishListBoard as wb SET wb.createdAt = :createdAt WHERE wb.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE WishListBoard as wb SET wb.createdAt = :createdAt WHERE wb.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", wishListBoard.getId());
                 query.executeUpdate();
@@ -236,45 +235,45 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         }
     }
 
-
     private void createReviews(List<Member> members) {
         for (int i = 1; i <= members.size(); i++) {
             Review review = Review.builder()
-                    .memberId(members.get(i - 1).getId())
-                    .boardId((long) i)
-                    .badgeBrix(Badge.SWEET)
-                    .badgeTaste(Badge.GOOD)
-                    .badgeTexture(Badge.DRY)
-                    .rate(BigDecimal.valueOf(5))
-                    .build();
+                .memberId(members.get(i - 1).getId())
+                .boardId((long) i)
+                .badgeBrix(Badge.SWEET)
+                .badgeTaste(Badge.GOOD)
+                .badgeTexture(Badge.DRY)
+                .rate(BigDecimal.valueOf(5))
+                .build();
 
             reviewRepository.save(review);
         }
     }
-
 
     private void create10DaysAgoReviews(List<Member> members, LocalDateTime createdAt) {
         TransactionStatus status = null;
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 1; i <= 10; i++) {
                 Review review = Review.builder()
-                        .memberId(members.get(i - 1).getId())
-                        .boardId((long) i + 20)
-                        .badgeBrix(Badge.SWEET)
-                        .badgeTaste(Badge.GOOD)
-                        .badgeTexture(Badge.DRY)
-                        .rate(BigDecimal.valueOf(5))
-                        .build();
+                    .memberId(members.get(i - 1).getId())
+                    .boardId((long) i + 20)
+                    .badgeBrix(Badge.SWEET)
+                    .badgeTaste(Badge.GOOD)
+                    .badgeTexture(Badge.DRY)
+                    .rate(BigDecimal.valueOf(5))
+                    .build();
 
                 reviewRepository.save(review);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE Review as r SET r.createdAt = :createdAt WHERE r.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE Review as r SET r.createdAt = :createdAt WHERE r.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", review.getId());
                 query.executeUpdate();
@@ -287,4 +286,5 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             }
         }
     }
+
 }

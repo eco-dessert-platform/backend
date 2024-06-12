@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.search.service;
 
+import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
@@ -95,7 +96,7 @@ public class SearchServiceImpl implements SearchService {
         mapping.computeIfAbsent(token, k -> new ArrayList<>()).add(id);
     }
 
-    private Map<String, List<Long>> createTitleTokenToIdMapping(HashMap<Long, String> targetTitles,
+    private Map<String, List<Long>> createTitleTokenToIdMapping(Map<Long, String> targetTitles,
         String targetType) {
         Map<String, List<Long>> titleTokenToIdMapping = new HashMap<>();
 
@@ -154,7 +155,11 @@ public class SearchServiceImpl implements SearchService {
     private void updateRedisWithTokenizedBoardTitles() {
         Map<String, List<Long>> boardTitleTokenToIdMapping;
 
-        HashMap<Long, String> titlesAtBoard = boardRepository.getAllBoardTitle();
+        List<BoardAllTitleDto> boardTitles = boardRepository.findTitleByBoardAll();
+
+        Map<Long, String> titlesAtBoard = boardTitles.stream()
+            .collect(Collectors.toMap(BoardAllTitleDto::boardId, BoardAllTitleDto::Title));
+
         boardTitleTokenToIdMapping = createTitleTokenToIdMapping(titlesAtBoard,
             RedisEnum.BOARD.name());
         try {

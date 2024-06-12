@@ -4,6 +4,9 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
@@ -16,6 +19,7 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.Duration;
 import org.apache.http.HttpHeaders;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -165,6 +168,37 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andDo(print());
         }
 
+    @Nested
+    @DisplayName("getProduct 메서드는")
+    class GetProduct {
+
+        @Test
+        @DisplayName("유효한 boardId로 상품 정보를 가져올 수 있다")
+        void getProductInfo() throws Exception {
+            Long boardId = board.getId();
+            mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
+                .andExpect(status().isOk())
+                .andDo(print());
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 boardId를 요청 시 400에 에러를 발생시킨다")
+        void throwError() throws Exception {
+            mockMvc.perform(get("/api/v1/boards/9999/product"))
+                .andExpect(status().is4xxClientError())
+                .andDo(print());
+        }
+    }
+
+
+    @Test
+    @DisplayName("")
+    void getProductTest() throws Exception {
+        Long boardId = board.getId();
+        mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
+            .andExpect(status().isOk())
+            .andDo(print());
+    }
 
         private Board boardGenerator(
             Store store,

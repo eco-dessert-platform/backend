@@ -3,23 +3,30 @@ package com.bbangle.bbangle.store.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.StoreDto;
+import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import java.util.List;
+import java.util.Map;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 class StoreServiceTest extends AbstractIntegrationTest {
 
     private static final Long NULL_CURSOR = null;
     private static final Long NULL_MEMBER_ID = null;
+
+    private final String TEST_TITLE = "TestTitle";
 
     private Member member;
 
@@ -34,13 +41,49 @@ class StoreServiceTest extends AbstractIntegrationTest {
         member = memberService.getFirstJoinedMember(member);
     }
 
+    @Test
+    @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 게시판 아이디로 스토어를 조회할 수 있다")
+    void getBoardDetailResponseTest() {
+        Store store = fixtureStore(Map.of("name", TEST_TITLE));
+        Board board = fixtureBoard(Map.of("store", store));
+        Long memberId = null;
+
+        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, board.getId());
+
+        AssertionsForClassTypes.assertThat(storeDto.getId()).isEqualTo(store.getId());
+        AssertionsForClassTypes.assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
+    }
+
+    @Test
+    @DisplayName("상품 상세페이지 내 store 조회 정상 확인")
+    void getStoreDetailResponse() {
+        //given
+        Store store = StoreFixture.storeGenerator();
+        storeRepository.save(store);
+
+        wishListStoreRepository.save(WishListStore.builder()
+            .store(store)
+            .member(member)
+            .build()
+        );
+
+        StoreResponse result = storeService
+            .getStoreResponse(member.getId(), store.getId());
+
+        //then
+        assertThat(result.storeId()).isEqualTo(store.getId());
+        assertThat(result.storeProfile()).isEqualTo(store.getProfile());
+        assertThat(result.storeTitle()).isEqualTo(store.getName());
+        assertThat(result.isWished()).isTrue();
+    }
+
     @Nested
     @DisplayName("store 조회 서비스 로직 테스트")
     class GetStoreList {
 
         @BeforeEach
-        void saveStoreList(){
-            for(int i = 0; i < 30; i++){
+        void saveStoreList() {
+            for (int i = 0; i < 30; i++) {
                 Store store = StoreFixture.storeGenerator();
                 storeRepository.save(store);
             }
@@ -123,7 +166,6 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 .orElseThrow(Exception::new);
             assertThat(wishedContent.getIsWished()).isTrue();
         }
-
     }
 
 }

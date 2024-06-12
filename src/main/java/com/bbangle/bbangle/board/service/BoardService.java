@@ -1,10 +1,21 @@
 package com.bbangle.bbangle.board.service;
 
+
+import static com.bbangle.bbangle.board.validator.BoardValidator.*;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.BoardDto;
+import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -14,6 +25,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Objects;
@@ -28,11 +40,15 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
+    private static final int ONE_CATEGOTY = 1;
 
     private final BoardRepository boardRepository;
+    private final BoardDetailRepository boardDetailRepository;
+    private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
+    private final WishListBoardRepository wishListBoardRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
@@ -44,7 +60,8 @@ public class BoardService {
     ) {
         List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(filterRequest, sort, cursorId);
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards, DEFAULT_BOARD);
+        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
+            DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
             updateLikeStatus(boardPage, memberId);
@@ -63,11 +80,51 @@ public class BoardService {
         WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
-        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
+        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder,
+            memberId);
 
         return BoardPageGenerator.getBoardPage(allByFolder, BOARD_IN_FOLDER);
     }
 
+
+    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
+        return boardAndImageDtos.stream()
+            .map(BoardAndImageDto::url)
+            .toList();
+    }
+
+    private BoardAndImageDto getFirstBoardInfo(List<BoardAndImageDto> boardAndImageTuples) {
+        return boardAndImageTuples.stream()
+            .findFirst()
+            .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
+    }
+
+    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String viewCountKey) {
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
+            boardId);
+
+        validateListNotEmpty(boardAndImageDtos, BOARD_NOT_FOUND);
+
+        BoardDto boardDto = BoardDto.from(
+            getFirstBoardInfo(boardAndImageDtos));
+
+        boolean isWished = Objects.nonNull(memberId)
+            && wishListBoardRepository.existsByBoardIdAndMemberId(memberId, boardId);
+
+        List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
+        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
+
+        boardStatisticService.updateViewCount(boardId);
+        if(viewCountKey != null) {
+            redisTemplate.opsForValue().set(viewCountKey, "true");
+        }
+
+        return BoardImageDetailResponse.from(
+            boardDto,
+            isWished,
+            boardImageUrls,
+            boardDetailUrls);
+    }
 
     private void updateLikeStatus(
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
@@ -91,16 +148,28 @@ public class BoardService {
             .toList();
     }
 
-    @Transactional
-    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId,
-        String viewCountKey
-    ) {
-        BoardDetailResponse boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, boardId);
-        boardStatisticService.updateViewCount(boardId);
-        if(viewCountKey != null) {
-            redisTemplate.opsForValue().set(viewCountKey, "true");
-        }
-        return boardDetailResponse;
+    private List<ProductDto> convertToProductDtos(List<Product> products) {
+        return products.stream()
+            .map(ProductDto::from)
+            .toList();
+    }
+
+    private Boolean isBundled(List<Product> products) {
+        return products.stream()
+            .map(Product::getCategory)
+            .distinct()
+            .count() > ONE_CATEGOTY;
+    }
+
+    public ProductResponse getProductResponse(Long boardId) {
+        List<Product> products = productRepository.findByBoardId(boardId);
+
+        validateListNotEmpty(products, BOARD_NOT_FOUND);
+
+        List<ProductDto> productDtos = convertToProductDtos(products);
+        Boolean isBundled = isBundled(products);
+
+        return ProductResponse.of(isBundled, productDtos);
     }
 
 }
