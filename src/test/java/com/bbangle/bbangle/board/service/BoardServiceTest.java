@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.board.service;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
+
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
@@ -13,6 +15,8 @@ import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -24,13 +28,19 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.PopularBoardResponse;
+import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import jakarta.persistence.EntityManager;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -47,7 +57,20 @@ class BoardServiceTest extends AbstractIntegrationTest {
     private static final Long NULL_CURSOR = null;
     private static final SortType DEFAULT_SORT_TYPE = SortType.RECOMMEND;
     private static final Long NULL_MEMBER = null;
-    private final String TEST_TITLE = "TestTitle";
+
+    private static final String TEST_TITLE = "TestTitle";
+
+    @Autowired
+    StoreRepository storeRepository;
+
+    @Autowired
+    BoardRepository boardRepository;
+
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
+    RankingRepository rankingRepository;
 
     @Autowired
     BoardService boardService;
@@ -394,9 +417,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
         assertThat(boardList2.getContent()).hasSize(2);
         assertThat(boardList3.getContent()).hasSize(2);
         assertThat(boardList4.getContent()).hasSize(1);
-        assertThat(boardList5.getContent()).hasSize(0);
+        assertThat(boardList5.getContent()).isEmpty();
         assertThat(boardList6.getContent()).hasSize(2);
-        assertThat(boardList7.getContent()).hasSize(0);
+        assertThat(boardList7.getContent()).isEmpty();
         assertThat(boardList8.getContent()).hasSize(2);
     }
 
@@ -532,7 +555,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .get(response.getContent().size() - 1)
                 .getBoardId();
 
-            wishListBoardService.wish(member2.getId(), targetId, new WishListBoardRequest(DEFAULT_FOLDER_ID));
+            wishListBoardService.wish(member2.getId(), targetId,
+                new WishListBoardRequest(DEFAULT_FOLDER_ID));
 
             // then
             BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(
@@ -548,8 +572,85 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .getBoardId()).isEqualTo(targetId);
         }
 
-    }
+        @Nested
+        @DisplayName("getTopBoardInfo 메서드는")
+        class GetTopBoardInfo {
 
+            private Store store;
+            private Ranking firstRanking;
+            private Ranking secondRanking;
+            private Ranking thirdRanking;
+            private Member member;
+
+            @BeforeEach
+            void init() {
+                store = fixtureStore(emptyMap());
+
+                secondRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        101d)); // 2등
+                firstRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        102d)); // 1등
+                thirdRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        100d)); // 3등
+
+                createWishListStore();
+            }
+
+            @Test
+            @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
+            void getPopularBoard() {
+                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(NULL_MEMBER,
+                    store.getId());
+
+                AssertionsForInterfaceTypes.assertThat(topBoardInfo).hasSize(3);
+
+                List<Long> actualBoardIds = topBoardInfo.stream()
+                    .map(PopularBoardResponse::getBoardId).toList();
+                List<Long> expectBoardIds = List.of(
+                    firstRanking.getBoard().getId(),
+                    secondRanking.getBoard().getId(),
+                    thirdRanking.getBoard().getId());
+
+                AssertionsForInterfaceTypes.assertThat(actualBoardIds)
+                    .containsExactlyElementsOf(expectBoardIds);
+            }
+
+            @Test
+            @DisplayName("위시리스트 등록한 상품을 정상적으로 가져올 가져올 수 있다")
+            void getIsWished() {
+                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(
+                    member.getId(),
+                    store.getId());
+
+                Boolean wishTrue = topBoardInfo.stream()
+                    .filter(board -> board.getBoardId().equals(firstRanking.getBoard().getId()))
+                    .findFirst()
+                    .get()
+                    .getIsWished();
+
+                Boolean wishFalse = topBoardInfo.stream()
+                    .filter(board -> board.getBoardId().equals(secondRanking.getBoard().getId()))
+                    .findFirst()
+                    .get()
+                    .getIsWished();
+
+                AssertionsForClassTypes.assertThat(wishTrue).isTrue();
+                AssertionsForClassTypes.assertThat(wishFalse).isFalse();
+            }
+
+            void createWishListStore() {
+                member = memberRepository.save(Member.builder().build());
+
+                wishListBoardRepository.save(WishListBoard.builder()
+                    .boardId(firstRanking.getBoard().getId())
+                    .memberId(member.getId())
+                    .build());
+            }
+        }
+    }
     @Nested
     @DisplayName("getBoardDtos 메서드는")
     class GetBoardDtos {

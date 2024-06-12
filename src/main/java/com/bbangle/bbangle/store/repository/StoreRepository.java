@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.store.repository;
 
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.dto.StoreDto;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

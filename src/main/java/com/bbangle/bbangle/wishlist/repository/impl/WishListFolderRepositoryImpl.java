@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.wishlist.repository.impl;
 
 
-
-
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
@@ -64,7 +62,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                     .map(tuple -> tuple.get(board.profile))
                     .filter(Objects::nonNull)
                     .limit(4)
-                    .collect(Collectors.toList());
+                    .toList();
 
                 int count = productImages.isEmpty() ? 0 : (int) tuples.stream()
                     .map(tuple -> tuple.get(board.profile))
@@ -98,7 +96,5 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 .and(wishListFolder.isDeleted.eq(false)))
             .fetch();
     }
-
-    ;
 
 }

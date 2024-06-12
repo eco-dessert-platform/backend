@@ -14,7 +14,6 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.notification.service.NotificationService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
@@ -189,11 +188,6 @@ public abstract class AbstractIntegrationTest {
     protected Ranking fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<Ranking> builder = fixtureMonkey.giveMeBuilder(Ranking.class);
         setBuilderParams(params, builder);
-
-        if (!params.containsKey("board")) {
-            Board board = fixtureBoard(emptyMap());
-            builder = builder.set("board", board);
-        }
 
         return rankingRepository.save(builder.sample());
     }
