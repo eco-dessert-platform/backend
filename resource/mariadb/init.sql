@@ -174,12 +174,14 @@ CREATE TABLE refresh_token
 
 CREATE TABLE boardStatistic
 (
-    id               BIGINT AUTO_INCREMENT,
-    product_board_id BIGINT NOT NULL,
-    recommend_score  DOUBLE NOT NULL default 0,
-    popular_score    DOUBLE NOT NULL default 0,
+    id                 BIGINT AUTO_INCREMENT,
+    board_id           BIGINT  NOT NULL,
+    basic_score        DOUBLE  NOT NULL default 0,
+    board_wish_count   int     NOT NULL default 0,
+    board_review_count int     NOT NULL default 0,
+    board_view_count   int     NOT NULL default 0,
+    board_view_grade   decimal NOT NULL default 0,
     CONSTRAINT product_img_pk PRIMARY KEY (id),
-    CONSTRAINT fk_ranking_product_board FOREIGN KEY (product_board_id) REFERENCES product_board (id)
 );
 
 CREATE TABLE notice
