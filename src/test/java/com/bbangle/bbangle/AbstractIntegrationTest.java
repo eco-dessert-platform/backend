@@ -92,8 +92,6 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
-    protected ReviewRepository reviewRepository;
-    @Autowired
     protected NotificationRepository notificationRepository;
 
     @BeforeEach
