@@ -53,6 +53,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private static final Long EMPTY_PAGE_CURSOR = -1L;
     private static final Boolean EMPTY_PAGE_HAS_NEXT = false;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
+    private static final int SINGLE_CATEGORY_COUNT = 1;
+
     private final QStore store = QStore.store;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
@@ -61,8 +63,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
     private final MemberRepository memberRepository;
     private final Expression<Long> emptywishListBoardNumber = Expressions.constant(-1L);
-    public final int SINGLE_CATEGORY_COUNT = 1;
-
 
     private void checkWishlistBoard(JPAQuery<PopularBoardDto> query, Long memberId) {
         query.leftJoin(wishListBoard)
