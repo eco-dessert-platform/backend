@@ -57,3 +57,7 @@
 # 아키텍쳐
 ![image](https://github.com/eco-dessert-platform/backend/assets/125535111/c9a1b3b8-2574-4e1a-b6f6-143170174e2b)
 
+# ERD
+![image](https://github.com/eco-dessert-platform/backend/assets/125535111/b456bb7f-1bb5-4da6-b95c-48011fb0f3a8)
+
+
