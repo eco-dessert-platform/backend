@@ -49,7 +49,7 @@ public class MostReviewedBoardQueryProviderResolver  implements BoardQueryProvid
                     board.id,
                     store.id,
                     store.name,
-                    store.profile,
+                    board.profile,
                     board.title,
                     board.price,
                     product.category,
