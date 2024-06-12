@@ -44,7 +44,7 @@ public class Board extends BaseEntity {
     @Column(name = "price")
     private int price;
 
-    @Column(name = "status", columnDefinition = "tinyint")
+    @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean status;
 
     @Column(name = "profile")
