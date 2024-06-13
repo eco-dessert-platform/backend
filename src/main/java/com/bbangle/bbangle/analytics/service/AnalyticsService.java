@@ -1,9 +1,9 @@
 package com.bbangle.bbangle.analytics.service;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
 import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsRatioWithDateResponseDto;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
@@ -13,13 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.ZERO_REGISTERED_USERS;
 
 @Service
 @RequiredArgsConstructor
@@ -31,98 +32,125 @@ public class AnalyticsService {
 
 
     @Transactional(readOnly = true)
-    public AnalyticsMembersCountResponseDto countAllMembers() {
+    public AnalyticsMembersCountResponseDto countMembers() {
         return AnalyticsMembersCountResponseDto.from(memberRepository.countMembers());
     }
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsCountWithDateResponseDto> countMembersByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
+    public AnalyticsMembersCountResponseDto countMembersByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsCountWithDateResponseDto> results = memberRepository.countMembersCreatedBetweenPeriod(startLocalDate, endLocalDate);
-        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results);
+        return AnalyticsMembersCountResponseDto.from(memberRepository.countMembersCreatedBetweenPeriod(startLocalDate, endLocalDate));
     }
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsRatioWithDateResponseDto> calculateWishlistUsingRatio(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
+    public AnalyticsCreatedWithinPeriodResponseDto analyzeWishlistBoardByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsCountWithDateResponseDto> membersUsingWishlist = wishListBoardRepository.countMembersUsingWishlistBetweenPeriod(startLocalDate, endLocalDate);
-        List<AnalyticsCountWithDateResponseDto> results = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
-        List<AnalyticsCountWithDateResponseDto> membersCreatedBeforeDate = mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results);
-        List<AnalyticsRatioWithDateResponseDto> ratioWithDateResponse = new ArrayList<>();
+        List<DateAndCountDto> rawResults = wishListBoardRepository.countWishlistCreatedBetweenPeriod(startLocalDate, endLocalDate);
 
-        calculateRatio(membersUsingWishlist, membersCreatedBeforeDate, ratioWithDateResponse);
+        List<DateAndCountDto> results = mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, rawResults,
+                DateAndCountDto::date, DateAndCountDto::count, DateAndCountDto::new);
 
-        return ratioWithDateResponse;
+        Long total = rawResults.stream()
+                .mapToLong(DateAndCountDto::count)
+                .sum();
+        Double daysBetween = calculateDaysBetween(startLocalDate, endLocalDate);
+
+        Double rawAverage = (total / daysBetween);
+        String average = String.format("%.2f", rawAverage);
+
+        return AnalyticsCreatedWithinPeriodResponseDto.from(results, total, average);
     }
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsCountWithDateResponseDto> countWishlistBoardByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
+    public AnalyticsCreatedWithinPeriodResponseDto analyzeReviewByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        return wishListBoardRepository.countWishlistCreatedBetweenPeriod(startLocalDate, endLocalDate);
+        List<DateAndCountDto> rawResults = reviewRepository.countReviewCreatedBetweenPeriod(startLocalDate, endLocalDate);
+
+        List<DateAndCountDto> results = mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, rawResults,
+                DateAndCountDto::date, DateAndCountDto::count, DateAndCountDto::new);
+
+        Long total = rawResults.stream()
+                .mapToLong(DateAndCountDto::count)
+                .sum();
+        Double daysBetween = calculateDaysBetween(startLocalDate, endLocalDate);
+
+        Double rawAverage = (total / daysBetween);
+        String average = String.format("%.2f", rawAverage);
+
+        return AnalyticsCreatedWithinPeriodResponseDto.from(results, total, average);
     }
 
 
     @Transactional(readOnly = true)
-    public List<AnalyticsRatioWithDateResponseDto> calculateReviewUsingRatio(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
+    public List<AnalyticsCumulationResponseDto> countCumulatedReviewsByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endLocalDate = endDate.orElse(LocalDate.now());
 
-        List<AnalyticsCountWithDateResponseDto> membersUsingReview = reviewRepository.countMembersUsingReviewBetweenPeriod(startLocalDate, endLocalDate);
-        List<AnalyticsCountWithDateResponseDto> results = memberRepository.countMembersCreatedBeforeEndDate(startLocalDate, endLocalDate);
-        List<AnalyticsCountWithDateResponseDto> membersCreatedBeforeDate = mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results);
-        List<AnalyticsRatioWithDateResponseDto> ratioWithDateResponse = new ArrayList<>();
+        List<AnalyticsCumulationResponseDto> rawResults = reviewRepository.countCumulatedReviewBeforeEndDate(startLocalDate, endLocalDate);
 
-        calculateRatio(membersUsingReview, membersCreatedBeforeDate, ratioWithDateResponse);
-
-        return ratioWithDateResponse;
+        return mapResultsToDateRangeWithCumulativeCount(startLocalDate, endLocalDate, rawResults,
+                AnalyticsCumulationResponseDto::date, AnalyticsCumulationResponseDto::count, AnalyticsCumulationResponseDto::new);
     }
 
 
-    @Transactional(readOnly = true)
-    public List<AnalyticsCountWithDateResponseDto> countReviewByPeriod(Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
-        LocalDate startLocalDate = startDate.orElse(LocalDate.now().minusDays(6));
-        LocalDate endLocalDate = endDate.orElse(LocalDate.now());
-
-        return reviewRepository.countReviewCreatedBetweenPeriod(startLocalDate, endLocalDate);
+    public Double calculateDaysBetween(LocalDate startDate, LocalDate endDate) {
+        return (double) (ChronoUnit.DAYS.between(startDate, endDate) + 1);
     }
 
 
-    private List<AnalyticsCountWithDateResponseDto> mapResultsToDateRangeWithCount(LocalDate startLocalDate, LocalDate endLocalDate, List<AnalyticsCountWithDateResponseDto> results) {
+    private <T, R> List<R> mapResultsToDateRangeWithCount(
+            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
+            Function<T, Date> dateExtractor,
+            Function<T, Long> countExtractor,
+            BiFunction<Date, Long, R> constructor) {
+
         Map<Date, Long> mapResults = results.stream()
                 .collect(Collectors.toMap(
-                        AnalyticsCountWithDateResponseDto::date,
-                        AnalyticsCountWithDateResponseDto::count
+                        dateExtractor,
+                        countExtractor
                 ));
 
         List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
                 .toList();
 
         return dateRange.stream()
-                .map(date -> new AnalyticsCountWithDateResponseDto(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
+                .map(date -> constructor.apply(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
                 .toList();
     }
 
 
-    private void calculateRatio(List<AnalyticsCountWithDateResponseDto> reviewUsageCount, List<AnalyticsCountWithDateResponseDto> membersCreatedBeforeDate, List<AnalyticsRatioWithDateResponseDto> ratioWithDateResponse) {
-        for (int i = 0; i < membersCreatedBeforeDate.size(); i++) {
-            if (membersCreatedBeforeDate.get(i).count() == 0L) {
-                throw new BbangleException(ZERO_REGISTERED_USERS);
-            }
+    private <T, R> List<R> mapResultsToDateRangeWithCumulativeCount(
+            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
+            Function<T, Date> dateExtractor,
+            Function<T, Long> countExtractor,
+            BiFunction<Date, Long, R> constructor) {
 
-            double result = ((double) reviewUsageCount.get(i).count() / membersCreatedBeforeDate.get(i).count()) * 100;
-            String reviewUsageRatio = String.format("%.2f", result);
+        Map<Date, Long> mapResults = results.stream()
+                .collect(Collectors.toMap(
+                        dateExtractor,
+                        countExtractor
+                ));
 
-            ratioWithDateResponse.add(new AnalyticsRatioWithDateResponseDto(reviewUsageCount.get(i).date(), reviewUsageRatio));
+        List<R> finalResults = new ArrayList<>();
+        Long cumulativeCount = 0L;
+
+        for (LocalDate localDate = startLocalDate; !localDate.isAfter(endLocalDate); localDate = localDate.plusDays(1)) {
+            Date date = Date.valueOf(localDate);
+
+            cumulativeCount += mapResults.getOrDefault(date, 0L);
+            finalResults.add(constructor.apply(date, cumulativeCount));
         }
+
+        return finalResults;
     }
 
 }

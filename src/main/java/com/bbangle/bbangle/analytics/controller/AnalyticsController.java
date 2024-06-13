@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.analytics.controller;
 
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsRatioWithDateResponseDto;
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -28,7 +25,7 @@ public class AnalyticsController {
 
     @GetMapping(value = "/members/count")
     public CommonResult getMembersCount() {
-        return responseService.getSingleResult(analyticsService.countAllMembers());
+        return responseService.getSingleResult(analyticsService.countMembers());
     }
 
 
@@ -41,69 +38,47 @@ public class AnalyticsController {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         Optional<LocalDate> endDate
     ) {
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countMembersByPeriod(
-            startDate, endDate);
-        return responseService.getListResult(response);
+        return responseService.getSingleResult(analyticsService.countMembersByPeriod(startDate, endDate));
     }
 
 
-    @GetMapping(value = "/ratio/wishlist-usage")
-    public CommonResult getWishlistUsageRatio(
-        @RequestParam(value = "startDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> startDate,
-        @RequestParam(value = "endDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> endDate
+    @GetMapping(value = "/wishlistboards")
+    public CommonResult getWishlistBoardAnalytics(
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateWishlistUsingRatio(
-            startDate, endDate);
-        return responseService.getListResult(response);
+        return responseService.getSingleResult(analyticsService.analyzeWishlistBoardByPeriod(startDate, endDate));
     }
 
 
-    @GetMapping(value = "/wishlist/boards/count")
-    public CommonResult getWishlistUsageCount(
-        @RequestParam(value = "startDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> startDate,
-        @RequestParam(value = "endDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> endDate
+    @GetMapping(value = "/reviews")
+    public CommonResult getReviewAnalytics(
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countWishlistBoardByPeriod(
-            startDate, endDate);
-        return responseService.getListResult(response);
+        return responseService.getSingleResult(analyticsService.analyzeReviewByPeriod(startDate, endDate));
     }
 
 
-    @GetMapping(value = "/ratio/review-usage")
-    public CommonResult getReviewUsageRatio(
-        @RequestParam(value = "startDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> startDate,
-        @RequestParam(value = "endDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> endDate
-    ) {
-        List<AnalyticsRatioWithDateResponseDto> response = analyticsService.calculateReviewUsingRatio(
-            startDate, endDate);
-        return responseService.getListResult(response);
-    }
 
-
-    @GetMapping(value = "/reviews/count")
-    public CommonResult getReviewUsageCount(
-        @RequestParam(value = "startDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> startDate,
-        @RequestParam(value = "endDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        Optional<LocalDate> endDate
+    @GetMapping(value = "/accumulated-reviews/count")
+    public CommonResult getAccumulatedReviewsCount(
+            @RequestParam(value = "startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> startDate,
+            @RequestParam(value = "endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Optional<LocalDate> endDate
     ) {
-        List<AnalyticsCountWithDateResponseDto> response = analyticsService.countReviewByPeriod(
-            startDate, endDate);
-        return responseService.getListResult(response);
+        return responseService.getListResult(analyticsService.countCumulatedReviewsByPeriod(startDate, endDate));
     }
 
 }
