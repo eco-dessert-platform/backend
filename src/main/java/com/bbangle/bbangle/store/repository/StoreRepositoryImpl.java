@@ -1,10 +1,6 @@
 package com.bbangle.bbangle.store.repository;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
-
 import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.dto.QStoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.QStoreDto;
 import com.bbangle.bbangle.store.dto.QStoreResponseDto;
@@ -15,7 +11,6 @@ import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.repository.util.WishListStoreFilter;
 import com.querydsl.core.BooleanBuilder;

@@ -4,7 +4,6 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QBoardDetail;
-import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
@@ -15,12 +14,11 @@ import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMap
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.store.dto.QBoardsInStoreDto;
@@ -48,10 +46,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QBoard board = QBoard.board;
     private static final QProductImg productImage = QProductImg.productImg;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
-    private static final QWishListFolder folder = QWishListFolder.wishListFolder;
-    private static final QProductImg productImg = QProductImg.productImg;
-    private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
-    private static final QWishListStore wishlistStore = QWishListStore.wishListStore;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
