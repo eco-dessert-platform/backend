@@ -12,6 +12,7 @@ import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.QReviewLike;
 import com.bbangle.bbangle.review.dto.QReviewImgDto;
 import com.bbangle.bbangle.review.dto.QReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.dto.ReviewImgDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
@@ -37,6 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
