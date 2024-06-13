@@ -16,5 +16,4 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreQueryD
         @Param("ids")
         List<Long> ids, Pageable pageable
     );
-
 }

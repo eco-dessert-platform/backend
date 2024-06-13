@@ -21,10 +21,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //동현님 말대로 연관매핑 안해보고 해보기
     @Column(name = "member_id")
     @NotNull
     private Long memberId;

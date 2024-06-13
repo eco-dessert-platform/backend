@@ -31,12 +31,12 @@ public class AnalyticsController {
 
     @GetMapping(value = "/new-members/count")
     public CommonResult getNewMembersCount(
-            @RequestParam(value = "startDate")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            Optional<LocalDate> startDate,
-            @RequestParam(value = "endDate")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            Optional<LocalDate> endDate
+        @RequestParam(value = "startDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        Optional<LocalDate> startDate,
+        @RequestParam(value = "endDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        Optional<LocalDate> endDate
     ) {
         return responseService.getSingleResult(analyticsService.countMembersByPeriod(startDate, endDate));
     }

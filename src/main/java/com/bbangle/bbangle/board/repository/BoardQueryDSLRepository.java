@@ -2,19 +2,19 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
+import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import java.util.HashMap;
 import java.util.List;
 
 public interface BoardQueryDSLRepository {
+
+    List<BoardAllTitleDto> findTitleByBoardAll();
 
     List<BoardResponseDao> getBoardResponseList(
         FilterRequest filterRequest,
@@ -29,9 +29,16 @@ public interface BoardQueryDSLRepository {
         Long memberId
     );
 
-    BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);
+    List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
 
-    HashMap<Long, String> getAllBoardTitle();
+    List<Long> getTopBoardIds(Long storeId);
+
+    List<PopularBoardDto> getTopBoardInfo(List<Long> boardIds, Long memberId);
+
+    List<Long> getBoardIds(Long boardIdAsCursorId, Long storeId);
+
+    List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
+        Long memberId);
 
     List<Board> checkingNullRanking();
 

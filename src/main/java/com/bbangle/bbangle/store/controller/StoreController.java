@@ -1,11 +1,12 @@
 package com.bbangle.bbangle.store.controller;
 
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
-import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
+import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.store.dto.StoreResponse;
+import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreController {
 
     private final StoreService storeService;
+    private final BoardService boardService;
     private final ResponseService responseService;
 
     @GetMapping
@@ -41,7 +43,7 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreResponse getStoreResponse = storeService.getStoreResponse(memberId, storeId);
+        StoreDetailStoreDto getStoreResponse = storeService.getStoreResponse(memberId, storeId);
         return responseService.getSingleResult(getStoreResponse);
     }
 
@@ -52,9 +54,9 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        List<PopularBoardResponse> popularBoardResponses = storeService.getPopularBoardResponses(
+        List<PopularBoardResponse> popularBoardResponses = boardService.getTopBoardInfo(
             memberId, storeId);
-        return responseService.getSingleResult(popularBoardResponses);
+        return responseService.getListResult(popularBoardResponses);
     }
 
     @GetMapping("/{storeId}/boards")
@@ -66,8 +68,8 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreDetailCustomPage<List<StoreBoardsResponse>> StoreBoardsResponses = storeService.getStoreAllBoard(
+        StoreDetailCustomPage<List<BoardsInStoreResponse>> boardListResponse = storeService.getBoardsInStore(
             memberId, storeId, boardIdAsCursorId);
-        return responseService.getSingleResult(StoreBoardsResponses);
+        return responseService.getSingleResult(boardListResponse);
     }
 }

@@ -3,6 +3,8 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.board.dto.TagCategoryDto;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.HashSet;
 import java.util.List;
@@ -25,19 +27,17 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
 
     @Override
     public Map<Long, Set<Category>> getCategoryInfoByBoardId(List<Long> boardIds) {
+
         return queryFactory
             .select(
-                board.id,
+                product.board.id,
                 product.category
             )
             .from(product)
-            .leftJoin(product.board)
-            .on(product.board.id.eq(board.id))
             .where(product.board.id.in(boardIds))
-            .fetch()
-            .stream()
+            .fetch().stream()
             .collect(Collectors.toMap(
-                tuple -> tuple.get(board.id), // key
+                tuple -> tuple.get(product.board.id), // key
                 tuple -> { // value
                     Set<Category> categories = new HashSet<>();
                     categories.add(tuple.get(product.category));
@@ -48,5 +48,25 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
                     return existCategories;
                 }
             ));
+    }
+
+    @Override
+    public List<TagCategoryDto> getTagCategory(List<Long> boardIds) {
+
+        return queryFactory.select(
+                Projections.constructor(
+                    TagCategoryDto.class,
+                    product.board.id,
+                    product.glutenFreeTag,
+                    product.sugarFreeTag,
+                    product.highProteinTag,
+                    product.veganTag,
+                    product.ketogenicTag,
+                    product.category
+                )
+            )
+            .from(product)
+            .where(product.board.id.in(boardIds))
+            .fetch();
     }
 }

@@ -1,44 +1,44 @@
 package com.bbangle.bbangle.store.dto;
 
+import com.bbangle.bbangle.board.domain.Category;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Builder
 public class PopularBoardResponse {
 
     private Long boardId;
-    private String boardProfile;
-    private String boardTitle;
-    private Integer boardPrice;
+    private String thumbnail;
+    private String title;
+    private Integer price;
     private Boolean isWished;
     private Boolean isBundled;
 
-    public void setWishlist(boolean isWished) {
-        this.isWished = isWished;
+    public static PopularBoardResponse from(PopularBoardDto boardDto,
+        Map<Long, Set<Category>> categorys) {
+        return PopularBoardResponse.builder()
+            .boardId(boardDto.getBoardId())
+            .thumbnail(boardDto.getBoardProfile())
+            .title(boardDto.getBoardTitle())
+            .price(boardDto.getBoardPrice())
+            .isWished(boardDto.getIsWished())
+            .isBundled(checkCategotyCount(boardDto, categorys))
+            .build();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+    private static boolean checkCategotyCount(PopularBoardDto boardDto,
+        Map<Long, Set<Category>> categorys) {
+        Set<Category> targetCategories = categorys.get(boardDto.getBoardId());
+
+        if (Objects.isNull(targetCategories)) {
             return false;
         }
-        PopularBoardResponse that = (PopularBoardResponse) o;
-        return Objects.equals(boardId, that.boardId) &&
-            Objects.equals(boardProfile, that.boardProfile) &&
-            Objects.equals(boardTitle, that.boardTitle) &&
-            Objects.equals(boardPrice, that.boardPrice) &&
-            Objects.equals(isWished, that.isWished) &&
-            Objects.equals(isBundled, that.isBundled);
+
+        return categorys.get(boardDto.getBoardId()).size() > 1;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(boardId, boardProfile, boardTitle, boardPrice, isWished, isBundled);
-    }
 }

@@ -57,17 +57,17 @@ public enum BbangleErrorCode {
 
     public static BbangleErrorCode of(int code) {
         return Stream.of(BbangleErrorCode.values())
-                .filter(message -> message.getCode() == code)
-                .findFirst()
-                .orElseThrow(BbangleException::new);
+            .filter(message -> message.getCode() == code)
+            .findFirst()
+            .orElseThrow(BbangleException::new);
     }
 
     public static BbangleErrorCode of(String message) {
         return Stream.of(BbangleErrorCode.values())
-                .filter(error -> error.getMessage()
-                        .equals(message))
-                .findFirst()
-                .orElseThrow(BbangleException::new);
+            .filter(error -> error.getMessage()
+                .equals(message))
+            .findFirst()
+            .orElseThrow(BbangleException::new);
     }
 
 
