@@ -114,29 +114,29 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     class GetTopBoardIds {
 
         private Store store;
-        private BoardStatistic firstBoard;
-        private BoardStatistic secondBoard;
-        private BoardStatistic thirdBoard;
+        private Board firstBoard;
+        private Board secondBoard;
+        private Board thirdBoard;
 
         @BeforeEach
         void init() {
             store = fixtureStore(emptyMap());
+            firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
+            secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
+            thirdBoard = boardRepository.save(BoardFixture.randomBoard(store));
 
-            secondBoard = fixtureRanking(
-                Map.of("boardId", 1L, "basicScore", 101d, "boardReviewGrade", BigDecimal.ONE)); // 2등
-            firstBoard = fixtureRanking(
-                Map.of("boardId", 2L, "basicScore", 102d, "boardReviewGrade", BigDecimal.ONE)); // 1등
-            thirdBoard = fixtureRanking(
-                Map.of("boardId", 3L, "basicScore", 100d, "boardReviewGrade", BigDecimal.ONE)); // 3등
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
         }
 
         @Test
         @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
         void getPopularBoard() {
             List<Long> rankBoards = List.of(
-                firstBoard.getBoardId(),
-                secondBoard.getBoardId(),
-                thirdBoard.getBoardId()
+                firstBoard.getId(),
+                secondBoard.getId(),
+                thirdBoard.getId()
                 );
             List<Long> rankBoardIds = boardRepository.getTopBoardIds(store.getId());
 

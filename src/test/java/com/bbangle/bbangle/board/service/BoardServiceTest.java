@@ -567,24 +567,22 @@ class BoardServiceTest extends AbstractIntegrationTest {
         class GetTopBoardInfo {
 
             private Store store;
-            private BoardStatistic firstRanking;
-            private BoardStatistic secondRanking;
-            private BoardStatistic thirdRanking;
+            private Board firstBoard;
+            private Board secondBoard;
+            private Board thirdBoard;
             private Member member;
 
             @BeforeEach
             void init() {
                 store = fixtureStore(emptyMap());
 
-                secondRanking = fixtureRanking(
-                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
-                        101d)); // 2등
-                firstRanking = fixtureRanking(
-                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
-                        102d)); // 1등
-                thirdRanking = fixtureRanking(
-                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
-                        100d)); // 3등
+                firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
+                secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
+                thirdBoard = boardRepository.save(BoardFixture.randomBoard(store));
+
+                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
+                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
+                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
 
                 createWishListStore();
             }
@@ -602,9 +600,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     .map(PopularBoardResponse::getBoardId)
                     .toList();
                 List<Long> expectBoardIds = List.of(
-                    firstRanking.getBoardId(),
-                    secondRanking.getBoardId(),
-                    thirdRanking.getBoardId());
+                    firstBoard.getId(),
+                    secondBoard.getId(),
+                    thirdBoard.getId());
 
                 AssertionsForInterfaceTypes.assertThat(actualBoardIds)
                     .containsExactlyElementsOf(expectBoardIds);
@@ -640,14 +638,14 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
                 Boolean wishTrue = topBoardInfo.stream()
                     .filter(board -> board.getBoardId()
-                        .equals(firstRanking.getBoardId()))
+                        .equals(firstBoard.getId()))
                     .findFirst()
                     .get()
                     .getIsWished();
 
                 Boolean wishFalse = topBoardInfo.stream()
                     .filter(board -> board.getBoardId()
-                        .equals(secondRanking.getBoardId()))
+                        .equals(secondBoard.getId()))
                     .findFirst()
                     .get()
                     .getIsWished();
@@ -663,7 +661,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     .build());
 
                 wishListBoardRepository.save(WishListBoard.builder()
-                    .boardId(firstRanking.getBoardId())
+                    .boardId(firstBoard.getId())
                     .memberId(member.getId())
                     .build());
             }
