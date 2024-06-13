@@ -17,6 +17,7 @@ import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,11 +123,11 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             store = fixtureStore(emptyMap());
 
             secondBoard = fixtureRanking(
-                Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore", 101d)); // 2등
+                Map.of("boardId", 1L, "basicScore", 101d, "boardReviewGrade", BigDecimal.ONE)); // 2등
             firstBoard = fixtureRanking(
-                Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore", 102d)); // 1등
+                Map.of("boardId", 2L, "basicScore", 102d, "boardReviewGrade", BigDecimal.ONE)); // 1등
             thirdBoard = fixtureRanking(
-                Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore", 100d)); // 3등
+                Map.of("boardId", 3L, "basicScore", 100d, "boardReviewGrade", BigDecimal.ONE)); // 3등
         }
 
         @Test
@@ -209,7 +210,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("getBoardIds 메서드는")
     class GetBoardIds {
 
-        private final Long NULL_CURSOR = null;
+        private static final Long NULL_CURSOR = null;
         private Store store;
 
         @BeforeEach
@@ -252,6 +253,12 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             board2 = fixtureBoard(Map.of("store", store, "title", TEST_TITLE));
             board3 = fixtureBoard(Map.of("store", store, "title", TEST_TITLE));
             board4 = fixtureBoard(Map.of("store", store, "title", TEST_TITLE));
+            boardStatisticRepository.saveAll(
+                List.of(BoardStatisticFixture.newBoardStatistic(board1),
+                BoardStatisticFixture.newBoardStatistic(board2),
+                BoardStatisticFixture.newBoardStatistic(board3),
+                BoardStatisticFixture.newBoardStatistic(board4))
+            );
         }
 
         @Test
