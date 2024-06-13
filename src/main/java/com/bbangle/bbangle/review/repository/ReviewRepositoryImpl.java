@@ -1,15 +1,28 @@
 package com.bbangle.bbangle.review.repository;
 
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCountWithDateResponseDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsCountWithDateResponseDto;
-import com.bbangle.bbangle.config.ranking.BoardGrade;
+import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
+import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
+import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.review.domain.QReview;
+import com.bbangle.bbangle.review.domain.QReviewImg;
+import com.bbangle.bbangle.review.domain.ReviewCursor;
+import com.bbangle.bbangle.review.domain.ReviewLike;
+import com.bbangle.bbangle.review.domain.QReviewLike;
+import com.bbangle.bbangle.review.dto.QReviewImgDto;
+import com.bbangle.bbangle.review.dto.QReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewDto;
+import com.bbangle.bbangle.review.dto.ReviewImgDto;
+import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.bbangle.bbangle.member.domain.QMember;
-import com.bbangle.bbangle.review.domain.*;
-import com.bbangle.bbangle.review.dto.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -21,11 +34,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.time.LocalDate;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -217,44 +230,34 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     }
 
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countMembersUsingReviewBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<DateAndCountDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = getDateCreatedAt();
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        List<AnalyticsCountWithDateResponseDto> results = queryFactory.select(new QAnalyticsCountWithDateResponseDto(
-                        createdAt,
-                        review.memberId.countDistinct()
+        return queryFactory.select(new QDateAndCountDto(
+                        createdAt, review.id.count()
                 ))
                 .from(review)
                 .where(createdAt.between(startDate, endDate))
                 .groupBy(createdAt)
                 .orderBy(createdAt.asc())
                 .fetch();
-
-        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, results,
-                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
-                AnalyticsCountWithDateResponseDto::new);
     }
 
-
     @Override
-    public List<AnalyticsCountWithDateResponseDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate) {
+    public List<AnalyticsCumulationResponseDto> countCumulatedReviewBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate) {
         DateTemplate<Date> createdAt = getDateCreatedAt();
-        List<AnalyticsCountWithDateResponseDto> mappedResults = new ArrayList<>();
+        Date endDate = Date.valueOf(endLocalDate);
 
-        for (LocalDate date = startLocalDate; !date.isAfter(endLocalDate); date = date.plusDays(1)) {
-            Long count = queryFactory.select(review.id.count())
-                    .from(review)
-                    .where(createdAt.loe(Date.valueOf(date)))
-                    .fetchOne();
-
-            mappedResults.add(new AnalyticsCountWithDateResponseDto(Date.valueOf(date), count));
-        }
-
-        return mapResultsToDateRangeWithCount(startLocalDate, endLocalDate, mappedResults,
-                AnalyticsCountWithDateResponseDto::date, AnalyticsCountWithDateResponseDto::count,
-                AnalyticsCountWithDateResponseDto::new);
+        return queryFactory.select(new QAnalyticsCumulationResponseDto(
+                        createdAt, review.id.count()
+                ))
+                .from(review)
+                .where(createdAt.loe(endDate))
+                .groupBy(createdAt)
+                .orderBy(createdAt.asc())
+                .fetch();
     }
 
     @Override

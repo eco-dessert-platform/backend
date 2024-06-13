@@ -23,7 +23,8 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://api.bbangle.store",
                         "http://www.bbangle.store",
                         "https://api.bbangle.store",
-                        "https://www.bbangle.store"
+                        "https://www.bbangle.store",
+                        "http://115.85.181.105:3001"
                     )
                     .allowedHeaders("*")
                     .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
