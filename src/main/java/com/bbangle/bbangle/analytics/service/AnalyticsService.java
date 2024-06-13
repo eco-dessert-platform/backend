@@ -102,7 +102,7 @@ public class AnalyticsService {
     }
 
 
-    public Double calculateDaysBetween(LocalDate startDate, LocalDate endDate) {
+    private Double calculateDaysBetween(LocalDate startDate, LocalDate endDate) {
         return (double) (ChronoUnit.DAYS.between(startDate, endDate) + 1);
     }
 

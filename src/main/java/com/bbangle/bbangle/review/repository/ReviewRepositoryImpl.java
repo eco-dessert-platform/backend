@@ -18,6 +18,7 @@ import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -311,26 +312,6 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
 
     private DateTemplate<Date> getDateCreatedAt() {
         return Expressions.dateTemplate(Date.class, "DATE({0})", review.createdAt);
-    }
-
-    private <T, R> List<R> mapResultsToDateRangeWithCount(
-            LocalDate startLocalDate, LocalDate endLocalDate, List<T> results,
-            Function<T, Date> dateExtractor,
-            Function<T, Long> countExtractor,
-            BiFunction<Date, Long, R> constructor) {
-
-        Map<Date, Long> mapResults = results.stream()
-                .collect(Collectors.toMap(
-                        dateExtractor,
-                        countExtractor
-                ));
-
-        List<LocalDate> dateRange = startLocalDate.datesUntil(endLocalDate.plusDays(1))
-                .toList();
-
-        return dateRange.stream()
-                .map(date -> constructor.apply(Date.valueOf(date), mapResults.getOrDefault(Date.valueOf(date), 0L)))
-                .toList();
     }
 
     @Override

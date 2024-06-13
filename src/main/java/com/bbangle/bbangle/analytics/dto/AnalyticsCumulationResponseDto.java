@@ -6,11 +6,12 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.sql.Date;
 
 public record AnalyticsCumulationResponseDto(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-        Date date,
-        Long count
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    Date date,
+    Long count
 ) {
 
-        @QueryProjection
-        public AnalyticsCumulationResponseDto{}
+    @QueryProjection
+    public AnalyticsCumulationResponseDto{}
+
 }

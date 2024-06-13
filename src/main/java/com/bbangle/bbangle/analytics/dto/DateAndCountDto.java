@@ -6,12 +6,12 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.sql.Date;
 
 public record DateAndCountDto(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-        Date date,
-        Long count
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    Date date,
+    Long count
 ) {
 
-        @QueryProjection
-        public DateAndCountDto {}
+    @QueryProjection
+    public DateAndCountDto {}
 
 }
