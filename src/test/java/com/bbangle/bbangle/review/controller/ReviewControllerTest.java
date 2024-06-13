@@ -79,7 +79,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("도움되요, 리뷰 이미지, 리뷰를 삭제한다")
+    @DisplayName("도움돼요, 리뷰 이미지, 리뷰를 삭제한다")
     @WithCustomMockUser
     void deleteReview() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
@@ -109,7 +109,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("도움되요를 추가한다")
+    @DisplayName("도움돼요를 추가한다")
     @WithCustomMockUser
     void insertLike() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
@@ -119,7 +119,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("도움되요를 삭제한다")
+    @DisplayName("도움돼요를 삭제한다")
     @WithCustomMockUser
     void removeLike() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
