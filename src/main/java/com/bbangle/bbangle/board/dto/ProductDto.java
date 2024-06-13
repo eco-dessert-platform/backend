@@ -30,9 +30,9 @@ public class ProductDto {
     @JsonInclude(Include.NON_NULL)
     private OrderAvailableDate orderAvailableDate;
     private Boolean isNotified;
+    private Boolean soldout;
 
     public static ProductDto from(Product product) {
-
 
         Nutrient nutrientDto = getNutrient(product);
         OrderTypeEnum orderType = getOrderType(product);
@@ -46,7 +46,8 @@ public class ProductDto {
             .ketogenicTag(product.isKetogenicTag())
             .nutrient(nutrientDto)
             .orderType(orderType)
-            .isNotified(new Random().nextBoolean()); // 프론트 요청으로 임시로 생성
+            .isNotified(new Random().nextBoolean())
+            .soldout(product.isSoldout()); // 프론트 요청으로 임시로 생성
 
         if (orderType.equals(OrderTypeEnum.DATE)) {
             builder.orderAvailableDate(getOrderAvailableDate(product));

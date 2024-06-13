@@ -60,28 +60,34 @@ CREATE TABLE store
 
 CREATE TABLE product_board
 (
-    id                       BIGINT AUTO_INCREMENT,
-    store_id                 BIGINT       NOT NULL,
-    title                    VARCHAR(50)  NOT NULL,
-    price                    INT          NOT NULL,
-    status                   TINYINT      NOT NULL,
-    profile                  VARCHAR(255),
-    purchase_url             VARCHAR(255) NOT NULL,
-    sunday                   TINYINT      NOT NULL DEFAULT 0,
-    monday                   TINYINT      NOT NULL DEFAULT 0,
-    tuesday                  TINYINT      NOT NULL DEFAULT 0,
-    wednesday                TINYINT      NOT NULL DEFAULT 0,
-    thursday                 TINYINT      NOT NULL DEFAULT 0,
-    friday                   TINYINT      NOT NULL DEFAULT 0,
-    saturday                 TINYINT      NOT NULL DEFAULT 0,
-    created_at               DATETIME(6),
-    modified_at              DATETIME(6),
-    is_deleted               TINYINT,
-    delivery_fee             INT,
-    free_shipping_conditions INT,
-    CONSTRAINT product_board_pk PRIMARY KEY (id),
-    CONSTRAINT fk_store_product_board FOREIGN KEY (store_id) REFERENCES store (id)
-);
+    id                       bigint auto_increment
+        primary key,
+    store_id                 bigint            not null,
+    title                    varchar(50)       not null,
+    price                    int               not null,
+    status                   tinyint           not null,
+    profile                  varchar(255)      null,
+    detail                   varchar(255)      not null,
+    purchase_url             varchar(255)      not null,
+    view                     int     default 0 not null,
+    sunday                   tinyint default 0 not null,
+    monday                   tinyint default 0 not null,
+    tuesday                  tinyint default 0 not null,
+    wednesday                tinyint default 0 not null,
+    thursday                 tinyint default 0 not null,
+    friday                   tinyint default 0 not null,
+    saturday                 tinyint default 0 not null,
+    created_at               datetime(6)       null,
+    modified_at              datetime(6)       null,
+    is_deleted               tinyint           null,
+    wish_cnt                 int               null,
+    delivery_fee             int               null,
+    free_shipping_conditions int               null,
+    constraint fk_store_product_board
+        foreign key (store_id) references store (id)
+) charset = utf8mb4;
+
+
 
 CREATE TABLE wishlist_folder
 (
@@ -124,35 +130,38 @@ CREATE TABLE wishlist_store
 
 CREATE TABLE product
 (
-    id               BIGINT AUTO_INCREMENT,
-    product_board_id BIGINT      NOT NULL,
-    title            VARCHAR(50) NOT NULL,
-    price            INT,
-    category         VARCHAR(20) NOT NULL,
-    gluten_free_tag  TINYINT     NOT NULL DEFAULT 0,
-    high_protein_tag TINYINT     NOT NULL DEFAULT 0,
-    sugar_free_tag   TINYINT     NOT NULL DEFAULT 0,
-    vegan_tag        TINYINT     NOT NULL DEFAULT 0,
-    ketogenic_tag    TINYINT     NOT NULL DEFAULT 0,
-    sugars           INT,
-    protein          INT,
-    carbohydrates    INT,
-    fat              INT,
-    weight           INT,
-    calories         INT,
-    monday           TINYINT     NOT NULL DEFAULT 0,
-    tuesday          TINYINT     NOT NULL DEFAULT 0,
-    wednesday        TINYINT     NOT NULL DEFAULT 0,
-    thursday         TINYINT     NOT NULL DEFAULT 0,
-    friday           TINYINT     NOT NULL DEFAULT 0,
-    saturday         TINYINT     NOT NULL DEFAULT 0,
-    sunday           TINYINT     NOT NULL DEFAULT 0,
-    order_start_date DATETIME,
-    order_end_date   DATETIME,
+    id               bigint auto_increment
+        primary key,
+    product_board_id bigint            not null,
+    title            varchar(50)       not null,
+    price            int               null,
+    category         varchar(20)       not null,
+    gluten_free_tag  tinyint default 0 not null,
+    high_protein_tag tinyint default 0 not null,
+    sugar_free_tag   tinyint default 0 not null,
+    vegan_tag        tinyint default 0 null,
+    ketogenic_tag    tinyint default 0 not null,
+    monday           tinyint default 0 not null,
+    tuesday          tinyint default 0 not null,
+    wednesday        tinyint default 0 not null,
+    thursday         tinyint default 0 not null,
+    friday           tinyint default 0 not null,
+    saturday         tinyint default 0 not null,
+    sunday           tinyint default 0 not null,
+    order_start_date datetime          null,
+    order_end_date   datetime          null,
+    sugars           int               null,
+    protein          int               null,
+    carbohydrates    int               null,
+    fat              int               null,
+    weight           int               null,
+    calories         int               null,
+    soldout          tinyint default 0 not null,
+    constraint fk_product_board_product
+        foreign key (product_board_id) references product_board (id)
+) charset = utf8mb4;
 
-    CONSTRAINT product_pk PRIMARY KEY (id),
-    CONSTRAINT fk_product_board_product FOREIGN KEY (product_board_id) REFERENCES product_board (id)
-);
+
 
 CREATE TABLE product_img
 (
@@ -177,10 +186,10 @@ CREATE TABLE boardStatistic
     id                 BIGINT AUTO_INCREMENT,
     board_id           BIGINT  NOT NULL,
     basic_score        DOUBLE  NOT NULL default 0,
-    board_wish_count   int     NOT NULL default 0,
-    board_review_count int     NOT NULL default 0,
-    board_view_count   int     NOT NULL default 0,
-    board_view_grade   decimal NOT NULL default 0,
+    board_wish_count   INT     NOT NULL default 0,
+    board_review_count INT     NOT NULL default 0,
+    board_view_count   INT     NOT NULL default 0,
+    board_view_grade   DECIMAL NOT NULL default 0,
     CONSTRAINT product_img_pk PRIMARY KEY (id),
 );
 

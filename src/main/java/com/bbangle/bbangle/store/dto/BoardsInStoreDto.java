@@ -5,52 +5,34 @@ import java.util.Objects;
 import lombok.Getter;
 
 @Getter
-public class PopularBoardDto {
+public class BoardsInStoreDto {
 
     private Long boardId;
     private String boardProfile;
     private String boardTitle;
     private Integer boardPrice;
+    private Integer boardView;
+
     private Boolean isWished;
 
     @QueryProjection
-    public PopularBoardDto(
+    public BoardsInStoreDto(
         Long boardId,
         String boardProfile,
         String boardTitle,
         Integer boardPrice,
+        Integer boardView,
         Long wishlistBoardId
     ) {
         this.boardId = boardId;
         this.boardProfile = boardProfile;
         this.boardTitle = boardTitle;
         this.boardPrice = boardPrice;
+        this.boardView = boardView;
         this.isWished = isNonEmptyWishlist(wishlistBoardId);
     }
 
     private Boolean isNonEmptyWishlist(Long wishlistId) {
         return Objects.nonNull(wishlistId) && wishlistId > 0;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PopularBoardDto that = (PopularBoardDto) o;
-        return Objects.equals(boardId, that.boardId) &&
-            Objects.equals(boardProfile, that.boardProfile) &&
-            Objects.equals(boardTitle, that.boardTitle) &&
-            Objects.equals(boardPrice, that.boardPrice) &&
-            Objects.equals(isWished, that.isWished);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(boardId, boardProfile, boardTitle, boardPrice, isWished);
-    }
-
 }

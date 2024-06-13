@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.board.service;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
+
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
@@ -13,6 +15,8 @@ import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -26,12 +30,17 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.PopularBoardResponse;
+import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import jakarta.persistence.EntityManager;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -394,9 +403,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
         assertThat(boardList2.getContent()).hasSize(2);
         assertThat(boardList3.getContent()).hasSize(2);
         assertThat(boardList4.getContent()).hasSize(1);
-        assertThat(boardList5.getContent()).hasSize(0);
+        assertThat(boardList5.getContent()).isEmpty();
         assertThat(boardList6.getContent()).hasSize(2);
-        assertThat(boardList7.getContent()).hasSize(0);
+        assertThat(boardList7.getContent()).isEmpty();
         assertThat(boardList8.getContent()).hasSize(2);
     }
 
@@ -553,25 +562,112 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .getBoardId()).isEqualTo(targetId);
         }
 
-    }
+        @Nested
+        @DisplayName("getTopBoardInfo 메서드는")
+        class GetTopBoardInfo {
 
-    @DisplayName("상세보기 서비스 로직 테스트")
-    @Nested
-    class BoardDetail {
+            private Store store;
+            private BoardStatistic firstRanking;
+            private BoardStatistic secondRanking;
+            private BoardStatistic thirdRanking;
+            private Member member;
 
-        @Test
-        @DisplayName("상세페이지 접속 시 boardViewCount가 올라간다")
-        void updateCountView() {
-            //given
-            String viewKey = "viewKey";
+            @BeforeEach
+            void init() {
+                store = fixtureStore(emptyMap());
 
-            //when
-            boardService.getBoardDtos(NULL_MEMBER, board.getId(), viewKey);
-            BoardStatistic boardInfo = boardStatisticRepository.findByBoardId(board.getId())
-                .orElseThrow();
+                secondRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        101d)); // 2등
+                firstRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        102d)); // 1등
+                thirdRanking = fixtureRanking(
+                    Map.of("board", fixtureBoard(Map.of("store", store)), "popularScore",
+                        100d)); // 3등
 
-            //then
-            assertThat(boardInfo.getBoardViewCount()).isOne();
+                createWishListStore();
+            }
+
+            @Test
+            @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
+            void getPopularBoard() {
+                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(NULL_MEMBER,
+                    store.getId());
+
+                AssertionsForInterfaceTypes.assertThat(topBoardInfo)
+                    .hasSize(3);
+
+                List<Long> actualBoardIds = topBoardInfo.stream()
+                    .map(PopularBoardResponse::getBoardId)
+                    .toList();
+                List<Long> expectBoardIds = List.of(
+                    firstRanking.getBoardId(),
+                    secondRanking.getBoardId(),
+                    thirdRanking.getBoardId());
+
+                AssertionsForInterfaceTypes.assertThat(actualBoardIds)
+                    .containsExactlyElementsOf(expectBoardIds);
+            }
+
+            @DisplayName("상세보기 서비스 로직 테스트")
+            @Nested
+            class BoardDetail {
+
+                @Test
+                @DisplayName("상세페이지 접속 시 boardViewCount가 올라간다")
+                void updateCountView() {
+                    //given
+                    String viewKey = "viewKey";
+
+                    //when
+                    boardService.getBoardDtos(NULL_MEMBER, board.getId(), viewKey);
+                    BoardStatistic boardInfo = boardStatisticRepository.findByBoardId(board.getId())
+                        .orElseThrow();
+
+                    //then
+                    assertThat(boardInfo.getBoardViewCount()).isOne();
+                }
+
+            }
+
+            @Test
+            @DisplayName("위시리스트 등록한 상품을 정상적으로 가져올 가져올 수 있다")
+            void getIsWished() {
+                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(
+                    member.getId(),
+                    store.getId());
+
+                Boolean wishTrue = topBoardInfo.stream()
+                    .filter(board -> board.getBoardId()
+                        .equals(firstRanking.getBoardId()))
+                    .findFirst()
+                    .get()
+                    .getIsWished();
+
+                Boolean wishFalse = topBoardInfo.stream()
+                    .filter(board -> board.getBoardId()
+                        .equals(secondRanking.getBoardId()))
+                    .findFirst()
+                    .get()
+                    .getIsWished();
+
+                AssertionsForClassTypes.assertThat(wishTrue)
+                    .isTrue();
+                AssertionsForClassTypes.assertThat(wishFalse)
+                    .isFalse();
+            }
+
+            void createWishListStore() {
+                member = memberRepository.save(Member.builder()
+                    .build());
+
+                wishListBoardRepository.save(WishListBoard.builder()
+                    .boardId(firstRanking.getBoardId())
+                    .memberId(member.getId())
+                    .build());
+            }
+
         }
 
     }
@@ -625,6 +721,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
             assertThrows(BbangleException.class,
                 () -> boardService.getProductResponse(NOT_EXSIST_ID));
         }
+
     }
 
 
@@ -671,5 +768,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
             assertThrows(BbangleException.class,
                 () -> boardService.getProductResponse(NOT_EXSIST_ID));
         }
+
     }
+
 }
