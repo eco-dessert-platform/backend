@@ -23,6 +23,7 @@ public class RecommendCursorGenerator implements BoardCursorGenerator {
     @Override
     public BooleanBuilder getCursor(Long cursorId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
+        cursorBuilder.and(board.isDeleted.eq(false));
         if (cursorId == null) {
             return cursorBuilder;
         }
