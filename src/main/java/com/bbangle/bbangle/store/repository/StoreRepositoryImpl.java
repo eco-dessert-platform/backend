@@ -162,6 +162,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
     private BooleanBuilder getCursorCondition(Long cursorId) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(store.isDeleted.eq(false));
         if (Objects.isNull(cursorId)) {
             return booleanBuilder;
         }
