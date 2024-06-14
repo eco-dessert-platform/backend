@@ -2,11 +2,11 @@ package com.bbangle.bbangle.wishlist.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.ranking.service.RankingService;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
@@ -23,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishListBoardService {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
-    private static final Double WISH_SCORE = 50.0;
-    private static final Double WISH_CANCEL_SCORE = -50.0;
+    private static final Boolean WISH = true;
+    private static final Boolean WISH_CANCEL = false;
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
-    private final RankingService rankingService;
+    private final BoardStatisticService boardStatisticService;
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
@@ -44,22 +44,19 @@ public class WishListBoardService {
         validateIsWishAvailable(board.getId(), member.getId());
 
         makeNewWish(board, wishlistFolder, member);
+        boardStatisticService.updateWishCount(boardId, WISH);
     }
 
 
     @Transactional
     public void cancel(Long memberId, Long boardId) {
         Member member = memberRepository.findMemberById(memberId);
-        Board board = boardRepository.findById(boardId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId, member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
-        board.updateWishCnt(false);
-
-        rankingService.updateRankingScore(boardId, WISH_CANCEL_SCORE);
+        boardStatisticService.updateWishCount(boardId, WISH_CANCEL);
     }
 
     @Transactional
@@ -102,9 +99,6 @@ public class WishListBoardService {
             .build();
 
         wishlistBoardRepository.save(wishlistBoard);
-        rankingService.updateRankingScore(board.getId(), WISH_SCORE);
-
-        board.updateWishCnt(true);
     }
 
 }

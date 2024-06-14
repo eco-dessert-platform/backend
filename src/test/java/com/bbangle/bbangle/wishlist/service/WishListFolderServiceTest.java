@@ -7,11 +7,12 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
@@ -320,8 +321,8 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             for(int i = 0; i < 10; i++){
                 Board board = BoardFixture.randomBoard(store);
                 board = boardRepository.save(board);
-                Ranking ranking = Ranking.builder().board(board).popularScore(0.0).recommendScore(0.0).build();
-                rankingRepository.save(ranking);
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
+                boardStatisticRepository.save(boardStatistic);
 
                 if(i < 3) {
                     wishListBoardService.wish(member.getId(), board.getId(),

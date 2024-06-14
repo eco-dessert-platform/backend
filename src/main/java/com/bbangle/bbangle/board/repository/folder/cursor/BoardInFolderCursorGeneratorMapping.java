@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
+
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

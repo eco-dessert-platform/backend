@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
@@ -42,10 +43,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BoardController {
 
+    private static final String NON_VIEW_KEY = null;
+
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final BoardStatisticService boardStatisticService;
     private final StoreService storeService;
     private final ReviewService reviewService;
 
@@ -96,22 +100,6 @@ public class BoardController {
         return responseService.getSingleResult(boardResponseDto);
     }
 
-    @PatchMapping("/{boardId}")
-    public CommonResult countView(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
-        String ipAddress = request.getRemoteAddr();
-        String viewCountKey = "VIEW:" + boardId + ":" + ipAddress;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
-            return responseService.getFailResult();
-        }
-
-        boardService.updateCountView(boardId, viewCountKey);
-
-        return responseService.getSuccessResult();
-    }
-
     @Operation(summary = "스토어 조회")
     @GetMapping("/{boardId}/store")
     public CommonResult getStoreInfoInBoardDetail(
@@ -130,8 +118,15 @@ public class BoardController {
         @PathVariable("boardId")
         Long boardId,
         @AuthenticationPrincipal
-        Long memberId) {
-        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId);
+        Long memberId,
+        HttpServletRequest httpServletRequest
+    ) {
+        String viewCountKey = getViewCountKey(boardId, httpServletRequest);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
+            BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, NON_VIEW_KEY);
+            return responseService.getSingleResult(response);
+        }
+        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, viewCountKey);
         return responseService.getSingleResult(response);
     }
 
@@ -153,6 +148,11 @@ public class BoardController {
         SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
         return responseService.getSingleResult(response);
+    }
+
+    private static String getViewCountKey(Long boardId, HttpServletRequest httpServletRequest) {
+        String ipAddress = httpServletRequest.getRemoteAddr();
+        return "VIEW:" + boardId + ":" + ipAddress;
     }
 
     private SortType settingDefaultSortTypeIfNull(SortType sort) {

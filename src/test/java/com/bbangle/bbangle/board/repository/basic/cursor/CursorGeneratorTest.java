@@ -8,16 +8,16 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -49,8 +49,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
             member = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
-            Ranking ranking = RankingFixture.newRanking(savedBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
+            boardStatisticRepository.save(boardStatistic);
             if (i == 0) {
                 firstSavedBoardId = savedBoard.getId();
             }
@@ -98,8 +98,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .where(QBoard.board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.loe(price))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.lt(price))
+                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -147,8 +147,8 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .where(QBoard.board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.goe(price))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.gt(price))
+                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -185,7 +185,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("존재하는 cursorId로 조회하는 경우 정상적으로 BooleanBuilder를 반환한다")
-        void getLowPriceCursorWithCursorId() {
+        void getRecentPriceCursorWithCursorId() {
             //given, when
             BooleanBuilder recentCursor = boardCursorGeneratorMapping
                 .mappingCursorGenerator(SortType.RECENT)
@@ -235,13 +235,14 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .mappingCursorGenerator(SortType.RECOMMEND)
                 .getCursor(firstSavedBoardId);
 
-            Double expectedScore = queryFactory.select(QRanking.ranking.recommendScore)
-                .from(QRanking.ranking)
-                .where(QRanking.ranking.board.id.eq(firstSavedBoardId))
+            Double expectedScore = queryFactory.select(QBoardStatistic.boardStatistic.basicScore)
+                .from(QBoardStatistic.boardStatistic)
+                .where(QBoardStatistic.boardStatistic.boardId.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(expectedScore))
-                .or(QBoard.board.id.loe(firstSavedBoardId))
+            String expectedBuilder = new BooleanBuilder()
+                .and(QBoardStatistic.boardStatistic.basicScore.lt(expectedScore))
+                .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then

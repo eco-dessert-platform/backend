@@ -20,24 +20,22 @@ import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.ranking.service.RankingService;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,18 +46,16 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-    private static final Double VIEW_COUNT_SCORE = 1.0;
+    private static final int ONE_CATEGOTY = 1;
 
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
+    private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
     private final WishListBoardRepository wishListBoardRepository;
-    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RankingService rankingService;
-    private static final int ONE_CATEGOTY = 1;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -109,7 +105,7 @@ public class BoardService {
             .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
     }
 
-    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId) {
+    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String viewCountKey) {
         List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
             boardId);
 
@@ -123,6 +119,11 @@ public class BoardService {
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
+
+        boardStatisticService.updateViewCount(boardId);
+        if(viewCountKey != null) {
+            redisTemplate.opsForValue().set(viewCountKey, "true");
+        }
 
         return BoardImageDetailResponse.from(
             boardDto,
@@ -175,14 +176,6 @@ public class BoardService {
         Boolean isBundled = isBundled(products);
 
         return ProductResponse.of(isBundled, productDtos);
-    }
-
-    @Transactional
-    public void updateCountView(Long boardId, String viewCountKey) {
-        rankingService.updateRankingScore(boardId, VIEW_COUNT_SCORE);
-
-        redisTemplate.opsForValue()
-            .set(viewCountKey, "true", Duration.ofMinutes(3));
     }
 
     public List<PopularBoardResponse> getTopBoardInfo(Long memberId, Long storeId) {

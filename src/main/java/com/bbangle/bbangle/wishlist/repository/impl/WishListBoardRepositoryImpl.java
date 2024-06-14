@@ -2,6 +2,7 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
+import com.bbangle.bbangle.config.ranking.BoardWishCount;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardQueryDSLRepository;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -36,6 +37,22 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
                 .groupBy(createdAt)
                 .orderBy(createdAt.asc())
                 .fetch();
+    }
+
+    @Override
+    public List<BoardWishCount> groupByBoardIdAndGetWishCount() {
+        return queryFactory.select(wishListBoard.boardId,
+                wishListBoard.id.count())
+            .from(wishListBoard)
+            .groupBy(wishListBoard.boardId)
+            .orderBy(wishListBoard.boardId.asc())
+            .fetch()
+            .stream()
+            .map(tuple -> BoardWishCount.builder()
+                .boardId(tuple.get(wishListBoard.boardId))
+                .count(tuple.get(wishListBoard.id.count()).intValue())
+                .build())
+            .toList();
     }
 
 

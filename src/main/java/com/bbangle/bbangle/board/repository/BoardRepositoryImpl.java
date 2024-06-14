@@ -4,7 +4,6 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QBoardDetail;
-import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
@@ -14,18 +13,18 @@ import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
-import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.store.dto.QBoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.QPopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.util.WishListBoardFilter;
@@ -43,14 +42,14 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
-    private final WishListBoardFilter wishListBoardFilter;
 
     private static final QBoard board = QBoard.board;
     private static final QProductImg productImage = QProductImg.productImg;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
-    private static final QRanking ranking = QRanking.ranking;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
+    private final WishListBoardFilter wishListBoardFilter;
     private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
     private final BoardInFolderCursorGeneratorMapping boardInFolderCursorGeneratorMapping;
 
@@ -78,11 +77,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         return boardQueryProviderResolver.resolve(sort)
             .findBoards(filter, cursorInfo, orderExpression);
-
-//        // FIXME: 요 아래부분은 service 에서 해야되지않나 싶은 부분... 레파지토리의 역할은 board 리스트 넘겨주는곳 까지가 아닐까 싶어서요
-        // TODO: 정상적으로
-//        List<BoardResponseDto> content = convertToBoardResponse(boards);
-//        return getBoardCustomPage(sort, cursorId, filter, content, isHasNext(boards));
     }
 
     @Override
@@ -131,11 +125,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public List<Long> getTopBoardIds(Long storeId) {
-        return queryFactory.select(ranking.board.id)
-            .from(ranking)
-            .join(ranking.board, board)
+        return queryFactory.select(boardStatistic.boardId)
+            .from(boardStatistic)
+            .join(board)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.store.id.eq(storeId))
-            .orderBy(ranking.popularScore.desc())
+            .orderBy(boardStatistic.basicScore.desc())
             .limit(3)
             .fetch();
     }
@@ -206,13 +201,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.profile,
                     board.title,
                     board.price,
-                    board.view,
+                    boardStatistic.boardViewCount,
                     wishListBoard.id))
             .from(board)
             .leftJoin(wishListBoard).on(
                 wishListBoardFilter.equalMemberId(memberId)
                     .and(wishListBoardFilter.equalBoard(board))
             )
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
             .where(board.id.in(cursorIdToBoardIds))
             .orderBy(board.id.desc())
             .fetch();
@@ -222,9 +219,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public List<Board> checkingNullRanking() {
         return queryFactory.select(board)
             .from(board)
-            .leftJoin(ranking)
-            .on(board.eq(ranking.board))
-            .where(ranking.id.isNull())
+            .leftJoin(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
+            .where(boardStatistic.id.isNull())
             .fetch();
     }
 
@@ -238,107 +235,5 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .and(wishListBoard.memberId.eq(memberId)))
             .fetch();
     }
-
-    //TODO: BoardService 영역으로 이전, count 쿼리 분리 -> 다음 pull request에서 count 쿼리 분리 후 삭제 예정
-//    private NumberPath<Double> getScoreColumnBySortType(SortType sort) {
-//        return SortType.POPULAR.equals(sort) ? ranking.popularScore : ranking.recommendScore;
-//    }
-
-////    private BoardCustomPage<List<BoardResponseDto>> getBoardCustomPage(
-////        SortType sort,
-////        CursorInfo cursorInfo,
-////        BooleanBuilder filter,
-////        List<BoardResponseDto> content,
-////        boolean hasNext
-////    ) {
-////        if (content.isEmpty()) {
-////            return BoardCustomPage.emptyPage();
-////        }
-////
-////        Long boardCursor = content.get(content.size() - 1)
-////            .getBoardId();
-////        Double cursorScore = queryFactory
-////            .select(getScoreColumnBySortType(sort))
-////            .from(ranking)
-////            .join(board)
-////            .on(ranking.board.eq(board))
-////            .fetchJoin()
-////            .where(ranking.board.id.eq(boardCursor))
-////            .fetchFirst();
-////
-////        if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
-////            // FIXME: count 쿼리 분리 필요
-////            Long boardCnt = queryFactory
-////                .select(board.countDistinct())
-////                .from(store)
-////                .join(board)
-////                .on(board.store.eq(store))
-////                .join(product)
-////                .on(product.board.eq(board))
-////                .where(filter)
-////                .fetchOne();
-////
-////            if (Objects.isNull(boardCnt)) {
-////                boardCnt = 0L;
-////            }
-////
-////            Long storeCnt = queryFactory
-////                .select(store.countDistinct())
-////                .from(store)
-////                .join(board)
-////                .on(board.store.eq(store))
-////                .join(product)
-////                .on(product.board.eq(board))
-////                .where(filter)
-////                .fetchOne();
-////
-////            if (Objects.isNull(storeCnt)) {
-////                storeCnt = 0L;
-////            }
-////
-////            return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext, boardCnt,
-////                storeCnt);
-////        }
-////        return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext);
-////    }
-////
-////    private boolean isHasNext(List<Board> boards) {
-////        return boards.size() >= BOARD_PAGE_SIZE + 1;
-////    }
-////
-////    private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
-////        Map<Long, List<String>> tagMapByBoardId = boards.stream()
-////            .collect(Collectors.toMap(
-////                Board::getId,
-////                board -> extractTags(board.getProductList())
-////            ));
-////
-////        return boards.stream()
-////            .limit(BOARD_PAGE_SIZE)
-////            .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
-////            .toList();
-////    }
-//
-//    private List<String> extractTags(List<Product> products) {
-//        if (products == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        HashSet<String> tags = new HashSet<>();
-//        for (Product dto : products) {
-//            addTagIfTrue(tags, dto.isGlutenFreeTag(), TagEnum.GLUTEN_FREE.label());
-//            addTagIfTrue(tags, dto.isHighProteinTag(), TagEnum.HIGH_PROTEIN.label());
-//            addTagIfTrue(tags, dto.isSugarFreeTag(), TagEnum.SUGAR_FREE.label());
-//            addTagIfTrue(tags, dto.isVeganTag(), TagEnum.VEGAN.label());
-//            addTagIfTrue(tags, dto.isKetogenicTag(), TagEnum.KETOGENIC.label());
-//        }
-//        return new ArrayList<>(tags);
-//    }
-//
-//    private void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
-//        if (condition) {
-//            tags.add(tag);
-//        }
-//    }
 
 }

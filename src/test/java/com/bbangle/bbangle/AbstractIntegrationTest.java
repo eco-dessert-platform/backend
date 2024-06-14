@@ -13,9 +13,9 @@ import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
@@ -74,11 +74,13 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected StoreRepository storeRepository;
     @Autowired
-    protected RankingRepository rankingRepository;
+    protected BoardStatisticRepository boardStatisticRepository;
     @Autowired
     protected ProductRepository productRepository;
     @Autowired
     protected MemberRepository memberRepository;
+    @Autowired
+    protected ReviewRepository reviewRepository;
     @Autowired
     protected BoardImgRepository boardImgRepository;
     @Autowired
@@ -90,17 +92,16 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
-    protected ReviewRepository reviewRepository;
-    @Autowired
     protected NotificationRepository notificationRepository;
 
     @BeforeEach
     void before() {
         // 이거 없으면 데이터가 꼬여서 테스트 너무 힘들어서 넣었습니다 살려주세요
         storeRepository.deleteAllInBatch();
-        rankingRepository.deleteAllInBatch();
+        boardStatisticRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         boardRepository.deleteAllInBatch();
+        reviewRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         boardImgRepository.deleteAllInBatch();
         wishListFolderRepository.deleteAllInBatch();
@@ -185,11 +186,16 @@ public abstract class AbstractIntegrationTest {
         return boardImgRepository.save(sample);
     }
 
-    protected Ranking fixtureRanking(Map<String, Object> params) {
-        ArbitraryBuilder<Ranking> builder = fixtureMonkey.giveMeBuilder(Ranking.class);
+    protected BoardStatistic fixtureRanking(Map<String, Object> params) {
+        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(BoardStatistic.class);
         setBuilderParams(params, builder);
 
-        return rankingRepository.save(builder.sample());
+        if (!params.containsKey("board")) {
+            Board board = fixtureBoard(emptyMap());
+            builder = builder.set("board", board);
+        }
+
+        return boardStatisticRepository.save(builder.sample());
     }
 
     protected Board fixtureBoard(Map<String, Object> params) {

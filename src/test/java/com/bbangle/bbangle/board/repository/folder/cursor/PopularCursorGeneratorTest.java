@@ -6,16 +6,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
@@ -63,8 +63,8 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
-            Ranking ranking = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+            boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
@@ -86,9 +86,10 @@ class PopularCursorGeneratorTest extends AbstractIntegrationTest {
     void getBoardWithWishListRecentWithCursor() {
         //given, when
         BooleanBuilder popularCursor = popularBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
-        Ranking ranking = rankingRepository.findByBoardId(lastSavedId).get();
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(lastSavedId).get();
         WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(QRanking.ranking.recommendScore.loe(ranking.getRecommendScore()).and(
+        String expectedCursorCondition = new BooleanBuilder().and(QBoardStatistic.boardStatistic.basicScore.loe(
+            boardStatistic.getBasicScore()).and(
             QWishListBoard.wishListBoard.id.loe(wish.getId()))).toString();
 
         //then

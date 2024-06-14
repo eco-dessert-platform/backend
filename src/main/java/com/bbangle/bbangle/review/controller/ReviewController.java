@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.review.controller;
 
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.review.dto.ReviewRequest;

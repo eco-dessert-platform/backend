@@ -9,11 +9,10 @@ import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -38,21 +37,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 class BoardControllerTest extends AbstractIntegrationTest {
-
-    @Autowired
-    StoreRepository storeRepository;
-
-    @Autowired
-    BoardRepository boardRepository;
-
-    @Autowired
-    ProductRepository productRepository;
-
-    @Autowired
-    RankingRepository rankingRepository;
-
-    @Autowired
-    BoardService boardService;
 
     @Autowired
     TokenProvider tokenProvider;
@@ -88,16 +72,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 true);
             Board save1 = boardRepository.save(board);
             Board save2 = boardRepository.save(board2);
-            rankingRepository.save(Ranking.builder()
-                .board(save1)
-                .popularScore(0.0)
-                .recommendScore(0.0)
-                .build());
-            rankingRepository.save(Ranking.builder()
-                .board(save2)
-                .popularScore(0.0)
-                .recommendScore(0.0)
-                .build());
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(save1));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(save2));
 
             Product product1 = productGenerator(board,
                 false,
@@ -163,7 +139,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
         }
 
         @ParameterizedTest
-        @EnumSource
+        @EnumSource(Category.class)
         @DisplayName("순서가 없고 필터링 조건 둘 이상 있어도 정상적으로 조회한다.")
         void getBoardListSuccessWithCategoryAndIngredientCondition(Category category)
             throws Exception {
@@ -241,7 +217,6 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .status(true)
                 .profile("profile")
                 .purchaseUrl("purchaseUrl")
-                .view(1)
                 .sunday(sunday)
                 .monday(monday)
                 .tuesday(tuesday)
@@ -317,8 +292,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
             product = productWIthKetogenicYogurt(createdBoard);
             productRepository.save(product);
 
-            Ranking ranking = RankingFixture.newRanking(createdBoard);
-            rankingRepository.save(ranking);
+            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+            boardStatisticRepository.save(boardStatistic);
 
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));

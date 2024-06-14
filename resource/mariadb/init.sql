@@ -58,7 +58,7 @@ CREATE TABLE store
     CONSTRAINT store_pk PRIMARY KEY (id)
 );
 
-create table product_board
+CREATE TABLE product_board
 (
     id                       bigint auto_increment
         primary key,
@@ -128,7 +128,7 @@ CREATE TABLE wishlist_store
     CONSTRAINT fk_store_wishlist_store FOREIGN KEY (store_id) REFERENCES store (id)
 );
 
-create table product
+CREATE TABLE product
 (
     id               bigint auto_increment
         primary key,
@@ -181,14 +181,16 @@ CREATE TABLE refresh_token
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
-CREATE TABLE ranking
+CREATE TABLE boardStatistic
 (
-    id               BIGINT AUTO_INCREMENT,
-    product_board_id BIGINT NOT NULL,
-    recommend_score  DOUBLE NOT NULL default 0,
-    popular_score    DOUBLE NOT NULL default 0,
+    id                 BIGINT AUTO_INCREMENT,
+    board_id           BIGINT  NOT NULL,
+    basic_score        DOUBLE  NOT NULL default 0,
+    board_wish_count   INT     NOT NULL default 0,
+    board_review_count INT     NOT NULL default 0,
+    board_view_count   INT     NOT NULL default 0,
+    board_view_grade   DECIMAL NOT NULL default 0,
     CONSTRAINT product_img_pk PRIMARY KEY (id),
-    CONSTRAINT fk_ranking_product_board FOREIGN KEY (product_board_id) REFERENCES product_board (id)
 );
 
 CREATE TABLE notice

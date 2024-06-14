@@ -12,7 +12,7 @@ import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
@@ -43,7 +43,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     SearchService searchService;
     @Autowired
-    RankingRepository rankingRepository;
+    BoardStatisticRepository boardStatisticRepository;
     @Autowired
     EntityManager entityManager;
 
@@ -66,7 +66,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     void deleteAllEntity() {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
-        rankingRepository.deleteAll();
+        boardStatisticRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
         boardRepository.deleteAll();
@@ -223,7 +223,6 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
                             .profile(
                                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                             .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .view(100)
                             .sunday(true)
                             .monday(true)
                             .tuesday(true)

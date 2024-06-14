@@ -31,7 +31,8 @@ public class LowPriceCursorGenerator implements BoardCursorGenerator {
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        cursorBuilder.and(board.price.goe(targetPrice).or(board.id.loe(cursorId)));
+        cursorBuilder.and(board.price.gt(targetPrice)
+            .or(board.price.eq(targetPrice).and(board.id.loe(cursorId))));
 
         return cursorBuilder;
     }

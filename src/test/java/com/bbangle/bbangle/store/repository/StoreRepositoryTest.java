@@ -2,8 +2,6 @@ package com.bbangle.bbangle.store.repository;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
-import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
@@ -22,20 +20,15 @@ import static org.hamcrest.Matchers.is;
 
 class StoreRepositoryTest extends AbstractIntegrationTest {
 
+    private static final String TEST_TITLE = "TestTitle";
+    private static final Long NULL_MEMBER_ID = null;
+
     @Autowired
     private BoardImgRepository boardImgRepository;
 
     @Autowired
     private WishListBoardRepository wishListProductRepository;
 
-    @Autowired
-    private RankingRepository rankingRepository;
-
-    @Autowired
-    private BoardWishListConfig boardWishListConfig;
-
-    private static final String TEST_TITLE = "TestTitle";
-    private static final Long NULL_MEMBER_ID = null;
 
     @Nested
     @DisplayName("getStoreResponse 메서드는")

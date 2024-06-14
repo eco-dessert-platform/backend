@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -22,7 +22,7 @@ public class RecommendBoardQueryProviderResolver  implements BoardQueryProvider{
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    private static final QRanking ranking = QRanking.ranking;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -37,8 +37,8 @@ public class RecommendBoardQueryProviderResolver  implements BoardQueryProvider{
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
-            .join(ranking)
-            .on(ranking.board.id.eq(board.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(cursorInfo.and(filter))
             .orderBy(orderCondition)
             .limit(BOARD_PAGE_SIZE + 1)
@@ -64,8 +64,8 @@ public class RecommendBoardQueryProviderResolver  implements BoardQueryProvider{
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
-            .join(ranking)
-            .on(ranking.board.id.eq(board.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();

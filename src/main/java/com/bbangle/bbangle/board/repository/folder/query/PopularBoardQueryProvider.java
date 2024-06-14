@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -22,7 +22,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    private static final QRanking ranking = QRanking.ranking;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
@@ -37,8 +37,8 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .from(board)
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
-            .join(ranking)
-            .on(board.id.eq(ranking.board.id))
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
             .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursorBuilder))
             .orderBy(order, wishListBoard.id.desc())
@@ -66,8 +66,8 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .on(board.store.id.eq(store.id))
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
-            .join(ranking)
-            .on(board.id.eq(ranking.board.id))
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
             .where(board.id.in(fetch).and(wishListBoard.wishlistFolderId.eq(folder.getId())))
             .orderBy(order, wishListBoard.id.desc())
             .fetch();

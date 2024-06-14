@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.wishlist.controller;
 
+import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -32,7 +33,6 @@ public class WishListBoardController {
         WishListBoardRequest wishRequest
     ) {
         wishListBoardService.wish(memberId, boardId, wishRequest);
-
         return responseService.getSuccessResult();
     }
 
@@ -44,7 +44,6 @@ public class WishListBoardController {
         Long boardId
     ) {
         wishListBoardService.cancel(memberId, boardId);
-
         return responseService.getSuccessResult();
     }
 

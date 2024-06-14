@@ -8,15 +8,17 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,19 +50,11 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
         boardRepository.save(board);
         boardRepository.save(board2);
 
-        Ranking ranking = Ranking.builder()
-            .board(board)
-            .popularScore(0.0)
-            .recommendScore(0.0)
-            .build();
-        Ranking ranking2 = Ranking.builder()
-            .board(board2)
-            .popularScore(0.0)
-            .recommendScore(0.0)
-            .build();
+        BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
+        BoardStatistic boardStatistic2 = BoardStatisticFixture.newBoardStatistic(board2);
 
-        rankingRepository.save(ranking2);
-        rankingRepository.save(ranking);
+        boardStatisticRepository.save(boardStatistic2);
+        boardStatisticRepository.save(boardStatistic);
     }
 
     @Nested
@@ -91,9 +85,10 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
-            Ranking ranking = rankingRepository.findByBoardId(board.getId())
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .get();
-            assertThat(ranking.getRecommendScore()).isEqualTo(50.0);
+            assertThat(boardStatistic.getBasicScore()).isEqualTo(50.0);
+            assertThat(boardStatistic.getBoardWishCount()).isOne();
         }
 
         @Test
@@ -155,9 +150,9 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(0);
-            Ranking ranking = rankingRepository.findByBoardId(board.getId())
-                .get();
-            assertThat(ranking.getRecommendScore()).isEqualTo(0.0);
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId()).get();
+            assertThat(boardStatistic.getBasicScore()).isEqualTo(0.0);
+            assertThat(boardStatistic.getBoardWishCount()).isZero();
         }
 
         @Test

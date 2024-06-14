@@ -39,7 +39,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
     @Autowired
     EntityManager em;
 
-
     @BeforeEach
     void setUpMockMvc() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(
@@ -55,7 +54,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         create10DaysAgoReviews(members, createdAt);
     }
 
-
     @Test
     @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
     void getMembersCount() throws Exception {
@@ -63,7 +61,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             .andExpect(status().isOk())
             .andDo(print());
     }
-
 
     @Test
     @DisplayName("기간 내 가입한 회원의 수가 정상적으로 조회된다.")
@@ -73,7 +70,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             .andDo(print());
     }
 
-
     @Test
     @DisplayName("기간 내 날짜 별 생성된 위시리스트 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
     void getWishlistBoardAnalytics() throws Exception {
@@ -81,8 +77,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
-     
-  
+
     @Test
     @DisplayName("기간 내 날짜 별 생성된 리뷰 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
     void getReviewAnalytics() throws Exception {
@@ -91,7 +86,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 .andDo(print());
     }
 
-
     @Test
     @DisplayName("기간 내 날짜 별 누적된 리뷰 수가 정상적으로 조회된다.")
     void getAccumulatedReviewsCount() throws Exception {
@@ -99,7 +93,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
-
 
     private void create10DaysAgoMembers(LocalDateTime createdAt) {
         TransactionStatus status = null;
@@ -134,9 +127,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 tm.rollback(status);
             }
         }
-
     }
-
 
     private List<Member> createMembers() {
         List<Member> members = new ArrayList<>();
@@ -154,7 +145,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
 
         return memberRepository.saveAll(members);
     }
-
 
     private void createWishListBoards(List<Member> members) {
         for (int i = 0; i < members.size(); i++) {
@@ -182,7 +172,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         }
     }
 
-
     private void createBoards(List<Member> members) {
         for (int i = 1; i <= members.size(); i++) {
             Store store = Store.builder()
@@ -197,12 +186,10 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
                 .id((long) i + 1)
                 .store(store)
                 .title("title" + i)
-                .wishCnt(i)
                 .build();
             boardRepository.save(board);
         }
     }
-
 
     private void create10DaysAgoWishlistBoards(LocalDateTime createdAt) {
         TransactionStatus status = null;
@@ -235,7 +222,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         }
     }
 
-
     private void createReviews(List<Member> members) {
         for (int i = 1; i <= members.size(); i++) {
             Review review = Review.builder()
@@ -250,7 +236,6 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             reviewRepository.save(review);
         }
     }
-
 
     private void create10DaysAgoReviews(List<Member> members, LocalDateTime createdAt) {
         TransactionStatus status = null;

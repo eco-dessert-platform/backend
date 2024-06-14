@@ -36,33 +36,38 @@ public class Review extends BaseEntity {
     private Long boardId;
 
     @NotNull
-    @Column(name = "badge_taste")
+    @Column(name = "badge_taste", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTaste;
+
     @NotNull
-    @Column(name = "badge_brix")
+    @Column(name = "badge_brix", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeBrix;
+
     @NotNull
-    @Column(name = "badge_texture")
+    @Column(name = "badge_texture", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTexture;
+
     @NotNull
+    @Column(name = "rate")
     private BigDecimal rate;
 
-    @Column(name = "is_best")
+    @Column(name = "is_best", columnDefinition = "tinyint")
     private Boolean isBest;
 
+    @Column(name = "content")
     private String content;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    public void insertBadge(Badge badge){
-        switch(badge){
+    public void insertBadge(Badge badge) {
+        switch (badge) {
             case GOOD, BAD -> this.badgeTaste = badge;
-            case SWEET,PLAIN -> this.badgeBrix = badge;
-            case SOFT,DRY -> this.badgeTexture = badge;
+            case SWEET, PLAIN -> this.badgeBrix = badge;
+            case SOFT, DRY -> this.badgeTexture = badge;
         }
     }
 
@@ -75,7 +80,8 @@ public class Review extends BaseEntity {
         this.content = reviewRequest.content();
     }
 
-    public void delete(){
+    public void delete() {
         this.isDeleted = true;
     }
+
 }

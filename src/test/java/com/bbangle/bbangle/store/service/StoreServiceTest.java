@@ -10,6 +10,8 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
@@ -200,6 +202,9 @@ class StoreServiceTest extends AbstractIntegrationTest {
             board1 = fixtureBoard(Map.of("store", store, "productList", products1));
             board2 = fixtureBoard(Map.of("store", store, "productList", products2));
             board3 = fixtureBoard(Map.of("store", store, "productList", products3));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board1));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board2));
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board3));
 
             for (int index = 0; 15 > index; index++) {
                 fixtureBoard(Map.of("store", store));

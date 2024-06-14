@@ -12,11 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
+import com.bbangle.bbangle.fixture.ReviewRequestFixture;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.review.domain.Badge;
+import com.bbangle.bbangle.review.domain.QReview;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewImg;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
@@ -38,6 +41,8 @@ import software.amazon.ion.Decimal;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
+    private static final BigDecimal DEFAULT_REVIEW_RATE = new BigDecimal("4.0");
+
     @Autowired
     ReviewService reviewService;
 
@@ -53,6 +58,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Autowired
     BoardRepository boardRepository;
 
+    Board board;
+    Member member;
 
     @BeforeEach
     void setUp() {
@@ -61,15 +68,15 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             .email("test@test.com")
             .isDeleted(false)
             .build();
-        memberRepository.save(testUser);
+        member = memberRepository.save(testUser);
 
-        Board board = Board.builder()
+        board = Board.builder()
             .isDeleted(false)
             .title("board1")
             .build();
-        boardRepository.save(board);
-        Ranking ranking = RankingFixture.newRanking(board);
-        rankingRepository.save(ranking);
+        board = boardRepository.save(board);
+        BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
+        boardStatisticRepository.save(boardStatistic);
     }
 
     @Test
@@ -84,15 +91,25 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         List<Member> member = memberRepository.findAll();
 
         //when
-        reviewService.makeReview(reviewRequest, member.get(0).getId());
+        reviewService.makeReview(reviewRequest, member.get(0)
+            .getId());
         List<Review> reviewList = reviewRepository.findAll();
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
+            .orElseThrow();
         List<ReviewImg> reviewImg = reviewImgRepository.findAll();
 
         //then
         assertThat(reviewList).hasSize(1);
-        assertThat(reviewList.get(0).getBadgeTaste()).isEqualTo(GOOD);
-        assertThat(reviewList.get(0).getBadgeBrix()).isEqualTo(PLAIN);
-        assertThat(reviewList.get(0).getBadgeTexture()).isEqualTo(SOFT);
+        assertThat(reviewList.get(0)
+            .getBadgeTaste()).isEqualTo(GOOD);
+        assertThat(reviewList.get(0)
+            .getBadgeBrix()).isEqualTo(PLAIN);
+        assertThat(reviewList.get(0)
+            .getBadgeTexture()).isEqualTo(SOFT);
+        assertThat(boardStatistic.getBoardReviewCount()).isOne();
+        assertThat(boardStatistic.getBoardReviewGrade()
+            .doubleValue()).isEqualTo(DEFAULT_REVIEW_RATE.doubleValue());
+
         //TODO: 현재 이미지를 저장하고 있지 않음
 //        assertThat(reviewImg).hasSize(1);
     }
@@ -110,7 +127,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //when, then
         assertThrows(RuntimeException.class, () ->
-            reviewService.makeReview(reviewRequest, member.get(0).getId()
+            reviewService.makeReview(reviewRequest, member.get(0)
+                .getId()
             ));
     }
 
@@ -126,16 +144,44 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //when, then
         assertThrows(RuntimeException.class, () ->
-            reviewService.makeReview(reviewRequest, member.get(0).getId())
+            reviewService.makeReview(reviewRequest, member.get(0)
+                .getId())
         );
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제에 성공한다.")
+    void deleteReview() {
+        //given
+        ReviewRequest reviewRequest = ReviewRequestFixture.createReviewRequest(board.getId());
+        reviewService.makeReview(reviewRequest, member.getId());
+        Review targetReview = getTargetReview();
+
+        //when
+        reviewService.deleteReview(targetReview.getId(), member.getId());
+        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
+            .orElseThrow();
+
+        //then
+        assertThat(boardStatistic.getBoardReviewCount()).isZero();
+        assertThat(boardStatistic.getBoardReviewGrade()).isZero();
+    }
+
+    private Review getTargetReview() {
+        return queryFactory.select(QReview.review)
+            .from(QReview.review)
+            .where(QReview.review.boardId.eq(board.getId())
+                .and(QReview.review.memberId.eq(member.getId())))
+            .fetchOne();
     }
 
     private ReviewRequest makeReviewRequest(List<Badge> badges) {
         List<Board> board = boardRepository.findAll();
         List<String> photos = new ArrayList<>();
         photos.add("test");
-        return new ReviewRequest(badges, new BigDecimal("4.0"), null,
-            board.get(0).getId(), photos);
+        return new ReviewRequest(badges, DEFAULT_REVIEW_RATE, null,
+            board.get(0)
+                .getId(), photos);
     }
 
     @Nested
@@ -248,9 +294,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             assertThat(response.getCount()).isEqualTo(2);
 
             assertThat(response.getRating()).isEqualTo(
-                Decimal.valueOf((score[0] + score[1])).divide(
-                    BigDecimal.valueOf(score.length), 2, RoundingMode.DOWN));
+                Decimal.valueOf((score[0] + score[1]))
+                    .divide(
+                        BigDecimal.valueOf(score.length), 2, RoundingMode.DOWN));
         }
+
     }
 
 }
