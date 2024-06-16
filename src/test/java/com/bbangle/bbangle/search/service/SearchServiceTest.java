@@ -1,79 +1,91 @@
 package com.bbangle.bbangle.search.service;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.search.domain.Search;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.repository.SearchRepository;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.util.KomoranUtil;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-
 import java.util.*;
-
-import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.PlatformTransactionManager;
 
-@SpringBootTest
-@Transactional
-@Rollback
-public class SearchServiceTest {
+class SearchServiceTest extends AbstractIntegrationTest {
 
-    final String BOARD_NAMESPACE = RedisEnum.BOARD.name();
-    final String SEARCH_KEYWORD = "비건 베이커리";
-    final String SEARCH_KEYWORD_STORE = "RAWSOME";
-    final String[] BOARD_IDS = {"1", "2", "3", "4", "5"};
-    final int BOARD_PAGE = 0;
-    final int STORE_PAGE = 0;
-    private final String BEST_KEYWORD_KEY = "keyword";
     @Autowired
-    SearchService searchService;
+    MemberRepository memberRepository;
+    @Autowired
+    SearchRepository searchRepository;
+    @Autowired
+    StoreRepository storeRepository;
+    @Autowired
+    BoardRepository boardRepository;
+    @Autowired
+    ProductRepository productRepository;
     @Autowired
     RedisRepository redisRepository;
     @Autowired
-    PlatformTransactionManager transactionManager;
+    SearchService searchService;
     @Autowired
-    private StoreRepository storeRepository;
+    BoardStatisticRepository boardStatisticRepository;
     @Autowired
-    private BoardRepository boardRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private EntityManager entityManager;
+    EntityManager entityManager;
+
+    private Store store;
+    private Board board;
+    private Member member;
+
 
     @BeforeEach
-    public void saveData() {
-        createData(15);
-        redisRepository.deleteAll();
+    void saveEntity() {
+        createMember();
+        createProductRelatedContent(15);
+        redisRepository.delete("MIGRATION", "board");
+        redisRepository.delete("MIGRATION", "store");
         searchService.initSetting();
+        searchService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
-    void afterEach() {
-        this.entityManager
-            .createNativeQuery("ALTER TABLE store ALTER COLUMN `id` RESTART WITH 1")
-            .executeUpdate();
+    void deleteAllEntity() {
+        redisRepository.deleteAll();
+        searchRepository.deleteAll();
+        boardStatisticRepository.deleteAll();
+        memberRepository.deleteAll();
+        productRepository.deleteAll();
+        boardRepository.deleteAll();
+        storeRepository.deleteAll();
+    }
 
-        this.entityManager
-            .createNativeQuery("ALTER TABLE product_board ALTER COLUMN `id` RESTART WITH 1")
-            .executeUpdate();
+    @Test
+    @DisplayName("게시물이 잘 저장돼있다")
+    void checkAllBoardCountTest() {
+        var boardCount = boardRepository.findAll().size();
+        assertThat(boardCount, is(15));
     }
 
     @Test
     @DisplayName("자동완성 알고리즘에 값을 저장하면 정상적으로 저장한 값을 불러올 수 있다")
-    public void trieUtilTest() {
+    void trieUtilTest() {
         TrieUtil trieUtil = new TrieUtil();
 
         trieUtil.insert("비건 베이커리");
@@ -100,277 +112,119 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchBoard() {
-        Long memberId = 1L;
-        String sort = "LATEST";
-        Boolean glutenFreeTag = true;
-        Boolean highProteinTag = false;
-        Boolean sugarFreeTag = false;
-        Boolean veganTag = false;
-        Boolean ketogenicTag = false;
-        Boolean orderAvailableToday = true;
-        String category = "COOKIE";
-        Integer minPrice = 0;
-        Integer maxPrice = 6000;
-        int page = 0;
+    void getSearchBoard() {
+        String SEARCH_KEYWORD = "비건 베이커리";
+        var searchBoardRequest = SearchBoardRequest.builder().keyword(SEARCH_KEYWORD).sort("LATEST")
+                .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
+                .ketogenicTag(false).orderAvailableToday(true).category(Category.SNACK.name())
+                .minPrice(0).maxPrice(6000).page(0).build();
 
-        var searchBoardResult = searchService.getSearchBoardDtos(
-            memberId, BOARD_PAGE, SEARCH_KEYWORD,
-            sort, glutenFreeTag, highProteinTag,
-            sugarFreeTag, veganTag, ketogenicTag,
-            orderAvailableToday, category, minPrice, maxPrice);
+        var searchBoardResult = searchService.getSearchBoardDtos(member.getId(),
+                searchBoardRequest);
 
-        var boards = searchBoardResult.content();
+        assertThat(searchBoardResult.currentItemCount(), is(10));
+        assertThat(searchBoardResult.pageNumber(), is(0));
+        assertThat(searchBoardResult.itemAllCount(), is(15L));
+        assertThat(searchBoardResult.limitItemCount(), is(10));
+        assertThat(searchBoardResult.existNextPage(), is(true));
 
-        int currentItemCount = searchBoardResult.currentItemCount();
-        int pageNumber = searchBoardResult.pageNumber();
-        int itemAllCount = searchBoardResult.itemAllCount();
-
-        Assertions.assertEquals(15, currentItemCount, "전체 아이템 개수가 다릅니다");
-
-        Assertions.assertEquals(0, pageNumber);
-        Assertions.assertTrue(boards.size() <= itemAllCount);
-
-        Assertions.assertEquals(1L, boards.get(0)
-            .boardId());
-        Assertions.assertEquals(1L, boards.get(0)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", boards.get(0)
-            .storeName());
-        Assertions.assertEquals(
-            "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
-            , boards.get(0)
-                .thumbnail());
-        Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(0)
-            .title());
-        Assertions.assertEquals(5400, boards.get(0)
-            .price());
-        Assertions.assertEquals(true, boards.get(0)
-            .isWished());
-        Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(0)
-            .tags());
-
-        Assertions.assertEquals(2L, boards.get(1)
-            .boardId());
-        Assertions.assertEquals(2L, boards.get(1)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", boards.get(1)
-            .storeName());
-        Assertions.assertEquals(
-            "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
-            , boards.get(1)
-                .thumbnail());
-        Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(1)
-            .title());
-        Assertions.assertEquals(5400, boards.get(1)
-            .price());
-        Assertions.assertEquals(true, boards.get(1)
-            .isWished());
-        Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(1)
-            .tags());
-    }
-
-    @Test
-    @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchStore() {
-        Long memberId = 1L;
-        String sort = "LATEST";
-        Boolean glutenFreeTag = true;
-        Boolean highProteinTag = false;
-        Boolean sugarFreeTag = false;
-        Boolean veganTag = false;
-        Boolean ketogenicTag = false;
-        String category = "COOKIE";
-        Integer minPrice = 0;
-        Integer maxPrice = 6000;
-
-        var searchStoreResult = searchService.getSearchStoreDtos(
-            memberId, STORE_PAGE, SEARCH_KEYWORD_STORE);
-
-        var stores = searchStoreResult.content();
-        int itemAllCount = searchStoreResult.itemAllCount();
-        int pageNumber = searchStoreResult.pageNumber();
-        int limitItemCount = searchStoreResult.limitItemCount();
-
-        Assertions.assertEquals(15, itemAllCount, "전체 아이템 개수가 다릅니다");
-        Assertions.assertTrue(stores.size() <= limitItemCount);
-        Assertions.assertEquals(0, pageNumber);
-        Assertions.assertEquals(10, limitItemCount);
-
-        Assertions.assertEquals(1L, stores.get(0)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
-        Assertions.assertEquals(false, stores.get(0)
-            .isWished());
-
-        Assertions.assertEquals(2L, stores.get(1)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
-        Assertions.assertEquals(false, stores.get(1)
-            .isWished());
-
-
-        searchStoreResult = searchService.getSearchStoreDtos(
-            memberId,STORE_PAGE + 1, SEARCH_KEYWORD_STORE);
-
-
-        stores = searchStoreResult.content();
-        itemAllCount = searchStoreResult.itemAllCount();
-        pageNumber = searchStoreResult.pageNumber();
-        limitItemCount = searchStoreResult.limitItemCount();
-
-        Assertions.assertEquals(15, itemAllCount, "전체 아이템 개수가 다릅니다");
-        Assertions.assertEquals(5, stores.size());
-        Assertions.assertEquals(1, pageNumber);
-        Assertions.assertEquals(10, limitItemCount);
-
-        Assertions.assertEquals(11L, stores.get(0)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
-        Assertions.assertEquals(false, stores.get(0)
-            .isWished());
-
-        Assertions.assertEquals(12L, stores.get(1)
-            .storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
-        Assertions.assertEquals(false, stores.get(1)
-            .isWished());
-    }
-
-    @Test
-    @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchStoreTest() {
-        Long memberId = 1L;
-
-        var searchStoreResult = searchService.getSearchStoreDtos(
-            memberId,STORE_PAGE + 1, SEARCH_KEYWORD_STORE);
-
-        var stores = searchStoreResult.content();
-        var itemAllCount = searchStoreResult.itemAllCount();
-        var pageNumber = searchStoreResult.pageNumber();
-        var limitItemCount = searchStoreResult.limitItemCount();
-
-        Assertions.assertEquals(15, itemAllCount, "전체 아이템 개수가 다릅니다");
-        Assertions.assertEquals(5, stores.size());
-        Assertions.assertEquals(1, pageNumber);
-        Assertions.assertEquals(10, limitItemCount);
-
-        Assertions.assertEquals(11L, stores.get(0).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(0).storeName());
-        Assertions.assertEquals(false, stores.get(0).isWished());
-
-        Assertions.assertEquals(12L, stores.get(1).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(1).storeName());
-        Assertions.assertEquals(false, stores.get(1).isWished());
-    }
-
-    @Test
-    public void getAllBoardTitleTest() {
-
-        var result = boardRepository.getAllBoardTitle();
-    }
-
-
-    private List<String> komoranUtil(String title) {
-        var komoran = KomoranUtil.getInstance();
-        KomoranResult analyzeResultList = komoran.analyze(title);
-
-        return analyzeResultList.getMorphesByTags("NNG", "NNP", "NNB", "SL");
-    }
-
-    @Test
-    public void getBestKeyword() {
-        var result = redisRepository.getStringList(
-            RedisEnum.BEST_KEYWORD.name(),
-            BEST_KEYWORD_KEY
-        );
-
-        Assertions.assertTrue(result.size() < 7);
-
-        searchService.updateRedisAtBestKeyword();
-
-        result = redisRepository.getStringList(
-            RedisEnum.BEST_KEYWORD.name(),
-            BEST_KEYWORD_KEY
-        );
-
-        Assertions.assertTrue(result.size() < 7);
-    }
-
-    private void createData(int count) {
-        for (int i = 0; i < count; i++) {
-            var store = Store.builder()
-                .identifier("7962401222")
-                .name("RAWSOME")
-                .profile(
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                .introduce("건강을 먹다-로썸")
-                .build();
-
-            var board = Board.builder()
-                .store(store)
-                .title("비건 베이커리 로썸 비건빵")
-                .price(5400)
-                .status(true)
-                .profile(
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .detail("test.txt")
-                .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                .view(100)
-                .sunday(false)
-                .monday(false)
-                .tuesday(false)
-                .wednesday(false)
-                .thursday(true)
-                .sunday(false)
-                .build();
-
-            var product1 = Product.builder()
-                .board(board)
-                .title("콩볼")
-                .price(3600)
-                .category(Category.COOKIE)
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(true)
-                .veganTag(true)
-                .ketogenicTag(false)
-                .build();
-
-            var product2 = Product.builder()
-                .board(board)
-                .title("카카모카")
-                .price(5000)
-                .category(Category.BREAD)
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(false)
-                .veganTag(true)
-                .ketogenicTag(false)
-                .build();
-
-            var product3 = Product.builder()
-                .board(board)
-                .title("로미넛쑥")
-                .price(5000)
-                .category(Category.BREAD)
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(false)
-                .veganTag(true)
-                .ketogenicTag(false)
-                .build();
-
-            storeRepository.save(store);
-            boardRepository.save(board);
-            productRepository.save(product1);
-            productRepository.save(product2);
-            productRepository.save(product3);
+        var BoardDtos = searchBoardResult.content();
+        for (int i = 0; BoardDtos.size() > i; i++) {
+            var boardDto = BoardDtos.get(i);
+            assertThat(boardDto.getTags(), hasItem("glutenFree"));
+            assertThat(boardDto.getPrice(), lessThanOrEqualTo(6000));
         }
     }
 
+    @Test
+    @DisplayName("검색을 통해 스토어를 찾을 수 있다")
+    void getSearchedStore() {
+        int storePage = 0;
+        String SEARCH_KEYWORD_STORE = "RAWSOME";
+        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
+                SEARCH_KEYWORD_STORE);
+
+        var stores = searchStoreResult.content();
+
+        assertThat(searchStoreResult.currentItemCount(), is(10));
+        assertThat(searchStoreResult.pageNumber(), is(0));
+        assertThat(searchStoreResult.itemAllCount(), is(15));
+        assertThat(searchStoreResult.limitItemCount(), is(10));
+        assertThat(searchStoreResult.existNextPage(), is(true));
+
+        for (int i = 0; stores.size() > i; i++) {
+            var store = stores.get(i);
+            assertThat(store.getStoreName(), is("RAWSOME"));
+            assertThat(store.getIsWished(), is(false));
+
+
+        }
+    }
+
+    @Test
+    @DisplayName("검색된 스토어 데이터를 무한스크롤로 구현할 수 있다")
+    void TestInfiniteScroll() {
+        int storePage = 1;
+        String SEARCH_KEYWORD_STORE = "RAWSOME";
+        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
+                SEARCH_KEYWORD_STORE);
+
+        var stores = searchStoreResult.content();
+
+        assertThat(searchStoreResult.currentItemCount(), is(5));
+        assertThat(searchStoreResult.pageNumber(), is(storePage));
+        assertThat(searchStoreResult.itemAllCount(), is(15));
+        assertThat(searchStoreResult.limitItemCount(), is(10));
+        assertThat(searchStoreResult.existNextPage(), is(false));
+
+        for (int i = 0; stores.size() > i; i++) {
+            var store = stores.get(i);
+            assertThat(store.getStoreName(), is("RAWSOME"));
+            assertThat(store.getIsWished(), is(false));
+        }
+    }
+
+    @Test
+    @DisplayName("기본으로 등록된 베스트 키워드를 가져올 수 있다")
+    void getBestKeyword() {
+        String BEST_KEYWORD_KEY = "keyword";
+        var bestKewords = redisRepository.getStringList(RedisEnum.BEST_KEYWORD.name(),
+                BEST_KEYWORD_KEY);
+
+        assertThat(bestKewords, is(List.of("글루텐프리", "비건", "저당", "키토제닉")));
+    }
+
+    private void createProductRelatedContent(int count) {
+        for (int i = 0; i < count; i++) {
+            store = storeRepository.save(Store.builder().identifier("7962401222").name("RAWSOME")
+                    .profile(
+                            "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                    .build());
+
+            board = boardRepository.save(
+                    Board.builder().store(store).title("비건 베이커리 로썸 비건빵").price(5400).status(true)
+                            .profile(
+                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                            .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                            .sunday(true).monday(true).tuesday(true).wednesday(true)
+                            .thursday(true).friday(true).saturday(true).build());
+
+            productRepository.saveAll(List.of(Product.builder().board(board).title("콩볼").price(3600)
+                            .category(Category.SNACK).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
+                            .ketogenicTag(true).build(),
+                    Product.builder().board(board).title("카카모카").price(5000)
+                            .category(Category.BREAD).glutenFreeTag(true).veganTag(true).build(),
+                    Product.builder().board(board).title("로미넛쑥").price(5000)
+                            .category(Category.BREAD).glutenFreeTag(true).sugarFreeTag(true)
+                            .veganTag(true).build()));
+        }
+    }
+
+    private void createMember() {
+        member = memberRepository.save(Member.builder().id(2L).build());
+    }
+
+    private Search createSearchKeyword(String keyword) {
+        return searchRepository.save(Search.builder().member(member).keyword(keyword).build());
+    }
 }

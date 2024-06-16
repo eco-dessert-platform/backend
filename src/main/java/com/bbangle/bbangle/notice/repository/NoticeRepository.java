@@ -1,8 +1,0 @@
-package com.bbangle.bbangle.notice.repository;
-
-
-import com.bbangle.bbangle.notice.domain.Notice;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface NoticeRepository extends JpaRepository<Notice, Long>, NoticeQueryDSLRepository {
-}

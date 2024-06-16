@@ -3,8 +3,10 @@ package com.bbangle.bbangle.board.domain;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,7 +35,7 @@ public class Board extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
     @Column(name = "title")
@@ -42,23 +44,14 @@ public class Board extends BaseEntity {
     @Column(name = "price")
     private int price;
 
-    @Column(name = "status", columnDefinition = "tinyint")
+    @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean status;
 
     @Column(name = "profile")
     private String profile;
 
-    @Column(name = "detail")
-    private String detail;
-
     @Column(name = "purchase_url")
     private String purchaseUrl;
-
-    @Column(name = "view")
-    private int view;
-
-    @Column(name = "wish_cnt")
-    private int wishCnt;
 
     @Column(name = "sunday", columnDefinition = "tinyint")
     private boolean sunday;
@@ -81,20 +74,19 @@ public class Board extends BaseEntity {
     @Column(name = "saturday", columnDefinition = "tinyint")
     private boolean saturday;
 
+    @Column(name = "delivery_fee")
+    private Integer deliveryFee;
+
+    @Column(name = "free_shipping_conditions")
+    private Integer freeShippingConditions;
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    //TODO: 임시로 남겨놓음 다음 pr에서 제거 예정(by 중원)
+    @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
-
-    public void updateWishCnt(boolean status) {
-        if (status) {
-            this.wishCnt++;
-        }
-        if (!status) {
-            this.wishCnt--;
-        }
-    }
 
     public Board updateProfile(String profile) {
         this.profile = profile;

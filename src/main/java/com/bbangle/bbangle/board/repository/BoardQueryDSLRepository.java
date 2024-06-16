@@ -1,35 +1,48 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import java.util.HashMap;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
+import com.bbangle.bbangle.store.dto.PopularBoardDto;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import java.util.List;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
 
-    List<BoardResponseDto> getBoardResponseDto(
-        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday
+    List<BoardAllTitleDto> findTitleByBoardAll();
+
+    List<BoardResponseDao> getBoardResponseList(
+        FilterRequest filterRequest,
+        SortType sort,
+        Long cursorId
     );
 
-    Slice<BoardResponseDto> getAllByFolder(
-        String sort,
-        Pageable pageable,
-        Long wishListFolderId,
-        WishlistFolder wishlistFolder
+    List<BoardResponseDao> getAllByFolder(
+        FolderBoardSortType sort,
+        Long cursorId,
+        WishListFolder folder,
+        Long memberId
     );
 
-    BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
+    List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
 
-    BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId);
+    List<Long> getTopBoardIds(Long storeId);
 
-    HashMap<Long, String> getAllBoardTitle();
+    List<PopularBoardDto> getTopBoardInfo(List<Long> boardIds, Long memberId);
 
-    List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content);
+    List<Long> getBoardIds(Long boardIdAsCursorId, Long storeId);
+
+    List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
+        Long memberId);
+
+    List<Board> checkingNullRanking();
+
+    List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
 
 }
 

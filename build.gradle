@@ -1,127 +1,176 @@
 buildscript {
-	ext {
-		queryDslVersion = "5.0.0"
-	}
+    ext {
+        queryDslVersion = "5.0.0"
+    }
 }
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.1'
-	id 'io.spring.dependency-management' version '1.1.4'
-
-	// 아스키독스 파일을 컨버팅하고 Build 폴더에 복사하기 위한 플러그인
-	id "org.asciidoctor.jvm.convert" version "3.3.2"
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'jacoco'
 }
 
 group = 'com.bbangle'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '17'
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
 configurations {
-
-	// asciidoctorExt를 configurations으로 지정
-	asciidoctorExt
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
-ext {
-	//snippets 파일이 저장될 경로 snippetsDir로 변수 설정
-	set('snippetsDir', file("build/generated-snippets"))
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 test {
-	// 출력할 디렉토리를 snippertsDir로 지정
-	outputs.dir snippetsDir
-	useJUnitPlatform()
+    useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+    jacoco {
+        excludes += [
+                '**/*Application*',
+                '**/*Exception*',
+                '**/dto/**',
+                '**/repository/**',
+                '**/adaptor'
+        ]
+    }
+}
+/** Jacoco Start! **/
+//보고서
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/jacocoHtml')
+
+        // QueryDSL Q클래스 제외
+        def Qdomains = []
+        for (qPattern in "**/QA".."**/QZ") {
+            Qdomains.add(qPattern + "*")
+        }
+
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it,
+                        exclude: [
+                                '**/*Application*',
+                                '**/*Exception*',
+                                '**/dto/**',
+                                '**/repository/**',
+                                '**/adaptor',
+                                '**/token/**'
+                        ] + Qdomains)
+            }))
+        }
+    }
+    //finalizedBy 'jacocoTestCoverageVerification'
 }
 
-asciidoctor {
-	// Asciidoctor에서 asciidoctorExt 설정 사용
-	configurations 'asciidoctorExt'
-	// .adoc파일에서 다른 .adoc를 include하여 사용하는 경우 경로를 동일한 경로를 baseDir로 동일하게 설정
-	baseDirFollowsSourceFile()
-	// Input 디렉토리를 snippertsDir로
-	inputs.dir snippetsDir
-	// Gradle build시 test -> asciidoctor 순으로 진행
-	dependsOn test
-}
+//코드 커버리지 확인
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = true
+            element = 'CLASS'
 
-asciidoctor.doFirst {
-	delete file('src/main/resources/static/docs')
-}
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
 
-//asciidoctor가 실행될 때 처음으로 해당 경로에 있는 파일들을 지운다
-task createDocument(type: Copy){
-	// 실행 task를 정의하고 type을 복사로 정의 from에 위치한 파일들을 into로 복사
-	dependsOn asciidoctor
-	from file("build/docs/asciidoc")
-	into file("src/main/resources/static")
-}
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
 
-bootJar {
-	// Gradle build시 createDocument ->  bootJar 순으로 진행됨
-	dependsOn createDocument
-	// Gradle build시 asciidoctor.outputDir에 Html 파일이 생기고 이것을 jar 안에 /resources/static 폴더에 복사
-	from("${asciidoctor.outputDir}") {
-		into 'static/docs'
-	}
-
+            limit {
+                counter = 'CLASS'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+    }
 }
+/** Jacoco End! **/
 
 repositories {
-	mavenCentral()
-	maven { url 'https://jitpack.io' }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.session:spring-session-core'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'io.jsonwebtoken:jjwt:0.9.1' // JWT 라이브러리
-	implementation 'javax.xml.bind:jaxb-api:2.3.1' // xml 문서와 java 객체 간 매핑 자동화?
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
-	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.2.0'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.session:spring-session-core'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1' // JWT 라이브러리
+    implementation 'javax.xml.bind:jaxb-api:2.3.1' // xml 문서와 java 객체 간 매핑 자동화?
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.2.0'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.apache.poi:poi:5.2.5'
 
-	//QueryDSL 추가
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-	//ConfigurationProperties 어노테이션 사용 위함
-	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    //QueryDSL 추가
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    //ConfigurationProperties 어노테이션 사용 위함
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.projectlombok:lombok'
-	compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.projectlombok:lombok'
 
-	// Redis 의존성 추가
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // Redis 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	// 자연어 처리 - 형태소 분석기
-	implementation 'com.github.shin285:KOMORAN:3.3.4'
+    // 자연어 처리 - 형태소 분석기
+    implementation 'com.github.shin285:KOMORAN:3.3.4'
 
-	//restdocs
-	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'junit:junit:4.12'
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
-	// 임베디드 모드
-	runtimeOnly 'com.h2database:h2'
+    // 임베디드 모드
+    runtimeOnly 'com.h2database:h2'
 
-	// 아마존 S3 API
-	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
+    // 아마존 S3 API
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
+
+    // test
+    implementation 'net.datafaker:datafaker:2.1.0'
+    testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:1.0.16'
 }
 
+// Querydsl 설정부
+def generated = 'src/main/generated'
+
+// querydsl QClass 파일 생성 위치를 지정
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+// java source set 에 querydsl QClass 위치 추가
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
+// gradle clean 시에 QClass 디렉토리 삭제
+clean {
+    delete file(generated)
+}

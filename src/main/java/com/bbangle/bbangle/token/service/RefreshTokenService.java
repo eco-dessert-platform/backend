@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.token.service;
 
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class RefreshTokenService {
 
     public RefreshToken findByRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByRefreshToken(refreshToken)
-            .orElseThrow(() -> new IllegalArgumentException("Unexpected token"));
+            .orElseThrow(() -> new BbangleException("Unexpected token"));
     }
 
 }

@@ -1,25 +1,25 @@
 package com.bbangle.bbangle.member.service;
 
-import com.bbangle.bbangle.common.image.service.S3Service;
-import com.bbangle.bbangle.common.image.validation.ImageValidator;
-import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
-import com.bbangle.bbangle.exception.MemberNotFoundException;
+import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
+
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.domain.Withdrawal;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
-import com.bbangle.bbangle.wishListFolder.service.WishListProductService;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.service.WishListFolderService;
+import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,20 +35,18 @@ public class MemberService {
     private static final String DEFAULT_MEMBER_NAME = "비회원";
     private static final String DEFAULT_MEMBER_NICKNAME = "비회원";
     private static final String DEFAULT_MEMBER_EMAIL = "example@xxxxx.com";
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
-    private final S3Service imageService;
-
+    private final ImageService imageService;
     private final MemberRepository memberRepository;
     private final SignatureAgreementRepository signatureAgreementRepository;
-    private final WishListStoreServiceImpl wishListStoreServiceImpl;
-    private final WishListProductService wishListProductService;
-    private final WishListFolderService wishListFolderService;
+    private final WishListStoreService wishListStoreServiceImpl;
+    private final WishListBoardService wishListBoardService;
     private final WithdrawalRepository withdrawalRepository;
+    private final WishListFolderService wishListFolderService;
 
     @PostConstruct
     public void initSetting() {
-        // 1L MemberId에 멤버는 무조건 비회원
-        // 만약 1L 멤버가 없다면 비회원 멤버 생성
         memberRepository.findById(DEFAULT_MEMBER_ID)
             .ifPresentOrElse(
                 member -> log.info("Default member already exists"),
@@ -65,8 +63,7 @@ public class MemberService {
     }
 
     public Member findById(Long id) {
-        return memberRepository.findById(id)
-            .orElseThrow(MemberNotFoundException::new);
+        return memberRepository.findMemberById(id);
     }
 
     @Transactional
@@ -77,9 +74,8 @@ public class MemberService {
     ) {
         Member loginedMember = findById(memberId);
         if (profileImg != null && !profileImg.isEmpty()) {
-            ImageValidator.validateImage(profileImg);
-            String profileImgUrl = imageService.saveImage(profileImg);
-            loginedMember.updateProfile(profileImgUrl);
+            String imagePath = imageService.save(MEMBER_PROFILE, profileImg, loginedMember.getId());
+            loginedMember.updateProfile(imagePath);
         }
         loginedMember.updateFirst(request);
 
@@ -125,29 +121,41 @@ public class MemberService {
     @Transactional
     public void deleteMember(Long memberId) {
         Member member = findById(memberId);
-        //멤버 탈퇴 표시
         member.delete();
-
-        //위시리스트 스토어 삭제 표시
         wishListStoreServiceImpl.deletedByDeletedMember(memberId);
-
-        //위시리스트 상품 삭제 표시
-        wishListProductService.deletedByDeletedMember(memberId);
-
-        //위시리스트 폴더 삭제 표시
+        wishListBoardService.deletedByDeletedMember(memberId);
         wishListFolderService.deletedByDeletedMember(memberId);
     }
 
     @Transactional
     public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+        Member member = memberRepository.findMemberById(memberId);
         String[] reasons = withdrawalRequestDto.getReasons().split(",");
         for (String reason : reasons) {
             withdrawalRepository.save(Withdrawal.builder()
-                    .reason(reason)
-                    .member(member)
-                    .build());
+                .reason(reason)
+                .member(member)
+                .build());
         }
     }
+
+    public Member getFirstJoinedMember(Member oauthMember) {
+        Member newMember = saveNewJoinedOauthMember(oauthMember);
+        Long newMemberId = newMember.getId();
+        wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
+
+        return newMember;
+    }
+
+    private Member saveNewJoinedOauthMember(Member oauthMember) {
+        Member newMember = Member.builder()
+            .nickname(oauthMember.getNickname())
+            .provider(oauthMember.getProvider())
+            .providerId(oauthMember.getProviderId())
+            .build();
+        memberRepository.save(newMember);
+
+        return newMember;
+    }
+
 }

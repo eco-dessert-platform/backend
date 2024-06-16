@@ -1,16 +1,12 @@
 package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,10 +40,7 @@ public class Store extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    @OneToMany(mappedBy = "store")
-    private List<WishlistStore> wishlistStores;
-
-    public Store updateProfile(String profile){
+    public Store updateProfile(String profile) {
         this.profile = profile;
         return this;
     }

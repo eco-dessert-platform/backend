@@ -1,19 +1,19 @@
 package com.bbangle.bbangle.etc.repository;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
-@SpringBootTest
-public class RedisRepositoryTest {
+class RedisRepositoryTest extends AbstractIntegrationTest {
 
     final String boardNameSpace = RedisEnum.BOARD.name();
     final String testKeyword = "비건";

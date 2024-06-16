@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.token.oauth;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class OauthController {
 
     private final OauthService oauthService;
+    private final ResponseService responseService;
 
     @GetMapping("/login/{oauthServerType}")
-    ResponseEntity<LoginTokenResponse> login(
-        @PathVariable
+    CommonResult login(
+        @PathVariable("oauthServerType")
         OauthServerType oauthServerType,
         @RequestParam("token")
         String token
     ) {
         LoginTokenResponse loginTokenResponse = oauthService.login(oauthServerType, token);
-        return ResponseEntity.ok(loginTokenResponse);
+        return responseService.getSingleResult(loginTokenResponse);
     }
 
 }

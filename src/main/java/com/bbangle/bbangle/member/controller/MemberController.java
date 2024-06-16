@@ -1,13 +1,14 @@
 package com.bbangle.bbangle.member.controller;
 
-import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.MessageDto;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,28 +18,30 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
 
     private final MemberService memberService;
+    private final ResponseService responseService;
+    private static final String DELETE_SUCCESS_MSG = "회원 탈퇴에 성공했습니다";
 
     @PutMapping("additional-information")
-    public ResponseEntity<Void> updateInfo(
+    public CommonResult updateInfo(
         @RequestPart
         MemberInfoRequest additionalInfo,
         @RequestPart(required = false)
-        MultipartFile profileImg
+        MultipartFile profileImg,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
-
         memberService.updateMemberInfo(additionalInfo, memberId, profileImg);
-
-        return ResponseEntity.status(HttpStatus.OK)
-            .build();
+        return responseService.getSuccessResult();
     }
 
     @PatchMapping
-    public ResponseEntity<MessageResDto> deleteMember(@RequestBody WithdrawalRequestDto withdrawalRequestDto){
-        Long memberId = SecurityUtils.getMemberId();
+    public CommonResult deleteMember(
+        @RequestBody WithdrawalRequestDto withdrawalRequestDto,
+        @AuthenticationPrincipal
+        Long memberId
+    ){
         memberService.saveDeleteReason(withdrawalRequestDto, memberId);
         memberService.deleteMember(memberId);
-        return ResponseEntity.status(HttpStatus.OK).body(new MessageResDto("회원 탈퇴에 성공했습니다"));
+        return responseService.getSingleResult(new MessageDto(DELETE_SUCCESS_MSG,true));
     }
-
 }

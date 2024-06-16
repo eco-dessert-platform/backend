@@ -84,7 +84,7 @@ public class TokenProvider {
      */
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
-        Object memberId = claims.get("id");
+        Long memberId = Long.valueOf((Integer)claims.get("id"));
         Set<SimpleGrantedAuthority> authorities = Collections.singleton(
             new SimpleGrantedAuthority("ROLE_USER"));
         return new UsernamePasswordAuthenticationToken(memberId, token, authorities);

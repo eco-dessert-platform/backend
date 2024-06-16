@@ -3,6 +3,7 @@ package com.bbangle.bbangle.token.oauth.domain.client;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class OauthMemberClientComposite {
 
     private OAuthMemberClient getClient(OauthServerType oauthServerType) {
         return Optional.ofNullable(mapping.get(oauthServerType))
-            .orElseThrow(() -> new RuntimeException("지원하지 않는 소셜 로그인 타입입니다"));
+            .orElseThrow(() -> new BbangleException("지원하지 않는 소셜 로그인 타입입니다"));
     }
 
 }

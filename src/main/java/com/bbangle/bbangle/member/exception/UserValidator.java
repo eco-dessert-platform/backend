@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.member.exception;
 
+import com.bbangle.bbangle.exception.BbangleException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -15,26 +16,26 @@ public class UserValidator {
         try {
             formatter.parse(birthDate);
         } catch (ParseException e) {
-            throw new IllegalArgumentException(INVALID_BIRTHDATE);
+            throw new BbangleException(INVALID_BIRTHDATE);
         }
     }
 
     public static void validateNickname(String nickname) {
         if (nickname == null) {
-            throw new IllegalArgumentException("닉네임은 필수입니다.");
+            throw new BbangleException("닉네임은 필수입니다.");
         }
 
         if (nickname.length() > MAX_NICKNAME_LENGTH) {
-            throw new IllegalArgumentException("nickname 은 20자 이하만 등록 가능합니다.");
+            throw new BbangleException("nickname 은 20자 이하만 등록 가능합니다.");
         }
     }
 
     public static void validatePhoneNumber(String phoneNumber) {
         if (phoneNumber == null) {
-            throw new IllegalArgumentException("전화번호는 필수입니다.");
+            throw new BbangleException("전화번호는 필수입니다.");
         }
         if (phoneNumber.length() != PHONE_NUMBER_LENGTH) {
-            throw new IllegalArgumentException("전화번호는 11자리로 입력해주세요");
+            throw new BbangleException("전화번호는 11자리로 입력해주세요");
         }
     }
 

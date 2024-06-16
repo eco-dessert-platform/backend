@@ -5,13 +5,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Table(name = "refresh_token")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RefreshToken {
 
     @Id
@@ -30,9 +36,8 @@ public class RefreshToken {
         this.refreshToken = refreshToken;
     }
 
-    public RefreshToken update(String newRefreshToken) {
+    public void update(String newRefreshToken) {
         this.refreshToken = newRefreshToken;
-        return this;
     }
 
 }

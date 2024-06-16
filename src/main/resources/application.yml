@@ -12,7 +12,7 @@ spring:
       password:
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     #전송 쿼리 생성
     show-sql: true
     properties:
@@ -29,19 +29,6 @@ spring:
       enabled: true
     restart:
       enabled: true
-oauth2:
-  google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${REDIRECT_URI}
-    scope: email,profile
-  kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    redirect-uri: ${KAKAO_REDIRECT_URI}
-    client-authentication-method: client_secret_post
-    authorization-grant-type: authorization_code
-    scope: profile_nickname, profile_image
-    client_name: Kakao
 jwt:
   issuer: bbanglebbangle
   secret_key: bbangleOven
@@ -58,3 +45,20 @@ cloud:
       auto: false
     stack:
       auto: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    redis:
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    url: jdbc:h2:mem:bakery;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver

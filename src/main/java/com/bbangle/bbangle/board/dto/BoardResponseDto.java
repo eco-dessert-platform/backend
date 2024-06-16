@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import java.util.List;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -41,83 +43,37 @@ public final class BoardResponseDto {
         this.tags = tags;
     }
 
-    public static BoardResponseDto from(Board board, List<String> tags) {
-        boolean isBundled = board.getProductList()
-            .size() > 1;
-
+    public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags) {
         return BoardResponseDto.builder()
-            .boardId(board.getId())
-            .storeId(board.getStore()
-                .getId())
-            .storeName(board.getStore()
-                .getName())
-            .thumbnail(board.getProfile())
-            .title(board.getTitle())
-            .price(board.getPrice())
+            .boardId(board.boardId())
+            .storeId(board.storeId())
+            .storeName(board.storeName())
+            .thumbnail(board.thumbnail())
+            .title(board.title())
+            .price(board.price())
             .isWished(false)
             .isBundled(isBundled)
             .tags(tags)
             .build();
     }
 
-    public static BoardResponseDto inFolder(Board board, List<String> tags) {
-        boolean isBundled = board.getProductList()
-            .size() > 1;
 
+    public static BoardResponseDto inFolder(BoardResponseDao board, boolean isBundled, List<String> tags) {
         return BoardResponseDto.builder()
-            .boardId(board.getId())
-            .storeId(board.getStore()
-                .getId())
-            .storeName(board.getStore()
-                .getName())
-            .thumbnail(board.getProfile())
-            .title(board.getTitle())
-            .price(board.getPrice())
+            .boardId(board.boardId())
+            .storeId(board.storeId())
+            .storeName(board.storeName())
+            .thumbnail(board.thumbnail())
+            .title(board.title())
+            .price(board.price())
             .isWished(true)
             .isBundled(isBundled)
             .tags(tags)
             .build();
     }
 
-    public void updateLike(boolean status){
+    public void updateLike(boolean status) {
         this.isWished = status;
     }
-
-    public Long boardId() {
-        return boardId;
-    }
-
-    public Long storeId() {
-        return storeId;
-    }
-
-    public String storeName() {
-        return storeName;
-    }
-
-    public String thumbnail() {
-        return thumbnail;
-    }
-
-    public String title() {
-        return title;
-    }
-
-    public int price() {
-        return price;
-    }
-
-    public Boolean isWished() {
-        return isWished;
-    }
-
-    public Boolean isBundled() {
-        return isBundled;
-    }
-
-    public List<String> tags() {
-        return tags;
-    }
-
 
 }
