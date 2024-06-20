@@ -8,6 +8,6 @@ public record CreatePushRequest(
     @NotNull
     String pushCategory,
     @NotNull
-    Long productId
+    Long boardId
 ) {
 }

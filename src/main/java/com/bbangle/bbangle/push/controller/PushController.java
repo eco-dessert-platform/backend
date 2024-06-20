@@ -2,8 +2,8 @@ package com.bbangle.bbangle.push.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
+import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.push.dto.SendPushRequest;
 import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
@@ -33,17 +33,6 @@ public class PushController {
     }
 
 
-    @PatchMapping("/again")
-    public CommonResult recreatePush(
-            @Validated @RequestBody PushRequest request,
-            @AuthenticationPrincipal Long memberId
-    ) {
-        System.out.println("requestDto = " + request);
-        pushService.recreatePush(request, memberId);
-        return responseService.getSuccessResult();
-    }
-
-
     @PatchMapping
     public CommonResult cancelPush(
             @Validated @RequestBody PushRequest request,
@@ -68,11 +57,13 @@ public class PushController {
 
     @GetMapping
     public CommonResult getPush(
-            @RequestParam String productId,
+            @RequestParam(value = "boardId") Long boardId,
+            @RequestParam(value = "pushCategory") String pushCategory,
             @AuthenticationPrincipal Long memberId
     ) {
-
-        return null;
+        System.out.println("boardId = " + boardId);
+        System.out.println("pushCategory = " + pushCategory);
+        return responseService.getListResult(pushService.getPush(boardId, pushCategory, memberId));
     }
 
 

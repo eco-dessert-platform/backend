@@ -22,8 +22,8 @@ public class Push extends BaseEntity {
     @Column(name = "member_id")
     private Long memberId;
 
-    @Column(name = "product_id")
-    private Long productId;
+    @Column(name = "board_id")
+    private Long boardId;
 
     @Column(name = "push_category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
@@ -33,12 +33,12 @@ public class Push extends BaseEntity {
     private boolean pushStatus;
 
 
-    public void recreatePush() {
+    public void resubscribePush() {
         this.pushStatus = true;
     }
 
 
-    public void cancelPush() {
+    public void unsubscribePush() {
         this.pushStatus = false;
     }
 

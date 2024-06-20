@@ -5,6 +5,7 @@ import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
+import com.bbangle.bbangle.push.dto.PushResponse;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,44 +22,41 @@ public class PushService {
 
     public void createPush(CreatePushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push newPush = Push.builder()
-                .fcmToken(request.fcmToken())
-                .memberId(memberId)
-                .productId(request.productId())
-                .pushCategory(PushCategory.valueOf(request.pushCategory()))
-                .pushStatus(false)
-                .build();
+        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
 
-        pushRepository.save(newPush);
-    }
+        if (push == null) {
+            Push newPush = Push.builder()
+                    .fcmToken(request.fcmToken())
+                    .memberId(memberId)
+                    .boardId(request.boardId())
+                    .pushCategory(PushCategory.valueOf(request.pushCategory()))
+                    .pushStatus(false)
+                    .build();
 
-
-    public void recreatePush(PushRequest request, Long memberId) {
-        memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request, memberId);
-        push.recreatePush();
+            pushRepository.save(newPush);
+        } else {
+            push.resubscribePush();
+        }
     }
 
 
     public void cancelPush(PushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request, memberId);
-        push.cancelPush();
+        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
+        push.unsubscribePush();
     }
 
 
     public void deletePush(PushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request, memberId);
+        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
         pushRepository.delete(push);
     }
 
 
-    public List<Push> getPush(PushRequest request, Long memberId) {
+    public List<PushResponse> getPush(Long boardId, String pushCategory, Long memberId) {
         memberRepository.findMemberById(memberId);
-        pushRepository.findPushList(request, memberId);
-        return null;
+        return pushRepository.findPushList(boardId, pushCategory, memberId);
     }
-
 
 }

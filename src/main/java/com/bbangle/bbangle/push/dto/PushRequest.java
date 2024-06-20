@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record PushRequest(
     @NotNull
-    Long productId,
+    Long boardId,
     @NotNull
     String pushCategory
 ) {
