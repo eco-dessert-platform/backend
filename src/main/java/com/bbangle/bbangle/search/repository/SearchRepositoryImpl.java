@@ -27,7 +27,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Repository
 @Transactional
@@ -151,7 +149,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
-            boards = boards.leftJoin(wishListBoard).on(wishListBoard.boardId.eq(board.id), wishListBoard.memberId.eq(memberId));
+            boards = boards.leftJoin(wishListBoard)
+                .on(wishListBoard.boardId.eq(board.id), wishListBoard.memberId.eq(memberId));
         }
 
         return boards.fetch();
@@ -371,34 +370,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         if (request.ketogenicTag() != null && request.ketogenicTag() == true) {
             filterBuilder.and(product.ketogenicTag.eq(request.ketogenicTag()));
         }
-        if (request.orderAvailableToday() != null && request.orderAvailableToday() == true) {
-            LocalDate currentDate = LocalDate.now();
-            String dayOfWeek = currentDate.getDayOfWeek().toString().substring(0, 3);
-            switch (dayOfWeek) {
-                case "MON":
-                    filterBuilder.and(board.monday.eq(true));
-                    break;
-                case "TUE":
-                    filterBuilder.and(board.tuesday.eq(true));
-                    break;
-                case "WED":
-                    filterBuilder.and(board.wednesday.eq(true));
-                    break;
-                case "THU":
-                    filterBuilder.and(board.thursday.eq(true));
-                    break;
-                case "FRI":
-                    filterBuilder.and(board.friday.eq(true));
-                    break;
-                case "SAT":
-                    filterBuilder.and(board.saturday.eq(true));
-                    break;
-                case "SUN":
-                    filterBuilder.and(board.sunday.eq(true));
-                    break;
-            }
 
-        }
         if (request.category() != null && !request.category().isBlank()) {
             if (!Category.checkCategory(request.category())) {
                 throw new BbangleException(UNKNOWN_CATEGORY);

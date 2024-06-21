@@ -8,8 +8,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,25 +23,8 @@ public class BoardFilterCreator {
         addTagCondition();
         addPriceCondition();
         addCategoryCondition();
-        addDaysOfWeekCondition();
 
         return builder;
-    }
-
-    private void addDaysOfWeekCondition() {
-        if (filterRequest.orderAvailableToday() != null && filterRequest.orderAvailableToday()) {
-            DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
-
-            switch (dayOfWeek) {
-                case MONDAY -> builder.and(board.monday.eq(true));
-                case TUESDAY -> builder.and(board.tuesday.eq(true));
-                case WEDNESDAY -> builder.and(board.wednesday.eq(true));
-                case THURSDAY -> builder.and(board.thursday.eq(true));
-                case FRIDAY -> builder.and(board.friday.eq(true));
-                case SATURDAY -> builder.and(board.saturday.eq(true));
-                case SUNDAY -> builder.and(board.sunday.eq(true));
-            }
-        }
     }
 
     private void addCategoryCondition() {

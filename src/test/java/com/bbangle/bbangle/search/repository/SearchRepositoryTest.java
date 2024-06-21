@@ -86,19 +86,19 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("필터 설정에 맞게 상품 게시물 전체 개수를 가져올 수 있다")
     void getSearchedBoardAllCountTest() {
         List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
-                .toList();
+            .toList();
         var searchBoardRequest = SearchBoardRequest.builder()
-                .sort("LATEST")
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .orderAvailableToday(true)
-                .category(Category.SNACK.name())
-                .maxPrice(6000)
-                .page(0)
-                .build();
+            .sort("LATEST")
+            .glutenFreeTag(true)
+            .highProteinTag(false)
+            .orderAvailableToday(true)
+            .category(Category.SNACK.name())
+            .maxPrice(6000)
+            .page(0)
+            .build();
 
         var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
-                boardIds);
+            boardIds);
         assertThat(searchedBoardAllCount, is(15L));
     }
 
@@ -110,22 +110,22 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         int limit = 10;
 
         List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
-                .toList();
+            .toList();
         var searchBoardRequest = SearchBoardRequest.builder()
-                .sort("LATEST")
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .orderAvailableToday(true)
-                .category(Category.SNACK.name())
-                .maxPrice(6000)
-                .page(0)
-                .build();
+            .sort("LATEST")
+            .glutenFreeTag(true)
+            .highProteinTag(false)
+            .orderAvailableToday(true)
+            .category(Category.SNACK.name())
+            .maxPrice(6000)
+            .page(0)
+            .build();
 
         var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
-                boardIds);
+            boardIds);
         var searchBoardResult = searchRepository.getSearchedBoard(
-                1L, boardIds, searchBoardRequest, PageRequest.of(page, limit),
-                searchedBoardAllCount);
+            1L, boardIds, searchBoardRequest, PageRequest.of(page, limit),
+            searchedBoardAllCount);
 
         assertThat(searchBoardResult.currentItemCount(), is(10));
         assertThat(searchBoardResult.pageNumber(), is(0));
@@ -145,9 +145,9 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("스토어 검색")
     void getSearchStoreTest() {
         List<Long> storeIds = storeRepository.findAll().stream().map(store1 -> store1.getId())
-                .toList();
+            .toList();
         var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds,
-                PageRequest.of(0, 10));
+            PageRequest.of(0, 10));
 
         for (int i = 0; i < 2; i++) {
             assertThat(searchedStores.get(i).getStoreName(), is("RAWSOME"));
@@ -181,7 +181,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("키워드를 저장할 수 있다")
     void getAllSearch() {
         List<String> savingKeyword = Arrays.asList("초콜릿", "키토제닉 빵", "비건", "비건 베이커리", "키토제닉 빵",
-                "초코 휘낭시에", "바나나 빵", "배부른 음식", "당당 치킨");
+            "초코 휘낭시에", "바나나 빵", "배부른 음식", "당당 치킨");
         savingKeyword.forEach(keyword -> createSearchKeyword(keyword));
         var kewords = searchRepository.findAll();
         assertThat(kewords.size(), is(savingKeyword.size()));
@@ -199,7 +199,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     }
 
     private void checkSearchKeyword(SearchRepository searchRepository, Search search,
-            String keyword) {
+        String keyword) {
         var savedSearch = searchRepository.findById(search.getId()).get();
         assertThat(savedSearch.getKeyword(), is(keyword));
     }
@@ -207,75 +207,68 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
             store = storeRepository.save(
-                    Store.builder()
-                            .identifier("7962401222")
-                            .name("RAWSOME")
-                            .profile(
-                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                            .build());
+                Store.builder()
+                    .identifier("7962401222")
+                    .name("RAWSOME")
+                    .profile(
+                        "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                    .build());
 
             board = boardRepository.save(
-                    Board.builder()
-                            .store(store)
-                            .title("비건 베이커리 로썸 비건빵")
-                            .price(5400)
-                            .status(true)
-                            .profile(
-                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                            .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .sunday(true)
-                            .monday(true)
-                            .tuesday(true)
-                            .wednesday(true)
-                            .thursday(true)
-                            .friday(true)
-                            .saturday(true)
-                            .build());
+                Board.builder()
+                    .store(store)
+                    .title("비건 베이커리 로썸 비건빵")
+                    .price(5400)
+                    .status(true)
+                    .profile(
+                        "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                    .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                    .build());
 
             productRepository.saveAll(List.of(
-                    Product.builder()
-                            .board(board)
-                            .title("콩볼")
-                            .price(3600)
-                            .category(Category.SNACK)
-                            .glutenFreeTag(true)
-                            .sugarFreeTag(true)
-                            .highProteinTag(true)
-                            .veganTag(true)
-                            .ketogenicTag(true)
-                            .build(),
-                    Product.builder()
-                            .board(board)
-                            .title("카카모카")
-                            .price(5000)
-                            .category(Category.BREAD)
-                            .glutenFreeTag(true)
-                            .veganTag(true)
-                            .build(),
-                    Product.builder()
-                            .board(board)
-                            .title("로미넛쑥")
-                            .price(5000)
-                            .category(Category.BREAD)
-                            .glutenFreeTag(true)
-                            .sugarFreeTag(true)
-                            .veganTag(true)
-                            .build()
+                Product.builder()
+                    .board(board)
+                    .title("콩볼")
+                    .price(3600)
+                    .category(Category.SNACK)
+                    .glutenFreeTag(true)
+                    .sugarFreeTag(true)
+                    .highProteinTag(true)
+                    .veganTag(true)
+                    .ketogenicTag(true)
+                    .build(),
+                Product.builder()
+                    .board(board)
+                    .title("카카모카")
+                    .price(5000)
+                    .category(Category.BREAD)
+                    .glutenFreeTag(true)
+                    .veganTag(true)
+                    .build(),
+                Product.builder()
+                    .board(board)
+                    .title("로미넛쑥")
+                    .price(5000)
+                    .category(Category.BREAD)
+                    .glutenFreeTag(true)
+                    .sugarFreeTag(true)
+                    .veganTag(true)
+                    .build()
             ));
         }
     }
 
     private void createMember() {
         member = memberRepository.save(Member.builder()
-                .id(2L)
-                .build());
+            .id(2L)
+            .build());
     }
 
     private Search createSearchKeyword(String keyword) {
         return searchRepository.save(
-                Search.builder()
-                        .member(member)
-                        .keyword(keyword)
-                        .build());
+            Search.builder()
+                .member(member)
+                .keyword(keyword)
+                .build());
     }
 }
