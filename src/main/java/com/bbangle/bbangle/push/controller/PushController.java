@@ -4,7 +4,6 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.dto.SendPushRequest;
 import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ public class PushController {
             @Validated @RequestBody CreatePushRequest request,
             @AuthenticationPrincipal Long memberId
     ) {
-        System.out.println("requestDto = " + request);
         pushService.createPush(request, memberId);
         return responseService.getSuccessResult();
     }
@@ -38,7 +36,6 @@ public class PushController {
             @Validated @RequestBody PushRequest request,
             @AuthenticationPrincipal Long memberId
     ) {
-        System.out.println("requestDto = " + request);
         pushService.cancelPush(request, memberId);
         return responseService.getSuccessResult();
     }
@@ -49,7 +46,6 @@ public class PushController {
             @Validated @RequestBody PushRequest request,
             @AuthenticationPrincipal Long memberId
     ) {
-        System.out.println("requestDto = " + request);
         pushService.deletePush(request, memberId);
         return responseService.getSuccessResult();
     }
@@ -57,22 +53,19 @@ public class PushController {
 
     @GetMapping
     public CommonResult getPush(
-            @RequestParam(value = "boardId") Long boardId,
             @RequestParam(value = "pushCategory") String pushCategory,
             @AuthenticationPrincipal Long memberId
     ) {
-        System.out.println("boardId = " + boardId);
-        System.out.println("pushCategory = " + pushCategory);
-        return responseService.getListResult(pushService.getPush(boardId, pushCategory, memberId));
+        return responseService.getListResult(pushService.getPush(pushCategory, memberId));
     }
 
 
-    @PostMapping("/push")
-    public CommonResult sendPush(@RequestBody SendPushRequest request) {
-        System.out.println("requestDto = " + request);
-
-        fcmService.sendPush(request);
-        return responseService.getSuccessResult();
-    }
+//    @PostMapping("/push")
+//    public CommonResult sendPush(@RequestBody SendPushRequest request) {
+//        System.out.println("requestDto = " + request);
+//
+//        fcmService.sendPush(request);
+//        return responseService.getSuccessResult();
+//    }
 
 }

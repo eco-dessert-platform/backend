@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.push.service;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
@@ -9,6 +11,7 @@ import com.bbangle.bbangle.push.dto.PushResponse;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,17 +23,20 @@ public class PushService {
     private final MemberRepository memberRepository;
 
 
+    @Transactional
     public void createPush(CreatePushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
+        Push push = pushRepository.findPush(request.productId(), request.pushCategory(), memberId);
 
         if (push == null) {
             Push newPush = Push.builder()
                     .fcmToken(request.fcmToken())
                     .memberId(memberId)
+                    .storeId(request.storeId())
                     .boardId(request.boardId())
+                    .productId(request.productId())
                     .pushCategory(PushCategory.valueOf(request.pushCategory()))
-                    .pushStatus(false)
+                    .subscribed(true)
                     .build();
 
             pushRepository.save(newPush);
@@ -40,23 +46,36 @@ public class PushService {
     }
 
 
+    @Transactional
     public void cancelPush(PushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
-        push.unsubscribePush();
+        Push push = pushRepository.findPush(request.productId(), request.pushCategory(), memberId);
+
+        if (push == null) {
+            throw new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND);
+        } else {
+            push.unsubscribePush();
+        }
     }
 
 
+    @Transactional
     public void deletePush(PushRequest request, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Push push = pushRepository.findPush(request.boardId(), request.pushCategory(), memberId);
-        pushRepository.delete(push);
+        Push push = pushRepository.findPush(request.productId(), request.pushCategory(), memberId);
+
+        if (push == null) {
+            throw new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND);
+        } else {
+            pushRepository.delete(push);
+        }
     }
 
 
-    public List<PushResponse> getPush(Long boardId, String pushCategory, Long memberId) {
+    @Transactional(readOnly = true)
+    public List<PushResponse> getPush(String pushCategory, Long memberId) {
         memberRepository.findMemberById(memberId);
-        return pushRepository.findPushList(boardId, pushCategory, memberId);
+        return pushRepository.findPushList(pushCategory, memberId);
     }
 
 }

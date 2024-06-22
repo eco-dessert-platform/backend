@@ -230,11 +230,13 @@ CREATE TABLE push
     id            BIGINT AUTO_INCREMENT,
     fcm_token     VARCHAR(255) NOT NULL,
     member_id     BIGINT       NOT NULL,
+    store_id      BIGINT       NOT NULL,
     board_id      BIGINT       NOT NULL,
+    product_id    BIGINT       NOT NULL,
     push_category VARCHAR(255) NOT NULL,
-    push_status   TINYINT      NOT NULL,
+    is_subscribed TINYINT      NOT NULL,
     created_at    DATETIME(6)  NULL,
     modified_at   DATETIME(6)  NULL,
     CONSTRAINT push_pk PRIMARY KEY (id),
-    INDEX idx_member_board_id (member_id, board_id)
+    INDEX idx_member_product_id (member_id, product_id)
 );

@@ -4,9 +4,9 @@ import com.querydsl.core.annotations.QueryProjection;
 
 public record PushResponse(
     String storeName,
-    String boardTitle,
+    String productTitle,
     String boardThumbnail,
-    boolean pushStatus
+    boolean subscribed
 ) {
 
     @QueryProjection

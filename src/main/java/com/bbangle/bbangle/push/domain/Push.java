@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Push extends BaseEntity {
@@ -22,24 +23,30 @@ public class Push extends BaseEntity {
     @Column(name = "member_id")
     private Long memberId;
 
+    @Column(name = "store_id")
+    private Long storeId;
+
     @Column(name = "board_id")
     private Long boardId;
+
+    @Column(name = "product_id")
+    private Long productId;
 
     @Column(name = "push_category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private PushCategory pushCategory;
 
-    @Column(name = "push_status", columnDefinition = "tinyint")
-    private boolean pushStatus;
+    @Column(name = "is_subscribed", columnDefinition = "tinyint")
+    private boolean subscribed;
 
 
     public void resubscribePush() {
-        this.pushStatus = true;
+        this.subscribed = true;
     }
 
 
     public void unsubscribePush() {
-        this.pushStatus = false;
+        this.subscribed = false;
     }
 
 }
