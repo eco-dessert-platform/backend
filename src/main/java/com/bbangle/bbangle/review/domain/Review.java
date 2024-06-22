@@ -35,17 +35,14 @@ public class Review extends BaseEntity {
     @NotNull
     private Long boardId;
 
-    @NotNull
     @Column(name = "badge_taste", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTaste;
 
-    @NotNull
     @Column(name = "badge_brix", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeBrix;
 
-    @NotNull
     @Column(name = "badge_texture", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTexture;
