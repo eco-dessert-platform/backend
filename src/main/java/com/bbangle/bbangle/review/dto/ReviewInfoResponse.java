@@ -47,9 +47,16 @@ public class ReviewInfoResponse {
                                                    Map<Long, List<String>> tagMap,
                                                    Map<Long, List<Long>> likeMap,
                                                    final Long memberId){
+        List<ReviewImgDto> reviewImgDtos = imageMap.get(reviewSingleDto.id());
+        for (ReviewImgDto reviewImgDto : reviewImgDtos) {
+            if(reviewImgDto.getId() == null){
+                reviewImgDtos = null;
+                break;
+            }
+        }
         return ReviewInfoResponse.builder()
                 .id(reviewSingleDto.id())
-                .images(imageMap.get(reviewSingleDto.id()))
+                .images(reviewImgDtos)
                 .nickname(reviewSingleDto.nickname())
                 .rating(reviewSingleDto.rate())
                 .isBest(reviewSingleDto.isBest())
