@@ -12,4 +12,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
         @NonNull ImageCategory imageCategory,
         @NonNull Long domainId
     );
+
+    List<Image> findAllByPathIn(List<String> urls);
 }

@@ -1,8 +1,9 @@
 package com.bbangle.bbangle.review.controller;
 
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
+import com.bbangle.bbangle.review.dto.ReviewImageUploadResponse;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
 import com.bbangle.bbangle.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,8 +23,8 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final ResponseService responseService;
 
-    @Operation(summary = "리뷰 작성(이미지 제외)")
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "리뷰 작성")
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
     public CommonResult createReview(
         @Valid @RequestBody
         ReviewRequest reviewRequest,
@@ -34,14 +35,29 @@ public class ReviewController {
         return responseService.getSuccessResult();
     }
 
+    @Operation(summary = "리뷰 이미지 업로드")
+    @PostMapping(
+            value = "/image",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public CommonResult uploadReviewImage(
+            @ModelAttribute
+            ReviewImageUploadRequest reviewImageUploadRequest,
+            @AuthenticationPrincipal
+            Long memberId
+    ){
+        ReviewImageUploadResponse reviewImageUploadResponse =
+                reviewService.uploadReviewImage(reviewImageUploadRequest, memberId);
+        return responseService.getSingleResult(reviewImageUploadResponse);
+    }
+
     @Operation(summary = "리뷰 수정")
     @PutMapping(
             value="/{reviewId}",
-            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+            consumes = {MediaType.APPLICATION_JSON_VALUE})
     public CommonResult updateReview(
-            @PathVariable
+            @PathVariable("reviewId")
             Long reviewId,
-            @Valid @ModelAttribute
+            @Valid @RequestBody
             ReviewRequest reviewRequest,
             @AuthenticationPrincipal
             Long memberId
@@ -63,14 +79,14 @@ public class ReviewController {
 
     @Operation(summary = "상품페이지(리뷰) 평점")
     @GetMapping(value = "/rate/{boardId}")
-    public CommonResult getReviewRate(@PathVariable Long boardId) {
+    public CommonResult getReviewRate(@PathVariable("boardId") Long boardId) {
         return responseService.getSingleResult(reviewService.getReviewRate(boardId));
     }
 
     @Operation(summary = "상품페이지(리뷰) 목록")
     @GetMapping(value = "/list/{boardId}")
     public CommonResult getReviews(
-    @PathVariable
+    @PathVariable("boardId")
     Long boardId,
     @RequestParam(required = false, value = "cursorId")
     Long cursorId,
@@ -82,7 +98,7 @@ public class ReviewController {
     @Operation(summary = "도움되요 추가")
     @GetMapping(value = "/like/{reviewId}")
     public CommonResult insertLike(
-            @PathVariable
+            @PathVariable("reviewId")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){
@@ -93,7 +109,7 @@ public class ReviewController {
     @Operation(summary = "도움되요 해제")
     @DeleteMapping(value = "/like/{reviewId}")
     public CommonResult removeLike(
-            @PathVariable
+            @PathVariable("reviewId")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){
@@ -104,7 +120,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 상세")
     @GetMapping(value = "/{reviewId}")
     public CommonResult getReviewDetail(
-            @PathVariable
+            @PathVariable("reviewId")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId ){
@@ -113,7 +129,7 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 대표 이미지")
     @GetMapping(value = "/images/{reviewId}")
-    public CommonResult getReviewImages(@PathVariable Long reviewId){
+    public CommonResult getReviewImages(@PathVariable("reviewId") Long reviewId){
         return responseService.getSingleResult(reviewService.getReviewImages(reviewId));
     }
 
@@ -130,7 +146,7 @@ public class ReviewController {
     @Operation(summary = "사진 리뷰 전체보기")
     @GetMapping(value = "/{boardId}/images")
     public CommonResult getAllImagesByBoardId(
-            @PathVariable
+            @PathVariable("boardId")
             Long boardId,
             @RequestParam(required = false, value = "cursorId")
             Long cursorId){
@@ -139,13 +155,13 @@ public class ReviewController {
 
     @Operation(summary = "사진 리뷰 크게보기")
     @GetMapping(value = "/image/{imageId}")
-    public CommonResult getImage(@PathVariable Long imageId){
+    public CommonResult getImage(@PathVariable("imageId") Long imageId){
         return responseService.getSingleResult(reviewService.getImage(imageId));
     }
 
     @Operation(summary = "리뷰 수정 화면에서 사진 삭제")
     @DeleteMapping(value = "/image/{imageId}")
-    public CommonResult deleteImage(@PathVariable Long imageId){
+    public CommonResult deleteImage(@PathVariable("imageId") Long imageId){
         reviewService.deleteImage(imageId);
         return responseService.getSuccessResult();
     }

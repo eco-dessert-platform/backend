@@ -40,4 +40,8 @@ public class Image extends BaseEntity {
     @Column(name = "path")
     private String path;
 
+    public void update(Long domainId, String path){
+        this.domainId = domainId;
+        this.path = path;
+    }
 }
