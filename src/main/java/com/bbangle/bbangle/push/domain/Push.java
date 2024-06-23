@@ -40,13 +40,8 @@ public class Push extends BaseEntity {
     private boolean subscribed;
 
 
-    public void resubscribePush() {
-        this.subscribed = true;
-    }
-
-
-    public void unsubscribePush() {
-        this.subscribed = false;
+    public void updateSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
     }
 
 }

@@ -41,7 +41,7 @@ public class PushService {
 
             pushRepository.save(newPush);
         } else {
-            push.resubscribePush();
+            push.updateSubscribed(true);
         }
     }
 
@@ -54,7 +54,7 @@ public class PushService {
         if (push == null) {
             throw new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND);
         } else {
-            push.unsubscribePush();
+            push.updateSubscribed(false);
         }
     }
 

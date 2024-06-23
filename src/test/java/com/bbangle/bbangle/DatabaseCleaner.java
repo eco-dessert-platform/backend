@@ -45,4 +45,14 @@ public class DatabaseCleaner implements InitializingBean {
         em.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
     }
 
+    @Transactional
+    public void clearMember() {
+        em.clear();
+        em.flush();
+        em.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+        em.createNativeQuery("TRUNCATE TABLE member").executeUpdate();
+        em.createNativeQuery("ALTER TABLE member ALTER COLUMN id RESTART WITH 2").executeUpdate();
+        em.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+    }
+
 }

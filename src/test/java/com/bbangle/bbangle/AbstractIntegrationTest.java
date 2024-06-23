@@ -17,6 +17,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.bbangle.bbangle.push.repository.PushRepository;
+import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
@@ -74,6 +75,8 @@ public abstract class AbstractIntegrationTest {
     protected WishListBoardService wishListBoardService;
     @Autowired
     protected PushService pushService;
+    @Autowired
+    protected FcmService fcmService;
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
