@@ -34,10 +34,14 @@ public class Image extends BaseEntity {
     @Column(name = "domain_id")
     private Long domainId;
 
-    @Column(name = "order")
+    @Column(name = "image_order")
     private int order;
 
     @Column(name = "path")
     private String path;
 
+    public void update(Long domainId, String path){
+        this.domainId = domainId;
+        this.path = path;
+    }
 }

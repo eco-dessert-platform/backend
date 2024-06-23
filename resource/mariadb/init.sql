@@ -58,35 +58,25 @@ CREATE TABLE store
     CONSTRAINT store_pk PRIMARY KEY (id)
 );
 
-CREATE TABLE product_board
+create table product_board
 (
-    id                       bigint auto_increment
-        primary key,
-    store_id                 bigint            not null,
-    title                    varchar(50)       not null,
-    price                    int               not null,
-    status                   tinyint           not null,
-    profile                  varchar(255)      null,
-    detail                   varchar(255)      not null,
-    purchase_url             varchar(255)      not null,
-    view                     int     default 0 not null,
-    sunday                   tinyint default 0 not null,
-    monday                   tinyint default 0 not null,
-    tuesday                  tinyint default 0 not null,
-    wednesday                tinyint default 0 not null,
-    thursday                 tinyint default 0 not null,
-    friday                   tinyint default 0 not null,
-    saturday                 tinyint default 0 not null,
-    created_at               datetime(6)       null,
-    modified_at              datetime(6)       null,
-    is_deleted               tinyint           null,
-    wish_cnt                 int               null,
-    delivery_fee             int               null,
-    free_shipping_conditions int               null,
+    id                       bigint auto_increment primary key,
+    store_id                 bigint        not null,
+    title                    varchar(50)   not null,
+    price                    int           not null,
+    is_soldout               tinyint       not null,
+    profile                  varchar(255)  null,
+    purchase_url             varchar(255)  not null,
+    view                     int default 0 not null,
+    created_at               datetime(6)   null,
+    modified_at              datetime(6)   null,
+    is_deleted               tinyint       null,
+    wish_cnt                 int           null,
+    delivery_fee             int           null,
+    free_shipping_conditions int           null,
     constraint fk_store_product_board
         foreign key (store_id) references store (id)
 ) charset = utf8mb4;
-
 
 
 CREATE TABLE wishlist_folder
@@ -128,10 +118,9 @@ CREATE TABLE wishlist_store
     CONSTRAINT fk_store_wishlist_store FOREIGN KEY (store_id) REFERENCES store (id)
 );
 
-CREATE TABLE product
+create table product
 (
-    id               bigint auto_increment
-        primary key,
+    id               bigint auto_increment primary key,
     product_board_id bigint            not null,
     title            varchar(50)       not null,
     price            int               null,
@@ -156,12 +145,10 @@ CREATE TABLE product
     fat              int               null,
     weight           int               null,
     calories         int               null,
-    soldout          tinyint default 0 not null,
+    is_soldout       tinyint default 0 not null,        null,
     constraint fk_product_board_product
         foreign key (product_board_id) references product_board (id)
 ) charset = utf8mb4;
-
-
 
 CREATE TABLE product_img
 (
@@ -190,7 +177,7 @@ CREATE TABLE boardStatistic
     board_review_count INT     NOT NULL default 0,
     board_view_count   INT     NOT NULL default 0,
     board_view_grade   DECIMAL NOT NULL default 0,
-    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    CONSTRAINT product_img_pk PRIMARY KEY (id)
 );
 
 CREATE TABLE notice

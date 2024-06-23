@@ -115,12 +115,12 @@ class SearchServiceTest extends AbstractIntegrationTest {
     void getSearchBoard() {
         String SEARCH_KEYWORD = "비건 베이커리";
         var searchBoardRequest = SearchBoardRequest.builder().keyword(SEARCH_KEYWORD).sort("LATEST")
-                .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
-                .ketogenicTag(false).orderAvailableToday(true).category(Category.SNACK.name())
-                .minPrice(0).maxPrice(6000).page(0).build();
+            .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
+            .ketogenicTag(false).orderAvailableToday(true).category(Category.SNACK.name())
+            .minPrice(0).maxPrice(6000).page(0).build();
 
         var searchBoardResult = searchService.getSearchBoardDtos(member.getId(),
-                searchBoardRequest);
+            searchBoardRequest);
 
         assertThat(searchBoardResult.currentItemCount(), is(10));
         assertThat(searchBoardResult.pageNumber(), is(0));
@@ -142,7 +142,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
         int storePage = 0;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
         var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
-                SEARCH_KEYWORD_STORE);
+            SEARCH_KEYWORD_STORE);
 
         var stores = searchStoreResult.content();
 
@@ -167,7 +167,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
         int storePage = 1;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
         var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
-                SEARCH_KEYWORD_STORE);
+            SEARCH_KEYWORD_STORE);
 
         var stores = searchStoreResult.content();
 
@@ -189,7 +189,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
     void getBestKeyword() {
         String BEST_KEYWORD_KEY = "keyword";
         var bestKewords = redisRepository.getStringList(RedisEnum.BEST_KEYWORD.name(),
-                BEST_KEYWORD_KEY);
+            BEST_KEYWORD_KEY);
 
         assertThat(bestKewords, is(List.of("글루텐프리", "비건", "저당", "키토제닉")));
     }
@@ -197,26 +197,25 @@ class SearchServiceTest extends AbstractIntegrationTest {
     private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
             store = storeRepository.save(Store.builder().identifier("7962401222").name("RAWSOME")
-                    .profile(
-                            "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                    .build());
+                .profile(
+                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                .build());
 
             board = boardRepository.save(
-                    Board.builder().store(store).title("비건 베이커리 로썸 비건빵").price(5400).status(true)
-                            .profile(
-                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                            .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .sunday(true).monday(true).tuesday(true).wednesday(true)
-                            .thursday(true).friday(true).saturday(true).build());
+                Board.builder().store(store).title("비건 베이커리 로썸 비건빵").price(5400).status(true)
+                    .profile(
+                        "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                    .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                    .build());
 
             productRepository.saveAll(List.of(Product.builder().board(board).title("콩볼").price(3600)
-                            .category(Category.SNACK).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
-                            .ketogenicTag(true).build(),
-                    Product.builder().board(board).title("카카모카").price(5000)
-                            .category(Category.BREAD).glutenFreeTag(true).veganTag(true).build(),
-                    Product.builder().board(board).title("로미넛쑥").price(5000)
-                            .category(Category.BREAD).glutenFreeTag(true).sugarFreeTag(true)
-                            .veganTag(true).build()));
+                    .category(Category.SNACK).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
+                    .ketogenicTag(true).build(),
+                Product.builder().board(board).title("카카모카").price(5000)
+                    .category(Category.BREAD).glutenFreeTag(true).veganTag(true).build(),
+                Product.builder().board(board).title("로미넛쑥").price(5000)
+                    .category(Category.BREAD).glutenFreeTag(true).sugarFreeTag(true)
+                    .veganTag(true).build()));
         }
     }
 

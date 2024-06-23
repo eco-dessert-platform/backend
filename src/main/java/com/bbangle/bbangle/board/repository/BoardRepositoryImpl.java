@@ -3,7 +3,6 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
@@ -24,8 +23,6 @@ import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.store.dto.QBoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.QPopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
-import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
-import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.util.WishListBoardFilter;
 import com.querydsl.core.BooleanBuilder;
@@ -201,15 +198,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.profile,
                     board.title,
                     board.price,
-                    boardStatistic.boardViewCount,
                     wishListBoard.id))
             .from(board)
             .leftJoin(wishListBoard).on(
                 wishListBoardFilter.equalMemberId(memberId)
-                    .and(wishListBoardFilter.equalBoard(board))
-            )
-            .join(boardStatistic)
-            .on(board.id.eq(boardStatistic.boardId))
+                    .and(wishListBoardFilter.equalBoard(board)))
             .where(board.id.in(cursorIdToBoardIds))
             .orderBy(board.id.desc())
             .fetch();

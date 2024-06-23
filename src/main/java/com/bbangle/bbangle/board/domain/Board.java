@@ -53,27 +53,6 @@ public class Board extends BaseEntity {
     @Column(name = "purchase_url")
     private String purchaseUrl;
 
-    @Column(name = "sunday", columnDefinition = "tinyint")
-    private boolean sunday;
-
-    @Column(name = "monday", columnDefinition = "tinyint")
-    private boolean monday;
-
-    @Column(name = "tuesday", columnDefinition = "tinyint")
-    private boolean tuesday;
-
-    @Column(name = "wednesday", columnDefinition = "tinyint")
-    private boolean wednesday;
-
-    @Column(name = "thursday", columnDefinition = "tinyint")
-    private boolean thursday;
-
-    @Column(name = "friday", columnDefinition = "tinyint")
-    private boolean friday;
-
-    @Column(name = "saturday", columnDefinition = "tinyint")
-    private boolean saturday;
-
     @Column(name = "delivery_fee")
     private Integer deliveryFee;
 

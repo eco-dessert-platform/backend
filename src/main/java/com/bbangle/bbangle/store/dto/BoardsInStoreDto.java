@@ -11,8 +11,6 @@ public class BoardsInStoreDto {
     private String boardProfile;
     private String boardTitle;
     private Integer boardPrice;
-    private Integer boardView;
-
     private Boolean isWished;
 
     @QueryProjection
@@ -21,14 +19,12 @@ public class BoardsInStoreDto {
         String boardProfile,
         String boardTitle,
         Integer boardPrice,
-        Integer boardView,
         Long wishlistBoardId
     ) {
         this.boardId = boardId;
         this.boardProfile = boardProfile;
         this.boardTitle = boardTitle;
         this.boardPrice = boardPrice;
-        this.boardView = boardView;
         this.isWished = isNonEmptyWishlist(wishlistBoardId);
     }
 

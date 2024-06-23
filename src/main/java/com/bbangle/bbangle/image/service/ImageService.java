@@ -29,6 +29,22 @@ public class ImageService {
         return save(category, image, domainId, 0);
     }
 
+    /**
+     *
+     * 도메인 id 없이 임시로 저장이 필요할 때가 있어서 만듬
+     * (추후 팀원들 논의 되면 리팩토링 예정)
+     */
+    public List<String> saveAll(
+        ImageCategory category,
+        List<MultipartFile> images
+    ){
+        return saveAll(category, images, -1);
+    }
+
+    public void move(String fromPath, String toPath){
+        s3Service.copyImage(fromPath, toPath);
+    }
+
     public String save(
         ImageCategory category,
         MultipartFile image,
@@ -87,7 +103,7 @@ public class ImageService {
 
     private String imageFolderPathResolver(ImageCategory category, Long domainId) {
         return String.format(
-            "/%s/%d",
+            "%s/%d",
             category.name().toLowerCase(ROOT),
             domainId
         );

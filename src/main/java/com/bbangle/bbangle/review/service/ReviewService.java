@@ -1,42 +1,33 @@
 package com.bbangle.bbangle.review.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
-
-import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.image.domain.Image;
+import com.bbangle.bbangle.image.domain.ImageCategory;
+import com.bbangle.bbangle.image.repository.ImageRepository;
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
-import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.review.domain.ReviewCursor;
-import com.bbangle.bbangle.review.domain.ReviewImg;
-import com.bbangle.bbangle.review.dto.ReviewDto;
-import com.bbangle.bbangle.review.domain.ReviewLike;
-import com.bbangle.bbangle.review.domain.ReviewManager;
-import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
-import com.bbangle.bbangle.review.dto.ReviewImgDto;
-import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
-import com.bbangle.bbangle.review.dto.ReviewRateResponse;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
-import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
-import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.domain.*;
+import com.bbangle.bbangle.review.dto.*;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
+import static java.util.Locale.ROOT;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +35,8 @@ public class ReviewService {
 
     private static final Boolean WRITE = true;
     private static final Boolean DELETE = false;
+    private static final String BUCKET_DOMAIN = "https://bbangle-bucket.kr.object.ncloudstorage.com/";
+    private static final String CTN_DOMAIN = "https://bbangree-oven.cdn.ntruss.com/";
 
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
@@ -56,6 +49,8 @@ public class ReviewService {
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewManager reviewManager;
     private final ReviewStatistics reviewStatistics;
+    private final ImageService imageService;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
@@ -65,17 +60,25 @@ public class ReviewService {
             .rate(reviewRequest.rate())
             .memberId(memberId)
             .boardId(reviewRequest.boardId())
+            .isBest(false)
             .build();
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
-        reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+        Long reviewId = savedReview.getId();
         boardStatisticService.updateReviewCount(reviewRequest.boardId(), review.getRate(), WRITE);
-
-   /*     //FIXME 따로 구현!
-        if(Objects.isNull(reviewRequest.photos())){
+        List<String> urls = reviewRequest.urls();
+        if(Objects.isNull(urls)){
             return;
         }
-        makeReviewImg(reviewRequest, review);*/
+        moveImages(urls, reviewId);
+    }
+
+    @Transactional
+    public ReviewImageUploadResponse uploadReviewImage(ReviewImageUploadRequest reviewImageUploadRequest, Long memberId) {
+        memberRepository.findMemberById(memberId);
+        List<String> urls = imageService.saveAll(reviewImageUploadRequest.category(), reviewImageUploadRequest.images());
+        return new ReviewImageUploadResponse(urls);
     }
 
     @Transactional(readOnly = true)
@@ -161,8 +164,8 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewImagesResponse getReviewImages(Long reviewId) {
-        List<ReviewImg> reviewImgs = reviewImgRepository.findByReviewId(reviewId);
-        List<String> urlList = reviewImgs.stream()
+        List<ReviewImg> reviewImages = reviewImgRepository.findByReviewId(reviewId);
+        List<String> urlList = reviewImages.stream()
                 .map(ReviewImg::getUrl)
                 .toList();
         return new ReviewImagesResponse(urlList);
@@ -226,7 +229,11 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.update(reviewRequest);
-        makeReviewImg(reviewRequest, review);
+        List<String> urls = reviewRequest.urls();
+        if(Objects.isNull(urls)){
+            return;
+        }
+        moveImages(urls, reviewId);
     }
 
     @Transactional
@@ -253,22 +260,11 @@ public class ReviewService {
         reviewImgRepository.delete(reviewImg);
     }
 
-    private void makeReviewImg(ReviewRequest reviewRequest, Review review) {
-//        Long reviewId = review.getId();
-//        Long boardId = reviewRequest.boardId();
-//        List<String> photos = reviewRequest.photos();
-//        photos.stream()
-//                .map(photo -> s3Service.saveImage(photo, BOARD_FOLDER + boardId + REVIEW_FOLDER + reviewId))
-//                .forEach(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
-//                        .reviewId(reviewId)
-//                        .url(reviewImgPath)
-//                        .build()));
-    }
-
     private boolean checkHasNext(int size) {
         return size >= PAGE_SIZE + 1;
     }
 
+    @Transactional
     public SummarizedReviewResponse getSummarizedReview(Long boardId) {
         List<ReviewDto> reviews = reviewRepository.findByBoardId(boardId);
 
@@ -281,5 +277,28 @@ public class ReviewService {
         List<String> popularBadgeList = reviewStatistics.getPopularBadgeList(reviews);
 
         return SummarizedReviewResponse.of(averageRatingScore, reviewCount, popularBadgeList);
+    }
+
+    private String createNewStoragePath(String extractedFileName, Long reviewId){
+        return ImageCategory.REVIEW.name().toLowerCase(ROOT)+"/"+reviewId+extractedFileName;
+    }
+
+    private void moveImages(List<String> urls, Long reviewId){
+        List<Image> images = imageRepository.findAllByPathIn(urls);
+
+        List<String> fromPaths = images.stream()
+                .map(Image::getPath)
+                .map(path -> path.replace(BUCKET_DOMAIN, ""))
+                .toList();
+
+        List<String> toPaths = fromPaths.stream()
+                .map(path -> path.substring(path.lastIndexOf("/")))
+                .map(extractedFileName -> createNewStoragePath(extractedFileName, reviewId))
+                .toList();
+
+        for(int i = 0; i < fromPaths.size(); i++){
+            images.get(i).update(reviewId, CTN_DOMAIN + toPaths.get(i));
+            imageService.move(fromPaths.get(i), toPaths.get(i));
+        }
     }
 }

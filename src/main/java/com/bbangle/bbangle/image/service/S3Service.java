@@ -3,9 +3,7 @@ package com.bbangle.bbangle.image.service;
 import static com.bbangle.bbangle.image.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
 import java.util.UUID;
@@ -44,6 +42,18 @@ class S3Service {
     return uploadImage(request, ext, changedImageName);
   }
 
+  public CopyObjectResult copyImage(String fromPath, String toPath){
+    AccessControlList acl = new AccessControlList();
+    acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
+    CopyObjectRequest copyObjectRequest = new CopyObjectRequest(
+            bucket,
+            fromPath,
+            bucket,
+            toPath)
+            .withAccessControlList(acl);
+    return amazonS3.copyObject(copyObjectRequest);
+  }
+
   private String uploadImage(
       final MultipartFile image,
       final String ext,
@@ -62,7 +72,7 @@ class S3Service {
     }
 
     return amazonS3.getUrl(bucket, changedImageName)
-        .toString();
+            .toString();
   }
 
   private String changeImageName(final String ext) {
@@ -70,5 +80,6 @@ class S3Service {
         .toString();
     return uuid + ext;
   }
+
 
 }
