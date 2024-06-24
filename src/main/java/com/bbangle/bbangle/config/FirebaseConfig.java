@@ -3,7 +3,6 @@ package com.bbangle.bbangle.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
@@ -15,7 +14,7 @@ import java.io.IOException;
 @Configuration
 public class FirebaseConfig {
 
-    @PostConstruct
+//    @PostConstruct
     public void init() {
         try {
             FileInputStream inputStream = new FileInputStream("src/main/resources/firebase/firebase_service_key.json");

@@ -230,8 +230,6 @@ CREATE TABLE push
     id            BIGINT AUTO_INCREMENT,
     fcm_token     VARCHAR(255) NOT NULL,
     member_id     BIGINT       NOT NULL,
-    store_id      BIGINT       NOT NULL,
-    board_id      BIGINT       NOT NULL,
     product_id    BIGINT       NOT NULL,
     push_category VARCHAR(255) NOT NULL,
     is_subscribed TINYINT      NOT NULL,
