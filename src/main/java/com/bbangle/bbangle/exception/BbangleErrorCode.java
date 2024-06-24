@@ -6,7 +6,10 @@ import org.springframework.http.HttpStatus;
 
 import java.util.stream.Stream;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 
 @Getter
 @RequiredArgsConstructor
