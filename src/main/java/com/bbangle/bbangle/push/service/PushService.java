@@ -32,8 +32,6 @@ public class PushService {
             Push newPush = Push.builder()
                     .fcmToken(request.fcmToken())
                     .memberId(memberId)
-                    .storeId(request.storeId())
-                    .boardId(request.boardId())
                     .productId(request.productId())
                     .pushCategory(PushCategory.valueOf(request.pushCategory()))
                     .subscribed(true)

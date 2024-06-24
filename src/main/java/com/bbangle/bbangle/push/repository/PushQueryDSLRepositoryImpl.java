@@ -33,15 +33,16 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
     @Override
     public List<PushResponse> findPushList(String pushCategory, Long memberId) {
         return queryFactory.select(new QPushResponse(
+                        product.id,
                         store.name,
                         product.title,
                         board.profile,
                         push.subscribed
                 ))
                 .from(push)
-                .join(board).on(push.boardId.eq(board.id))
-                .join(store).on(push.storeId.eq(store.id))
                 .join(product).on(push.productId.eq(product.id))
+                .join(board).on(product.board.id.eq(board.id))
+                .join(store).on(board.store.id.eq(store.id))
                 .where(commonFilter(memberId, null, pushCategory))
                 .fetch();
     }

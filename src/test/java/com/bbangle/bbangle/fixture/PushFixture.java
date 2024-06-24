@@ -9,12 +9,10 @@ import lombok.NoArgsConstructor;
 public class PushFixture {
 
 
-    public static Push newBbangketingPush(Long memberId, Long storeId, Long boardId, Long productId) {
+    public static Push newBbangketingPush(Long memberId, Long productId) {
         return Push.builder()
                 .fcmToken("testFcmToken1")
                 .memberId(memberId)
-                .storeId(storeId)
-                .boardId(boardId)
                 .productId(productId)
                 .pushCategory(PushCategory.BBANGCKETING)
                 .subscribed(true)
@@ -22,12 +20,10 @@ public class PushFixture {
     }
 
 
-    public static Push newRestockPush(Long memberId, Long storeId, Long boardId, Long productId) {
+    public static Push newRestockPush(Long memberId, Long productId) {
         return Push.builder()
                 .fcmToken("testFcmToken1")
                 .memberId(memberId)
-                .storeId(storeId)
-                .boardId(boardId)
                 .productId(productId)
                 .pushCategory(PushCategory.RESTOCK)
                 .subscribed(true)
@@ -35,12 +31,10 @@ public class PushFixture {
     }
 
 
-    public static Push newCanceledPush(Long memberId, Long storeId, Long boardId, Long productId) {
+    public static Push newCanceledPush(Long memberId, Long productId) {
         return Push.builder()
                 .fcmToken("testFcmToken1")
                 .memberId(memberId)
-                .storeId(storeId)
-                .boardId(boardId)
                 .productId(productId)
                 .pushCategory(PushCategory.BBANGCKETING)
                 .subscribed(false)

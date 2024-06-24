@@ -31,16 +31,21 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), store.getId(), board.getId(), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
 
         // when
         pushService.createPush(request, member.getId());
         long pushCount = pushRepository.count();
-        Push push = pushRepository.findById(1L).get();
+        Push resultPush = null;
+        List<Push> pushList = pushRepository.findAll();
+        for (Push p : pushList) {
+            resultPush = p;
+        }
 
         // then
         assertThat(pushCount).isOne();
-        assertThat(push.isSubscribed()).isTrue();
+        assertThat(pushList).hasSize(1);
+        assertThat(resultPush.isSubscribed()).isTrue();
     }
 
 
@@ -58,11 +63,16 @@ class PushServiceTest extends AbstractIntegrationTest {
         // when
         pushService.cancelPush(request, member.getId());
         long pushCount = pushRepository.count();
-        Push foundPush = pushRepository.findById(2L).get();
+        Push resultPush = null;
+        List<Push> pushList = pushRepository.findAll();
+        for (Push p : pushList) {
+            resultPush = p;
+        }
 
         // then
         assertThat(pushCount).isOne();
-        assertThat(foundPush.isSubscribed()).isFalse();
+        assertThat(pushList).hasSize(1);
+        assertThat(resultPush.isSubscribed()).isFalse();
     }
 
 
@@ -75,16 +85,21 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getStoreId(), push.getBoardId(), push.getProductId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
 
         // when
         pushService.createPush(request, member.getId());
         long pushCount = pushRepository.count();
-        Push foundPush = pushRepository.findById(3L).get();
+        Push resultPush = null;
+        List<Push> pushList = pushRepository.findAll();
+        for (Push p : pushList) {
+            resultPush = p;
+        }
 
         // then
         assertThat(pushCount).isOne();
-        assertThat(foundPush.isSubscribed()).isTrue();
+        assertThat(pushList).hasSize(1);
+        assertThat(resultPush.isSubscribed()).isTrue();
     }
 
 
@@ -133,7 +148,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Store store = createStore();
         Board board = createBoard(store);
         Product product = createProduct(board);
-        return PushFixture.newBbangketingPush(member.getId(), store.getId(), board.getId(), product.getId());
+        return PushFixture.newBbangketingPush(member.getId(), product.getId());
     }
 
 
@@ -141,7 +156,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Store store = createStore();
         Board board = createBoard(store);
         Product product = createProduct(board);
-        return PushFixture.newCanceledPush(member.getId(), store.getId(), board.getId(), product.getId());
+        return PushFixture.newCanceledPush(member.getId(), product.getId());
     }
 
 
@@ -152,8 +167,8 @@ class PushServiceTest extends AbstractIntegrationTest {
 
         for (int i = 1; i <= 10; i++) {
             Product product = createProduct(board);
-            Push bbangketingPush = PushFixture.newBbangketingPush(member.getId(), store.getId(), board.getId(), product.getId());
-            Push restockPush = PushFixture.newRestockPush(member.getId(), store.getId(), board.getId(), product.getId());
+            Push bbangketingPush = PushFixture.newBbangketingPush(member.getId(), product.getId());
+            Push restockPush = PushFixture.newRestockPush(member.getId(), product.getId());
             pushList.add(bbangketingPush);
             pushList.add(restockPush);
         }

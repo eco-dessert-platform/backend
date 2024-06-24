@@ -23,12 +23,6 @@ public class Push extends BaseEntity {
     @Column(name = "member_id")
     private Long memberId;
 
-    @Column(name = "store_id")
-    private Long storeId;
-
-    @Column(name = "board_id")
-    private Long boardId;
-
     @Column(name = "product_id")
     private Long productId;
 

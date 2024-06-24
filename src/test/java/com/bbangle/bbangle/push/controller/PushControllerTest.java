@@ -39,8 +39,8 @@ class PushControllerTest extends AbstractIntegrationTest {
     DatabaseCleaner databaseCleaner;
 
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setUp() {
         databaseCleaner.clearMember();
     }
 
@@ -54,9 +54,9 @@ class PushControllerTest extends AbstractIntegrationTest {
         Store store = createStore();
         Board board = createBoard(store);
         Product product = createProduct(board);
-        Member member = createMember();
+        createMember();
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), store.getId(), board.getId(), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -100,7 +100,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getStoreId(), push.getBoardId(), push.getProductId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -154,7 +154,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Store store = createStore();
         Board board = createBoard(store);
         Product product = createProduct(board);
-        return PushFixture.newBbangketingPush(member.getId(), store.getId(), board.getId(), product.getId());
+        return PushFixture.newBbangketingPush(member.getId(), product.getId());
     }
 
 
@@ -162,7 +162,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Store store = createStore();
         Board board = createBoard(store);
         Product product = createProduct(board);
-        return PushFixture.newCanceledPush(member.getId(), store.getId(), board.getId(), product.getId());
+        return PushFixture.newCanceledPush(member.getId(), product.getId());
     }
 
 
@@ -173,8 +173,8 @@ class PushControllerTest extends AbstractIntegrationTest {
 
         for (int i = 1; i <= 10; i++) {
             Product product = createProduct(board);
-            Push bbangketingPush = PushFixture.newBbangketingPush(member.getId(), store.getId(), board.getId(), product.getId());
-            Push restockPush = PushFixture.newRestockPush(member.getId(), store.getId(), board.getId(), product.getId());
+            Push bbangketingPush = PushFixture.newBbangketingPush(member.getId(), product.getId());
+            Push restockPush = PushFixture.newRestockPush(member.getId(), product.getId());
             pushList.add(bbangketingPush);
             pushList.add(restockPush);
         }
