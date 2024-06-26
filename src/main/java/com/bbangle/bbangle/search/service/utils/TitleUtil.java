@@ -19,8 +19,8 @@ public class TitleUtil {
         Map<String, List<String>> mappingTitleIds = new HashMap<>();
         for (TitleDto titleDto : titles) {
             mappingTitleIds
-                .computeIfAbsent(titleDto.title(), k -> new ArrayList<>())
-                .add(String.valueOf(titleDto.boardId()));
+                .computeIfAbsent(titleDto.getTitle(), k -> new ArrayList<>())
+                .add(String.valueOf(titleDto.getBoardId()));
         }
 
         return mappingTitleIds;
@@ -28,7 +28,7 @@ public class TitleUtil {
 
     public static List<String> getTitles(List<TitleDto> titleDtos) {
         return titleDtos.stream()
-            .map(TitleDto::title)
+            .map(TitleDto::getTitle)
             .toList();
     }
 
@@ -36,17 +36,17 @@ public class TitleUtil {
         MorphemeAnalyzer morphemeAnalyzer) {
         List<TitleDto> tokenizedTitles = new ArrayList<>();
         for (TitleDto titleDto : titleDtos) {
-            List<String> titles = morphemeAnalyzer.getNounTokenizer(titleDto.title().toLowerCase(
+            List<String> titles = morphemeAnalyzer.getNounTokenizer(titleDto.getTitle().toLowerCase(
                 Locale.ROOT));
 
             for (String title : titles) {
-                tokenizedTitles.add(new TitleDto(titleDto.boardId(), title));
+                tokenizedTitles.add(new TitleDto(titleDto.getBoardId(), title));
             }
 
-            titles = List.of(titleDto.title().split(" "));
+            titles = List.of(titleDto.getTitle().split(" "));
 
             for (String title : titles) {
-                tokenizedTitles.add(new TitleDto(titleDto.boardId(), title));
+                tokenizedTitles.add(new TitleDto(titleDto.getBoardId(), title));
             }
         }
 
