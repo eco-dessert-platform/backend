@@ -84,8 +84,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
 
         assertThat(boardAllTitleDtos).hasSize(2);
         boardAllTitleDtos.forEach(boardAllTitleDto -> {
-            assertThat(boardAllTitleDto.boardId()).isNotNull();
-            assertThat(boardAllTitleDto.title()).isNotNull();
+            assertThat(boardAllTitleDto.getBoardId()).isNotNull();
+            assertThat(boardAllTitleDto.getTitle()).isNotNull();
         });
 
     }

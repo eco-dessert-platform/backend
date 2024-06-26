@@ -16,6 +16,7 @@ import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.service.SearchLoadService;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -27,25 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 
 class SearchRepositoryTest extends AbstractIntegrationTest {
-
-    @Autowired
-    MemberRepository memberRepository;
     @Autowired
     SearchRepository searchRepository;
     @Autowired
-    StoreRepository storeRepository;
-    @Autowired
-    BoardRepository boardRepository;
-    @Autowired
-    ProductRepository productRepository;
+    SearchLoadService searchLoadService;
     @Autowired
     RedisRepository redisRepository;
-    @Autowired
-    SearchService searchService;
-    @Autowired
-    BoardStatisticRepository boardStatisticRepository;
-    @Autowired
-    EntityManager entityManager;
 
     private Store store;
     private Board board;
@@ -58,8 +46,9 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         createProductRelatedContent(15);
         redisRepository.delete("MIGRATION", "board");
         redisRepository.delete("MIGRATION", "store");
-        searchService.initSetting();
-        searchService.updateRedisAtBestKeyword();
+        searchLoadService.cashKeywords();
+        searchLoadService.cashAutoComplete();
+        searchLoadService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
