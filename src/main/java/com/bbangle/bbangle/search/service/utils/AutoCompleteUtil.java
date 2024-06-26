@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.service.utils;
 
 import com.bbangle.bbangle.util.CharacterNode;
-import com.bbangle.bbangle.util.mQueue;
+import com.bbangle.bbangle.util.CustomQueue;
 import java.util.LinkedList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -54,7 +54,7 @@ public class AutoCompleteUtil {
             return List.of();
         }
 
-        mQueue queue = new mQueue();
+        CustomQueue queue = new CustomQueue();
         queue.enqueue(prefixNode);
 
         LinkedList<String> words = new LinkedList<>();
