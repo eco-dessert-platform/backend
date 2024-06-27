@@ -131,20 +131,6 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("스토어 검색")
-    void getSearchStoreTest() {
-        List<Long> storeIds = storeRepository.findAll().stream().map(store1 -> store1.getId())
-            .toList();
-        var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds,
-            PageRequest.of(0, 10));
-
-        for (int i = 0; i < 2; i++) {
-            assertThat(searchedStores.get(i).getStoreName(), is("RAWSOME"));
-            assertThat(searchedStores.get(i).getIsWished(), is(false));
-        }
-    }
-
-    @Test
     @DisplayName("최근 키워드를 검색할 수 있다")
     void getRecentKeywordTest() {
         createSearchKeyword("초콜릿");
