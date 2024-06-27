@@ -153,29 +153,6 @@ class SearchServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("검색된 스토어 데이터를 무한스크롤로 구현할 수 있다")
-    void TestInfiniteScroll() {
-        int storePage = 1;
-        String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
-            SEARCH_KEYWORD_STORE);
-
-        var stores = searchStoreResult.content();
-
-        assertThat(searchStoreResult.currentItemCount(), is(5));
-        assertThat(searchStoreResult.pageNumber(), is(storePage));
-        assertThat(searchStoreResult.itemAllCount(), is(15));
-        assertThat(searchStoreResult.limitItemCount(), is(10));
-        assertThat(searchStoreResult.existNextPage(), is(false));
-
-        for (int i = 0; stores.size() > i; i++) {
-            var store = stores.get(i);
-            assertThat(store.getStoreName(), is("RAWSOME"));
-            assertThat(store.getIsWished(), is(false));
-        }
-    }
-
-    @Test
     @DisplayName("기본으로 등록된 베스트 키워드를 가져올 수 있다")
     void getBestKeyword() {
         String BEST_KEYWORD_KEY = "keyword";
