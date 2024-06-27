@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TitleUtil {
 
+    private static final String WORD_SPACING =  " ";
+
     public static Map<String, List<String>> getTitleBoardIdsMapping(List<TitleDto> titles) {
         Map<String, List<String>> mappingTitleIds = new HashMap<>();
         for (TitleDto titleDto : titles) {
@@ -36,17 +38,14 @@ public class TitleUtil {
         MorphemeAnalyzer morphemeAnalyzer) {
         List<TitleDto> tokenizedTitles = new ArrayList<>();
         for (TitleDto titleDto : titleDtos) {
-            List<String> titles = morphemeAnalyzer.getNounTokenizer(titleDto.getTitle().toLowerCase(
-                Locale.ROOT));
+            String lowerTitle = titleDto.getTitle().toLowerCase(Locale.ROOT);
+            List<String> words = morphemeAnalyzer.getNounTokenizer(lowerTitle);
+            List<String> splitWords = List.of(titleDto.getTitle().split(WORD_SPACING));
+            words.addAll(splitWords);
 
-            for (String title : titles) {
-                tokenizedTitles.add(new TitleDto(titleDto.getBoardId(), title));
-            }
-
-            titles = List.of(titleDto.getTitle().split(" "));
-
-            for (String title : titles) {
-                tokenizedTitles.add(new TitleDto(titleDto.getBoardId(), title));
+            for (String word : words) {
+                TitleDto wordTitleDto = new TitleDto(titleDto.getBoardId(), word);
+                tokenizedTitles.add(wordTitleDto);
             }
         }
 
