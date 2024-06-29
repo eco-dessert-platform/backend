@@ -53,8 +53,8 @@ class SearchServiceTest extends AbstractIntegrationTest {
         createProductRelatedContent(15);
         redisRepository.delete("MIGRATION", "board");
         redisRepository.delete("MIGRATION", "store");
-        searchLoadService.cashKeywords();
-        searchLoadService.cashAutoComplete();
+        searchLoadService.cacheKeywords();
+        searchLoadService.cacheAutoComplete();
         searchLoadService.updateRedisAtBestKeyword();
     }
 

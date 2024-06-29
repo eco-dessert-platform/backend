@@ -18,18 +18,12 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.bbangle.bbangle.search.service.utils.TitleUtil;
-import jakarta.annotation.PostConstruct;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDate;
-import java.util.Map;
-import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 @RequiredArgsConstructor
 public class SearchLoadService {
 
-    private static final int ONE_HOUR = 3600000;
+    private static final int ONE_HOUR = 3_600_000;
     private static final String BOARD_MIGRATION = "board";
     private static final String BEST_KEYWORD_KEY = "keyword";
     private static final String[] DEFAULT_SEARCH_KEYWORDS = {"글루텐프리", "비건", "저당", "키토제닉"};
@@ -42,10 +36,10 @@ public class SearchLoadService {
 
     @PostConstruct
     @Scheduled(cron = "0 0 0 * * *")
-    public void cashKeywords() {
-        boolean isTodayMigration = checkTodayMigration();
+    public void cacheKeywords() {
+        boolean isTodayMigrationCompleted = checkTodayMigration();
 
-        if (isTodayMigration) { // 일에 한번만 업데이트
+        if (isTodayMigrationCompleted) { // 일에 한번만 업데이트
             return;
         }
 
@@ -61,12 +55,11 @@ public class SearchLoadService {
         Map<String, List<String>> mappingTitles = TitleUtil.getTitleBoardIdsMapping(
             boardTokenizedTitles);
 
-        cashKeyword(mappingTitles);
+        cacheKeyword(mappingTitles);
         setKeywordMigration();
-        cashAutoComplete();
     }
 
-    private void cashKeyword(Map<String, List<String>> mappingTitles) {
+    private void cacheKeyword(Map<String, List<String>> mappingTitles) {
         redisRepository.setStringList(RedisEnum.BOARD.name(), mappingTitles);
     }
 
@@ -76,7 +69,8 @@ public class SearchLoadService {
     }
 
     @PostConstruct
-    public void cashAutoComplete() {
+    @Scheduled(cron = "0 0 0 * * *")
+    public void cacheAutoComplete() {
         List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
         List<TitleDto> productTitleDtos = productRepository.findAllTitle();
 
