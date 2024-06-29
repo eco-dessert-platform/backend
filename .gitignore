@@ -229,3 +229,7 @@ redis/data/dump.rdb
 *.env
 
 .jqwik-database
+
+## ssl ##
+*.crt
+*.key
