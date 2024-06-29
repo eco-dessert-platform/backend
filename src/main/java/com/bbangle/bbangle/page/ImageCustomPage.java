@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.page;
 
-import com.bbangle.bbangle.review.dto.ReviewImgDto;
+import com.bbangle.bbangle.image.dto.ImageDto;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ public class ImageCustomPage<T> extends CustomPage<T>{
         super(content, requestCursor, hasNext);
     }
 
-    public static ImageCustomPage<List<ReviewImgDto>> from(List<ReviewImgDto> content,
-                                                           Long requestCursor,
-                                                           Boolean hasNext){
+    public static ImageCustomPage<List<ImageDto>> from(List<ImageDto> content,
+                                                       Long requestCursor,
+                                                       Boolean hasNext){
         return new ImageCustomPage<>(content, requestCursor, hasNext);
     }
 }
