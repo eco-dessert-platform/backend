@@ -4,20 +4,23 @@ import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
+import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.push.repository.PushRepository;
+import com.bbangle.bbangle.push.service.FcmService;
+import com.bbangle.bbangle.push.service.PushService;
 import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
@@ -31,11 +34,6 @@ import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -43,6 +41,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 
@@ -70,6 +74,10 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected WishListBoardService wishListBoardService;
     @Autowired
+    protected PushService pushService;
+    @Autowired
+    protected FcmService fcmService;
+    @Autowired
     protected BoardRepository boardRepository;
     @Autowired
     protected StoreRepository storeRepository;
@@ -93,6 +101,8 @@ public abstract class AbstractIntegrationTest {
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
     protected NotificationRepository notificationRepository;
+    @Autowired
+    protected PushRepository pushRepository;
 
     @BeforeEach
     void before() {
@@ -109,6 +119,7 @@ public abstract class AbstractIntegrationTest {
         wishListStoreRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
         notificationRepository.deleteAllInBatch();
+        pushRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()

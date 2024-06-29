@@ -188,6 +188,7 @@ CREATE TABLE notice
     CONSTRAINT product_img_pk PRIMARY KEY (id),
     created_at DATETIME(6)
 );
+
 create table product_detail
 (
     id               bigint auto_increment,
@@ -198,6 +199,7 @@ create table product_detail
     constraint fk_product_board_product_detail
         foreign key (product_board_id) references product_board (id)
 );
+
 create table withdrawal
 (
     id          bigint auto_increment,
@@ -210,3 +212,16 @@ create table withdrawal
         foreign key (member_id) references member (id)
 );
 
+CREATE TABLE push
+(
+    id            BIGINT AUTO_INCREMENT,
+    fcm_token     VARCHAR(255) NOT NULL,
+    member_id     BIGINT       NOT NULL,
+    product_id    BIGINT       NOT NULL,
+    push_category VARCHAR(255) NOT NULL,
+    is_subscribed TINYINT      NOT NULL,
+    created_at    DATETIME(6)  NULL,
+    modified_at   DATETIME(6)  NULL,
+    CONSTRAINT push_pk PRIMARY KEY (id),
+    INDEX idx_member_product_id (member_id, product_id)
+);
