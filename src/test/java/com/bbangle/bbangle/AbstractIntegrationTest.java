@@ -10,14 +10,16 @@ import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
+import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
@@ -93,6 +95,8 @@ public abstract class AbstractIntegrationTest {
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
     protected NotificationRepository notificationRepository;
+    @Autowired
+    protected ImageRepository imageRepository;
 
     @BeforeEach
     void before() {
@@ -109,6 +113,7 @@ public abstract class AbstractIntegrationTest {
         wishListStoreRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
         notificationRepository.deleteAllInBatch();
+        imageRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()

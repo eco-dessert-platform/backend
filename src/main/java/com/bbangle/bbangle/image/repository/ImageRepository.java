@@ -14,4 +14,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     );
 
     List<Image> findAllByPathIn(List<String> urls);
+
+    List<Image> findByDomainId(Long reviewId);
 }
