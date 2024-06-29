@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum PushCategory {
-    BBANGCKETING("빵켓팅"),
+    BBANGCKETING("입고"),
     RESTOCK("재입고");
 
     private final String description;

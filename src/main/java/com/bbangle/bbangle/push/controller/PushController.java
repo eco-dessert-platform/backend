@@ -4,7 +4,6 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,16 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PushController {
 
-    private final FcmService fcmService;
     private final PushService pushService;
     private final ResponseService responseService;
 
 
     @PostMapping
     public CommonResult createPush(
-            @Validated @RequestBody CreatePushRequest request,
-            @AuthenticationPrincipal Long memberId
+            @Validated @RequestBody CreatePushRequest request
+//            @AuthenticationPrincipal Long memberId
     ) {
+        Long memberId = 1L;
         pushService.createPush(request, memberId);
         return responseService.getSuccessResult();
     }
@@ -60,19 +59,11 @@ public class PushController {
 
     @GetMapping
     public CommonResult getPush(
-            @RequestParam(value = "pushCategory") String pushCategory,
-            @AuthenticationPrincipal Long memberId
+            @RequestParam(value = "pushCategory") String pushCategory
+//            @AuthenticationPrincipal Long memberId
     ) {
+        Long memberId = 1L;
         return responseService.getListResult(pushService.getPush(pushCategory, memberId));
     }
-
-
-//    @PostMapping("/push")
-//    public CommonResult sendPush(@RequestBody SendPushRequest request) {
-//        System.out.println("requestDto = " + request);
-//
-//        fcmService.sendPush(request);
-//        return responseService.getSuccessResult();
-//    }
 
 }

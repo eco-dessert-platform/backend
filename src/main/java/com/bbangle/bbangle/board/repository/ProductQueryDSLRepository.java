@@ -11,4 +11,6 @@ public interface ProductQueryDSLRepository {
     Map<Long, Set<Category>> getCategoryInfoByBoardId(List<Long> boardIds);
 
     List<TagCategoryDto> getTagCategory(List<Long> boardIds);
+
+    Set<Long> findProductJustStocked(List<Long> subscribedProductIdList);
 }

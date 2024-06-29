@@ -6,14 +6,15 @@ import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.TagCategoryDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
 
 @Repository
 @Slf4j
@@ -69,4 +70,16 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             .where(product.board.id.in(boardIds))
             .fetch();
     }
+
+
+    @Override
+    public Set<Long> findProductJustStocked(List<Long> subscribedProductIdList) {
+        return new HashSet<>(queryFactory.select(product.id)
+                .from(product)
+                .where(product.soldout.isFalse()
+                        .and(product.id.in(subscribedProductIdList))
+                )
+                .fetch());
+    }
+
 }
