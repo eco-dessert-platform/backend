@@ -49,7 +49,6 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
-    private final BoardStatisticService boardStatisticService;
     private final StoreService storeService;
     private final ReviewService reviewService;
 
