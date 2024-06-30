@@ -225,3 +225,94 @@ CREATE TABLE push
     CONSTRAINT push_pk PRIMARY KEY (id),
     INDEX idx_member_product_id (member_id, product_id)
 );
+
+create table board_statistic
+(
+    id                 bigint auto_increment
+        primary key,
+    basic_score        double  null,
+    board_id           bigint  null,
+    board_review_grade decimal null,
+    board_view_count   int     null,
+    board_review_count int     null,
+    board_wish_count   int     null,
+    constraint UK_82k7w1lpdtkfx9fvuw2lg73qh
+        unique (board_id)
+)
+    charset = utf8mb4;
+
+create table image
+(
+    id             bigint auto_increment
+        primary key,
+    image_category varchar(30)  null,
+    domain_id      bigint       null,
+    image_order    int          null,
+    path           varchar(255) null,
+    created_at     datetime     null,
+    modified_at    datetime     null
+);
+
+create table member_preference
+(
+    id            bigint auto_increment
+        primary key,
+    member_id     bigint not null,
+    preference_id bigint not null,
+    constraint member_id
+        unique (member_id)
+);
+
+create table preference
+(
+    id              bigint auto_increment
+        primary key,
+    preference_type varchar(50) not null
+);
+
+-- auto-generated definition
+create table review
+(
+    id            bigint auto_increment
+        primary key,
+    member_id     bigint                       not null,
+    board_id      bigint                       null,
+    badge_taste   varchar(20)                  null,
+    badge_brix    varchar(20)                  null,
+    badge_texture varchar(20)                  null,
+    rate          decimal(2, 1)                null,
+    content       varchar(255) charset utf8mb4 null,
+    created_at    datetime(6)                  null,
+    modified_at   datetime(6)                  null,
+    is_deleted    tinyint                      null,
+    is_best       tinyint                      null
+);
+-- auto-generated definition
+create table review_img
+(
+    id          bigint auto_increment
+        primary key,
+    review_id   bigint       not null,
+    url         varchar(255) not null,
+    created_at  datetime(6)  null,
+    modified_at datetime(6)  null
+)
+    charset = utf8mb4;
+
+create table review_like
+(
+    id        bigint auto_increment
+        primary key,
+    member_id bigint not null,
+    review_id bigint not null,
+    constraint fk_member_review_like
+        foreign key (member_id) references member (id),
+    constraint fk_review_review_like
+        foreign key (review_id) references review (id)
+);
+
+
+
+
+
+
