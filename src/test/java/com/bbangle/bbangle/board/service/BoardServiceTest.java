@@ -59,15 +59,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
     private static final Long NULL_MEMBER = null;
     private final String TEST_TITLE = "TestTitle";
 
-    @Autowired
-    BoardService boardService;
-
-    @Autowired
-    WishListBoardService wishListBoardService;
-
-    @Autowired
-    EntityManager entityManager;
-
     Board board;
     Board board2;
     Store store;

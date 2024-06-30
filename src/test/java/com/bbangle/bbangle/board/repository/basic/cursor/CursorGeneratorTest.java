@@ -224,7 +224,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .getCursor(NULL_CURSOR);
 
             //then
-            assertThat(recommendCursor.getValue()).isNull();
+            assertThat(recommendCursor.getValue()).isEqualTo(QBoard.board.isDeleted.eq(false));
         }
 
         @Test
@@ -241,6 +241,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder()
+                .and(QBoard.board.isDeleted.eq(false))
                 .and(QBoardStatistic.boardStatistic.basicScore.lt(expectedScore))
                 .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore).and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
