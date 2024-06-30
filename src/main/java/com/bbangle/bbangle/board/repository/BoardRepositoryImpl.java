@@ -4,10 +4,10 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProductImg;
-import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
+import com.bbangle.bbangle.board.dto.QTitleDto;
+import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
 import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
@@ -53,10 +53,13 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<BoardAllTitleDto> findTitleByBoardAll() {
+    public List<TitleDto> findAllTitle() {
         return queryFactory.select(
-                new QBoardAllTitleDto(board.id, board.title))
+                new QTitleDto(
+                    board.id,
+                    board.title))
             .from(board)
+            .orderBy(board.id.desc())
             .fetch();
     }
 

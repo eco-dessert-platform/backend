@@ -3,7 +3,9 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TagCategoryDto;
+import com.bbangle.bbangle.board.dto.TitleDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.HashSet;
@@ -67,6 +69,17 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             )
             .from(product)
             .where(product.board.id.in(boardIds))
+            .fetch();
+    }
+
+    @Override
+    public List<TitleDto> findAllTitle() {
+        return queryFactory.select(
+                new QTitleDto(
+                    product.board.id,
+                    product.title))
+            .from(product)
+            .orderBy(board.id.desc())
             .fetch();
     }
 }
