@@ -81,4 +81,14 @@ public class Review extends BaseEntity {
         this.isDeleted = true;
     }
 
+    public static Review of(ReviewRequest reviewRequest, Long memberId) {
+        return Review.builder()
+                .content(reviewRequest.content())
+                .rate(reviewRequest.rate())
+                .memberId(memberId)
+                .boardId(reviewRequest.boardId())
+                .isBest(false)
+                .build();
+    }
+
 }
