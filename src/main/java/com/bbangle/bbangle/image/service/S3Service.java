@@ -3,7 +3,14 @@ package com.bbangle.bbangle.image.service;
 import static com.bbangle.bbangle.image.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.CopyObjectResult;
+import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.Permission;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
 import java.util.UUID;
@@ -43,14 +50,14 @@ class S3Service {
   }
 
   public CopyObjectResult copyImage(String fromPath, String toPath){
-    AccessControlList acl = new AccessControlList();
-    acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
+    AccessControlList accessControlList = new AccessControlList();
+    accessControlList.grantPermission(GroupGrantee.AllUsers, Permission.Read);
     CopyObjectRequest copyObjectRequest = new CopyObjectRequest(
             bucket,
             fromPath,
             bucket,
             toPath)
-            .withAccessControlList(acl);
+            .withAccessControlList(accessControlList);
     return amazonS3.copyObject(copyObjectRequest);
   }
 
