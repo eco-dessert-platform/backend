@@ -26,7 +26,8 @@ public class BoardPageGenerator {
     private static final Long NO_NEXT_CURSOR = -1L;
     private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
-    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<BoardResponseDao> boardDaos, Boolean isInFolder) {
+    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(
+        List<BoardResponseDao> boardDaos, Boolean isInFolder) {
         if (boardDaos.isEmpty()) {
             return BoardCustomPage.emptyPage();
         }
@@ -48,7 +49,8 @@ public class BoardPageGenerator {
         List<BoardResponseDao> boardResponseDaoList,
         Boolean isInFolder
     ) {
-        Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(boardResponseDaoList);
+        Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
+            boardResponseDaoList);
 
         Map<Long, Boolean> isBundled = getIsBundled(boardResponseDaoList);
 
@@ -63,7 +65,7 @@ public class BoardPageGenerator {
         Map<Long, Boolean> isBundled,
         Map<Long, List<String>> tagMapByBoardId
     ) {
-        if(isInFolder){
+        if (Boolean.TRUE.equals(isInFolder)) {
             return boardResponseDaoList.stream()
                 .map(boardDao -> BoardResponseDto.inFolder(
                     boardDao,
@@ -82,7 +84,8 @@ public class BoardPageGenerator {
             .toList();
     }
 
-    private static Map<Long, List<String>> getTagListFromBoardResponseDao(List<BoardResponseDao> boardResponseDaoList) {
+    private static Map<Long, List<String>> getTagListFromBoardResponseDao(
+        List<BoardResponseDao> boardResponseDaoList) {
         return boardResponseDaoList.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
@@ -121,7 +124,8 @@ public class BoardPageGenerator {
             );
     }
 
-    private static List<BoardResponseDao> removeDuplicatesByBoardId(List<BoardResponseDao> boardResponseDaos) {
+    private static List<BoardResponseDao> removeDuplicatesByBoardId(
+        List<BoardResponseDao> boardResponseDaos) {
         Map<Long, BoardResponseDao> uniqueBoardMap = boardResponseDaos.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
