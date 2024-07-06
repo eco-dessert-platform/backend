@@ -1,15 +1,15 @@
 package com.bbangle.bbangle.common.redis.repository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
@@ -23,7 +23,7 @@ public class RedisRepositoryImpl implements RedisRepository {
         return redisTemplate.opsForList()
             .range(multiKey, 0, -1)
             .stream()
-            .map(o -> Long.parseLong(o.toString()))
+            .map(object -> Long.parseLong(object.toString()))
             .toList();
     }
 
@@ -51,6 +51,17 @@ public class RedisRepositoryImpl implements RedisRepository {
         String multiKey = namespace + ":" + key;
         redisTemplate.opsForList()
             .rightPushAll(multiKey, values);
+    }
+
+    @Override
+    public void setStringList(String namespace, Map<String, List<String>> values) {
+        for (Entry<String, List<String>> valueList : values.entrySet()) {
+            String multiKey = namespace + ":" + valueList.getKey();
+
+            for (String value : valueList.getValue()) {
+                redisTemplate.opsForList().rightPush(multiKey, value);
+            }
+        }
     }
 
     @Override

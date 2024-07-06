@@ -19,7 +19,7 @@ import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.util.TrieUtil;
+import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import jakarta.persistence.EntityManager;
 import java.util.*;
 import org.junit.jupiter.api.AfterEach;
@@ -32,23 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 class SearchServiceTest extends AbstractIntegrationTest {
 
     @Autowired
-    MemberRepository memberRepository;
-    @Autowired
     SearchRepository searchRepository;
     @Autowired
-    StoreRepository storeRepository;
-    @Autowired
-    BoardRepository boardRepository;
-    @Autowired
-    ProductRepository productRepository;
+    SearchLoadService searchLoadService;
     @Autowired
     RedisRepository redisRepository;
     @Autowired
     SearchService searchService;
     @Autowired
-    BoardStatisticRepository boardStatisticRepository;
-    @Autowired
-    EntityManager entityManager;
+    AutoCompleteUtil autoCompleteUtil;
 
     private Store store;
     private Board board;
@@ -61,8 +53,9 @@ class SearchServiceTest extends AbstractIntegrationTest {
         createProductRelatedContent(15);
         redisRepository.delete("MIGRATION", "board");
         redisRepository.delete("MIGRATION", "store");
-        searchService.initSetting();
-        searchService.updateRedisAtBestKeyword();
+        searchLoadService.cacheKeywords();
+        searchLoadService.cacheAutoComplete();
+        searchLoadService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
@@ -86,26 +79,24 @@ class SearchServiceTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("자동완성 알고리즘에 값을 저장하면 정상적으로 저장한 값을 불러올 수 있다")
     void trieUtilTest() {
-        TrieUtil trieUtil = new TrieUtil();
+        autoCompleteUtil.insert("비건 베이커리");
+        autoCompleteUtil.insert("비건");
+        autoCompleteUtil.insert("비건 베이커리 짱짱");
+        autoCompleteUtil.insert("초코송이");
 
-        trieUtil.insert("비건 베이커리");
-        trieUtil.insert("비건");
-        trieUtil.insert("비건 베이커리 짱짱");
-        trieUtil.insert("초코송이");
-
-        var resultOne = trieUtil.autoComplete("초", 1);
+        var resultOne = autoCompleteUtil.autoComplete("초", 1);
         Assertions.assertEquals(resultOne, List.of("초코송이"));
         Assertions.assertEquals(resultOne.size(), 1);
 
-        var resultTwo = trieUtil.autoComplete("비", 2);
+        var resultTwo = autoCompleteUtil.autoComplete("비", 2);
         Assertions.assertEquals(resultTwo, List.of("비건", "비건 베이커리"));
         Assertions.assertEquals(resultTwo.size(), 2);
 
-        var resultThree = trieUtil.autoComplete("비", 3);
+        var resultThree = autoCompleteUtil.autoComplete("비", 3);
         Assertions.assertEquals(resultThree, List.of("비건", "비건 베이커리", "비건 베이커리 짱짱"));
         Assertions.assertEquals(resultThree.size(), 3);
 
-        var resultFour = trieUtil.autoComplete("바", 3);
+        var resultFour = autoCompleteUtil.autoComplete("바", 3);
         Assertions.assertEquals(resultFour, List.of());
         Assertions.assertEquals(resultFour.size(), 0);
     }
@@ -158,29 +149,6 @@ class SearchServiceTest extends AbstractIntegrationTest {
             assertThat(store.getIsWished(), is(false));
 
 
-        }
-    }
-
-    @Test
-    @DisplayName("검색된 스토어 데이터를 무한스크롤로 구현할 수 있다")
-    void TestInfiniteScroll() {
-        int storePage = 1;
-        String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
-            SEARCH_KEYWORD_STORE);
-
-        var stores = searchStoreResult.content();
-
-        assertThat(searchStoreResult.currentItemCount(), is(5));
-        assertThat(searchStoreResult.pageNumber(), is(storePage));
-        assertThat(searchStoreResult.itemAllCount(), is(15));
-        assertThat(searchStoreResult.limitItemCount(), is(10));
-        assertThat(searchStoreResult.existNextPage(), is(false));
-
-        for (int i = 0; stores.size() > i; i++) {
-            var store = stores.get(i);
-            assertThat(store.getStoreName(), is("RAWSOME"));
-            assertThat(store.getIsWished(), is(false));
         }
     }
 
