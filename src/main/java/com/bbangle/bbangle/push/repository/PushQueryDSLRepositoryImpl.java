@@ -59,7 +59,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                     board.title,
                     product.id,
                     product.title,
-                    push.pushCategory.stringValue()
+                    push.pushCategory
                 ))
                 .from(push)
                 .join(member).on(push.memberId.eq(member.id))

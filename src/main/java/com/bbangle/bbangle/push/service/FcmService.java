@@ -3,8 +3,8 @@ package com.bbangle.bbangle.push.service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.Notification;
-import com.bbangle.bbangle.push.dto.Notification.Message;
+import com.bbangle.bbangle.push.dto.Message;
+import com.bbangle.bbangle.push.dto.Message.Notification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,11 @@ public class FcmService {
     public void send(List<FcmRequest> requestList) {
         for (FcmRequest request : requestList) {
             String message = makeMessage(request);
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .build();
             RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
             Request httpRequest = new Request.Builder()
                     .url(FCM_API_URL)
@@ -50,29 +55,24 @@ public class FcmService {
                     .build();
             System.out.println("httpRequest = " + httpRequest);
 
-            Response httpResponse;
             try {
-                httpResponse = client.newCall(httpRequest).execute();
+                Response httpResponse = client.newCall(httpRequest).execute();
+                System.out.println("httpResponse = " + httpResponse.body().string());
             } catch (IOException e) {
                 throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);
             }
-
-            System.out.println("httpResponse = " + httpResponse);
         }
     }
 
 
     private String makeMessage(FcmRequest request) {
-        Notification notification = Notification.of(
+        Message message = Message.of(
                 request.getFcmToken(),
-                Message.of(
-                    request.getTitle(),
-                    request.getBody()
-                )
+                Notification.of(request)
         );
 
         try {
-            return objectMapper.writeValueAsString(notification);
+            return objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }

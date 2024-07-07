@@ -1,8 +1,11 @@
 package com.bbangle.bbangle.push.dto;
 
+import com.bbangle.bbangle.push.domain.PushCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @Getter
 @NoArgsConstructor
 public class FcmRequest {
@@ -14,15 +17,15 @@ public class FcmRequest {
     private String title;
     private String body;
 
-    public FcmRequest(String fcmToken, String memberName, String boardTitle, String productTitle, String pushCategory) {
+    public FcmRequest(String fcmToken, String memberName, String boardTitle, String productTitle, PushCategory pushCategory) {
         this.fcmToken = fcmToken;
         this.memberName = memberName;
         this.boardTitle = boardTitle;
         this.productTitle = productTitle;
-        this.pushCategory = pushCategory;
+        this.pushCategory = pushCategory.getDescription();
     }
 
-    public void setPushMessage(String title, String body) {
+    public void editPushMessage(String title, String body) {
         this.title = title;
         this.body = body;
     }

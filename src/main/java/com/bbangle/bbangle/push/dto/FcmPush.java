@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.push.dto;
 
+import com.bbangle.bbangle.push.domain.PushCategory;
 import com.querydsl.core.annotations.QueryProjection;
 
 public record FcmPush(
@@ -8,7 +9,7 @@ public record FcmPush(
     String boardTitle,
     Long productId,
     String productTitle,
-    String pushCategory
+    PushCategory pushCategory
 ) {
 
     @QueryProjection

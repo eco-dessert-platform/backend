@@ -28,10 +28,9 @@ public class PushController {
 
     @PostMapping
     public CommonResult createPush(
-            @Validated @RequestBody CreatePushRequest request
-//            @AuthenticationPrincipal Long memberId
+            @Validated @RequestBody CreatePushRequest request,
+            @AuthenticationPrincipal Long memberId
     ) {
-        Long memberId = 1L;
         pushService.createPush(request, memberId);
         return responseService.getSuccessResult();
     }
@@ -58,12 +57,11 @@ public class PushController {
 
 
     @GetMapping
-    public CommonResult getPush(
-            @RequestParam(value = "pushCategory") String pushCategory
-//            @AuthenticationPrincipal Long memberId
+    public CommonResult getPushes(
+            @RequestParam(value = "pushCategory") String pushCategory,
+            @AuthenticationPrincipal Long memberId
     ) {
-        Long memberId = 1L;
-        return responseService.getListResult(pushService.getPush(pushCategory, memberId));
+        return responseService.getListResult(pushService.getPushes(pushCategory, memberId));
     }
 
 }
