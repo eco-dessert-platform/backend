@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TitleUtil {
 
-    private static final String WORD_SPACING =  " ";
+    private static final String WORD_SPACING = " ";
 
     public static Map<String, List<String>> getTitleBoardIdsMapping(List<TitleDto> titles) {
         Map<String, List<String>> mappingTitleIds = new HashMap<>();
@@ -38,6 +39,11 @@ public class TitleUtil {
         MorphemeAnalyzer morphemeAnalyzer) {
         List<TitleDto> tokenizedTitles = new ArrayList<>();
         for (TitleDto titleDto : titleDtos) {
+
+            if (Objects.isNull(titleDto.getTitle())) {
+                continue;
+            }
+
             String lowerTitle = titleDto.getTitle().toLowerCase(Locale.ROOT);
             List<String> words = morphemeAnalyzer.getNounTokenizer(lowerTitle);
             List<String> splitWords = List.of(titleDto.getTitle().split(WORD_SPACING));
