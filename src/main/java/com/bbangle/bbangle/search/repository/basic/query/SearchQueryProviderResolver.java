@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SearchQueryProviderResolver {
 
-    private final SearchRecommendSearchQueryProviderResolver boardQueryProviderResolver;
-    private final SearchLowPriceSearchQueryProviderResolver lowPriceBoardQueryProviderResolver;
-    private final SearchHighPriceSearchQueryProviderResolver highPriceBoardQueryProviderResolver;
-    private final SearchRecentSearchQueryProviderResolver recentBoardQueryProviderResolver;
-    private final SearchHighRatedSearchQueryProviderResolver highRatedBoardQueryProviderResolver;
-    private final SearchMostWishedSearchQueryProviderResolver mostWishedBoardQueryProviderResolver;
-    private final SearchMostReviewedSearchQueryProviderResolver mostReviewedBoardQueryProviderResolver;
+    private final SearchRecommendBoardQueryProviderResolver boardQueryProviderResolver;
+    private final SearchLowPriceBoardQueryProviderResolver lowPriceBoardQueryProviderResolver;
+    private final SearchHighPriceBoardQueryProviderResolver highPriceBoardQueryProviderResolver;
+    private final SearchRecentBoardQueryProviderResolver recentBoardQueryProviderResolver;
+    private final SearchHighRatedBoardQueryProviderResolver highRatedBoardQueryProviderResolver;
+    private final SearchMostWishedBoardQueryProviderResolver mostWishedBoardQueryProviderResolver;
+    private final SearchMostReviewedBoardQueryProviderResolver mostReviewedBoardQueryProviderResolver;
 
 
     public SearchQueryProvider resolve(SortType sortType) {
