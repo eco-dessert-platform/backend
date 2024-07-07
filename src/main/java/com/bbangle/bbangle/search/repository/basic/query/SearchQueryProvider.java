@@ -14,4 +14,9 @@ public interface SearchQueryProvider {
         OrderSpecifier<?>[] sortOrder
     );
 
+    Long getCount(
+        List<Long> searchedIds,
+        BooleanBuilder filter
+    );
+
 }

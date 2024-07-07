@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SearchHighRatedSearchQueryProviderResolver implements SearchQueryProvider {
+public class SearchMostWishedBoardQueryProviderResolver implements SearchQueryProvider {
 
     private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
     private static final QBoard board = QBoard.board;
@@ -40,7 +40,7 @@ public class SearchHighRatedSearchQueryProviderResolver implements SearchQueryPr
             .join(board)
             .on(product.board.id.eq(board.id))
             .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .on(board.id.eq(boardStatistic.boardId))
             .where(cursorInfo.and(filter).and(board.id.in(searchedIds)))
             .orderBy(orderCondition)
             .limit(BOARD_PAGE_SIZE_PLUS_ONE)
@@ -66,12 +66,25 @@ public class SearchHighRatedSearchQueryProviderResolver implements SearchQueryPr
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();
     }
 
-}
+    @Override
+    public Long getCount(
+        List<Long> searchedIds,
+        BooleanBuilder filter
+    ) {
+        return jpaQueryFactory.select(board.id)
+            .distinct()
+            .from(product)
+            .join(board)
+            .on(product.board.id.eq(board.id))
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
+            .where(filter.and(board.id.in(searchedIds)))
+            .fetch().stream().count();
+    }
 
+}
