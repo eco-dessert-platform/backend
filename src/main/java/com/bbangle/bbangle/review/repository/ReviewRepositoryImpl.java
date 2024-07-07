@@ -5,21 +5,21 @@ import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.config.ranking.BoardGrade;
+import com.bbangle.bbangle.image.domain.QImage;
+import com.bbangle.bbangle.image.dto.QImageDto;
 import com.bbangle.bbangle.review.domain.QReview;
 import com.bbangle.bbangle.review.domain.QReviewImg;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.QReviewLike;
-import com.bbangle.bbangle.review.dto.QReviewImgDto;
+import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.review.dto.QReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewDto;
-import com.bbangle.bbangle.review.dto.ReviewImgDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
-import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -40,9 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -52,6 +49,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     private static final QReview review = QReview.review;
     private static final QMember member = QMember.member;
     private static final QReviewImg reviewImg = QReviewImg.reviewImg;
+    private static final QImage image = QImage.image;
     private static final QReviewLike reviewLike = QReviewLike.reviewLike;
     private static final Long PAGE_SIZE = 10L;
 
@@ -71,7 +69,8 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
                                 review.badgeTexture,
                                 review.content,
                                 review.createdAt,
-                                review.isBest
+                                review.isBest,
+                                review.boardId
                         )
                 )
                 .from(review)
@@ -88,15 +87,14 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     }
 
     @Override
-    public Map<Long, List<ReviewImgDto>> getImageMap(ReviewCursor reviewCursor) {
+    public Map<Long, List<ImageDto>> getImageMap(ReviewCursor reviewCursor) {
         BooleanBuilder imageCondition = getImageCondition(reviewCursor);
         List<Tuple> reviewImages = queryFactory.select(
-                        review.id,
-                        reviewImg.id,
-                        reviewImg.url
+                        image.domainId,
+                        image.id,
+                        image.path
                 )
-                .from(review)
-                .leftJoin(reviewImg).on(reviewImg.reviewId.eq(review.id))
+                .from(image)
                 .where(imageCondition)
                 .fetch();
         return createImageMap(reviewImages);
@@ -139,25 +137,25 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     }
 
     @Override
-    public List<ReviewImgDto> getAllImagesByBoardId(Long boardId, Long requestCursor) {
+    public List<ImageDto> getAllImagesByBoardId(Long boardId, Long requestCursor) {
         List<Long> fetch = queryFactory
                 .select(review.id)
                 .from(review)
                 .where(eqBoardId(boardId))
                 .fetch();
-        BooleanBuilder reviewImgCondition = new BooleanBuilder();
+        BooleanBuilder imageCondition = new BooleanBuilder();
         if(requestCursor != null){
-            reviewImgCondition.and(reviewImg.id.loe(requestCursor));
+            imageCondition.and(image.domainId.loe(requestCursor));
         }
-        reviewImgCondition.and(reviewImg.reviewId.in(fetch));
+        imageCondition.and(image.domainId.in(fetch));
         return queryFactory
-                .select(new QReviewImgDto(
-                        reviewImg.id,
-                        reviewImg.url
+                .select(new QImageDto(
+                        image.id,
+                        image.path
                 ))
-                .from(reviewImg)
-                .where(reviewImgCondition)
-                .orderBy(reviewImg.createdAt.desc())
+                .from(image)
+                .where(imageCondition)
+                .orderBy(image.createdAt.desc())
                 .limit(PAGE_SIZE + 1)
                 .fetch();
     }
@@ -280,23 +278,23 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     private BooleanBuilder getImageCondition(ReviewCursor reviewCursor) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         if(reviewCursor.reviewId() != null){
-            return booleanBuilder.and(review.id.eq(reviewCursor.reviewId()));
+            return booleanBuilder.and(image.domainId.eq(reviewCursor.reviewId()));
         }
-        booleanBuilder.and(review.id.between(reviewCursor.nextCursor(), reviewCursor.lastCursor()));
+        booleanBuilder.and(image.domainId.between(reviewCursor.nextCursor(), reviewCursor.lastCursor()));
 
         return booleanBuilder;
     }
 
-    private Map<Long, List<ReviewImgDto>> createImageMap(List<Tuple> reviewImages) {
+    private Map<Long, List<ImageDto>> createImageMap(List<Tuple> reviewImages) {
         return reviewImages
                 .stream()
                 .collect(toMap(
-                        reviewImage -> reviewImage.get(review.id),
+                        reviewImage -> reviewImage.get(image.domainId),
                         reviewImage -> {
-                            List<ReviewImgDto> images = new ArrayList<>();
-                            images.add(ReviewImgDto.builder()
-                                    .id(reviewImage.get(reviewImg.id))
-                                    .url(reviewImage.get(reviewImg.url))
+                            List<ImageDto> images = new ArrayList<>();
+                            images.add(ImageDto.builder()
+                                    .id(reviewImage.get(image.id))
+                                    .url(reviewImage.get(image.path))
                                     .build());
                             return images;
                         },

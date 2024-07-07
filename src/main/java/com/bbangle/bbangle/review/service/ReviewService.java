@@ -6,7 +6,7 @@ import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.domain.Image;
-import com.bbangle.bbangle.image.domain.ImageCategory;
+import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Member;
@@ -27,6 +27,7 @@ import java.util.*;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
+import static com.bbangle.bbangle.image.domain.ImageCategory.REVIEW;
 import static java.util.Locale.ROOT;
 
 @Service
@@ -36,7 +37,7 @@ public class ReviewService {
     private static final Boolean WRITE = true;
     private static final Boolean DELETE = false;
     private static final String BUCKET_DOMAIN = "https://bbangle-bucket.kr.object.ncloudstorage.com/";
-    private static final String CTN_DOMAIN = "https://bbangree-oven.cdn.ntruss.com/";
+    private static final String CDN_DOMAIN = "https://bbangree-oven.cdn.ntruss.com/";
 
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
@@ -55,13 +56,7 @@ public class ReviewService {
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
         memberRepository.findMemberById(memberId);
-        Review review = Review.builder()
-            .content(reviewRequest.content())
-            .rate(reviewRequest.rate())
-            .memberId(memberId)
-            .boardId(reviewRequest.boardId())
-            .isBest(false)
-            .build();
+        Review review = Review.of(reviewRequest, memberId);
         List<Badge> badges = reviewRequest.badges();
         badges.forEach(review::insertBadge);
         Review savedReview = reviewRepository.save(review);
@@ -113,7 +108,7 @@ public class ReviewService {
         if (hasNext) {
             reviewSingleList.remove(reviewSingleList.get(reviewSingListSize - 1));
         }
-        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : reviewSingleList){
             reviewManager.getTagMap(reviewSingleDto, tagMap);
@@ -150,25 +145,16 @@ public class ReviewService {
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .reviewId(reviewId)
                 .build();
-        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         reviewManager.getTagMap(reviewDetail, tagMap);
         Map<Long, List<Long>> likeMap = makeLikeMap(reviewCursor);
         return ReviewInfoResponse.create(reviewDetail, imageMap, tagMap, likeMap, memberId);
     }
 
-    private Map<Long, List<Long>> makeLikeMap(ReviewCursor reviewCursor) {
-        List<ReviewLike> likeList = reviewRepository.getLikeList(reviewCursor);
-        return reviewManager.getLikeMap(likeList);
-    }
-
     @Transactional(readOnly = true)
     public ReviewImagesResponse getReviewImages(Long reviewId) {
-        List<ReviewImg> reviewImages = reviewImgRepository.findByReviewId(reviewId);
-        List<String> urlList = reviewImages.stream()
-                .map(ReviewImg::getUrl)
-                .toList();
-        return new ReviewImagesResponse(urlList);
+        return new ReviewImagesResponse(imageService.findImagePathById(REVIEW, reviewId));
     }
 
     @Transactional(readOnly = true)
@@ -189,7 +175,7 @@ public class ReviewService {
         if (hasNext) {
             myReviewList.remove(myReviewList.get(myReviewListSize - 1));
         }
-        Map<Long, List<ReviewImgDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : myReviewList){
             reviewManager.getTagMap(reviewSingleDto, tagMap);
@@ -201,8 +187,8 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ImageCustomPage<List<ReviewImgDto>> getAllImagesByBoardId(Long boardId, Long cursorId) {
-        List<ReviewImgDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
+    public ImageCustomPage<List<ImageDto>> getAllImagesByBoardId(Long boardId, Long cursorId) {
+        List<ImageDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
         int allImagesSize = allImagesByBoardId.size();
         boolean hasNext = checkHasNext(allImagesSize);
         Long nextCursor = null;
@@ -216,11 +202,11 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewImgDto getImage(Long imageId) {
-        ReviewImg reviewImg = reviewImgRepository.findById(imageId)
+    public ImageDto getImage(Long imageId) {
+        Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
-        return ReviewImgDto.builder()
-                .url(reviewImg.getUrl())
+        return ImageDto.builder()
+                .url(image.getPath())
                 .build();
     }
     @Transactional
@@ -239,10 +225,10 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId, Long memberId) {
         memberRepository.findMemberById(memberId);
-        List<ReviewImg> reviewImgs = reviewImgRepository.findByReviewId(reviewId);
+        List<Image> reviewImages = imageRepository.findByDomainId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
-        if (!reviewImgs.isEmpty()) {
-            reviewImgRepository.deleteAllInBatch(reviewImgs);
+        if (!reviewImages.isEmpty()) {
+            imageRepository.deleteAllInBatch(reviewImages);
         }
         if(!reviewLikes.isEmpty()) {
             reviewLikeRepository.deleteAllInBatch(reviewLikes);
@@ -255,9 +241,9 @@ public class ReviewService {
 
     @Transactional
     public void deleteImage(Long imageId) {
-        ReviewImg reviewImg = reviewImgRepository.findById(imageId)
+        Image reviewImg = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
-        reviewImgRepository.delete(reviewImg);
+        imageRepository.delete(reviewImg);
     }
 
     private boolean checkHasNext(int size) {
@@ -280,25 +266,37 @@ public class ReviewService {
     }
 
     private String createNewStoragePath(String extractedFileName, Long reviewId){
-        return ImageCategory.REVIEW.name().toLowerCase(ROOT)+"/"+reviewId+extractedFileName;
+        return REVIEW.name().toLowerCase(ROOT)+"/"+reviewId+extractedFileName;
     }
 
     private void moveImages(List<String> urls, Long reviewId){
         List<Image> images = imageRepository.findAllByPathIn(urls);
-
-        List<String> fromPaths = images.stream()
-                .map(Image::getPath)
-                .map(path -> path.replace(BUCKET_DOMAIN, ""))
-                .toList();
-
-        List<String> toPaths = fromPaths.stream()
-                .map(path -> path.substring(path.lastIndexOf("/")))
-                .map(extractedFileName -> createNewStoragePath(extractedFileName, reviewId))
-                .toList();
+        List<String> fromPaths = makeTempStoragePath(images);
+        List<String> toPaths = makeFinalStoragePath(reviewId, fromPaths);
 
         for(int i = 0; i < fromPaths.size(); i++){
-            images.get(i).update(reviewId, CTN_DOMAIN + toPaths.get(i));
+            images.get(i).update(reviewId, CDN_DOMAIN + toPaths.get(i));
             imageService.move(fromPaths.get(i), toPaths.get(i));
         }
     }
+
+    private List<String> makeFinalStoragePath(Long reviewId, List<String> fromPaths) {
+        return fromPaths.stream()
+                .map(path -> path.substring(path.lastIndexOf("/")))
+                .map(extractedFileName -> createNewStoragePath(extractedFileName, reviewId))
+                .toList();
+    }
+
+    private List<String> makeTempStoragePath(List<Image> images) {
+        return images.stream()
+                .map(Image::getPath)
+                .map(path -> path.replace(BUCKET_DOMAIN, ""))
+                .toList();
+    }
+
+    private Map<Long, List<Long>> makeLikeMap(ReviewCursor reviewCursor) {
+        List<ReviewLike> likeList = reviewRepository.getLikeList(reviewCursor);
+        return reviewManager.getLikeMap(likeList);
+    }
+
 }

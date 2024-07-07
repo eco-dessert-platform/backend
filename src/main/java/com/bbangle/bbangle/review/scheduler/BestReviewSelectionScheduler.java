@@ -17,16 +17,22 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BestReviewSelectionScheduler implements ReviewScheduler {
+public class BestReviewSelectionScheduler {
     private final ReviewRepository reviewRepository;
     private static final Long MINIMUM_BEST_REVIEW_STANDARD = 5L;
 
 
-    @Override
     @Scheduled(cron = "0 0 12 * * ?")//매일 낮 12시
     @Transactional
-    public void selectBestReview() {
+    public void updateBestReview() {
         log.info("Scheduler started ........");
+        List<Long> bestReviewIds = getBestReviewIds();
+        log.info("start update process");
+        reviewRepository.updateBestReview(bestReviewIds);
+        log.info("finish update process");
+    }
+
+    public List<Long> getBestReviewIds() {
         List<ReviewCountPerBoardIdDto> reviewCounts = reviewRepository.getReviewCount();
         List<LikeCountPerReviewIdDto> likeCounts = reviewRepository.getLikeCount(MINIMUM_BEST_REVIEW_STANDARD);
         Map<Long, Integer> bestReviewSizeMap = getBestReviewCount(reviewCounts);
@@ -44,9 +50,7 @@ public class BestReviewSelectionScheduler implements ReviewScheduler {
         selectedReviewPerBoardIdMap.forEach((key, value) ->
                 bestReviewIds.addAll(value)
             );
-        log.info("start update process");
-        reviewRepository.updateBestReview(bestReviewIds);
-        log.info("finish update process");
+        return bestReviewIds;
     }
 
     private Map<Long, Integer> getBestReviewCount(List<ReviewCountPerBoardIdDto> reviewCounts) {

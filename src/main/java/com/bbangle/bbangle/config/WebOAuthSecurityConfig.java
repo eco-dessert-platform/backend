@@ -1,12 +1,5 @@
 package com.bbangle.bbangle.config;
 
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.PATCH;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
 import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
@@ -25,6 +18,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @RequiredArgsConstructor
 @Configuration
@@ -70,6 +70,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                     .requestMatchers("/api/v1/store/**").permitAll()
                     .requestMatchers("/api/v1/stores/**").permitAll()
                     .requestMatchers("/api/v1/health/**").permitAll()
+                    .requestMatchers("/api/v1/push/**").permitAll()
                     .requestMatchers(GET, "/api/v1/boards/**").permitAll()
                     .requestMatchers(PATCH, "/api/v1/boards/**").permitAll()
                     .requestMatchers(GET, "/api/v1/notification/**").permitAll()

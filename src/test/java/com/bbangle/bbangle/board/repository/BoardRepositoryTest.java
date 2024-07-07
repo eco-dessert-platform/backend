@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
@@ -80,12 +80,12 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     void getAllBoardTitle() {
         fixtureBoard(Map.of("title", TEST_TITLE));
         fixtureBoard(Map.of("title", TEST_TITLE));
-        List<BoardAllTitleDto> boardAllTitleDtos = boardRepository.findTitleByBoardAll();
+        List<TitleDto> boardAllTitleDtos = boardRepository.findAllTitle();
 
         assertThat(boardAllTitleDtos).hasSize(2);
         boardAllTitleDtos.forEach(boardAllTitleDto -> {
-            assertThat(boardAllTitleDto.boardId()).isNotNull();
-            assertThat(boardAllTitleDto.Title()).isNotNull();
+            assertThat(boardAllTitleDto.getBoardId()).isNotNull();
+            assertThat(boardAllTitleDto.getTitle()).isNotNull();
         });
 
     }

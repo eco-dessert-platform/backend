@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixture;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import java.math.BigDecimal;
+import com.bbangle.bbangle.review.domain.ReviewLike;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -23,7 +24,7 @@ public class ReviewFixture {
         return Review.builder()
             .boardId(boardId)
             .memberId(1L)
-            .badgeBrix(Badge.DRY)
+            .badgeBrix(Badge.SWEET)
             .badgeTaste(Badge.GOOD)
             .badgeTexture(Badge.SOFT)
             .content("content")
@@ -45,6 +46,13 @@ public class ReviewFixture {
             .content("content")
             .rate(rate)
             .build();
+    }
+
+    public static ReviewLike createReviewLike(Review review, Long memberId){
+        return ReviewLike.builder()
+                .memberId(memberId)
+                .reviewId(review.getId())
+                .build();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.review.dto;
 
+import com.bbangle.bbangle.image.dto.ImageDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ import java.util.Map;
 @Getter
 public class ReviewInfoResponse {
     private Long id;
-    private List<ReviewImgDto> images;
+    private List<ImageDto> images;
     private String nickname;
     private BigDecimal rating;
     private List<String> tags;
@@ -21,10 +22,11 @@ public class ReviewInfoResponse {
     private String comment;
     private LocalDateTime date;
     private Boolean isBest;
+    private Long boardId;
 
     public static List<ReviewInfoResponse> createList(
             List<ReviewSingleDto> reviewSingleList,
-            Map<Long, List<ReviewImgDto>> imageMap,
+            Map<Long, List<ImageDto>> imageMap,
             Map<Long, List<String>> tagMap,
             Map<Long, List<Long>> likeMap,
             final Long memberId) {
@@ -35,7 +37,7 @@ public class ReviewInfoResponse {
 
     public static ReviewInfoResponse create(
             ReviewSingleDto reviewSingle,
-            Map<Long, List<ReviewImgDto>> imageMap,
+            Map<Long, List<ImageDto>> imageMap,
             Map<Long, List<String>> tagMap,
             Map<Long, List<Long>> likeMap,
             final Long memberId) {
@@ -43,20 +45,15 @@ public class ReviewInfoResponse {
     }
 
     private static ReviewInfoResponse toReviewInfo(ReviewSingleDto reviewSingleDto,
-                                                   Map<Long, List<ReviewImgDto>> imageMap,
+                                                   Map<Long, List<ImageDto>> imageMap,
                                                    Map<Long, List<String>> tagMap,
                                                    Map<Long, List<Long>> likeMap,
                                                    final Long memberId){
-        List<ReviewImgDto> reviewImgDtos = imageMap.get(reviewSingleDto.id());
-        for (ReviewImgDto reviewImgDto : reviewImgDtos) {
-            if(reviewImgDto.getId() == null){
-                reviewImgDtos = null;
-                break;
-            }
-        }
+        List<ImageDto> imageDtos = imageMap.get(reviewSingleDto.id()) != null ?
+                imageMap.get(reviewSingleDto.id()) : null;
         return ReviewInfoResponse.builder()
                 .id(reviewSingleDto.id())
-                .images(reviewImgDtos)
+                .images(imageDtos)
                 .nickname(reviewSingleDto.nickname())
                 .rating(reviewSingleDto.rate())
                 .isBest(reviewSingleDto.isBest())
@@ -65,6 +62,7 @@ public class ReviewInfoResponse {
                 .tags(tagMap.get(reviewSingleDto.id()))
                 .comment(reviewSingleDto.content())
                 .date(reviewSingleDto.createdAt())
+                .boardId(reviewSingleDto.boardId())
                 .build();
     }
 
