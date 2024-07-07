@@ -1,24 +1,27 @@
 package com.bbangle.bbangle.search.service;
 
-import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
-import com.bbangle.bbangle.search.dto.response.SearchStoreResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.search.dto.response.SearchResponse;
+import com.bbangle.bbangle.search.dto.response.util.SearchPageGenerator;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.util.MorphemeAnalyzer;
+import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +29,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class SearchService {
+
     private static final String BEST_KEYWORD_KEY = "keyword";
-    private static final int DEFAULT_PAGE = 10;
     private static final int LIMIT_KEYWORD_COUNT = 10;
+    private static final Boolean DEFAULT_BOARD = false;
     private final SearchRepository searchRepository;
+    private final BoardRepository boardRepository;
+    private final MemberRepository memberRepository;
     private final RedisRepository redisRepository;
-    private final MorphemeAnalyzer morphemeAnalyzer;
     private final AutoCompleteUtil autoCompleteUtil;
+    private final KeywordUtil keywordUtil;
 
     @Transactional
     public void saveKeyword(Long memberId, String keyword) {
@@ -50,63 +56,60 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    public SearchBoardResponse getSearchBoardDtos(Long memberId, SearchBoardRequest boardRequest) {
+    public SearchCustomPage<SearchResponse> getBoardList(
+        FilterRequest filterRequest,
+        SortType sort,
+        String keyword,
+        Long cursorId,
+        Long memberId
+    ) {
+        List<Long> searchedBoardIndexs = keywordUtil.getBoardIds(keyword);
+        List<BoardResponseDao> boards = searchRepository.getBoardResponseList(
+            searchedBoardIndexs,
+            filterRequest,
+            sort,
+            cursorId);
 
-        Pageable pageable = PageRequest.of(boardRequest.page(), DEFAULT_PAGE);
+        Long boardCount = searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort);
 
-        if (boardRequest.keyword().isBlank()) {
-            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0L);
+        if (boardCount > LIMIT_KEYWORD_COUNT) {
+            boardCount--;
         }
 
-        List<String> keywordTokens = morphemeAnalyzer.getAllTokenizer(boardRequest.keyword());
+        SearchCustomPage<SearchResponse> searchCustomPage = SearchPageGenerator.getBoardPage(
+            boards,
+            DEFAULT_BOARD,
+            boardCount);
 
-        List<Long> searchedBoardIndexs = keywordTokens.stream()
-            .map(key -> redisRepository.get(RedisEnum.BOARD.name(), key))
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .distinct()
-            .toList();
-
-        if (searchedBoardIndexs.isEmpty()) {
-            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0L);
+        if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
+            updateLikeStatus(searchCustomPage, memberId);
         }
 
-        Long searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(boardRequest,
-            searchedBoardIndexs);
-        return searchRepository.getSearchedBoard(memberId, searchedBoardIndexs, boardRequest,
-            pageable, searchedBoardAllCount);
+        return searchCustomPage;
     }
 
-    @Transactional(readOnly = true)
-    public SearchStoreResponse getSearchStoreDtos(Long memberId, int page, String keyword) {
-        if (keyword.isBlank()) {
-            return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
-        }
+    private void updateLikeStatus(
+        SearchCustomPage<SearchResponse> searchCustomPage,
+        Long memberId
+    ) {
+        List<Long> responseList = extractIds(searchCustomPage);
+        List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
 
-        List<String> keywordTokens = morphemeAnalyzer.getAllTokenizer(keyword);
+        searchCustomPage.getContent()
+            .getBoardResponseDtos()
+            .stream()
+            .filter(board -> likedContentIds.contains(board.getBoardId()))
+            .forEach(board -> board.updateLike(true));
+    }
 
-        List<Long> storeIndexs = keywordTokens.stream()
-            .map(key -> redisRepository.get(RedisEnum.STORE.name(), key))
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .distinct()
+    private List<Long> extractIds(
+        SearchCustomPage<SearchResponse> searchCustomPage
+    ) {
+        return searchCustomPage.getContent()
+            .getBoardResponseDtos()
+            .stream()
+            .map(BoardResponseDto::getBoardId)
             .toList();
-
-        if (storeIndexs.isEmpty()) {
-            return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
-        }
-
-        List<StoreResponseDto> storeResponseDtos = searchRepository.getSearchedStore(memberId,
-            storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
-        //스토어 및 보드 검색 결과 가져오기
-        return SearchStoreResponse.builder()
-            .content(storeResponseDtos)
-            .itemAllCount(storeIndexs.size())
-            .pageNumber(page)
-            .limitItemCount(DEFAULT_PAGE)
-            .currentItemCount(storeResponseDtos.size())
-            .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
-            .build();
     }
 
     @Transactional(readOnly = true)
