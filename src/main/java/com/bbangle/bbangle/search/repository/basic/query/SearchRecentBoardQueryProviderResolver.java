@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SearchRecentSearchQueryProviderResolver implements SearchQueryProvider {
+public class SearchRecentBoardQueryProviderResolver implements SearchQueryProvider {
 
     private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
     private static final QBoard board = QBoard.board;
@@ -35,9 +35,8 @@ public class SearchRecentSearchQueryProviderResolver implements SearchQueryProvi
         List<Long> boardIds = jpaQueryFactory.select(board.id)
             .distinct()
             .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .where(cursorInfo.and(filter).and(board.id.in(searchedIds)))
+            .join(product.board, board)
+            .where(cursorInfo.and(filter).and(product.board.id.in(searchedIds)))
             .orderBy(orderCondition)
             .limit(BOARD_PAGE_SIZE_PLUS_ONE)
             .fetch();
@@ -65,6 +64,19 @@ public class SearchRecentSearchQueryProviderResolver implements SearchQueryProvi
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();
+    }
+
+    @Override
+    public Long getCount(
+        List<Long> searchedIds,
+        BooleanBuilder filter
+    ) {
+        return jpaQueryFactory.select(board.id)
+            .distinct()
+            .from(product)
+            .join(product.board, board)
+            .where(filter.and(board.id.in(searchedIds)))
+            .fetch().stream().count();
     }
 
 }
