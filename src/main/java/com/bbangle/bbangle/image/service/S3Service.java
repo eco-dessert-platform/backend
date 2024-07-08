@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +62,10 @@ class S3Service {
     return amazonS3.copyObject(copyObjectRequest);
   }
 
+  public void deleteImages(List<String> urls){
+    urls.forEach(url -> amazonS3.deleteObject(bucket, url));
+  }
+
   private String uploadImage(
       final MultipartFile image,
       final String ext,
@@ -87,6 +92,4 @@ class S3Service {
         .toString();
     return uuid + ext;
   }
-
-
 }

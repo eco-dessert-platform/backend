@@ -15,10 +15,10 @@ import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
 import com.bbangle.bbangle.review.domain.*;
 import com.bbangle.bbangle.review.dto.*;
-import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,16 +36,16 @@ public class ReviewService {
 
     private static final Boolean WRITE = true;
     private static final Boolean DELETE = false;
-    private static final String BUCKET_DOMAIN = "https://bbangle-bucket.kr.object.ncloudstorage.com/";
-    private static final String CDN_DOMAIN = "https://bbangree-oven.cdn.ntruss.com/";
-
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
 
+    @Value("${bucket.domain}")
+    private String bucketDomain;
+    @Value("${cdn.domain}")
+    private String cdnDomain;
     private final BoardStatisticService boardStatisticService;
     private final ReviewRepository reviewRepository;
     private final BoardRepository boardRepository;
-    private final ReviewImgRepository reviewImgRepository;
     private final MemberRepository memberRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewManager reviewManager;
@@ -216,10 +216,37 @@ public class ReviewService {
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.update(reviewRequest);
         List<String> urls = reviewRequest.urls();
-        if(Objects.isNull(urls)){
+        List<Image> images = imageRepository.findByDomainId(reviewId);
+        List<String> removedUrls = new ArrayList<>();
+        if(!images.isEmpty()){
+            List<String> imagePaths = new ArrayList<>(images.stream()
+                    .map(Image::getPath)
+                    .toList());
+            for(String url : urls) {
+                if (imagePaths.contains(url)) {
+                    Image image = imageRepository.findByPath(url);
+                    image.update(reviewId, url);
+                    removedUrls.add(url);
+                    imagePaths.remove(url);
+                }
+            }
+            List<String> changedPaths = removeCdnDomain(imagePaths);
+            imageService.deleteImages(changedPaths);
+            imageRepository.deleteAllByPathIn(imagePaths);
+        }
+        urls = urls.stream()
+                .filter(url -> !removedUrls.contains(url))
+                .toList();
+        if(urls.isEmpty()){
             return;
         }
         moveImages(urls, reviewId);
+    }
+
+    private List<String> removeCdnDomain(List<String> paths) {
+        return paths.stream()
+                .map(path -> path.replace(cdnDomain, ""))
+                .toList();
     }
 
     @Transactional
@@ -273,11 +300,14 @@ public class ReviewService {
         List<Image> images = imageRepository.findAllByPathIn(urls);
         List<String> fromPaths = makeTempStoragePath(images);
         List<String> toPaths = makeFinalStoragePath(reviewId, fromPaths);
+        List<String> deletedPath = new ArrayList<>();
 
         for(int i = 0; i < fromPaths.size(); i++){
-            images.get(i).update(reviewId, CDN_DOMAIN + toPaths.get(i));
+            images.get(i).update(reviewId, cdnDomain + toPaths.get(i));
             imageService.move(fromPaths.get(i), toPaths.get(i));
+            deletedPath.add(fromPaths.get(i));
         }
+        imageService.deleteImages(deletedPath);
     }
 
     private List<String> makeFinalStoragePath(Long reviewId, List<String> fromPaths) {
@@ -290,7 +320,7 @@ public class ReviewService {
     private List<String> makeTempStoragePath(List<Image> images) {
         return images.stream()
                 .map(Image::getPath)
-                .map(path -> path.replace(BUCKET_DOMAIN, ""))
+                .map(path -> path.replace(cdnDomain, ""))
                 .toList();
     }
 

@@ -8,7 +8,6 @@ import com.bbangle.bbangle.config.ranking.BoardGrade;
 import com.bbangle.bbangle.image.domain.QImage;
 import com.bbangle.bbangle.image.dto.QImageDto;
 import com.bbangle.bbangle.review.domain.QReview;
-import com.bbangle.bbangle.review.domain.QReviewImg;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.QReviewLike;
@@ -48,7 +47,6 @@ import static java.util.stream.Collectors.toMap;
 public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
     private static final QReview review = QReview.review;
     private static final QMember member = QMember.member;
-    private static final QReviewImg reviewImg = QReviewImg.reviewImg;
     private static final QImage image = QImage.image;
     private static final QReviewLike reviewLike = QReviewLike.reviewLike;
     private static final Long PAGE_SIZE = 10L;

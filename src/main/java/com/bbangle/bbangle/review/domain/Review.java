@@ -26,7 +26,6 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //동현님 말대로 연관매핑 안해보고 해보기
     @Column(name = "member_id")
     @NotNull
     private Long memberId;
