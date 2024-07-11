@@ -226,3 +226,4 @@ redis/data/dump.rdb
 *.env
 
 .jqwik-database
+!/.github/workflows/cd-pipeline-dev-aws.yml
