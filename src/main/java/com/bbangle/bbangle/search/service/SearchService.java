@@ -7,17 +7,14 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.search.domain.Search;
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.dto.response.util.SearchPageGenerator;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -30,29 +27,34 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SearchService {
 
-    private static final String BEST_KEYWORD_KEY = "keyword";
     private static final int LIMIT_KEYWORD_COUNT = 10;
+    private static final Long ANONYMOUS_MEMBER_ID = 1L;
     private static final Boolean DEFAULT_BOARD = false;
+
     private final SearchRepository searchRepository;
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
-    private final RedisRepository redisRepository;
     private final AutoCompleteUtil autoCompleteUtil;
     private final KeywordUtil keywordUtil;
 
     @Transactional
     public void saveKeyword(Long memberId, String keyword) {
-        var member = Member.builder()
-            .id(memberId)
-            .build();
-
-        var search = Search.builder()
-            .member(member)
+        memberId = checkAnonymousId(memberId);
+        Search search = Search.builder()
+            .memberId(memberId)
             .keyword(keyword)
-            .createdAt(LocalDateTime.now())
             .build();
 
+        // 캐싱하여 특정 시간에 저장하는게 좋을까?
         searchRepository.save(search);
+    }
+
+    private Long checkAnonymousId(Long memberId) {
+        if (Objects.isNull(memberId)) {
+            return ANONYMOUS_MEMBER_ID;
+        }
+
+        return memberId;
     }
 
     @Transactional(readOnly = true)
@@ -114,32 +116,23 @@ public class SearchService {
 
     @Transactional(readOnly = true)
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
-        Member member = Member.builder()
-            .id(memberId)
-            .build();
 
-        return memberId == 1L ?
-            RecencySearchResponse.getEmpty() :
-            RecencySearchResponse.builder()
-                .content(searchRepository.getRecencyKeyword(member))
-                .build();
+        if (Objects.isNull(memberId)) {
+            return RecencySearchResponse.getEmpty();
+        }
+
+        List<KeywordDto> kewords = searchRepository.getRecencyKeyword(memberId);
+
+        return RecencySearchResponse.of(kewords);
     }
 
     @Transactional
-    public Boolean deleteRecencyKeyword(String keyword, Long memberId) {
-        Member member = Member.builder()
-            .id(memberId)
-            .build();
-
-        searchRepository.markAsDeleted(keyword, member);
-        return true;
+    public void deleteRecencyKeyword(String keyword, Long memberId) {
+        searchRepository.markAsDeleted(keyword, memberId);
     }
 
     public List<String> getBestKeyword() {
-        return redisRepository.getStringList(
-            RedisEnum.BEST_KEYWORD.name(),
-            BEST_KEYWORD_KEY
-        );
+        return keywordUtil.getBestKeyword();
     }
 
     public List<String> getAutoKeyword(String keyword) {
