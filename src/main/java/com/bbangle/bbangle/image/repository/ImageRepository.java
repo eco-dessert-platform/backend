@@ -20,8 +20,8 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     List<Image> findByDomainId(Long reviewId);
 
-    @Modifying
-    @Query("delete from Image i where i.path in :imagePaths")
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Image i WHERE i.path IN :imagePaths")
     void deleteAllByPathIn(@Param("imagePaths") List<String> imagePaths);
 
     Image findByPath(String url);
