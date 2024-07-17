@@ -33,11 +33,12 @@ class SearchControllerTest extends AbstractIntegrationTest {
     @Autowired
     MockMvc mockMvc;
 
+    @Autowired
+    private ResponseService responseService;
+
     @MockBean
     private SearchService searchService;
 
-    @MockBean
-    private ResponseService responseService;
 
     @Test
     @DisplayName("getOrderResponse 메서드는 주문 정보를 성공적으로 가져올 수 있다")
@@ -81,7 +82,6 @@ class SearchControllerTest extends AbstractIntegrationTest {
         singleResult.setSuccess(true);
 
         given(searchService.getBoardList(any(), any(), any(), any(), any())).willReturn(searchCustomPage);
-        given(responseService.getSingleResult(any())).willReturn(singleResult);
 
         // When & Then
         mockMvc.perform(get("/api/v1/search/boards")
