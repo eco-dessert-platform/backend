@@ -16,8 +16,12 @@ import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.FixtureConfig;
+import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
+import com.bbangle.bbangle.fixture.SearchFixture;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +39,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
 @Import(FixtureConfig.class)
 class SearchServiceTest extends AbstractIntegrationTest {
@@ -52,6 +58,8 @@ class SearchServiceTest extends AbstractIntegrationTest {
     AutoCompleteUtil autoCompleteUtil;
     @Autowired
     ProductFixture productFixture;
+    @Autowired
+    SearchFixture searchFixture;
     @MockBean
     KeywordUtil keywordUtil;
 
@@ -190,5 +198,18 @@ class SearchServiceTest extends AbstractIntegrationTest {
                 boardIds.add(board.getId());
             }
         }
+    }
+
+    @Test
+    @DisplayName("저장된 키워드를 삭제할 수 있다")
+    void deleteKeyword() {
+        Member member1 = memberRepository.save(MemberFixture.createKakaoMember());
+        Search search = searchFixture.create(member1.getId());
+
+        searchService.deleteRecencyKeyword(search.getKeyword(), member1.getId());
+        Optional<Search> checkSearch = searchRepository.findById(search.getId());
+
+        assertThat(checkSearch).isPresent();
+        assertThat(checkSearch.get().isDeleted()).isTrue();
     }
 }

@@ -15,7 +15,6 @@ import com.bbangle.bbangle.fixture.FixtureConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.SearchLoadService;
 import java.time.LocalDateTime;
@@ -182,19 +181,6 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
 
         List<KeywordDto> recencyKewords = searchRepository.getRecencyKeyword(member1.getId());
         assertThat(recencyKewords).hasSize(LIMIT_KEYWORD_COUNT);
-    }
-
-    @Test
-    @DisplayName("저장된 키워드를 삭제할 수 있다")
-    void deleteKeyword() {
-        Member member1 = memberRepository.save(MemberFixture.createKakaoMember());
-        Search search = searchFixture.create(member1.getId());
-
-        searchRepository.markAsDeleted(search.getKeyword(), member1.getId());
-        Optional<Search> checkSearch = searchRepository.findById(search.getId());
-
-        assertThat(checkSearch).isPresent();
-        assertThat(checkSearch.get().isDeleted()).isTrue();
     }
 
 }
