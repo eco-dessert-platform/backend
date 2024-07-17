@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.search.service.utils;
 
+import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
+
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.util.MorphemeAnalyzer;
@@ -19,6 +21,8 @@ public class KeywordUtil {
     private final RedisRepository redisRepository;
 
     public List<Long> getBoardIds(String keyword) {
+        checkNullOrEmptyKeyword(keyword);
+
         List<String> keywordTokens = morphemeAnalyzer.getAllTokenizer(keyword);
 
         return keywordTokens.stream()
