@@ -29,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/search")
 public class SearchController {
 
-    private static final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
-
     private final SearchService searchService;
     private final ResponseService responseService;
 
@@ -96,7 +94,7 @@ public class SearchController {
     @GetMapping("/best-keyword")
     public CommonResult getBestKeyword() {
         List<String> bestKeywords = searchService.getBestKeyword();
-        return responseService.getSingleResult(bestKeywords);
+        return responseService.getListResult(bestKeywords);
     }
 
     @GetMapping("/auto-keyword")
@@ -105,6 +103,6 @@ public class SearchController {
         String keyword
     ) {
         List<String> autoKeywords = searchService.getAutoKeyword(keyword);
-        return responseService.getSingleResult(autoKeywords);
+        return responseService.getListResult(autoKeywords);
     }
 }
