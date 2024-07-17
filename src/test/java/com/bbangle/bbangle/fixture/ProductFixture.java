@@ -3,13 +3,55 @@ package com.bbangle.bbangle.fixture;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.Random;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFixture {
+
+    private final ProductRepository productRepository;
+    private final Random random;
+
+    public ProductFixture(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+        this.random = new Random();
+    }
+
+    public Product veganCookie(Board board) {
+        int randomPrice = random.nextInt(100000) + 1; // 1부터 10000 사이의 랜덤 값
+        int randomNutrient = random.nextInt(500) + 1; // 1부터 500 사이의 랜덤 값
+        LocalDateTime now = LocalDateTime.now();
+
+        return productRepository.save(Product.builder()
+            .board(board)
+            .title(CommonFaker.faker.dessert().flavor())
+            .price(randomPrice)
+            .category(Category.COOKIE)
+            .glutenFreeTag(random.nextBoolean())
+            .highProteinTag(random.nextBoolean())
+            .sugarFreeTag(random.nextBoolean())
+            .veganTag(true)
+            .ketogenicTag(random.nextBoolean())
+            .sugars(randomNutrient)
+            .protein(randomNutrient)
+            .carbohydrates(randomNutrient)
+            .fat(randomNutrient)
+            .weight(randomNutrient)
+            .calories(randomNutrient)
+            .monday(random.nextBoolean())
+            .tuesday(random.nextBoolean())
+            .wednesday(random.nextBoolean())
+            .thursday(random.nextBoolean())
+            .friday(random.nextBoolean())
+            .saturday(random.nextBoolean())
+            .sunday(random.nextBoolean())
+            .orderStartDate(now)
+            .orderEndDate(now.plusDays(7)) // 주문 종료일을 일주일 뒤로 설정
+            .soldout(random.nextBoolean())
+            .build());
+    }
 
     public static Product veganFreeProduct(Board board) {
         String dishName = getProductTitle();
