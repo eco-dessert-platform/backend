@@ -65,12 +65,12 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         return queryFactory.select(
                 new QKeywordDto(
                     search.keyword))
+            .distinct()
             .from(search)
             .where(
                 search.isDeleted.eq(false),
                 search.member.id.eq(memberId))
-            .groupBy(search.keyword)
-            .orderBy(search.createdAt.desc())
+            .orderBy(search.id.desc())
             .limit(7)
             .fetch();
     }
