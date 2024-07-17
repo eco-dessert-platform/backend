@@ -13,7 +13,7 @@ public class OctetStreamReadMsgConverter extends AbstractJackson2HttpMessageConv
     public OctetStreamReadMsgConverter(ObjectMapper objectMapper) {
         super(objectMapper, MediaType.APPLICATION_OCTET_STREAM);
     }
-    
+
     @Override
     public boolean canWrite(Class<?> clazz, MediaType mediaType) {
         return false;
