@@ -2,27 +2,40 @@ package com.bbangle.bbangle.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
-import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
+import com.bbangle.bbangle.fixture.FixtureConfig;
+import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
+import com.bbangle.bbangle.search.service.utils.KeywordUtil;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 
+@Import(FixtureConfig.class)
 class SearchServiceTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -37,6 +50,10 @@ class SearchServiceTest extends AbstractIntegrationTest {
     BoardStatisticService boardStatisticService;
     @Autowired
     AutoCompleteUtil autoCompleteUtil;
+    @Autowired
+    ProductFixture productFixture;
+    @MockBean
+    KeywordUtil keywordUtil;
 
 
     @Test
@@ -48,56 +65,31 @@ class SearchServiceTest extends AbstractIntegrationTest {
         autoCompleteUtil.insert("초코송이");
 
         var resultOne = autoCompleteUtil.autoComplete("초", 1);
-        Assertions.assertEquals(resultOne, List.of("초코송이"));
-        Assertions.assertEquals(resultOne.size(), 1);
+        assertThat(resultOne).hasSize(1).contains("초코송이");
 
         var resultTwo = autoCompleteUtil.autoComplete("비", 2);
-        Assertions.assertEquals(resultTwo, List.of("비건", "비건 베이커리"));
-        Assertions.assertEquals(resultTwo.size(), 2);
+        assertThat(resultTwo).hasSize(2).contains("비건", "비건 베이커리");
 
         var resultThree = autoCompleteUtil.autoComplete("비", 3);
-        Assertions.assertEquals(resultThree, List.of("비건", "비건 베이커리", "비건 베이커리 짱짱"));
-        Assertions.assertEquals(resultThree.size(), 3);
+        assertThat(resultThree).hasSize(3).contains("비건", "비건 베이커리", "비건 베이커리 짱짱");
 
         var resultFour = autoCompleteUtil.autoComplete("바", 3);
-        Assertions.assertEquals(resultFour, List.of());
-        Assertions.assertEquals(resultFour.size(), 0);
+        assertThat(resultFour).isEmpty();
     }
 
     @Nested
     @DisplayName("getBoardList 메서드는")
     class GetSearchBoard {
 
-        @Test
+        private List<Long> boardIds;
+
+        @ParameterizedTest
+        @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE",
+            "RECOMMEND", "MOST_WISHED", "MOST_REVIEWED", "HIGHEST_RATED"})
         @DisplayName("성공적으로 스크롤을 사용할 수 있다")
-        void successScroll() {
+        void successScroll(SortType sort) {
 
-            for (int i = 0; 15 > i; i++) {
-                Product product1 = fixtureProduct(Map.of(
-                    "category", Category.COOKIE,
-                    "veganTag", true
-                ));
-                fixtureBoard(Map.of(
-                    "title", "비건베이커리",
-                    "productList", List.of(product1),
-                    "price", 2000,
-                    "isDeleted", false
-                ));
-
-                Product product2 = fixtureProduct(Map.of(
-                    "category", Category.COOKIE,
-                    "veganTag", true
-                ));
-                fixtureBoard(Map.of(
-                    "title", "비건베이커리",
-                    "productList", List.of(product2),
-                    "price", 2000,
-                    "isDeleted", true
-                ));
-            }
-
-            redisRepository.deleteAll();
-            searchLoadService.cacheKeywords();
+            saveData();
 
             FilterRequest filterRequest = FilterRequest.builder()
                 .category(Category.COOKIE)
@@ -110,10 +102,11 @@ class SearchServiceTest extends AbstractIntegrationTest {
                 .minPrice(0)
                 .build();
 
-            SortType sort = SortType.RECENT;
             String keyword = "비건베이커리";
             Long cursorId = null;
             Long memberId = null;
+
+            when(keywordUtil.getBoardIds(any())).thenReturn(boardIds);
 
             SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
                 filterRequest,
@@ -132,177 +125,70 @@ class SearchServiceTest extends AbstractIntegrationTest {
                 nextCursor,
                 memberId
             );
+
             assertAll(
-                () -> assertThat(newSearchCustomPage.getContent().getBoardResponseDtos()).hasSize(
+                () -> assertThat(newSearchCustomPage.getContent().getBoards()).hasSize(
                     5),
-                () -> assertThat(newSearchCustomPage.getContent().getItemAllCount()).isEqualTo(14)
+                () -> assertThat(newSearchCustomPage.getContent().getItemAllCount()).isEqualTo(15)
             );
+
+            List<BoardResponseDto> resultAll = new ArrayList<>(searchCustomPage.getContent().getBoards());
+            resultAll.addAll(newSearchCustomPage.getContent().getBoards());
+
+            switch (sort) {
+                case RECENT:
+                    assertThat(resultAll.stream().map(BoardResponseDto::getBoardId)).isSortedAccordingTo(
+                        Comparator.reverseOrder());
+                    break;
+                case LOW_PRICE:
+                    assertThat(resultAll.stream().map(BoardResponseDto::getPrice)).isSortedAccordingTo(
+                        Comparator.naturalOrder());
+                    break;
+                case HIGH_PRICE:
+                    assertThat(resultAll.stream().map(BoardResponseDto::getPrice)).isSortedAccordingTo(
+                        Comparator.reverseOrder());
+                    break;
+            }
         }
 
-        @Test
-        @DisplayName("성공적으로 원하는 키워드가 포함된 게시물읋 조회할 수 있다")
-        void successKeyword() {
+        void saveData() {
+            boardIds = new ArrayList<>();
+            for (long i = 0L; 15 > i; i++) {
 
-            fixtureBoard(Map.of(
-                "title", "비건 베이커리",
-                "isDeleted", false
-            ));
+                Board board = fixtureBoard(Map.of(
+                    "id", i + 1,
+                    "title", "비건베이커리",
+                    "price", 2000,
+                    "isDeleted", false,
+                    "productList", List.of()
+                ));
 
-            fixtureBoard(Map.of(
-                "title", "비건 선풍기 미니 베이커리",
-                "isDeleted", false
-            ));
+                productFixture.veganCookie(board);
 
-            fixtureBoard(Map.of(
-                "title", "비건 맛있는 베이커리 음식",
-                "isDeleted", false
-            ));
+                double score = i + 1;
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(
+                    board, score);
+                boardStatisticRepository.save(boardStatistic);
+                boardIds.add(board.getId());
+            }
 
-            redisRepository.deleteAll();
-            searchLoadService.cacheKeywords();
+            for (long i = 15L; 30 > i; i++) {
+                Board board = fixtureBoard(Map.of(
+                    "id", i + 1,
+                    "title", "비건베이커리",
+                    "price", 2000,
+                    "isDeleted", true,
+                    "productList", List.of()
+                ));
 
-            FilterRequest filterRequest = FilterRequest.builder()
-                .build();
-            SortType sort = SortType.RECENT;
-            String keyword = "비건베이커리";
-            Long cursorId = null;
-            Long memberId = null;
+                productFixture.veganCookie(board);
 
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
-                filterRequest,
-                sort,
-                keyword,
-                cursorId,
-                memberId
-            );
-
-            assertAll(
-                () -> assertThat(searchCustomPage.getContent().getBoardResponseDtos()).hasSize(
-                    3),
-                () -> assertThat(searchCustomPage.getContent().getItemAllCount()).isEqualTo(3)
-            );
+                double score = i + 1;
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(
+                    board, score);
+                boardStatisticRepository.save(boardStatistic);
+                boardIds.add(board.getId());
+            }
         }
-
-        @Test
-        @DisplayName("성공적으로 가격이 높은 순으로 상품을 조회할 수 있다")
-        void successHighPriceSortting() {
-
-            fixtureBoard(Map.of(
-                "title", "비건 베이커리",
-                "price", 2000,
-                "isDeleted", false
-            ));
-
-            fixtureBoard(Map.of(
-                "title", "비건 선풍기 미니 베이커리",
-                "price", 3000,
-                "isDeleted", false
-            ));
-
-            fixtureBoard(Map.of(
-                "title", "비건 맛있는 베이커리 음식",
-                "price", 1000,
-                "isDeleted", false
-            ));
-
-            redisRepository.deleteAll();
-            searchLoadService.cacheKeywords();
-
-            FilterRequest filterRequest = FilterRequest.builder()
-                .build();
-            SortType sort = SortType.HIGH_PRICE;
-            String keyword = "비건베이커리";
-            Long cursorId = null;
-            Long memberId = null;
-
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
-                filterRequest,
-                sort,
-                keyword,
-                cursorId,
-                memberId
-            );
-
-            assertAll(
-                () -> assertThat(
-                    searchCustomPage.getContent().getBoardResponseDtos().get(0)
-                        .getPrice()).isEqualTo(3000),
-                () -> assertThat(
-                    searchCustomPage.getContent().getBoardResponseDtos().get(1)
-                        .getPrice()).isEqualTo(2000),
-                () -> assertThat(searchCustomPage.getContent().getBoardResponseDtos().get(2)
-                    .getPrice()).isEqualTo(1000)
-            );
-        }
-
-        @Test
-        @DisplayName("성공적으로 가격이 낮은 순으로 상품을 조회할 수 있다")
-        void successLowPriceSortting() {
-
-            fixtureBoard(Map.of(
-                "title", "비건 베이커리",
-                "price", 2000,
-                "isDeleted", false
-            ));
-
-            fixtureBoard(Map.of(
-                "title", "비건 선풍기 미니 베이커리",
-                "price", 3000,
-                "isDeleted", false
-            ));
-
-            fixtureBoard(Map.of(
-                "title", "비건 맛있는 베이커리 음식",
-                "price", 1000,
-                "isDeleted", false
-            ));
-
-            redisRepository.deleteAll();
-            searchLoadService.cacheKeywords();
-
-            FilterRequest filterRequest = FilterRequest.builder()
-                .build();
-            SortType sort = SortType.LOW_PRICE;
-            String keyword = "비건베이커리";
-            Long cursorId = null;
-            Long memberId = null;
-
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
-                filterRequest,
-                sort,
-                keyword,
-                cursorId,
-                memberId
-            );
-
-            assertAll(
-                () -> assertThat(
-                    searchCustomPage.getContent().getBoardResponseDtos().get(2)
-                        .getPrice()).isEqualTo(3000),
-                () -> assertThat(
-                    searchCustomPage.getContent().getBoardResponseDtos().get(1)
-                        .getPrice()).isEqualTo(2000),
-                () -> assertThat(searchCustomPage.getContent().getBoardResponseDtos().get(0)
-                    .getPrice()).isEqualTo(1000)
-            );
-        }
-
-        // 추후에 구현해야할 테스트
-        // 리뷰 많은 순
-        // 리뷰 많은 순
-        // 리뷰 인기 순
-        // 추천 순
-
     }
-
-    // 다음 리팩토링에서 변경
-    //    @Test
-    //    @DisplayName("기본으로 등록된 베스트 키워드를 가져올 수 있다")
-    //    void getBestKeyword() {
-    //        String BEST_KEYWORD_KEY = "keyword";
-    //        var bestKewords = redisRepository.getStringList(RedisEnum.BEST_KEYWORD.name(),
-    //            BEST_KEYWORD_KEY);
-    //
-    //        assertThat(bestKewords).isEqualTo(List.of("글루텐프리", "비건", "저당", "키토제닉"));
-    //    }
 }
