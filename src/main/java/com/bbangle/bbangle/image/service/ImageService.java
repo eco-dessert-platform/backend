@@ -71,10 +71,8 @@ public class ImageService {
         AtomicInteger order = new AtomicInteger(0);
 
         List<Image> entities = imageList.stream().map(image -> {
-            String imagePath = s3Service.saveImage(
-                image,
-                imageFolderPathResolver(category, domainId)
-            );
+            String pathFromS3 = imageFolderPathResolver(category, domainId);
+            String imagePath = s3Service.saveImage(image, pathFromS3);
             imagePath = imagePath.replace(bucketDomain, cdnDomain);
             return createEntity(category, domainId, imagePath, order.getAndIncrement());
         }).toList();

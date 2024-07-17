@@ -130,49 +130,6 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         assertThat(reviewImageUploadResponse.urls()).hasSize(1);
     }
 
-/**
- *
- * 현재 리뷰 테이블의 badge 관련 설정이 not null -> null로 바뀌어서 해당 테스트가 실패하고 있습니다
- * 추후에 변겅하겠습니다
- */
-
-/*
-    @Test
-    @DisplayName("같은 위치의 리뷰 평가 뱃지가 존재하면 리뷰 insert 에 실패한다")
-    void testReviewFail1() {
-        //given
-        List<Badge> badges = new ArrayList<>();
-        badges.add(GOOD);
-        badges.add(BAD);
-        badges.add(SOFT);
-        ReviewRequest reviewRequest = makeReviewRequest(badges);
-        List<Member> members = memberRepository.findAll();
-
-        //when, then
-        assertThrows(RuntimeException.class, () ->
-            reviewService.makeReview(reviewRequest, members.get(0)
-                .getId()
-            ));
-    }
-
-    @Test
-    @DisplayName("리뷰 평가 뱃지의 수가 부족하면 리뷰 insert 에 실패한다")
-    void testReviewFail2() {
-        //given
-        List<Badge> badges = new ArrayList<>();
-        badges.add(GOOD);
-        badges.add(SOFT);
-        ReviewRequest reviewRequest = makeReviewRequest(badges);
-        List<Member> members = memberRepository.findAll();
-
-        //when, then
-        assertThrows(RuntimeException.class, () ->
-            reviewService.makeReview(reviewRequest, members.get(0)
-                .getId())
-        );
-    }
-*/
-
     @Test
     @DisplayName("리뷰 삭제에 성공한다.")
     void deleteReview() {
@@ -180,15 +137,37 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         ReviewRequest reviewRequest = ReviewRequestFixture.createReviewRequest(board.getId());
         reviewService.makeReview(reviewRequest, member.getId());
         Review targetReview = getTargetReview();
+        Long targetReviewId = targetReview.getId();
+        createReviewLike(targetReviewId);
+        createReviewImage(targetReviewId);
+
 
         //when
-        reviewService.deleteReview(targetReview.getId(), member.getId());
+        reviewService.deleteReview(targetReviewId, member.getId());
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
             .orElseThrow();
 
         //then
         assertThat(boardStatistic.getBoardReviewCount()).isZero();
         assertThat(boardStatistic.getBoardReviewGrade()).isZero();
+    }
+
+    private void createReviewImage(Long targetReviewId){
+        Image image = Image.builder()
+                .imageCategory(ImageCategory.REVIEW)
+                .path("test")
+                .order(0)
+                .domainId(targetReviewId)
+                .build();
+        imageRepository.save(image);
+    }
+
+    private void createReviewLike(Long targetReviewId) {
+        ReviewLike reviewLike = ReviewLike.builder()
+                .reviewId(targetReviewId)
+                .memberId(member.getId())
+                .build();
+        reviewLikeRepository.save(reviewLike);
     }
 
     private Review getTargetReview() {
