@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.search.service;
 
+import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
+
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -39,6 +41,8 @@ public class SearchService {
 
     @Transactional
     public void saveKeyword(Long memberId, String keyword) {
+        checkNullOrEmptyKeyword(keyword);
+
         memberId = checkAnonymousId(memberId);
         Search search = Search.builder()
             .memberId(memberId)
@@ -74,7 +78,7 @@ public class SearchService {
 
         Long boardCount = searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort);
 
-        if (boardCount > LIMIT_KEYWORD_COUNT) {
+        if (boards.size() > LIMIT_KEYWORD_COUNT) {
             boardCount--;
         }
 
@@ -98,7 +102,7 @@ public class SearchService {
         List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
 
         searchCustomPage.getContent()
-            .getBoardResponseDtos()
+            .getBoards()
             .stream()
             .filter(board -> likedContentIds.contains(board.getBoardId()))
             .forEach(board -> board.updateLike(true));
@@ -108,7 +112,7 @@ public class SearchService {
         SearchCustomPage<SearchResponse> searchCustomPage
     ) {
         return searchCustomPage.getContent()
-            .getBoardResponseDtos()
+            .getBoards()
             .stream()
             .map(BoardResponseDto::getBoardId)
             .toList();
