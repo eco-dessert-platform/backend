@@ -1,31 +1,22 @@
 package com.bbangle.bbangle.search.repository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.service.SearchLoadService;
-import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import jakarta.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 
 class SearchRepositoryTest extends AbstractIntegrationTest {
     @Autowired
@@ -69,65 +60,6 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         assertThat(boardCount, is(15));
         var productCount = productRepository.findAll().size();
         assertThat(productCount, is(45));
-    }
-
-    @Test
-    @DisplayName("필터 설정에 맞게 상품 게시물 전체 개수를 가져올 수 있다")
-    void getSearchedBoardAllCountTest() {
-        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
-            .toList();
-        var searchBoardRequest = SearchBoardRequest.builder()
-            .sort("LATEST")
-            .glutenFreeTag(true)
-            .highProteinTag(false)
-            .orderAvailableToday(true)
-            .category(Category.SNACK.name())
-            .maxPrice(6000)
-            .page(0)
-            .build();
-
-        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
-            boardIds);
-        assertThat(searchedBoardAllCount, is(15L));
-    }
-
-
-    @Test
-    @DisplayName("필터 설정에 맞게 상품 게시물 결과값을 가져올 수 있다")
-    void getSearchBoard() {
-        int page = 0;
-        int limit = 10;
-
-        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
-            .toList();
-        var searchBoardRequest = SearchBoardRequest.builder()
-            .sort("LATEST")
-            .glutenFreeTag(true)
-            .highProteinTag(false)
-            .orderAvailableToday(true)
-            .category(Category.SNACK.name())
-            .maxPrice(6000)
-            .page(0)
-            .build();
-
-        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
-            boardIds);
-        var searchBoardResult = searchRepository.getSearchedBoard(
-            1L, boardIds, searchBoardRequest, PageRequest.of(page, limit),
-            searchedBoardAllCount);
-
-        assertThat(searchBoardResult.currentItemCount(), is(10));
-        assertThat(searchBoardResult.pageNumber(), is(0));
-        assertThat(searchBoardResult.itemAllCount(), is(15L));
-        assertThat(searchBoardResult.limitItemCount(), is(10));
-        assertThat(searchBoardResult.existNextPage(), is(true));
-
-        var BoardDtos = searchBoardResult.content();
-        for (int i = 0; BoardDtos.size() > i; i++) {
-            var boardDto = BoardDtos.get(i);
-            assertThat(boardDto.getTags(), hasItem("glutenFree"));
-            assertThat(boardDto.getPrice(), lessThanOrEqualTo(6000));
-        }
     }
 
     @Test

@@ -1,18 +1,22 @@
 package com.bbangle.bbangle.search.controller;
 
+import static com.bbangle.bbangle.board.sort.SortType.RECOMMEND;
+
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
-import com.bbangle.bbangle.search.dto.response.SearchStoreResponse;
+import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.util.SecurityUtils;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,39 +29,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/v1/search")
 public class SearchController {
-    private final String GET_BOARD_KEYWORD_SEARCH_API = "/boards";
-    private final String GET_STORE_KEYWORD_SEARCH_API = "/stores";
-    private final String GET_RECENCY_KEYWORD_SEARCH_API = "/recency";
-    private final String DELETE_RECENCY_KEYWORD_SEARCH_API = "/recency";
-    private final String GET_BEST_KEYWORD_SEARCH_API = "/best-keyword";
-    private final String GET_AUTO_KEYWORD_SEARCH_API = "/auto-keyword";
-    private final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
+    private static final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
 
     private final SearchService searchService;
     private final ResponseService responseService;
 
-    @GetMapping(GET_BOARD_KEYWORD_SEARCH_API)
-    public CommonResult getSearchBoardDtos(
-            SearchBoardRequest searchBoardRequest
-    ){
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
-        SearchBoardResponse searchBoardDtos = searchService.getSearchBoardDtos(memberId,
-            searchBoardRequest);
-        return responseService.getSingleResult(searchBoardDtos);
+    @GetMapping("/boards")
+    public CommonResult getList(
+        @ParameterObject
+        FilterRequest filterRequest,
+        @RequestParam(required = false, value = "sort")
+        SortType sort,
+        @RequestParam(required = false, value = "keyword")
+        String keyword,
+        @RequestParam(required = false, value = "cursorId")
+        Long cursorId,
+        @AuthenticationPrincipal
+        Long memberId
+    ) {
+        sort = settingDefaultSortTypeIfNull(sort);
+        SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
+            filterRequest,
+            sort,
+            keyword,
+            cursorId,
+            memberId);
+        return responseService.getSingleResult(searchCustomPage);
     }
 
-    @GetMapping(GET_STORE_KEYWORD_SEARCH_API)
-    public CommonResult getSearchStoreDtos(
-            @RequestParam("page")
-            int page,
-            @RequestParam("keyword")
-            String keyword
-    ){
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        SearchStoreResponse searchStoreDtos = searchService.getSearchStoreDtos(memberId, page,
-            keyword);
-        return responseService.getSingleResult(searchStoreDtos);
+    private SortType settingDefaultSortTypeIfNull(SortType sort) {
+        return Objects.nonNull(sort) ? sort : RECOMMEND;
     }
 
     @PostMapping
@@ -72,14 +73,14 @@ public class SearchController {
             Map.of("content", SUCCESS_SAVEKEYWORD));
     }
 
-    @GetMapping(GET_RECENCY_KEYWORD_SEARCH_API)
+    @GetMapping("/recency")
     public CommonResult getRecencyKeyword() {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
         RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
         return responseService.getSingleResult(recencyKeyword);
     }
 
-    @DeleteMapping(DELETE_RECENCY_KEYWORD_SEARCH_API)
+    @DeleteMapping("/recency")
     public CommonResult deleteRecencyKeyword(
         @RequestParam(value = "keyword")
         String keyword
@@ -91,13 +92,13 @@ public class SearchController {
             );
     }
 
-    @GetMapping(GET_BEST_KEYWORD_SEARCH_API)
+    @GetMapping("/best-keyword")
     public CommonResult getBestKeyword() {
         return responseService.getSingleResult(
                 Map.of("content", searchService.getBestKeyword()));
     }
 
-    @GetMapping(GET_AUTO_KEYWORD_SEARCH_API)
+    @GetMapping("/auto-keyword")
     public CommonResult getAutoKeyword(
         @RequestParam("keyword")
         String keyword
