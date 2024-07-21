@@ -91,15 +91,14 @@ public class ReviewService {
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
         List<ReviewSingleDto> reviewSingleList = reviewRepository.getReviewSingleList(board.getId(), cursorId);
         int reviewSingListSize = reviewSingleList.size();
-        Long nextCursor = null;
-        Long lastCursor = null;
-        if(reviewSingListSize != 0){
-            nextCursor = reviewSingleList.get(reviewSingListSize -1).id();
-            lastCursor = reviewSingleList.stream()
-                    .findFirst()
-                    .get()
-                    .id();
+        if(reviewSingListSize == 0){
+            return new ReviewCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        Long nextCursor = reviewSingleList.get(reviewSingListSize -1).id();
+        Long lastCursor = reviewSingleList.stream()
+                .findFirst()
+                .get()
+                .id();
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .nextCursor(nextCursor)
                 .lastCursor(lastCursor)
@@ -161,12 +160,12 @@ public class ReviewService {
     public ReviewCustomPage<List<ReviewInfoResponse>> getMyReviews(Long memberId, Long cursorId) {
         List<ReviewSingleDto> myReviewList = reviewRepository.getMyReviews(memberId, cursorId);
         int myReviewListSize = myReviewList.size();
-        Long nextCursor = null;
-        Long lastCursor = null;
-        if(myReviewListSize != 0){
-            nextCursor = myReviewList.get(myReviewListSize -1).id();
-            lastCursor = myReviewList.stream().findFirst().get().id();
+        if(myReviewListSize == 0){
+            return new ReviewCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        Long nextCursor = myReviewList.get(myReviewListSize -1).id();
+        Long lastCursor = myReviewList.stream().findFirst().get().id();
+
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .nextCursor(nextCursor)
                 .lastCursor(lastCursor)
@@ -191,10 +190,10 @@ public class ReviewService {
         List<ImageDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
         int allImagesSize = allImagesByBoardId.size();
         boolean hasNext = checkHasNext(allImagesSize);
-        Long nextCursor = null;
-        if(allImagesSize != 0){
-            nextCursor = allImagesByBoardId.get(allImagesSize -1).getId();
+        if(allImagesSize == 0){
+            return new ImageCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        Long nextCursor = allImagesByBoardId.get(allImagesSize -1).getId();
         if (hasNext) {
             allImagesByBoardId.remove(allImagesByBoardId.get(allImagesSize - 1));
         }
@@ -254,11 +253,14 @@ public class ReviewService {
         memberRepository.findMemberById(memberId);
         List<Image> reviewImages = imageRepository.findByDomainId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
+        reviewLikes.stream()
+                .map(ReviewLike::getId)
+                .toList();
         if (!reviewImages.isEmpty()) {
-            imageRepository.deleteAllInBatch(reviewImages);
+            imageRepository.deleteAllByDomainId(reviewId);
         }
         if(!reviewLikes.isEmpty()) {
-            reviewLikeRepository.deleteAllInBatch(reviewLikes);
+            reviewLikeRepository.deleteAllByReviewId(reviewId);
         }
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
@@ -300,8 +302,11 @@ public class ReviewService {
         List<Image> images = imageRepository.findAllByPathIn(urls);
         List<String> fromPaths = makeTempStoragePath(images);
         List<String> toPaths = makeFinalStoragePath(reviewId, fromPaths);
-        List<String> deletedPath = new ArrayList<>();
+        updateImagePath(reviewId, fromPaths, images, toPaths);
+    }
 
+    private void updateImagePath(Long reviewId, List<String> fromPaths, List<Image> images, List<String> toPaths) {
+        List<String> deletedPath = new ArrayList<>();
         for(int i = 0; i < fromPaths.size(); i++){
             images.get(i).update(reviewId, cdnDomain + toPaths.get(i));
             imageService.move(fromPaths.get(i), toPaths.get(i));

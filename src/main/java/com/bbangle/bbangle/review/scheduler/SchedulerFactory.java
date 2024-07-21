@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.review.scheduler;
 
+import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
@@ -17,19 +18,29 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BestReviewSelectionScheduler {
+public class SchedulerFactory {
     private final ReviewRepository reviewRepository;
+    private final ImageRepository imageRepository;
     private static final Long MINIMUM_BEST_REVIEW_STANDARD = 5L;
+    private static final Long TEMP_DOMAINID = -1L;
+
 
 
     @Scheduled(cron = "0 0 12 * * ?")//매일 낮 12시
     @Transactional
-    public void updateBestReview() {
+    public void action() {
         log.info("Scheduler started ........");
         List<Long> bestReviewIds = getBestReviewIds();
         log.info("start update process");
         reviewRepository.updateBestReview(bestReviewIds);
         log.info("finish update process");
+        log.info("start deleting temp Image Process");
+        deleteTempImage();
+        log.info("finish deleting temp Image Process");
+    }
+
+    public void deleteTempImage() {
+        imageRepository.deleteTempImages(TEMP_DOMAINID);
     }
 
     public List<Long> getBestReviewIds() {

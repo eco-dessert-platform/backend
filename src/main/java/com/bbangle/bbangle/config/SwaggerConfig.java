@@ -9,7 +9,6 @@ import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +53,7 @@ public class SwaggerConfig {
 
         Server devServerWithHttp = new Server();
         devServerWithHttp.setDescription("dev-server-http");
-        devServerWithHttp.setUrl("http://115.85.181.105:8000");
+        devServerWithHttp.setUrl("http://3.39.252.95:8000");
 
         Server devServerWithHttps = new Server();
         devServerWithHttps.setDescription("dev-server-https");
