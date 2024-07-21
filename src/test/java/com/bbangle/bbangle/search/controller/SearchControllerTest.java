@@ -14,8 +14,6 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.common.dto.SingleResult;
-import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;
@@ -23,34 +21,18 @@ import com.bbangle.bbangle.search.service.SearchService;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.WebApplicationContext;
 
 class SearchControllerTest extends AbstractIntegrationTest {
 
     private static final Long MEMBER_ID = 2L;
 
-    @Autowired
-    MockMvc mockMvc;
-
     @MockBean
     private SearchService searchService;
-
-    @MockBean
-    private ResponseService responseService;
-
-    @BeforeEach
-    public void setup(WebApplicationContext context) {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-    }
 
     @Test
     @DisplayName("getOrderResponse 메서드는 주문 정보를 성공적으로 가져올 수 있다")
@@ -89,13 +71,8 @@ class SearchControllerTest extends AbstractIntegrationTest {
         SearchResponse searchResponse = SearchResponse.of(boardResponseDtos, 0L);
         SearchCustomPage searchCustomPage = SearchCustomPage.from(searchResponse, 1L, true);
 
-        SingleResult singleResult = new SingleResult<>();
-        singleResult.setResult(searchCustomPage);
-        singleResult.setSuccess(true);
-
         given(searchService.getBoardList(any(), any(), any(), any(), any())).willReturn(
             searchCustomPage);
-        given(responseService.getSingleResult(any())).willReturn(singleResult);
 
         // When & Then
         mockMvc.perform(get("/api/v1/search/boards")
