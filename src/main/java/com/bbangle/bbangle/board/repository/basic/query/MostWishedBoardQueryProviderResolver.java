@@ -64,6 +64,8 @@ public class MostWishedBoardQueryProviderResolver  implements BoardQueryProvider
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();
