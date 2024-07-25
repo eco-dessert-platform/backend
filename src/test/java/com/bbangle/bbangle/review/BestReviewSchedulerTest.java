@@ -5,7 +5,7 @@ import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
-import com.bbangle.bbangle.review.scheduler.BestReviewSelectionScheduler;
+import com.bbangle.bbangle.review.scheduler.SchedulerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
  class BestReviewSchedulerTest extends AbstractIntegrationTest {
     @Autowired
-    private BestReviewSelectionScheduler bestReviewSelectionScheduler;
+    private SchedulerFactory schedulerFactory;
     @Autowired
     private ReviewLikeRepository reviewLikeRepository;
 
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         }
 
         //when
-        List<Long> bestReviewIds = bestReviewSelectionScheduler.getBestReviewIds();
+        List<Long> bestReviewIds = schedulerFactory.getBestReviewIds();
 
         //Then
         assertThat(bestReviewIds)
@@ -55,7 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         }
 
         //when
-        List<Long> bestReviewIds = bestReviewSelectionScheduler.getBestReviewIds();
+        List<Long> bestReviewIds = schedulerFactory.getBestReviewIds();
 
 
         //Then
