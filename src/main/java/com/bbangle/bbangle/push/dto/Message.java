@@ -11,10 +11,10 @@ public class Message {
     private String fcmToken;
     private Notification notification;
 
-    public static Message of(String fcmToken, Notification notification) {
+    public static Message of(FcmRequest request) {
         return Message.builder()
-                .fcmToken(fcmToken)
-                .notification(notification)
+                .fcmToken(request.getFcmToken())
+                .notification(new Notification(request))
                 .build();
     }
 
@@ -25,11 +25,9 @@ public class Message {
         private String title;
         private String body;
 
-        public static Notification of(FcmRequest request) {
-            return Notification.builder()
-                    .title(request.getTitle())
-                    .body(request.getBody())
-                    .build();
+        public Notification(FcmRequest request) {
+            this.title = request.getTitle();
+            this.body = request.getBody();
         }
     }
 }

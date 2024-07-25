@@ -45,6 +45,10 @@ cloud:
       auto: false
     stack:
       auto: false
+fcm:
+  key-path: ${FCM_KEY_PATH}
+  api-url: ${FCM_API_URL}
+  google-authentication-url: ${FCM_GOOGLE_AUTHENTICATION_URL}
 
 ---
 spring:
