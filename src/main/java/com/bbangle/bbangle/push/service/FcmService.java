@@ -2,11 +2,9 @@ package com.bbangle.bbangle.push.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.push.domain.Push;
-import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.dto.FcmRequest;
 import com.bbangle.bbangle.push.dto.Message;
-import com.bbangle.bbangle.push.repository.PushRepository;
+import com.bbangle.bbangle.push.dto.Message.Notification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -38,29 +36,28 @@ public class FcmService {
     private String GOOGLE_AUTHENTICATION_URL;
 
     private final ObjectMapper objectMapper;
-    private final PushRepository pushRepository;
 
 
     public void send(List<FcmRequest> requestList) {
-        OkHttpClient client = createOkHttpClient();
-
         for (FcmRequest request : requestList) {
             String message = makeMessage(request);
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .build();
             RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
-            Request httpRequest = createHttpRequest(requestBody);
+            Request httpRequest = new Request.Builder()
+                    .url(FCM_API_URL)
+                    .post(requestBody)
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
+                    .build();
+            System.out.println("httpRequest = " + httpRequest);
 
             try {
                 Response httpResponse = client.newCall(httpRequest).execute();
-
-                if (httpResponse.isSuccessful()) {
-                    Push push = pushRepository.findById(request.getPushId())
-                            .orElseThrow(() -> new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND));
-
-                    // 재입고 푸시 알림이 나간 경우 해당 푸시 알림을 비활성화 상태로 돌린다.
-                    if (request.getPushCategory().equals(PushCategory.RESTOCK.getDescription())) {
-                        push.updateActive(false);
-                    }
-                }
+                System.out.println("httpResponse = " + httpResponse.body().string());
             } catch (IOException e) {
                 throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);
             }
@@ -69,32 +66,16 @@ public class FcmService {
 
 
     private String makeMessage(FcmRequest request) {
-        Message message = Message.of(request);
+        Message message = Message.of(
+                request.getFcmToken(),
+                Notification.of(request)
+        );
 
         try {
             return objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }
-    }
-
-
-    private OkHttpClient createOkHttpClient() {
-        return new OkHttpClient().newBuilder()
-                .connectTimeout(1, TimeUnit.SECONDS)
-                .writeTimeout(1, TimeUnit.SECONDS)
-                .readTimeout(1, TimeUnit.SECONDS)
-                .build();
-    }
-
-
-    private Request createHttpRequest(RequestBody requestBody) {
-        return new Request.Builder()
-                .url(FCM_API_URL)
-                .post(requestBody)
-                .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
-                .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
-                .build();
     }
 
 

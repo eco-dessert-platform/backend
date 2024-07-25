@@ -12,7 +12,6 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
-import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.store.domain.Store;
@@ -57,7 +56,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Product product = createProduct(board);
         createMember();
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -79,7 +78,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createPush(member);
         Push push = pushRepository.save(newPush);
 
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -101,7 +100,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -123,7 +122,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createPush(member);
         Push push = pushRepository.save(newPush);
 
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then

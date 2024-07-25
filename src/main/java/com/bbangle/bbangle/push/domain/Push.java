@@ -38,27 +38,16 @@ public class Push extends BaseEntity {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "push_type", columnDefinition = "varchar")
-    @Enumerated(EnumType.STRING)
-    private PushType pushType;
-
-    @Column(name = "days")
-    private String days;
-
     @Column(name = "push_category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private PushCategory pushCategory;
 
-    @Column(name = "is_active", columnDefinition = "tinyint")
-    private boolean active;
+    @Column(name = "is_subscribed", columnDefinition = "tinyint")
+    private boolean subscribed;
 
 
-    public void updateDays(String days) {
-        this.days = days;
-    }
-
-    public void updateActive(boolean active) {
-        this.active = active;
+    public void updateSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
     }
 
 }
