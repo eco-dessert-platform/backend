@@ -3,16 +3,25 @@ package com.bbangle.bbangle.push.service;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.fixture.*;
+import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.fixture.ProductFixture;
+import com.bbangle.bbangle.fixture.PushFixture;
+import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
+import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.FcmRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.push.dto.PushResponse;
 import com.bbangle.bbangle.store.domain.Store;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +41,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
 
         // when
         pushService.createPush(request, member.getId());
@@ -46,7 +55,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         // then
         assertThat(pushCount).isOne();
         assertThat(pushList).hasSize(1);
-        assertThat(resultPush.isSubscribed()).isTrue();
+        assertThat(resultPush.isActive()).isTrue();
     }
 
 
@@ -59,7 +68,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createPush(newMember);
         Push push = pushRepository.save(newPush);
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
 
         // when
         pushService.cancelPush(request, member.getId());
@@ -73,7 +82,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         // then
         assertThat(pushCount).isOne();
         assertThat(pushList).hasSize(1);
-        assertThat(resultPush.isSubscribed()).isFalse();
+        assertThat(resultPush.isActive()).isFalse();
     }
 
 
@@ -86,7 +95,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
 
         // when
         pushService.createPush(request, member.getId());
@@ -100,7 +109,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         // then
         assertThat(pushCount).isOne();
         assertThat(pushList).hasSize(1);
-        assertThat(resultPush.isSubscribed()).isTrue();
+        assertThat(resultPush.isActive()).isTrue();
     }
 
 
@@ -113,7 +122,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createPush(newMember);
         Push push = pushRepository.save(newPush);
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
 
         // when
         pushService.deletePush(request, member.getId());
@@ -154,7 +163,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
         pushService.createPush(request, member.getId());
 
         // when
@@ -176,7 +185,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
         pushService.createPush(request, member.getId());
         List<FcmRequest> requestList = pushService.getPushesForNotification();
 

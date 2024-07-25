@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.push.dto;
 
-import com.bbangle.bbangle.push.domain.PushCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -9,20 +8,26 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 public class FcmRequest {
+    private Long pushId;
     private String fcmToken;
     private String memberName;
     private String boardTitle;
     private String productTitle;
+    private String pushType;
+    private String days;
     private String pushCategory;
     private String title;
     private String body;
 
-    public FcmRequest(String fcmToken, String memberName, String boardTitle, String productTitle, PushCategory pushCategory) {
-        this.fcmToken = fcmToken;
-        this.memberName = memberName;
-        this.boardTitle = boardTitle;
-        this.productTitle = productTitle;
-        this.pushCategory = pushCategory.getDescription();
+    public FcmRequest(FcmPush fcmPush) {
+        this.pushId = fcmPush.pushId();
+        this.fcmToken = fcmPush.fcmToken();
+        this.memberName = fcmPush.memberName();
+        this.boardTitle = fcmPush.boardTitle();
+        this.productTitle = fcmPush.productTitle();
+        this.pushType = fcmPush.pushType().getDescription();
+        this.days = fcmPush.days();
+        this.pushCategory = fcmPush.pushCategory().getDescription();
     }
 
     public void editPushMessage(String title, String body) {

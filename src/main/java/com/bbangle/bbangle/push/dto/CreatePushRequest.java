@@ -1,13 +1,10 @@
 package com.bbangle.bbangle.push.dto;
 
-import jakarta.validation.constraints.NotNull;
-
 public record CreatePushRequest(
-    @NotNull
     String fcmToken,
-    @NotNull
+    String pushType,
+    String days,
     String pushCategory,
-    @NotNull
     Long productId
 ) {
 }

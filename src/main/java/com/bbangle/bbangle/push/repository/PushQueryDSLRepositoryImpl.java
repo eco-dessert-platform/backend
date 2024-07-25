@@ -40,7 +40,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                         store.name,
                         product.title,
                         board.profile,
-                        push.subscribed
+                        push.active
                 ))
                 .from(push)
                 .join(product).on(push.productId.eq(product.id))
@@ -54,18 +54,21 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
     @Override
     public List<FcmPush> findPushList() {
         return queryFactory.select(new QFcmPush(
+                    push.id,
                     push.fcmToken,
                     member.name,
                     board.title,
                     product.id,
                     product.title,
+                    push.pushType,
+                    push.days,
                     push.pushCategory
                 ))
                 .from(push)
                 .join(member).on(push.memberId.eq(member.id))
                 .join(product).on(push.productId.eq(product.id))
                 .join(board).on(product.board.id.eq(board.id))
-                .where(push.subscribed.isTrue())
+                .where(push.active.isTrue())
                 .fetch();
     }
 
