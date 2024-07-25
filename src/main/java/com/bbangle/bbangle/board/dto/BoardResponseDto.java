@@ -19,6 +19,11 @@ public final class BoardResponseDto {
     private Boolean isWished;
     private final Boolean isBundled;
     private final List<String> tags;
+    private final Double reviewRate;
+    private final Long reviewCount;
+    private final Boolean isBbangcketing;
+    private final Boolean isSoldOut;
+    private final Integer discountRate;
 
     @Builder
     public BoardResponseDto(
@@ -30,7 +35,12 @@ public final class BoardResponseDto {
         int price,
         Boolean isWished,
         Boolean isBundled,
-        List<String> tags
+        List<String> tags,
+        Double reviewRate,
+        Long reviewCount,
+        Boolean isBbangcketing,
+        Boolean isSoldOut,
+        Integer discountRate
     ) {
         this.boardId = boardId;
         this.storeId = storeId;
@@ -41,6 +51,11 @@ public final class BoardResponseDto {
         this.isWished = isWished;
         this.isBundled = isBundled;
         this.tags = tags;
+        this.reviewRate = reviewRate;
+        this.reviewCount = reviewCount;
+        this.isBbangcketing = isBbangcketing;
+        this.isSoldOut = isSoldOut;
+        this.discountRate = discountRate;
     }
 
     public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags) {
