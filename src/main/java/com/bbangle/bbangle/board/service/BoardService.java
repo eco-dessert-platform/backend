@@ -46,7 +46,7 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-    private static final int ONE_CATEGOTY = 1;
+    private static final int ONE_CATEGORY = 1;
 
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
@@ -66,8 +66,7 @@ public class BoardService {
     ) {
         List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(filterRequest, sort, cursorId);
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
-            DEFAULT_BOARD);
+        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards, DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
             updateLikeStatus(boardPage, memberId);
@@ -164,7 +163,7 @@ public class BoardService {
         return products.stream()
             .map(Product::getCategory)
             .distinct()
-            .count() > ONE_CATEGOTY;
+            .count() > ONE_CATEGORY;
     }
 
     public ProductResponse getProductResponse(Long boardId) {
