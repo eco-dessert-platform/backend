@@ -59,13 +59,20 @@ public class SearchMostWishedBoardQueryProviderResolver implements SearchQueryPr
                     product.highProteinTag,
                     product.sugarFreeTag,
                     product.veganTag,
-                    product.ketogenicTag
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
                 ))
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();
