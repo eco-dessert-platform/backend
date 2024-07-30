@@ -57,7 +57,12 @@ public class MostReviewedBoardQueryProviderResolver  implements BoardQueryProvid
                     product.highProteinTag,
                     product.sugarFreeTag,
                     product.veganTag,
-                    product.ketogenicTag
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
                 ))
             .from(product)
             .join(board)
