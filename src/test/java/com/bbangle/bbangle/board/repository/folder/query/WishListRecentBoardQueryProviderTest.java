@@ -39,6 +39,7 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
     Product product2;
     Board createdBoard;
     Store store;
+    BoardStatistic boardStatistic;
 
     @BeforeEach
     void generalSetUp(){
@@ -66,7 +67,7 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(product);
             product2 = productWIthKetogenicYogurt(createdBoard);
             productRepository.save(product2);
-            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+            boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
@@ -82,8 +83,8 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
                 FolderBoardSortType.WISHLIST_RECENT.getOrderSpecifier(),
                 wishListFolder).getBoards();
 
-            BoardResponseDao boardResponseDao = getBoardResponseDao(createdBoard, product, store);
-            BoardResponseDao boardResponseDao2 = getBoardResponseDao(createdBoard, product2, store);
+            BoardResponseDao boardResponseDao = getBoardResponseDao(createdBoard, product, store, boardStatistic);
+            BoardResponseDao boardResponseDao2 = getBoardResponseDao(createdBoard, product2, store, boardStatistic);
 
             //then
             BoardResponseDao actual = boards.get(0);
@@ -116,11 +117,11 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
 
         }
 
-        private BoardResponseDao getBoardResponseDao(Board board, Product product, Store store) {
+        private BoardResponseDao getBoardResponseDao(Board board, Product product, Store store, BoardStatistic boardStatistic) {
             return new BoardResponseDao(board.getId(),
                 store.getId(),
                 store.getName(),
-                store.getProfile(),
+                board.getProfile(),
                 board.getTitle(),
                 board.getPrice(),
                 product.getCategory(),
@@ -128,7 +129,12 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
                 product.isHighProteinTag(),
                 product.isSugarFreeTag(),
                 product.isVeganTag(),
-                product.isKetogenicTag());
+                product.isKetogenicTag(),
+                boardStatistic.getBoardReviewGrade(),
+                boardStatistic.getBoardReviewCount(),
+                product.getOrderEndDate(),
+                product.isSoldout(),
+                board.getDiscountRate());
         }
 
     }
