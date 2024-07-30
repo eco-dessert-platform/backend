@@ -2,6 +2,8 @@ package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import lombok.Builder;
@@ -20,7 +22,7 @@ public final class BoardResponseDto {
     private final Boolean isBundled;
     private final List<String> tags;
     private final Double reviewRate;
-    private final Long reviewCount;
+    private final Integer reviewCount;
     private final Boolean isBbangcketing;
     private final Boolean isSoldOut;
     private final Integer discountRate;
@@ -37,7 +39,7 @@ public final class BoardResponseDto {
         Boolean isBundled,
         List<String> tags,
         Double reviewRate,
-        Long reviewCount,
+        Integer reviewCount,
         Boolean isBbangcketing,
         Boolean isSoldOut,
         Integer discountRate
@@ -58,10 +60,15 @@ public final class BoardResponseDto {
         this.discountRate = discountRate;
     }
 
-    public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags) {
+    public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
         return BoardResponseDto.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
+            .reviewRate(board.reviewRate().round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue())
+            .reviewCount(board.reviewCount())
+            .isBbangcketing(isBbangcketing)
+            .isSoldOut(isSoldOut)
+            .discountRate(board.discountRate())
             .storeName(board.storeName())
             .thumbnail(board.thumbnail())
             .title(board.title())
@@ -73,11 +80,16 @@ public final class BoardResponseDto {
     }
 
 
-    public static BoardResponseDto inFolder(BoardResponseDao board, boolean isBundled, List<String> tags) {
+    public static BoardResponseDto inFolder(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
         return BoardResponseDto.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
             .storeName(board.storeName())
+            .reviewRate(board.reviewRate().round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue())
+            .reviewCount(board.reviewCount())
+            .isBbangcketing(isBbangcketing)
+            .isSoldOut(isSoldOut)
+            .discountRate(board.discountRate())
             .thumbnail(board.thumbnail())
             .title(board.title())
             .price(board.price())

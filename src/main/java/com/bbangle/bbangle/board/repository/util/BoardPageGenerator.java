@@ -7,6 +7,7 @@ import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,24 +54,66 @@ public class BoardPageGenerator {
             boardResponseDaoList);
 
         Map<Long, Boolean> isBundled = getIsBundled(boardResponseDaoList);
+        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardResponseDaoList);
+        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardResponseDaoList);
 
         boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
 
-        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId);
+        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId, isSoldOut, isBbangcketing);
+    }
+
+    private static Map<Long, Boolean> getIsBbangcketing(List<BoardResponseDao> boardResponseDaoList) {
+        return boardResponseDaoList.stream()
+            .collect(Collectors.toMap(
+                BoardResponseDao::boardId,
+                board -> new ArrayList<>(Collections.singletonList(board.orderStartDate())),
+                (existingList, newList) -> {
+                    existingList.addAll(newList);
+                    return existingList;
+                }))
+            .entrySet().stream().collect(Collectors.toMap(
+                Entry::getKey,
+                entry -> {
+                    for(LocalDateTime endDate  : entry.getValue()){
+                        if(endDate != null && endDate.isBefore(LocalDateTime.now())){
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            ));
+    }
+
+    private static Map<Long, Boolean> getIsSoldOut(List<BoardResponseDao> boardResponseDaoList) {
+        return boardResponseDaoList.stream()
+            .collect(Collectors.toMap(
+                BoardResponseDao::boardId,
+                board -> new ArrayList<>(Collections.singletonList(board.isSoldOut())),
+                (existingList, newList) -> {
+                    existingList.addAll(newList);
+                    return existingList;
+                }))
+            .entrySet().stream().collect(Collectors.toMap(
+                Entry::getKey,
+            entry -> entry.getValue().contains(true)
+        ));
     }
 
     private static List<BoardResponseDto> getBoardResponseDtos(
         List<BoardResponseDao> boardResponseDaoList,
         Boolean isInFolder,
         Map<Long, Boolean> isBundled,
-        Map<Long, List<String>> tagMapByBoardId
+        Map<Long, List<String>> tagMapByBoardId,
+        Map<Long, Boolean> isSoldOut, Map<Long, Boolean> isBbangcketing
     ) {
         if (Boolean.TRUE.equals(isInFolder)) {
             return boardResponseDaoList.stream()
                 .map(boardDao -> BoardResponseDto.inFolder(
                     boardDao,
                     isBundled.get(boardDao.boardId()),
-                    tagMapByBoardId.get(boardDao.boardId()))
+                    tagMapByBoardId.get(boardDao.boardId()),
+                    isBbangcketing.get(boardDao.boardId()),
+                    isSoldOut.get(boardDao.boardId()))
                 )
                 .toList();
         }
@@ -79,7 +122,9 @@ public class BoardPageGenerator {
             .map(boardDao -> BoardResponseDto.from(
                 boardDao,
                 isBundled.get(boardDao.boardId()),
-                tagMapByBoardId.get(boardDao.boardId()))
+                tagMapByBoardId.get(boardDao.boardId()),
+                isBbangcketing.get(boardDao.boardId()),
+                isSoldOut.get(boardDao.boardId()))
             )
             .toList();
     }
