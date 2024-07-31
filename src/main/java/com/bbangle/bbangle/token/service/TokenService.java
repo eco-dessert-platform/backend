@@ -23,7 +23,7 @@ public class TokenService {
         Long memberId = refreshTokenService.findByRefreshToken(refreshToken)
             .getMemberId();
         Member member = memberService.findById(memberId);
-        return tokenProvider.generateToken(member, Duration.ofHours(2));
+        return tokenProvider.generateToken(member.getId(), Duration.ofHours(2));
     }
 
 }

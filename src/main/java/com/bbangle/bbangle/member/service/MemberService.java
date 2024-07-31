@@ -144,12 +144,12 @@ public class MemberService {
         }
     }
 
-    public Member getFirstJoinedMember(Member oauthMember) {
+    public Long getFirstJoinedMember(Member oauthMember) {
         Member newMember = saveNewJoinedOauthMember(oauthMember);
         Long newMemberId = newMember.getId();
         wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
 
-        return newMember;
+        return newMemberId;
     }
 
     private Member saveNewJoinedOauthMember(Member oauthMember) {
