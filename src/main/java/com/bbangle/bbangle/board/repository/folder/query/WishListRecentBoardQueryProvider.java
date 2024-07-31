@@ -6,6 +6,7 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -22,6 +23,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
 
     private final JPAQueryFactory queryFactory;
     private final BooleanBuilder cursorBuilder;
@@ -46,7 +48,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
                     board.id,
                     store.id,
                     store.name,
-                    store.profile,
+                    board.profile,
                     board.title,
                     board.price,
                     product.category,
@@ -54,7 +56,12 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
                     product.highProteinTag,
                     product.sugarFreeTag,
                     product.veganTag,
-                    product.ketogenicTag
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
                 ))
             .from(product)
             .join(board)
@@ -63,6 +70,8 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
             .on(board.store.id.eq(store.id))
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
+            .join(boardStatistic)
+            .on(board.id.eq(boardStatistic.boardId))
             .where(board.id.in(fetch))
             .orderBy(order)
             .fetch();

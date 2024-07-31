@@ -283,12 +283,17 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeId").value(store.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeName").value(store.getName()))
-                .andExpect(jsonPath("$.result.content[0].thumbnail").value(store.getProfile()))
+                .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getProfile()))
                 .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
                 .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
                 .andExpect(jsonPath("$.result.content[0].isWished").value(true))
                 .andExpect(jsonPath("$.result.content[0].isBundled").value(false))
                 .andExpect(jsonPath("$.result.content[0].tags[0]").value("ketogenic"))
+                .andExpect(jsonPath("$.result.content[0].reviewRate").value(0.0))
+                .andExpect(jsonPath("$.result.content[0].reviewCount").value(0))
+                .andExpect(jsonPath("$.result.content[0].isBbangcketing").value(false))
+                .andExpect(jsonPath("$.result.content[0].isSoldOut").value(false))
+                .andExpect(jsonPath("$.result.content[0].discountRate").value(0))
                 .andExpect(jsonPath("$.result.nextCursor").value(-1))
                 .andExpect(jsonPath("$.result.hasNext").value(false));
         }
