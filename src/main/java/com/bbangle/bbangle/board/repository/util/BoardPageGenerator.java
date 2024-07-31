@@ -10,6 +10,7 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -105,8 +106,8 @@ public class BoardPageGenerator {
             .collect(Collectors.toMap(
                 Entry::getKey,
                 entry -> {
-                    for (boolean isSoldOut : entry.getValue()) {
-                        if (!isSoldOut) {
+                    for (Boolean isSoldOut : entry.getValue()) {
+                        if (isSoldOut != null && !isSoldOut) {
                             return false;
                         }
                     }
