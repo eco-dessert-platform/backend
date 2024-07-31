@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.search.domain;
 
+import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -12,18 +13,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Table(name = "search")
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Search {
+public class Search extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,14 +38,12 @@ public class Search {
     @Column(name = "keyword")
     private String keyword;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
     @Builder
-    public Search(Member member, String keyword, LocalDateTime createdAt) {
-        this.member = member;
+    public Search(Long memberId, String keyword) {
+        this.member = Member.builder()
+            .id(memberId)
+            .build();
         this.keyword = keyword;
-        this.createdAt = createdAt;
     }
 
 }

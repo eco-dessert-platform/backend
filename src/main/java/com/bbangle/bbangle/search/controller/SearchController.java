@@ -10,8 +10,7 @@ import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;
-import com.bbangle.bbangle.util.SecurityUtils;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/v1/search")
 public class SearchController {
-    private static final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
 
     private final SearchService searchService;
     private final ResponseService responseService;
@@ -64,18 +62,19 @@ public class SearchController {
     @PostMapping
     public CommonResult saveKeyword(
         @RequestParam("keyword")
-        String keyword
+        String keyword,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
         searchService.saveKeyword(memberId, keyword);
-        return responseService.getSingleResult(
-            Map.of("content", SUCCESS_SAVEKEYWORD));
+        return responseService.getSuccessResult();
     }
 
     @GetMapping("/recency")
-    public CommonResult getRecencyKeyword() {
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+    public CommonResult getRecencyKeyword(
+        @AuthenticationPrincipal
+        Long memberId
+    ) {
         RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
         return responseService.getSingleResult(recencyKeyword);
     }
@@ -83,19 +82,19 @@ public class SearchController {
     @DeleteMapping("/recency")
     public CommonResult deleteRecencyKeyword(
         @RequestParam(value = "keyword")
-        String keyword
+        String keyword,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
+        searchService.deleteRecencyKeyword(keyword, memberId);
 
-        return responseService.getSingleResult(
-                Map.of("content", searchService.deleteRecencyKeyword(keyword, memberId))
-            );
+        return responseService.getSuccessResult();
     }
 
     @GetMapping("/best-keyword")
     public CommonResult getBestKeyword() {
-        return responseService.getSingleResult(
-                Map.of("content", searchService.getBestKeyword()));
+        List<String> bestKeywords = searchService.getBestKeyword();
+        return responseService.getListResult(bestKeywords);
     }
 
     @GetMapping("/auto-keyword")
@@ -103,8 +102,7 @@ public class SearchController {
         @RequestParam("keyword")
         String keyword
     ) {
-        return responseService.getSingleResult(
-                Map.of("content", searchService.getAutoKeyword(keyword))
-            );
+        List<String> autoKeywords = searchService.getAutoKeyword(keyword);
+        return responseService.getListResult(autoKeywords);
     }
 }

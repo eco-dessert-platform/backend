@@ -41,6 +41,7 @@ CREATE TABLE search
     is_deleted tinyint,
     keyword    VARCHAR(255) NOT NULL,
     created_at DATETIME(6),
+    modified_at DATETIME(6),
     CONSTRAINT search_pk PRIMARY KEY (id),
     CONSTRAINT fk_member_search FOREIGN KEY (member_id) REFERENCES member (id)
 );

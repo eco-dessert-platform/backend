@@ -104,6 +104,7 @@ public class BoardService {
             .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
     }
 
+    @Transactional
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String viewCountKey) {
         List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
             boardId);
@@ -166,6 +167,7 @@ public class BoardService {
             .count() > ONE_CATEGORY;
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse getProductResponse(Long boardId) {
         List<Product> products = productRepository.findByBoardId(boardId);
 
@@ -177,6 +179,7 @@ public class BoardService {
         return ProductResponse.of(isBundled, productDtos);
     }
 
+    @Transactional(readOnly = true)
     public List<PopularBoardResponse> getTopBoardInfo(Long memberId, Long storeId) {
         List<Long> boardIds = boardRepository.getTopBoardIds(storeId);
 

@@ -4,8 +4,8 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.member.domain.Member;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SearchQueryDSLRepository {
@@ -23,10 +23,10 @@ public interface SearchQueryDSLRepository {
         SortType sort
     );
 
-    List<KeywordDto> getRecencyKeyword(Member member);
+    List<KeywordDto> getRecencyKeyword(Long memberId);
 
-    String[] getBestKeyword();
+    String[] getBestKeyword(LocalDateTime beforeOneDayTime);
 
-    void markAsDeleted(String keyword, Member member);
+    void markAsDeleted(String keyword, Long memberId);
 
 }

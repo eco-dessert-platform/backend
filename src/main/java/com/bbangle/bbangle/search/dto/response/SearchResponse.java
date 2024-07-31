@@ -13,13 +13,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SearchResponse {
 
-    private List<BoardResponseDto> boardResponseDtos;
+    private List<BoardResponseDto> boards;
     private Long itemAllCount;
 
     public static SearchResponse of(List<BoardResponseDto> boardResponseDtos,
         Long itemAllCount) {
         return SearchResponse.builder()
-            .boardResponseDtos(boardResponseDtos)
+            .boards(boardResponseDtos)
             .itemAllCount(itemAllCount)
             .build();
     }
@@ -28,7 +28,7 @@ public class SearchResponse {
         List<BoardResponseDto> emptyBoardResponses = Collections.emptyList();
 
         return SearchResponse.builder()
-            .boardResponseDtos(emptyBoardResponses)
+            .boards(emptyBoardResponses)
             .itemAllCount(0L)
             .build();
     }

@@ -7,6 +7,7 @@ import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
+import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.service.utils.TitleUtil;
 import com.bbangle.bbangle.util.MorphemeAnalyzer;
 import jakarta.annotation.PostConstruct;
@@ -25,13 +26,13 @@ public class SearchLoadService {
 
     private static final int ONE_HOUR = 3_600_000;
     private static final String BOARD_MIGRATION = "board";
-    private static final String BEST_KEYWORD_KEY = "keyword";
-    private static final String[] DEFAULT_SEARCH_KEYWORDS = {"글루텐프리", "비건", "저당", "키토제닉"};
+    private static final int ONEDAY = 24;
     private final BoardRepository boardRepository;
     private final ProductRepository productRepository;
     private final SearchRepository searchRepository;
     private final MorphemeAnalyzer morphemeAnalyzer;
     private final RedisRepository redisRepository;
+    private final KeywordUtil keywordUtil;
     private final AutoCompleteUtil autoCompleteUtil;
 
     @PostConstruct
@@ -101,34 +102,15 @@ public class SearchLoadService {
         return false;
     }
 
-    private boolean isKeywordEmpty(String[] bestKeyword) {
-        return bestKeyword == null || bestKeyword.length == 0;
-    }
-
-    private void updateBestKeywordInRedis(String namespace, String[] bestKeyword) {
-        redisRepository.delete(namespace, BEST_KEYWORD_KEY);
-        redisRepository.set(namespace, BEST_KEYWORD_KEY, bestKeyword);
-    }
-
-    private void setDefaultKeywordsInRedis(String namespace) {
-        redisRepository.set(namespace, BEST_KEYWORD_KEY, DEFAULT_SEARCH_KEYWORDS);
-    }
-
-    private void handleEmptyKeywordFromRepository(String namespace) {
-        List<String> bestKeywords = redisRepository.getStringList(namespace, BEST_KEYWORD_KEY);
-
-        setDefaultKeywordsInRedis(namespace);
-    }
-
     @Scheduled(fixedRate = ONE_HOUR)
     public void updateRedisAtBestKeyword() {
-        String bestKeywordNamespace = RedisEnum.BEST_KEYWORD.name();
-        String[] bestKeyword = searchRepository.getBestKeyword();
+        LocalDateTime oneDayAgo = getOneDayAgo();
+        String[] bestKeyword = searchRepository.getBestKeyword(oneDayAgo);
+        keywordUtil.setBestKeywordInRedis(bestKeyword);
+    }
 
-        if (isKeywordEmpty(bestKeyword)) {
-            handleEmptyKeywordFromRepository(bestKeywordNamespace);
-        } else {
-            updateBestKeywordInRedis(bestKeywordNamespace, bestKeyword);
-        }
+    private LocalDateTime getOneDayAgo() {
+        return LocalDateTime.now()
+            .minusHours(ONEDAY);
     }
 }

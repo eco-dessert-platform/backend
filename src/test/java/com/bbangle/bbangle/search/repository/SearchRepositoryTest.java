@@ -1,181 +1,186 @@
 package com.bbangle.bbangle.search.repository;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static com.bbangle.bbangle.fixture.BoardStatisticFixture.newBoardStatisticWithBasicScore;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.fixture.FixtureConfig;
+import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.fixture.SearchFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.SearchLoadService;
-import com.bbangle.bbangle.store.domain.Store;
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import org.junit.jupiter.api.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
+@Import(FixtureConfig.class)
 class SearchRepositoryTest extends AbstractIntegrationTest {
+
+    private static final int ONEDAY = 24;
+    private static final Long NULL_CURSOR = null;
     @Autowired
     SearchRepository searchRepository;
     @Autowired
     SearchLoadService searchLoadService;
     @Autowired
     RedisRepository redisRepository;
-
-    private Store store;
-    private Board board;
-    private Member member;
-
-
-    @BeforeEach
-    void saveEntity() {
-        createMember();
-        createProductRelatedContent(15);
-        redisRepository.delete("MIGRATION", "board");
-        redisRepository.delete("MIGRATION", "store");
-        searchLoadService.cacheKeywords();
-        searchLoadService.cacheAutoComplete();
-        searchLoadService.updateRedisAtBestKeyword();
-    }
+    @Autowired
+    SearchFixture searchFixture;
 
     @AfterEach
     void deleteAllEntity() {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
-        boardStatisticRepository.deleteAll();
         memberRepository.deleteAll();
-        productRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE"})
+    @DisplayName("getBoardResponseList 메서드는 게시물을 성공적으로 조회할 수 있다")
+    void getBoardResponseListFromBoard(SortType sort) {
+
+        List<Long> boardIds = new ArrayList<>();
+        for (int i = 0; 3 > i; i++) {
+            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
+            boardIds.add(
+                fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false)).getId());
+        }
+
+        FilterRequest filterRequest = FilterRequest.builder()
+            .glutenFreeTag(true)
+            .build();
+
+        List<BoardResponseDao> boardResponseDaos = searchRepository.getBoardResponseList(boardIds,
+            filterRequest, sort, NULL_CURSOR);
+        assertThat(boardResponseDaos).hasSize(boardIds.size());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SortType.class, names = {"RECOMMEND", "MOST_WISHED", "MOST_REVIEWED",
+        "HIGHEST_RATED"})
+    @DisplayName("getBoardResponseList 메서드는 점수가 계산된 게시물을 성공적으로 조회할 수 있다")
+    void getBoardResponseListFromBoardStatistic(SortType sort) {
+
+        List<Long> boardIds = new ArrayList<>();
+        for (int i = 0; 3 > i; i++) {
+            double score = i;
+
+            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
+            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
+            boardStatisticRepository.save(boardStatistic);
+            boardIds.add(board.getId());
+        }
+
+        FilterRequest filterRequest = FilterRequest.builder()
+            .glutenFreeTag(true)
+            .build();
+
+        List<BoardResponseDao> boardResponseDaos = searchRepository.getBoardResponseList(boardIds,
+            filterRequest, sort, NULL_CURSOR);
+        assertThat(boardResponseDaos).hasSize(boardIds.size());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE"})
+    @DisplayName("getAllCount 메서드는 검색된 게시글의 전체 개수를 조회할 수 있다")
+    void getAllCountFromBoard(SortType sort) {
+
+        List<Long> boardIds = new ArrayList<>();
+        for (int i = 0; 3 > i; i++) {
+            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
+            boardIds.add(
+                fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false)).getId());
+        }
+
+        FilterRequest filterRequest = FilterRequest.builder()
+            .glutenFreeTag(true)
+            .build();
+
+        Long count = searchRepository.getAllCount(boardIds, filterRequest, sort);
+        assertThat(count).isEqualTo(boardIds.size());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SortType.class, names = {"RECOMMEND", "MOST_WISHED", "MOST_REVIEWED",
+        "HIGHEST_RATED"})
+    @DisplayName("getAllCount 메서드는 검색된 게시글의 전체 개수를 조회할 수 있다")
+    void getAllCountFromBoardStatistic(SortType sort) {
+
+        List<Long> boardIds = new ArrayList<>();
+        for (int i = 0; 3 > i; i++) {
+            double score = i;
+
+            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
+            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
+            boardStatisticRepository.save(boardStatistic);
+            boardIds.add(board.getId());
+        }
+
+        FilterRequest filterRequest = FilterRequest.builder()
+            .glutenFreeTag(true)
+            .build();
+
+        Long count = searchRepository.getAllCount(boardIds, filterRequest, sort);
+        assertThat(count).isEqualTo(boardIds.size());
     }
 
     @Test
-    @DisplayName("게시물이 잘 저장돼있다")
-    void checkAllBoardCountTest() {
-        var boardCount = boardRepository.findAll().size();
-        assertThat(boardCount, is(15));
-        var productCount = productRepository.findAll().size();
-        assertThat(productCount, is(45));
+    @DisplayName("getBestKeyword 메서드는 베스트 게시물 검색어를 조회할 수 있다")
+    void getBestKeywordTest() {
+        Member member1 = memberRepository.save(MemberFixture.createKakaoMember());
+        Set<String> keywords = new HashSet<>();
+
+        while (keywords.size() < 7) {
+            keywords.add(searchFixture.create(member1.getId()).getKeyword());
+        }
+        LocalDateTime oneDayAgo = getOneDayAgo();
+        String[] bestKeywords = searchRepository.getBestKeyword(oneDayAgo);
+
+        for (String keyword : bestKeywords) {
+            assertThat(keyword).isIn(keywords);
+        }
+    }
+
+    private LocalDateTime getOneDayAgo() {
+        return LocalDateTime.now()
+            .minusHours(ONEDAY);
     }
 
     @Test
-    @DisplayName("최근 키워드를 검색할 수 있다")
+    @DisplayName("getRecencyKeyword 메서드는 최근 키워드를 조회할 수 있다")
     void getRecentKeywordTest() {
-        createSearchKeyword("초콜릿");
-        createSearchKeyword("키토제닉 빵");
-        createSearchKeyword("비건 베이커리");
-        createSearchKeyword("키토제닉 빵");
-        createSearchKeyword("초코 휘낭시에");
-        createSearchKeyword("바나나 빵");
-        createSearchKeyword("배부른 음식");
-        createSearchKeyword("당당 치킨");
+        int LIMIT_KEYWORD_COUNT = 7;
 
-        var recencyKewords = searchRepository.getRecencyKeyword(member);
+        Member member1 = memberRepository.save(MemberFixture.createKakaoMember());
+        Set<String> keywords = new HashSet<>();
 
-        int index = 0;
-        for (KeywordDto recencyKeword : recencyKewords) {
-            index++;
-            // 알고리즘이 잘못되어 임시로 주석처리합니다. 고친 후 다시 PR 요청하겠습니다.
-            //  assertThat(recencyKeword.keyword(), is(savingKeyword.get(savingKeyword.size() - index)));
+        while (keywords.size() < 9) {
+            keywords.add(searchFixture.create(member1.getId()).getKeyword());
         }
+
+        List<KeywordDto> recencyKewords = searchRepository.getRecencyKeyword(member1.getId());
+        assertThat(recencyKewords).hasSize(LIMIT_KEYWORD_COUNT);
     }
 
-    @Test
-    @DisplayName("키워드를 저장할 수 있다")
-    void getAllSearch() {
-        List<String> savingKeyword = Arrays.asList("초콜릿", "키토제닉 빵", "비건", "비건 베이커리", "키토제닉 빵",
-            "초코 휘낭시에", "바나나 빵", "배부른 음식", "당당 치킨");
-        savingKeyword.forEach(keyword -> createSearchKeyword(keyword));
-        var kewords = searchRepository.findAll();
-        assertThat(kewords.size(), is(savingKeyword.size()));
-    }
-
-    @Test
-    @DisplayName("저장된 키워드를 삭제할 수 있다")
-    void deleteKeyword() {
-        String keyword = "비건";
-        var search = createSearchKeyword(keyword);
-        checkSearchKeyword(searchRepository, search, keyword);
-
-        searchRepository.markAsDeleted(keyword, member);
-        checkSearchKeyword(searchRepository, search, keyword);
-    }
-
-    private void checkSearchKeyword(SearchRepository searchRepository, Search search,
-        String keyword) {
-        var savedSearch = searchRepository.findById(search.getId()).get();
-        assertThat(savedSearch.getKeyword(), is(keyword));
-    }
-
-    private void createProductRelatedContent(int count) {
-        for (int i = 0; i < count; i++) {
-            store = storeRepository.save(
-                Store.builder()
-                    .identifier("7962401222")
-                    .name("RAWSOME")
-                    .profile(
-                        "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                    .build());
-
-            board = boardRepository.save(
-                Board.builder()
-                    .store(store)
-                    .title("비건 베이커리 로썸 비건빵")
-                    .price(5400)
-                    .status(true)
-                    .profile(
-                        "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                    .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                    .build());
-
-            productRepository.saveAll(List.of(
-                Product.builder()
-                    .board(board)
-                    .title("콩볼")
-                    .price(3600)
-                    .category(Category.SNACK)
-                    .glutenFreeTag(true)
-                    .sugarFreeTag(true)
-                    .highProteinTag(true)
-                    .veganTag(true)
-                    .ketogenicTag(true)
-                    .build(),
-                Product.builder()
-                    .board(board)
-                    .title("카카모카")
-                    .price(5000)
-                    .category(Category.BREAD)
-                    .glutenFreeTag(true)
-                    .veganTag(true)
-                    .build(),
-                Product.builder()
-                    .board(board)
-                    .title("로미넛쑥")
-                    .price(5000)
-                    .category(Category.BREAD)
-                    .glutenFreeTag(true)
-                    .sugarFreeTag(true)
-                    .veganTag(true)
-                    .build()
-            ));
-        }
-    }
-
-    private void createMember() {
-        member = memberRepository.save(Member.builder()
-            .id(2L)
-            .build());
-    }
-
-    private Search createSearchKeyword(String keyword) {
-        return searchRepository.save(
-            Search.builder()
-                .member(member)
-                .keyword(keyword)
-                .build());
-    }
 }

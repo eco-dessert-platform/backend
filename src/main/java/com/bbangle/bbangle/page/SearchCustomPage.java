@@ -9,19 +9,15 @@ public class SearchCustomPage<T> extends CustomPage<T> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long boardCount;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long storeCount;
 
     public SearchCustomPage(
         T content,
         Long requestCursor,
         Boolean hasNext,
-        Long boardCount,
-        Long storeCount
+        Long boardCount
     ) {
         super(content, requestCursor, hasNext);
         this.boardCount = boardCount;
-        this.storeCount = storeCount;
     }
 
     public SearchCustomPage(
@@ -55,11 +51,9 @@ public class SearchCustomPage<T> extends CustomPage<T> {
         SearchResponse boardList,
         Long requestCursor,
         boolean hasNext,
-        long boardCnt,
-        long storeCnt
+        long boardCnt
     ) {
-        return new SearchCustomPage<>(boardList, requestCursor, hasNext, boardCnt,
-            storeCnt);
+        return new SearchCustomPage<>(boardList, requestCursor, hasNext, boardCnt);
     }
 
 }

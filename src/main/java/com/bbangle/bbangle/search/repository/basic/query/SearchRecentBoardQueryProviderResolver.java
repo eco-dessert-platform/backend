@@ -84,7 +84,7 @@ public class SearchRecentBoardQueryProviderResolver implements SearchQueryProvid
         return jpaQueryFactory.select(board.id)
             .distinct()
             .from(product)
-            .join(product.board, board)
+            .join(board).on(product.board.id.in(searchedIds))
             .where(filter.and(board.id.in(searchedIds)))
             .fetch().stream().count();
     }
