@@ -46,12 +46,12 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
     @Autowired
     private PreferenceRepository preferenceRepository;
 
-    Member member;
+    Long memberId;
 
     @BeforeEach
     public void setup() {
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        memberId = memberService.getFirstJoinedMember(member);
     }
 
     @Nested
@@ -68,7 +68,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
 
             //when, then
             Assertions.assertDoesNotThrow(
-                () -> preferenceService.register(request, member.getId()));
+                () -> preferenceService.register(request, memberId));
         }
 
         @Test
@@ -77,10 +77,10 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
             //given
             PreferenceSelectRequest request = new PreferenceSelectRequest(
                 PreferenceType.DIET);
-            preferenceService.register(request, member.getId());
+            preferenceService.register(request, memberId);
 
             //when, then
-            assertThatThrownBy(() -> preferenceService.register(request, member.getId()))
+            assertThatThrownBy(() -> preferenceService.register(request, memberId))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.PREFERENCE_ALREADY_ASSIGNED.getMessage());
         }
@@ -100,8 +100,8 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
                 preferenceType);
 
             //when, then
-            preferenceService.register(request, member.getId());
-            MemberPreferenceResponse preference = preferenceService.getPreference(member.getId());
+            preferenceService.register(request, memberId);
+            MemberPreferenceResponse preference = preferenceService.getPreference(memberId);
 
             assertThat(preference.preferenceType()).isEqualTo(preferenceType);
         }
@@ -111,7 +111,7 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
         void cannotUpdatePreferenceWithOutSavedPreference() {
             //given, when, then
             assertThatThrownBy(
-                () -> preferenceService.getPreference(member.getId()))
+                () -> preferenceService.getPreference(memberId))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND.getMessage());
         }
@@ -130,13 +130,13 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
                 PreferenceType.DIET);
             List<Preference> all = preferenceRepository.findAll();
 
-            preferenceService.register(request, member.getId());
+            preferenceService.register(request, memberId);
 
             //when,
             PreferenceUpdateRequest updateRequest = new PreferenceUpdateRequest(
                 PreferenceType.CONSTITUTION);
-            preferenceService.update(updateRequest, member.getId());
-            MemberPreferenceResponse preference = preferenceService.getPreference(member.getId());
+            preferenceService.update(updateRequest, memberId);
+            MemberPreferenceResponse preference = preferenceService.getPreference(memberId);
 
             // then
             assertThat(preference.preferenceType()).isEqualTo(updateRequest.preferenceType());
@@ -148,15 +148,15 @@ class PreferenceServiceTest extends AbstractIntegrationTest {
             //given
             PreferenceSelectRequest request = new PreferenceSelectRequest(
                 PreferenceType.DIET);
-            preferenceService.register(request, member.getId());
+            preferenceService.register(request, memberId);
             Member fixtureMember = MemberFixture.createKakaoMember();
-            Member unSavePreferenceMember = memberService.getFirstJoinedMember(fixtureMember);
+            Long unSavePreferenceMemberId = memberService.getFirstJoinedMember(fixtureMember);
 
             //when, then
             PreferenceUpdateRequest updateRequest = new PreferenceUpdateRequest(
                 PreferenceType.CONSTITUTION);
             assertThatThrownBy(
-                () -> preferenceService.update(updateRequest, unSavePreferenceMember.getId()))
+                () -> preferenceService.update(updateRequest, unSavePreferenceMemberId))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND.getMessage());
         }

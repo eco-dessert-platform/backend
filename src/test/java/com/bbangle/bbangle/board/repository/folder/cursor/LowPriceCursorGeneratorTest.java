@@ -33,20 +33,20 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
 
     @Autowired
     LowPriceBoardInFolderCursorGenerator lowPriceBoardInFolderCursorGenerator;
-
-    Member member;
+    Long memberId;
     WishListFolder wishListFolder;
     Long lastSavedId;
     Long firstSavedId;
 
     @BeforeEach
     void setup() {
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        member = memberRepository.save(member);
+        memberId = memberService.getFirstJoinedMember(member);
         Store store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
 
-        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+        wishListFolder = wishListFolderRepository.findByMemberId(memberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -57,14 +57,14 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
             if (i == 0) {
                 firstSavedId = createdBoard.getId();
             }
-            if(i == 11){
+            if (i == 11) {
                 lastSavedId = createdBoard.getId();
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
     }
@@ -73,7 +73,8 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 없는 경우 가장 커서 관련 조건문 없이 BooleanBuilder를 반환한다.")
     void getBoardWithLowPriceWithoutCursor() {
         //given, when
-        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceBoardInFolderCursorGenerator.getCursor(DEFAULT_CURSOR_ID, wishListFolder.getId());
+        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceBoardInFolderCursorGenerator.getCursor(
+            DEFAULT_CURSOR_ID, wishListFolder.getId());
 
         //then
         assertThat(lowPriceConditionWithoutCursor.getValue()).isNull();
@@ -83,11 +84,14 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 존재하는 경우 그 커서의 게시글 이하의 가격 이며 두 번째 조건으로 커서보다 작거나 같은 Id 값을 찾는 조건을 반환한다.")
     void getBoardWithLowPriceWithCursor() {
         //given, when
-        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceBoardInFolderCursorGenerator.getCursor(firstSavedId, wishListFolder.getId());
+        BooleanBuilder lowPriceConditionWithoutCursor = lowPriceBoardInFolderCursorGenerator.getCursor(
+            firstSavedId, wishListFolder.getId());
         Board firstSavedBoard = boardRepository.findById(firstSavedId).get();
-        WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(firstSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(board.price.goe(firstSavedBoard.getPrice()).and(
-            wishListBoard.id.loe(wish.getId()))).toString();
+        WishListBoard wish = wishListBoardRepository.findByBoardIdAndMemberId(firstSavedId,
+            memberId).get();
+        String expectedCursorCondition = new BooleanBuilder().and(
+            board.price.goe(firstSavedBoard.getPrice()).and(
+                wishListBoard.id.loe(wish.getId()))).toString();
 
         //then
         assertThat(lowPriceConditionWithoutCursor.getValue()).hasToString(expectedCursorCondition);
@@ -101,7 +105,9 @@ class LowPriceCursorGeneratorTest extends AbstractIntegrationTest {
         long randomNum = random.nextLong(10000) + 1;
 
         //when, then
-        assertThatThrownBy(() -> lowPriceBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum, wishListFolder.getId()))
+        assertThatThrownBy(
+            () -> lowPriceBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum,
+                wishListFolder.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 

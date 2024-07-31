@@ -44,11 +44,13 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
     WishListBoardRepository wishlistBoardRepository;
 
     Member member;
+    Long memberId;
 
     @BeforeEach
     void setup() {
         member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        memberId = memberService.getFirstJoinedMember(member);
+        member = memberRepository.findMemberById(memberId);
     }
 
     @Nested
@@ -59,7 +61,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("처음 가입한 멤버는 기본 폴더 하나만을 가지고 있다")
         void memberWithFirstJoinedWishlistFolder() {
             //given, when
-            List<FolderResponseDto> folderList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> folderList = wishListFolderService.getList(memberId);
 
             //then
             assertThat(folderList).hasSize(1);
@@ -77,9 +79,9 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
                 title = title.substring(0, 12);
             }
             FolderRequestDto folderRequestDto = new FolderRequestDto(title);
-            wishListFolderService.create(member.getId(), folderRequestDto);
+            wishListFolderService.create(memberId, folderRequestDto);
 
-            List<FolderResponseDto> folderList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> folderList = wishListFolderService.getList(memberId);
 
             //then
             assertThat(folderList).hasSize(2);
@@ -109,10 +111,10 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
                 title = title.substring(0, 12);
             }
             FolderRequestDto folderRequestDto = new FolderRequestDto(title);
-            wishListFolderService.create(member.getId(), folderRequestDto);
+            wishListFolderService.create(memberId, folderRequestDto);
 
             //when, then
-            assertThatThrownBy(() -> wishListFolderService.create(member.getId(), folderRequestDto))
+            assertThatThrownBy(() -> wishListFolderService.create(memberId, folderRequestDto))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.FOLDER_NAME_ALREADY_EXIST.getMessage());
         }
@@ -127,14 +129,14 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
                 title = title.substring(0, 12);
             }
             FolderRequestDto folderRequestDto = new FolderRequestDto(title);
-            wishListFolderService.create(member.getId(), folderRequestDto);
+            wishListFolderService.create(memberId, folderRequestDto);
 
             Member kakaoMember = MemberFixture.createKakaoMember();
-            Member firstJoinedMember = memberService.getFirstJoinedMember(kakaoMember);
+            Long firstJoinedMemberId = memberService.getFirstJoinedMember(kakaoMember);
 
             //when, then
             Assertions.assertDoesNotThrow(
-                () -> wishListFolderService.create(firstJoinedMember.getId(), folderRequestDto));
+                () -> wishListFolderService.create(firstJoinedMemberId, folderRequestDto));
         }
 
         @Test
@@ -148,13 +150,13 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             }
             for (int i = 0; i < 9; i++) {
                 FolderRequestDto folderRequestDto = new FolderRequestDto(title + i);
-                wishListFolderService.create(member.getId(), folderRequestDto);
+                wishListFolderService.create(memberId, folderRequestDto);
             }
 
             FolderRequestDto folderRequestDto = new FolderRequestDto(title);
 
             //when, then
-            assertThatThrownBy(() -> wishListFolderService.create(member.getId(), folderRequestDto))
+            assertThatThrownBy(() -> wishListFolderService.create(memberId, folderRequestDto))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.OVER_MAX_FOLDER.getMessage());
 
@@ -176,7 +178,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             if (beforeTitle.length() > 12) {
                 beforeTitle = beforeTitle.substring(0, 12);
             }
-            Long memberId = member.getId();
+
             FolderRequestDto folderUpdateDto = new FolderRequestDto(beforeTitle);
             beforeFolderId = wishListFolderService.create(memberId, folderUpdateDto);
         }
@@ -193,7 +195,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
 
             //when
-            wishListFolderService.update(member.getId(), beforeFolderId, folderUpdateDto);
+            wishListFolderService.update(memberId, beforeFolderId, folderUpdateDto);
 
             //then
             WishListFolder changedFolder = wishListFolderRepository.findById(beforeFolderId)
@@ -243,7 +245,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
             //when, then
             assertThatThrownBy(
-                () -> wishListFolderService.update(member.getId(), -1L, folderUpdateDto))
+                () -> wishListFolderService.update(memberId, -1L, folderUpdateDto))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.FOLDER_NOT_FOUND.getMessage());
         }
@@ -260,11 +262,11 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
 
             //when, then
-            FolderResponseDto folderResponseDto = wishListFolderService.getList(member.getId())
+            FolderResponseDto folderResponseDto = wishListFolderService.getList(memberId)
                 .get(0);
 
             assertThatThrownBy(
-                () -> wishListFolderService.update(member.getId(), folderResponseDto.folderId(),
+                () -> wishListFolderService.update(memberId, folderResponseDto.folderId(),
                     folderUpdateDto))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.DEFAULT_FOLDER_NAME_CANNOT_CHNAGE.getMessage());
@@ -277,8 +279,9 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
     class FolderList {
 
         WishListFolder wishlistFolder;
+
         @BeforeEach
-        void setup(){
+        void setup() {
             wishlistFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishlistFolder = wishListFolderRepository.save(wishlistFolder);
         }
@@ -287,13 +290,14 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("위시리스트 폴더를 정상적으로 조회한다.")
         void getWishlistFolder() {
             //given, when
-            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(memberId);
             List<String> folderTitleList = folderResponseDtoList.stream()
                 .map(FolderResponseDto::title)
                 .toList();
 
             //then
-            assertThat(folderTitleList).contains(wishlistFolder.getFolderName(), DEFAULT_FOLDER_NAME);
+            assertThat(folderTitleList).contains(wishlistFolder.getFolderName(),
+                DEFAULT_FOLDER_NAME);
             assertThat(folderTitleList.get(0)).isEqualTo(DEFAULT_FOLDER_NAME);
         }
 
@@ -301,7 +305,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("존재하지 않는 멤버의 아이디로 조회하는 경우 예외가 발생한다")
         void getWishlistFolderWithAnonymousMember() {
             //given, when, then
-            assertThatThrownBy(() -> wishListFolderService.getList(member.getId() + 1L))
+            assertThatThrownBy(() -> wishListFolderService.getList(memberId + 1L))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.NOTFOUND_MEMBER.getMessage());
         }
@@ -310,7 +314,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("저장된 게시글의 개수만큼 이미지 썸네일을 보여주지만 네 개 이상인 경우 네 개만 보여준다.")
         void listContainsThumbnailWithFourMaxCount() {
             //given, when
-            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(memberId);
             FolderResponseDto defaultFolder = folderResponseDtoList.stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -318,24 +322,24 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
                 .get();
             Store store = StoreFixture.storeGenerator();
             storeRepository.save(store);
-            for(int i = 0; i < 10; i++){
+            for (int i = 0; i < 10; i++) {
                 Board board = BoardFixture.randomBoard(store);
                 board = boardRepository.save(board);
                 BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
                 boardStatisticRepository.save(boardStatistic);
 
-                if(i < 3) {
-                    wishListBoardService.wish(member.getId(), board.getId(),
+                if (i < 3) {
+                    wishListBoardService.wish(memberId, board.getId(),
                         new WishListBoardRequest(defaultFolder.folderId()));
                 }
-                if(i >= 3) {
-                    wishListBoardService.wish(member.getId(), board.getId(),
+                if (i >= 3) {
+                    wishListBoardService.wish(memberId, board.getId(),
                         new WishListBoardRequest(wishlistFolder.getId()));
                 }
             }
 
             // then
-            List<FolderResponseDto> afterWishFolderList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> afterWishFolderList = wishListFolderService.getList(memberId);
             FolderResponseDto afterWishDefaultFolder = afterWishFolderList.stream()
                 .filter(folderResponseDto -> folderResponseDto.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -354,10 +358,12 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("위시리스트 폴더 삭제 서비스 로직 테스트")
-    class DeleteFolder{
+    class DeleteFolder {
+
         WishListFolder wishListFolder;
+
         @BeforeEach
-        void setup(){
+        void setup() {
             wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolder = wishListFolderRepository.save(wishListFolder);
         }
@@ -366,10 +372,10 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 위시리스트 폴더를 삭제한다")
         void deleteWishListFolder() {
             //given, when
-            wishListFolderService.delete(wishListFolder.getId(), member.getId());
+            wishListFolderService.delete(wishListFolder.getId(), memberId);
 
             //then
-            List<FolderResponseDto> wishListFolderList = wishListFolderService.getList(member.getId());
+            List<FolderResponseDto> wishListFolderList = wishListFolderService.getList(memberId);
             assertThat(wishListFolderList).hasSize(1);
         }
 
@@ -377,10 +383,10 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("이미 삭제된 위시리스트 폴더는 다시 삭제할 수 없다.")
         void cannotDeleteAlreadyDeletedFolder() {
             //given, when
-            wishListFolderService.delete(wishListFolder.getId(), member.getId());
+            wishListFolderService.delete(wishListFolder.getId(), memberId);
 
             //then
-            assertThatThrownBy(() ->wishListFolderService.delete(wishListFolder.getId(), member.getId()))
+            assertThatThrownBy(() -> wishListFolderService.delete(wishListFolder.getId(), memberId))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.FOLDER_ALREADY_DELETED.getMessage());
         }
@@ -389,12 +395,14 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("기볼 폴더는 삭제할 수 없다.")
         void cannotDeleteDefaultFolder() {
             //given, when
-            FolderResponseDto DefaultFolder = wishListFolderService.getList(member.getId()).stream().filter(folder -> folder.title().equals(DEFAULT_FOLDER_NAME))
+            FolderResponseDto DefaultFolder = wishListFolderService.getList(memberId).stream()
+                .filter(folder -> folder.title().equals(DEFAULT_FOLDER_NAME))
                 .findFirst()
                 .get();
 
             //then
-            assertThatThrownBy(() ->wishListFolderService.delete(DefaultFolder.folderId(), member.getId()))
+            assertThatThrownBy(
+                () -> wishListFolderService.delete(DefaultFolder.folderId(), memberId))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.CANNOT_DELETE_DEFAULT_FOLDER.getMessage());
         }

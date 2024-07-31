@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 class LowPriceBoardQueryProviderTest extends AbstractIntegrationTest {
 
-    Member member;
+    Long memberId;
     WishListFolder wishListFolder;
     Long firstSavedId;
     Long lastSavedId;
@@ -33,12 +33,13 @@ class LowPriceBoardQueryProviderTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void generalSetUp() {
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        member = memberRepository.save(member);
+        memberId = memberService.getFirstJoinedMember(member);
         store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
 
-        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+        wishListFolder = wishListFolderRepository.findByMemberId(memberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -60,7 +61,7 @@ class LowPriceBoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(product2);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
     }

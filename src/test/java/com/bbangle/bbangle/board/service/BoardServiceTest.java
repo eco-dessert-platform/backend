@@ -442,19 +442,19 @@ class BoardServiceTest extends AbstractIntegrationTest {
         private static final Long DEFAULT_CURSOR_ID = null;
         private static final Long DEFAULT_FOLDER_ID = 0L;
 
-        Member member;
+        Long memberId;
         WishListFolder wishListFolder;
         Long lastSavedId;
         Long firstSavedId;
 
         @BeforeEach
         void setup() {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            memberId = memberService.getFirstJoinedMember(member);
             Store store = StoreFixture.storeGenerator();
             store = storeRepository.save(store);
 
-            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+            wishListFolder = wishListFolderRepository.findByMemberId(memberId)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -473,7 +473,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(
                     createdBoard);
                 boardStatisticRepository.save(boardStatistic);
-                wishListBoardService.wish(member.getId(), createdBoard.getId(),
+                wishListBoardService.wish(memberId, createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
             }
         }
@@ -483,7 +483,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithDefaultOrder() {
             // given, when
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 DEFAULT_SORT_TYPE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -503,7 +503,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithLowPriceOrder() {
             // given, when
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.LOW_PRICE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -523,10 +523,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithPopularOrder() {
             // given, when
             Member member2 = MemberFixture.createKakaoMember();
-            member2 = memberService.getFirstJoinedMember(member2);
+            member2 = memberRepository.save(member2);
+            Long memberId2 = memberService.getFirstJoinedMember(member2);
 
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.LOW_PRICE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -535,12 +536,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     .size() - 1)
                 .getBoardId();
 
-            wishListBoardService.wish(member2.getId(), targetId,
+            wishListBoardService.wish(memberId2, targetId,
                 new WishListBoardRequest(DEFAULT_FOLDER_ID));
 
             // then
             BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.POPULAR,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -571,9 +572,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
                 thirdBoard = boardRepository.save(BoardFixture.randomBoard(store));
 
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
+                boardStatisticRepository.save(
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
+                boardStatisticRepository.save(
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
+                boardStatisticRepository.save(
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
 
                 createWishListStore();
             }

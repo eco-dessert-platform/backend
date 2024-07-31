@@ -26,18 +26,18 @@ class MemberControllerTest extends AbstractIntegrationTest {
     @Autowired
     TokenProvider tokenProvider;
 
-    Member member;
+    Long memberId;
 
     @BeforeEach
     void setup() {
-        member = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
+        memberId = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
     }
 
     @Test
     @DisplayName("정상적으로 동의서와 선호도 작성 여부를 받아볼 수 있다.")
     void getIsAssignedApi() throws Exception {
         //given
-        String authentication = getAuthentication(member);
+        String authentication = getAuthentication(memberId);
 
         //when, then
         mockMvc.perform(get("/api/v1/members/status")
@@ -52,8 +52,8 @@ class MemberControllerTest extends AbstractIntegrationTest {
 
     }
 
-    private String getAuthentication(Member member) {
-        String token = tokenProvider.generateToken(member, Duration.ofMinutes(1));
+    private String getAuthentication(Long memberId) {
+        String token = tokenProvider.generateToken(memberId, Duration.ofMinutes(1));
         return "Bearer " + token;
     }
 }

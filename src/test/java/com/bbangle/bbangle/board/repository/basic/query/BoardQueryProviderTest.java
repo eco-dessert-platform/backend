@@ -46,15 +46,16 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
     private Store store;
     private Long lastSavedBoardId;
     private Long firstSavedBoardId;
-    private Member member;
+    private Long memberId;
 
     @BeforeEach
     void setup() {
         Store newStore = StoreFixture.storeGenerator();
         store = storeRepository.save(newStore);
         for (int i = 0; i < BOARD_SIZE; i++) {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            member = memberRepository.save(member);
+            memberId = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
@@ -72,7 +73,7 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(firstProduct);
             productRepository.save(secondProduct);
             if (i % 2 == 1) {
-                wishListBoardService.wish(member.getId(), savedBoard.getId(),
+                wishListBoardService.wish(memberId, savedBoard.getId(),
                     new WishListBoardRequest(DEFAULT_FOLDER_ID));
             }
         }

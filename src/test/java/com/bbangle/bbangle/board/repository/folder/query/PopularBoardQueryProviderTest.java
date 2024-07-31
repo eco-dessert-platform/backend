@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 
 class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
 
-    Member member;
-    Member anotherMember;
+    Long memberId;
+    Long anotherMemberId;
     WishListFolder wishListFolder;
     WishListFolder anotherWishListFolder;
     Long firstSavedId;
@@ -35,18 +35,20 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void generalSetUp() {
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
-        anotherMember = MemberFixture.createKakaoMember();
-        anotherMember = memberService.getFirstJoinedMember(anotherMember);
+        Member member = MemberFixture.createKakaoMember();
+        member = memberRepository.save(member);
+        memberId = memberService.getFirstJoinedMember(member);
+        Member anotherMember = MemberFixture.createKakaoMember();
+        anotherMember = memberRepository.save(anotherMember);
+        anotherMemberId = memberService.getFirstJoinedMember(anotherMember);
         store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
 
-        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+        wishListFolder = wishListFolderRepository.findByMemberId(memberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
-        anotherWishListFolder = wishListFolderRepository.findByMemberId(anotherMember.getId())
+        anotherWishListFolder = wishListFolderRepository.findByMemberId(anotherMemberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -68,11 +70,11 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(product2);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
 
             if (i % 3 == 0) {
-                wishListBoardService.wish(anotherMember.getId(), createdBoard.getId(),
+                wishListBoardService.wish(anotherMemberId, createdBoard.getId(),
                     new WishListBoardRequest(anotherWishListFolder.getId()));
             }
         }
@@ -96,12 +98,12 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
             .map(BoardResponseDao::boardId)
             .toList();
         long expectedBoardId = lastSavedId - 2L;
-        for(int i = 0; i < 6; i += 2){
+        for (int i = 0; i < 6; i += 2) {
             assertThat(boardIdListWithHighScore.get(i)).isEqualTo(expectedBoardId);
             expectedBoardId -= 3;
         }
 
-        for(long i = lastSavedId; i <= firstSavedId; i++){
+        for (long i = lastSavedId; i <= firstSavedId; i++) {
             final long finalizedId = i;
             assertThat(boardResponseDaoList
                 .stream()

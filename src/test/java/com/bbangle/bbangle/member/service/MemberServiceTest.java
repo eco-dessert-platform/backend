@@ -22,18 +22,18 @@ class MemberServiceTest extends AbstractIntegrationTest {
     @Autowired
     PreferenceService preferenceService;
 
-    Member member;
+    Long memberId;
 
     @BeforeEach
     void setup() {
-        member = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
+        memberId = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
     }
 
     @Test
     @DisplayName("정상적으로 멤버가 약관에 동의하고 선호도를 기록했는지 확인할 수 있다.")
     void getIsFullyAssigned() {
         //given, when
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())
@@ -47,8 +47,8 @@ class MemberServiceTest extends AbstractIntegrationTest {
     void getIsFullyAssignedWithPreferenceTrue() {
         //given, when
         preferenceService.register(new PreferenceSelectRequest(PreferenceType.DIET),
-            member.getId());
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
+            memberId);
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())
@@ -70,8 +70,8 @@ class MemberServiceTest extends AbstractIntegrationTest {
             true
         );
 
-        memberService.updateMemberInfo(request, member.getId(), NULL_FILE);
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
+        memberService.updateMemberInfo(request, memberId, NULL_FILE);
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())

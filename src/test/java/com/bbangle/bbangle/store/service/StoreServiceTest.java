@@ -34,8 +34,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
     private static final Long NULL_CURSOR = null;
     private static final Long NULL_MEMBER_ID = null;
-
-    private Member member;
+    private Long memberId;
 
     @BeforeEach
     void setup() {
@@ -44,8 +43,8 @@ class StoreServiceTest extends AbstractIntegrationTest {
         storeRepository.deleteAll();
         memberRepository.deleteAll();
 
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        memberId = memberService.getFirstJoinedMember(member);
     }
 
     @Nested
@@ -127,10 +126,10 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 .stream()
                 .findFirst()
                 .orElseThrow(Exception::new);
-            wishListStoreService.save(member.getId(), first.getStoreId());
+            wishListStoreService.save(memberId, first.getStoreId());
 
             //then
-            StoreResponseDto wishedContent = storeService.getList(NULL_CURSOR, member.getId())
+            StoreResponseDto wishedContent = storeService.getList(NULL_CURSOR, memberId)
                 .getContent()
                 .stream()
                 .findFirst()
