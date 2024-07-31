@@ -28,7 +28,8 @@ public class BoardPageGenerator {
     private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
     public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(
-        List<BoardResponseDao> boardDaos, Boolean isInFolder) {
+        List<BoardResponseDao> boardDaos, Boolean isInFolder
+    ) {
         if (boardDaos.isEmpty()) {
             return BoardCustomPage.emptyPage();
         }
@@ -39,9 +40,12 @@ public class BoardPageGenerator {
         boolean hasNext = false;
         if (boardResponseDtos.size() == HAS_NEXT_PAGE_SIZE) {
             hasNext = true;
-            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1).getBoardId();
+            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1)
+                .getBoardId();
         }
-        boardResponseDtos = boardResponseDtos.stream().limit(BOARD_PAGE_SIZE).toList();
+        boardResponseDtos = boardResponseDtos.stream()
+            .limit(BOARD_PAGE_SIZE)
+            .toList();
 
         return BoardCustomPage.from(boardResponseDtos, nextCursor, hasNext);
     }
@@ -59,7 +63,8 @@ public class BoardPageGenerator {
 
         boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
 
-        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId, isSoldOut, isBbangcketing);
+        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId,
+            isSoldOut, isBbangcketing);
     }
 
     private static Map<Long, Boolean> getIsBbangcketing(List<BoardResponseDao> boardResponseDaoList) {
@@ -71,11 +76,13 @@ public class BoardPageGenerator {
                     existingList.addAll(newList);
                     return existingList;
                 }))
-            .entrySet().stream().collect(Collectors.toMap(
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
                 Entry::getKey,
                 entry -> {
-                    for(LocalDateTime endDate  : entry.getValue()){
-                        if(endDate != null && endDate.isBefore(LocalDateTime.now())){
+                    for (LocalDateTime endDate : entry.getValue()) {
+                        if (endDate != null && endDate.isAfter(LocalDateTime.now())) {
                             return true;
                         }
                     }
@@ -93,10 +100,20 @@ public class BoardPageGenerator {
                     existingList.addAll(newList);
                     return existingList;
                 }))
-            .entrySet().stream().collect(Collectors.toMap(
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
                 Entry::getKey,
-            entry -> entry.getValue().contains(true)
-        ));
+                entry -> {
+                    for (boolean isSoldOut : entry.getValue()) {
+                        if (!isSoldOut) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            ));
     }
 
     private static List<BoardResponseDto> getBoardResponseDtos(
@@ -130,7 +147,8 @@ public class BoardPageGenerator {
     }
 
     private static Map<Long, List<String>> getTagListFromBoardResponseDao(
-        List<BoardResponseDao> boardResponseDaoList) {
+        List<BoardResponseDao> boardResponseDaoList
+    ) {
         return boardResponseDaoList.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
@@ -170,7 +188,8 @@ public class BoardPageGenerator {
     }
 
     private static List<BoardResponseDao> removeDuplicatesByBoardId(
-        List<BoardResponseDao> boardResponseDaos) {
+        List<BoardResponseDao> boardResponseDaos
+    ) {
         Map<Long, BoardResponseDao> uniqueBoardMap = boardResponseDaos.stream()
             .collect(Collectors.toMap(
                 BoardResponseDao::boardId,
