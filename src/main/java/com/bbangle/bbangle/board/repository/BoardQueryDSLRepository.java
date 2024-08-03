@@ -44,5 +44,7 @@ public interface BoardQueryDSLRepository {
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
 
+    Long getBoardCount(FilterRequest filterRequest);
+
 }
 
