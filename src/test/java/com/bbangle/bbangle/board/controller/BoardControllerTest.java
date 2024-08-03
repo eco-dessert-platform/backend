@@ -235,8 +235,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
 
         private static final boolean INGREDIENT_TRUE = true;
         private static final boolean INGREDIENT_FALSE = false;
-
-        Member member;
+        Long memberId;
         Board createdBoard;
         Product product;
         Store store;
@@ -244,12 +243,13 @@ class BoardControllerTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void setup() {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            member = memberRepository.save(member);
+            memberId = memberService.getFirstJoinedMember(member);
             store = StoreFixture.storeGenerator();
             store = storeRepository.save(store);
 
-            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+            wishListFolder = wishListFolderRepository.findByMemberId(memberId)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -263,7 +263,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
 
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
 
@@ -271,7 +271,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 폴더 안의 게시글을 조회할 수 있다.")
         void getBoardInFolder() throws Exception {
             //given
-            String authentication = getAuthentication(member);
+            String authentication = getAuthentication(memberId);
 
             mockMvc.perform(get("/api/v1/boards/folders/" + wishListFolder.getId())
                     .header(HttpHeaders.AUTHORIZATION, authentication))
@@ -298,8 +298,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.result.hasNext").value(false));
         }
 
-        private String getAuthentication(Member member) {
-            String token = tokenProvider.generateToken(member, Duration.ofMinutes(1));
+        private String getAuthentication(Long memberId) {
+            String token = tokenProvider.generateToken(memberId, Duration.ofMinutes(1));
             return "Bearer " + token;
         }
 

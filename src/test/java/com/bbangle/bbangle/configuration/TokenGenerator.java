@@ -20,7 +20,7 @@ class TokenGenerator extends AbstractIntegrationTest {
     void generateTokenAndValidate() throws Exception {
         //given
         Member member = Member.builder().id(23L).build();
-        String token = tokenProvider.generateToken(member, Duration.ofDays(1));
+        String token = tokenProvider.generateToken(member.getId(), Duration.ofDays(1));
 
         //when
         boolean result = tokenProvider.isValidToken(token);

@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.token.jwt;
 
-import com.bbangle.bbangle.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
@@ -27,24 +26,24 @@ public class TokenProvider {
     /**
      * JWT 토큰 생성
      *
-     * @param member    유저
+     * @param memberId  유저 기본키
      * @param expiredAt 만료기간
      * @return JWT 토큰
      */
-    public String generateToken(Member member, Duration expiredAt) {
+    public String generateToken(Long memberId, Duration expiredAt) {
         Date now = new Date();
-        return makeToken(new Date(now.getTime() + expiredAt.toMillis()), member);
+        return makeToken(new Date(now.getTime() + expiredAt.toMillis()), memberId);
     }
 
 
     /**
      * JWT 토큰 실제 생성
      *
-     * @param expiry 만료 기간
-     * @param member 유저
+     * @param expiry   만료 기간
+     * @param memberId 유저기본키
      * @return JWT 토큰
      */
-    private String makeToken(Date expiry, Member member) {
+    private String makeToken(Date expiry, Long memberId) {
         Date now = new Date();
 
         return Jwts.builder()
@@ -52,8 +51,7 @@ public class TokenProvider {
             .setIssuer(jwtProperties.getIssuer())
             .setIssuedAt(now)
             .setExpiration(expiry)
-            .setSubject(member.getEmail())
-            .claim("id", member.getId())
+            .claim("id", memberId)
             // 서명 : 비밀값과 함께 해시값을 HS256 방식으로 암호화
             .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
             .compact();
@@ -84,7 +82,7 @@ public class TokenProvider {
      */
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
-        Long memberId = Long.valueOf((Integer)claims.get("id"));
+        Long memberId = Long.valueOf((Integer) claims.get("id"));
         Set<SimpleGrantedAuthority> authorities = Collections.singleton(
             new SimpleGrantedAuthority("ROLE_USER"));
         return new UsernamePasswordAuthenticationToken(memberId, token, authorities);

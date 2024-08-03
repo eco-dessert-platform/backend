@@ -34,22 +34,22 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
 
     private static final Long DEFAULT_CURSOR_ID = null;
     private static final Long DEFAULT_FOLDER_ID = 0L;
-
-    Member member;
+    Long memberId;
     WishListFolder wishListFolder;
     Long lastSavedId;
     Long firstSavedId;
 
     @BeforeEach
     void setup() {
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        member = memberRepository.save(member);
+        memberId = memberService.getFirstJoinedMember(member);
         Member member2 = MemberFixture.createKakaoMember();
-        member2 = memberService.getFirstJoinedMember(member2);
+        Long memberId2 = memberService.getFirstJoinedMember(member2);
         Store store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
 
-        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+        wishListFolder = wishListFolderRepository.findByMemberId(memberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -60,17 +60,17 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
             if (i == 0) {
                 firstSavedId = createdBoard.getId();
             }
-            if(i == 11){
+            if (i == 11) {
                 lastSavedId = createdBoard.getId();
             }
             Product product = ProductFixture.randomProduct(createdBoard);
             productRepository.save(product);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
-            if(createdBoard.getId() % 2 == 1) {
-                wishListBoardService.wish(member2.getId(), createdBoard.getId(),
+            if (createdBoard.getId() % 2 == 1) {
+                wishListBoardService.wish(memberId2, createdBoard.getId(),
                     new WishListBoardRequest(DEFAULT_FOLDER_ID));
             }
         }
@@ -80,7 +80,8 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 없는 경우 가장 커서 관련 조건문 없이 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithoutCursor() {
         //given, when
-        BooleanBuilder wishListCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(DEFAULT_CURSOR_ID, wishListFolder.getId());
+        BooleanBuilder wishListCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(
+            DEFAULT_CURSOR_ID, wishListFolder.getId());
 
         //then
         assertThat(wishListCursorCondition.getValue()).isNull();
@@ -90,12 +91,16 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
     @DisplayName("커서가 존재하는 경우 그 커서보다 늦거나 같게 찜한 게시글 목록 BooleanBuilder를 반환한다.")
     void getBoardWithWishListRecentWithCursor() {
         //given, when
-        BooleanBuilder wishListRecentCursorCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(lastSavedId, wishListFolder.getId());
-        WishListBoard lastWishListBoard = wishListBoardRepository.findByBoardIdAndMemberId(lastSavedId, member.getId()).get();
-        String expectedCursorCondition = new BooleanBuilder().and(wishListBoard.id.loe(lastWishListBoard.getId())).toString();
+        BooleanBuilder wishListRecentCursorCursorCondition = wishListRecentBoardInFolderCursorGenerator.getCursor(
+            lastSavedId, wishListFolder.getId());
+        WishListBoard lastWishListBoard = wishListBoardRepository.findByBoardIdAndMemberId(
+            lastSavedId, memberId).get();
+        String expectedCursorCondition = new BooleanBuilder().and(
+            wishListBoard.id.loe(lastWishListBoard.getId())).toString();
 
         //then
-        assertThat(wishListRecentCursorCursorCondition.getValue()).hasToString(expectedCursorCondition);
+        assertThat(wishListRecentCursorCursorCondition.getValue()).hasToString(
+            expectedCursorCondition);
     }
 
     @Test
@@ -106,7 +111,9 @@ class WishListRecentCursorGeneratorTest extends AbstractIntegrationTest {
         long randomNum = random.nextLong(10000) + 1;
 
         //when, then
-        assertThatThrownBy(() ->wishListRecentBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum, wishListFolder.getId()))
+        assertThatThrownBy(
+            () -> wishListRecentBoardInFolderCursorGenerator.getCursor(lastSavedId + randomNum,
+                wishListFolder.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
 
