@@ -212,4 +212,9 @@ public class BoardService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public Long getFilteredBoardCount(FilterRequest filterRequest) {
+        return boardRepository.getBoardCount(filterRequest);
+    }
+
 }
