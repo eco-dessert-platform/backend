@@ -80,6 +80,15 @@ public class BoardController {
         return responseService.getSingleResult(boardResponseList);
     }
 
+    @GetMapping("/count")
+    public CommonResult getCount(
+        @ParameterObject
+        FilterRequest filterRequest
+    ) {
+        Long boardCount = boardService.getFilteredBoardCount(filterRequest);
+        return responseService.getSingleResult(boardCount);
+    }
+
     @GetMapping("/folders/{folderId}")
     public CommonResult getPostInFolder(
         @RequestParam(required = false, value = "sort")
