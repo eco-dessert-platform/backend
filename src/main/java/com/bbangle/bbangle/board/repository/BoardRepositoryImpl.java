@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
@@ -41,6 +42,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public static final int BOARD_PAGE_SIZE = 10;
 
     private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
     private static final QProductImg productImage = QProductImg.productImg;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
@@ -230,6 +232,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(board.id.in(responseList)
                 .and(wishListBoard.memberId.eq(memberId)))
             .fetch();
+    }
+
+    @Override
+    public Long getBoardCount(FilterRequest filterRequest) {
+        BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
+        return queryFactory.select(board.countDistinct())
+            .from(board)
+            .leftJoin(product)
+            .on(board.id.eq(product.board.id))
+            .where(filter)
+            .fetchOne();
     }
 
 }
