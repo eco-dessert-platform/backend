@@ -30,11 +30,6 @@ public class ProfileController {
     private static final String DUPLICATE_NICKNAME = "중복된 닉네임이에요";
     private static final String AVAILABLE_NICKNAME = "사용가능한 닉네임이에요!";
 
-    /**
-     * 프로필 조회
-     *
-     * @return 프로필 정보
-     */
     @GetMapping
     public CommonResult getProfile() {
         Long memberId = SecurityUtils.getMemberId();
@@ -42,13 +37,6 @@ public class ProfileController {
         return responseService.getSingleResult(profileInfo);
     }
 
-
-    /**
-     * 닉네임 중복 확인
-     *
-     * @param nickname 닉네임
-     * @return 메세지
-     */
     @GetMapping("/doublecheck")
     public CommonResult doubleCheckNickname(
         @RequestParam("nickname") String nickname
