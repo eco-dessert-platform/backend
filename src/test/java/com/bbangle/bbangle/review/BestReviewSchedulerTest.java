@@ -33,13 +33,14 @@ import static org.assertj.core.api.Assertions.assertThat;
     void getBestReview(){
         //given
         Long bestReviewId = 0L;
-        for(int LikeCount = 5; LikeCount > 0; LikeCount--){
-            bestReviewId = LikeCount == 5 ? getReviewIdIncludedLikeCount(LikeCount) : bestReviewId;
+        for(int likeCount = 5; likeCount > 0; likeCount--){
+            bestReviewId = likeCount == 5 ? getReviewIdIncludedLikeCount(likeCount) : bestReviewId;
         }
 
         //when
-        List<Long> bestReviewIds = schedulerFactory.getBestReviewIds();
-
+        List<Long> bestReviewIdCandidates = schedulerFactory.getBestReviewIds();
+        reviewRepository.updateBestReview(bestReviewIdCandidates);
+        List<Long> bestReviewIds = reviewRepository.getBestReviewIds();
         //Then
         assertThat(bestReviewIds)
                 .hasSize(1)
@@ -50,8 +51,8 @@ import static org.assertj.core.api.Assertions.assertThat;
     @DisplayName("도움되요가 5개 이상인 리뷰가 없어 베스트 리뷰를 선정할 수 없다")
     void getNoBestReview(){
         //given
-        for(int LikeCount = 4; LikeCount > 0; LikeCount--){
-           getReviewIdIncludedLikeCount(LikeCount);
+        for(int likeCount = 4; likeCount > 0; likeCount--){
+           getReviewIdIncludedLikeCount(likeCount);
         }
 
         //when
@@ -63,12 +64,12 @@ import static org.assertj.core.api.Assertions.assertThat;
                 .isEmpty();
     }
 
-    private Long getReviewIdIncludedLikeCount(int LikeCount){
+    private Long getReviewIdIncludedLikeCount(int likeCount){
         Long boardId = 1L;
         Long memberId = 0L;
         Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
         reviewRepository.save(review);
-        for(int i = 0; i < LikeCount; i++){
+        for(int i = 0; i < likeCount; i++){
             ReviewLike reviewLike = ReviewFixture.createReviewLike(review, memberId++);
             reviewLikeRepository.save(reviewLike);
         }

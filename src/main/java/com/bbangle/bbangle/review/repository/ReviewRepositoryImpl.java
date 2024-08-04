@@ -219,7 +219,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
         queryFactory
                 .update(review)
                 .set(review.isBest, true)
-                .where(review.id.in(4))
+                .where(review.id.in(bestReviewIds))
                 .execute();
 
         em.flush();
