@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -39,8 +40,6 @@ public class ReviewService {
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
 
-    @Value("${bucket.domain}")
-    private String bucketDomain;
     @Value("${cdn.domain}")
     private String cdnDomain;
     private final BoardStatisticService boardStatisticService;
@@ -90,10 +89,10 @@ public class ReviewService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
         List<ReviewSingleDto> reviewSingleList = reviewRepository.getReviewSingleList(board.getId(), cursorId);
-        int reviewSingListSize = reviewSingleList.size();
-        if(reviewSingListSize == 0){
+        if(ObjectUtils.isEmpty(reviewSingleList)){
             return new ReviewCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        int reviewSingListSize = reviewSingleList.size();
         Long nextCursor = reviewSingleList.get(reviewSingListSize -1).id();
         Long lastCursor = reviewSingleList.stream()
                 .findFirst()
@@ -159,10 +158,10 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ReviewCustomPage<List<ReviewInfoResponse>> getMyReviews(Long memberId, Long cursorId) {
         List<ReviewSingleDto> myReviewList = reviewRepository.getMyReviews(memberId, cursorId);
-        int myReviewListSize = myReviewList.size();
-        if(myReviewListSize == 0){
+        if(ObjectUtils.isEmpty(myReviewList)){
             return new ReviewCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        int myReviewListSize = myReviewList.size();
         Long nextCursor = myReviewList.get(myReviewListSize -1).id();
         Long lastCursor = myReviewList.stream().findFirst().get().id();
 
@@ -188,11 +187,11 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ImageCustomPage<List<ImageDto>> getAllImagesByBoardId(Long boardId, Long cursorId) {
         List<ImageDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
-        int allImagesSize = allImagesByBoardId.size();
-        boolean hasNext = checkHasNext(allImagesSize);
-        if(allImagesSize == 0){
+        if(ObjectUtils.isEmpty(allImagesByBoardId)){
             return new ImageCustomPage<>(Collections.emptyList(), 0L, false);
         }
+        int allImagesSize = allImagesByBoardId.size();
+        boolean hasNext = checkHasNext(allImagesSize);
         Long nextCursor = allImagesByBoardId.get(allImagesSize -1).getId();
         if (hasNext) {
             allImagesByBoardId.remove(allImagesByBoardId.get(allImagesSize - 1));
@@ -217,7 +216,7 @@ public class ReviewService {
         List<String> urls = reviewRequest.urls();
         List<Image> images = imageRepository.findByDomainId(reviewId);
         List<String> removedUrls = new ArrayList<>();
-        if(!images.isEmpty()){
+        if(!ObjectUtils.isEmpty(images)){
             List<String> imagePaths = new ArrayList<>(images.stream()
                     .map(Image::getPath)
                     .toList());
@@ -253,13 +252,10 @@ public class ReviewService {
         memberRepository.findMemberById(memberId);
         List<Image> reviewImages = imageRepository.findByDomainId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
-        reviewLikes.stream()
-                .map(ReviewLike::getId)
-                .toList();
-        if (!reviewImages.isEmpty()) {
+        if (!ObjectUtils.isEmpty(reviewImages)) {
             imageRepository.deleteAllByDomainId(reviewId);
         }
-        if(!reviewLikes.isEmpty()) {
+        if(!ObjectUtils.isEmpty(reviewLikes)) {
             reviewLikeRepository.deleteAllByReviewId(reviewId);
         }
         Review review = reviewRepository.findById(reviewId)
