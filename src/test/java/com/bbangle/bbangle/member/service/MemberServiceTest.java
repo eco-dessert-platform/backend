@@ -8,6 +8,7 @@ import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.service.PreferenceService;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -78,6 +79,25 @@ class MemberServiceTest extends AbstractIntegrationTest {
             .isTrue();
         Assertions.assertThat(isAssigned.isPreferenceAssigned())
             .isFalse();
+    }
+
+    @Test
+    @DisplayName("멤버는 정상적으로 탈퇴가 가능하다")
+    void getWithdrawSuccess(){
+        //given
+        memberService.deleteMember(memberId);
+
+        //when
+        Member deletedMember = memberRepository.findById(memberId).orElseThrow();
+
+        //then
+        Assertions.assertThat(deletedMember.isDeleted()).isTrue();
+        Assertions.assertThat(deletedMember.getEmail()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getPhone()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getName()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getNickname()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getBirth()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getProviderId()).isEqualTo("-");
     }
 
 }
