@@ -23,11 +23,13 @@ class MemberServiceTest extends AbstractIntegrationTest {
     @Autowired
     PreferenceService preferenceService;
 
+    Member kakaoMember;
     Long memberId;
 
     @BeforeEach
     void setup() {
-        memberId = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
+        kakaoMember = MemberFixture.createKakaoMember();
+        memberId = memberService.getFirstJoinedMember(kakaoMember);
     }
 
     @Test
@@ -98,6 +100,20 @@ class MemberServiceTest extends AbstractIntegrationTest {
         Assertions.assertThat(deletedMember.getNickname()).isEqualTo("-");
         Assertions.assertThat(deletedMember.getBirth()).isEqualTo("-");
         Assertions.assertThat(deletedMember.getProviderId()).isEqualTo("-");
+    }
+
+    @Test
+    @DisplayName("탈퇴 후 새로 가입한 멤버는 다른 멤버로 취급한다.")
+    void reJoinMemberIsNotSameWithBefore(){
+        //given
+        memberService.deleteMember(memberId);
+        Member sameMemberQuit = MemberFixture.sameKaKaoMember(kakaoMember);
+
+        //when
+        Long rejoinedId = memberService.getFirstJoinedMember(sameMemberQuit);
+
+        //then
+        Assertions.assertThat(memberId).isNotEqualTo(rejoinedId);
     }
 
 }
