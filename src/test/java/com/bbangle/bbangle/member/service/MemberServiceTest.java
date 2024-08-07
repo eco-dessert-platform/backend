@@ -8,6 +8,7 @@ import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.service.PreferenceService;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,11 +23,13 @@ class MemberServiceTest extends AbstractIntegrationTest {
     @Autowired
     PreferenceService preferenceService;
 
+    Member kakaoMember;
     Long memberId;
 
     @BeforeEach
     void setup() {
-        memberId = memberService.getFirstJoinedMember(MemberFixture.createKakaoMember());
+        kakaoMember = MemberFixture.createKakaoMember();
+        memberId = memberService.getFirstJoinedMember(kakaoMember);
     }
 
     @Test
@@ -78,6 +81,39 @@ class MemberServiceTest extends AbstractIntegrationTest {
             .isTrue();
         Assertions.assertThat(isAssigned.isPreferenceAssigned())
             .isFalse();
+    }
+
+    @Test
+    @DisplayName("멤버는 정상적으로 탈퇴가 가능하다")
+    void getWithdrawSuccess(){
+        //given
+        memberService.deleteMember(memberId);
+
+        //when
+        Member deletedMember = memberRepository.findById(memberId).orElseThrow();
+
+        //then
+        Assertions.assertThat(deletedMember.isDeleted()).isTrue();
+        Assertions.assertThat(deletedMember.getEmail()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getPhone()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getName()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getNickname()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getBirth()).isEqualTo("-");
+        Assertions.assertThat(deletedMember.getProviderId()).isEqualTo("-");
+    }
+
+    @Test
+    @DisplayName("탈퇴 후 새로 가입한 멤버는 다른 멤버로 취급한다.")
+    void reJoinMemberIsNotSameWithBefore(){
+        //given
+        memberService.deleteMember(memberId);
+        Member sameMemberQuit = MemberFixture.sameKaKaoMember(kakaoMember);
+
+        //when
+        Long rejoinedId = memberService.getFirstJoinedMember(sameMemberQuit);
+
+        //then
+        Assertions.assertThat(memberId).isNotEqualTo(rejoinedId);
     }
 
 }

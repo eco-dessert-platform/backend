@@ -127,11 +127,6 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member updateNickname(String nickname) {
-        this.nickname = nickname;
-        return this;
-    }
-
     public void updateFirst(MemberInfoRequest request) {
         if (request.birthDate() != null) {
             UserValidator.validateBirthDate(request.birthDate());
@@ -172,6 +167,7 @@ public class Member extends BaseEntity implements UserDetails {
         this.name = "-";
         this.nickname = "-";
         this.birth = "-";
+        this.providerId = "-";
     }
 
 }
