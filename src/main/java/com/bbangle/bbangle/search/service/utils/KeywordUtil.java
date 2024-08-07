@@ -36,6 +36,7 @@ public class KeywordUtil {
     public void setBestKeywordInRedis(String[] keywords) {
         String bestKeywordNamespace = RedisEnum.BEST_KEYWORD.name();
 
+        redisRepository.delete(bestKeywordNamespace, BEST_KEYWORD_KEY);
         if (keywords.length == 0) {
             redisRepository.set(bestKeywordNamespace, BEST_KEYWORD_KEY, DEFAULT_SEARCH_KEYWORDS);
             return;
