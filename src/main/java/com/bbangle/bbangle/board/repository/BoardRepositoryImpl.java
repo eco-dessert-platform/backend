@@ -110,6 +110,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 Projections.constructor(
                     BoardAndImageDto.class,
                     board.id,
+                    board.store.id,
                     board.profile,
                     board.title,
                     board.price,
