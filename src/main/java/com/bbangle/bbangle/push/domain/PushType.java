@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum PushCategory {
-    @JsonProperty("BBANGCKETING")
-    BBANGCKETING("입고"),
-    @JsonProperty("RESTOCK")
-    RESTOCK("재입고");
+public enum PushType {
+    @JsonProperty("DATE")
+    DATE("날짜"),
+    @JsonProperty("WEEK")
+    WEEK("요일");
 
     private final String description;
 }

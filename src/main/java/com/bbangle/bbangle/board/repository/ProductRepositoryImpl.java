@@ -3,19 +3,19 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TagCategoryDto;
-import com.bbangle.bbangle.board.dto.TitleDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
+import com.bbangle.bbangle.board.dto.QTitleDto;
+import com.bbangle.bbangle.board.dto.TitleDto;
 
 @Repository
 @Slf4j
@@ -82,4 +82,16 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             .orderBy(board.id.desc())
             .fetch();
     }
+
+
+    @Override
+    public Set<Long> findProductJustStocked(List<Long> subscribedProductIdList) {
+        return new HashSet<>(queryFactory.select(product.id)
+                .from(product)
+                .where(product.soldout.isFalse()
+                        .and(product.id.in(subscribedProductIdList))
+                )
+                .fetch());
+    }
+
 }

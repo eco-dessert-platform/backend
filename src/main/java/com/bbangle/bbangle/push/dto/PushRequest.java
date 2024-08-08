@@ -6,6 +6,8 @@ public record PushRequest(
     @NotNull
     Long productId,
     @NotNull
+    String pushType,
+    @NotNull
     String pushCategory
 ) {
 }

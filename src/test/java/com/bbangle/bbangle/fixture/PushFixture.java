@@ -15,7 +15,7 @@ public class PushFixture {
                 .memberId(memberId)
                 .productId(productId)
                 .pushCategory(PushCategory.BBANGCKETING)
-                .subscribed(true)
+                .active(true)
                 .build();
     }
 
@@ -26,7 +26,7 @@ public class PushFixture {
                 .memberId(memberId)
                 .productId(productId)
                 .pushCategory(PushCategory.RESTOCK)
-                .subscribed(true)
+                .active(true)
                 .build();
     }
 
@@ -37,7 +37,7 @@ public class PushFixture {
                 .memberId(memberId)
                 .productId(productId)
                 .pushCategory(PushCategory.BBANGCKETING)
-                .subscribed(false)
+                .active(false)
                 .build();
     }
 

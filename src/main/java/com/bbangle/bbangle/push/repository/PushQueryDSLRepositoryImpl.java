@@ -2,7 +2,9 @@ package com.bbangle.bbangle.push.repository;
 
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
+import com.bbangle.bbangle.push.dto.FcmPush;
 import com.bbangle.bbangle.push.dto.PushResponse;
+import com.bbangle.bbangle.push.dto.QFcmPush;
 import com.bbangle.bbangle.push.dto.QPushResponse;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.member.domain.QMember.member;
 import static com.bbangle.bbangle.push.domain.QPush.push;
 import static com.bbangle.bbangle.store.domain.QStore.store;
 
@@ -37,7 +40,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                         store.name,
                         product.title,
                         board.profile,
-                        push.subscribed
+                        push.active
                 ))
                 .from(push)
                 .join(product).on(push.productId.eq(product.id))
@@ -47,6 +50,27 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                 .fetch();
     }
 
+
+    @Override
+    public List<FcmPush> findPushList() {
+        return queryFactory.select(new QFcmPush(
+                        push.id,
+                        push.fcmToken,
+                        member.name,
+                        board.title,
+                        product.id,
+                        product.title,
+                        push.pushType,
+                        push.days,
+                        push.pushCategory
+                ))
+                .from(push)
+                .join(member).on(push.memberId.eq(member.id))
+                .join(product).on(push.productId.eq(product.id))
+                .join(board).on(product.board.id.eq(board.id))
+                .where(push.active.isTrue())
+                .fetch();
+    }
 
     private BooleanBuilder commonFilter(Long memberId, Long productId, String pushCategory) {
         BooleanBuilder builder = new BooleanBuilder();
