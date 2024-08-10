@@ -1,9 +1,9 @@
 package com.bbangle.bbangle.store.controller;
 
+import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
-import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
@@ -68,7 +68,7 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreDetailCustomPage<List<BoardsInStoreResponse>> boardListResponse = storeService.getBoardsInStore(
+        StoreDetailCustomPage<List<BoardInfoDto>> boardListResponse = storeService.getBoardsInStore(
             memberId, storeId, boardIdAsCursorId);
         return responseService.getSingleResult(boardListResponse);
     }

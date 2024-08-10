@@ -19,9 +19,7 @@ import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.PopularBoardDto;
-import com.bbangle.bbangle.store.dto.QBoardsInStoreDto;
 import com.bbangle.bbangle.store.dto.QPopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -192,25 +190,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
 
         return cursorId - 1;
-    }
-
-    @Override
-    public List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
-        Long memberId) {
-        return queryFactory.select(
-                new QBoardsInStoreDto(
-                    board.id,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    wishListBoard.id))
-            .from(board)
-            .leftJoin(wishListBoard).on(
-                wishListBoardFilter.equalMemberId(memberId)
-                    .and(wishListBoardFilter.equalBoard(board)))
-            .where(board.id.in(cursorIdToBoardIds))
-            .orderBy(board.id.desc())
-            .fetch();
     }
 
     @Override
