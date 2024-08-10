@@ -7,7 +7,6 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import java.util.List;
 
@@ -29,12 +28,6 @@ public interface BoardQueryDSLRepository {
     );
 
     List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
-
-    List<Long> getTopBoardIds(Long storeId);
-
-    List<PopularBoardDto> getTopBoardInfo(List<Long> boardIds, Long memberId);
-
-    List<Long> getBoardIds(Long boardIdAsCursorId, Long storeId);
 
     List<Board> checkingNullRanking();
 

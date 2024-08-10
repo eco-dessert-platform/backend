@@ -3,7 +3,6 @@ package com.bbangle.bbangle.store.controller;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
-import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
@@ -26,16 +25,6 @@ public class StoreController {
     private final BoardService boardService;
     private final ResponseService responseService;
 
-    @GetMapping
-    public CommonResult getList(
-        @RequestParam(required = false, value = "cursorId")
-        Long cursorId,
-        @AuthenticationPrincipal
-        Long memberId
-    ) {
-        return responseService.getSingleResult(storeService.getList(cursorId, memberId));
-    }
-
     @GetMapping("/{storeId}")
     public CommonResult getPopularBoardResponse(
         @PathVariable("storeId")
@@ -54,7 +43,7 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        List<PopularBoardResponse> popularBoardResponses = boardService.getTopBoardInfo(
+        List<BoardInfoDto> popularBoardResponses = boardService.getTopBoardInfo(
             memberId, storeId);
         return responseService.getListResult(popularBoardResponses);
     }

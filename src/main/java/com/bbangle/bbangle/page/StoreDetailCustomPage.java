@@ -14,10 +14,9 @@ public class StoreDetailCustomPage<T> extends CustomPage<T> {
 
     public static StoreDetailCustomPage<List<BoardInfoDto>> from(
         List<BoardInfoDto> tagCategories,
-        List<Long> boardIds,
         Boolean hasNext
     ) {
-        Long cursorId = boardIds.get(boardIds.size() - 1);
+        Long cursorId = tagCategories.get(tagCategories.size() - 1).getBoardId();
         return new StoreDetailCustomPage<>(tagCategories, cursorId, hasNext);
     }
 

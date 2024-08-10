@@ -3,10 +3,8 @@ package com.bbangle.bbangle.store.service;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
-import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.List;
@@ -47,28 +45,19 @@ public class StoreService {
         Long storeId,
         Long boardIdAsCursorId) {
 
-        List<Long> boardIds = boardRepository.getBoardIds(boardIdAsCursorId, storeId);
-
-        if (boardIds.isEmpty()) {
-            return StoreDetailCustomPage.empty(boardIdAsCursorId);
-        }
-
-        List<BoardInfoDto> tagCategories = boardRepository.findTagCategoriesByBoardIds(boardIds,
-            memberId);
+        List<BoardInfoDto> boardInfoDtos = Objects.nonNull(boardIdAsCursorId) ?
+            boardRepository.findBoardsByStoreWithCursor(storeId, memberId, boardIdAsCursorId) :
+            boardRepository.findBoardsByStore(storeId, memberId);
 
         // 이 부분 통합 작업이 필요해 보임
-        boolean hasNext = checkingHasNextStoreDetail(tagCategories);
+        boolean hasNext = checkingHasNextStoreDetail(boardInfoDtos);
 
         if (hasNext) {
-            tagCategories.remove(
-                tagCategories.get(tagCategories.size() - 1));
+            boardInfoDtos.remove(
+                boardInfoDtos.get(boardInfoDtos.size() - 1));
         }
 
-        return StoreDetailCustomPage.from(tagCategories, boardIds, hasNext);
-    }
-
-    public StoreCustomPage<List<StoreResponseDto>> getList(Long cursorId, Long memberId) {
-        return storeRepository.getStoreList(cursorId, memberId);
+        return  StoreDetailCustomPage.from(boardInfoDtos, hasNext);
     }
 
     private boolean checkingHasNextStoreDetail(
