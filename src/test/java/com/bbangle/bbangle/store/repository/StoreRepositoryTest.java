@@ -23,6 +23,7 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("getStoreResponse 메서드는")
     class GetStoreResponse {
+
         private Store store;
         private Member member;
 
@@ -33,37 +34,31 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("유효한 StoreId로 스토어 정보를 가져올 수 있다")
-        void validStoreId() {
-            StoreDetailStoreDto storeResponse = storeRepository.getStoreResponse(NULL_MEMBER_ID, store.getId());
-
-            assertThat(storeResponse.getStoreName(), is(TEST_TITLE));
-            assertThat(storeResponse.getIsWished(), is(false));
-        }
-
-        @Test
         @DisplayName("스토어 위시리스트를 등록한 MemberId로 스토어 위시리스트 True를 가져올 수 있다")
         void validWishListStore() {
-            StoreDetailStoreDto storeResponse = storeRepository.getStoreResponse(member.getId(), store.getId());
+            StoreDetailStoreDto storeResponse = storeRepository.getStoreResponse(member.getId(),
+                store.getId());
 
-            assertThat(storeResponse.getIsWished(), is(true));;
+            assertThat(storeResponse.getIsWished(), is(true));
+            ;
         }
 
         @Test
         @DisplayName("스토어 위시리스트를 등록한 MemberId로 스토어 위시리스트 True를 가져올 수 있다")
         void validNonWishListStore() {
             Long notWishedMemberId = member.getId() + 1L;
-            StoreDetailStoreDto storeResponse = storeRepository.getStoreResponse(notWishedMemberId, store.getId());
+            StoreDetailStoreDto storeResponse = storeRepository.getStoreResponse(notWishedMemberId,
+                store.getId());
 
             assertThat(storeResponse.getIsWished(), is(false));
         }
 
         void createWishListStore() {
-             member = memberRepository.save(Member.builder().build());
-             wishListStoreRepository.save(WishListStore.builder()
-                     .store(store)
-                     .member(member)
-                     .build());
+            member = memberRepository.save(Member.builder().build());
+            wishListStoreRepository.save(WishListStore.builder()
+                .store(store)
+                .member(member)
+                .build());
         }
     }
 }

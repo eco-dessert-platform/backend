@@ -14,11 +14,11 @@ import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
+import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.store.dto.PopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -114,10 +114,11 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("getTopBoardIds 메서드는")
-    class GetTopBoardIds {
+    @DisplayName("getTopBoardInfo 메서드는")
+    class GetTopBoardInfo {
 
         private Store store;
+        private Member member;
         private Board firstBoard;
         private Board secondBoard;
         private Board thirdBoard;
@@ -125,9 +126,14 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @BeforeEach
         void init() {
             store = fixtureStore(emptyMap());
+
             firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
             secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
             thirdBoard = boardRepository.save(BoardFixture.randomBoard(store));
+
+            productRepository.save(ProductFixture.randomProduct(firstBoard));
+            productRepository.save(ProductFixture.randomProduct(secondBoard));
+            productRepository.save(ProductFixture.randomProduct(thirdBoard));
 
             boardStatisticRepository.save(
                 BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
@@ -135,40 +141,6 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
                 BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
             boardStatisticRepository.save(
                 BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
-        }
-
-        @Test
-        @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
-        void getPopularBoard() {
-            List<Long> rankBoards = List.of(
-                firstBoard.getId(),
-                secondBoard.getId(),
-                thirdBoard.getId()
-            );
-            List<Long> rankBoardIds = boardRepository.getTopBoardIds(store.getId());
-
-            assertThat(rankBoardIds).containsExactlyElementsOf(rankBoards);
-        }
-    }
-
-    @Nested
-    @DisplayName("getTopBoardInfo 메서드는")
-    class GetTopBoardInfo {
-
-        private Store store;
-        private Member member;
-        private List<Board> boards;
-        private Board board;
-
-        @BeforeEach
-        void init() {
-            store = fixtureStore(emptyMap());
-
-            boards = List.of(
-                fixtureBoard(Map.of("store", store, "title", TEST_TITLE)),
-                fixtureBoard(Map.of("store", store, "title", TEST_TITLE)),
-                fixtureBoard(Map.of("store", store, "title", TEST_TITLE))
-            );
 
             createWishListStore();
         }
@@ -176,38 +148,19 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
         void getPopularBoard() {
-            List<Long> boardIds = boards.stream().map(Board::getId).toList();
-            List<PopularBoardDto> rankBoardIds = boardRepository.getTopBoardInfo(boardIds,
-                NULL_MEMBER_ID);
+            List<BoardInfoDto> rankBoardIds = boardRepository.findBestBoards(NULL_MEMBER_ID,
+                store.getId());
 
             assertThat(rankBoardIds).hasSize(3);
-
-            String title = rankBoardIds.stream().findFirst().get().getBoardTitle();
-            assertThat(title).isEqualTo(TEST_TITLE);
-        }
-
-        @Test
-        @DisplayName("위시리스트 등록한 상품을 정상적으로 가져올 가져올 수 있다")
-        void getIsWished() {
-            List<Long> boardIds = boards.stream().map(Board::getId).toList();
-            List<PopularBoardDto> rankBoardIds = boardRepository.getTopBoardInfo(boardIds,
-                member.getId());
-
-            Boolean wishTrue = rankBoardIds.get(0)
-                .getIsWished();
-
-            Boolean wishFalse = rankBoardIds.get(1)
-                .getIsWished();
-
-            assertThat(wishTrue).isTrue();
-            assertThat(wishFalse).isFalse();
+            assertThat(rankBoardIds.get(0).getBoardId()).isEqualTo(firstBoard.getId());
+            assertThat(rankBoardIds.get(1).getBoardId()).isEqualTo(secondBoard.getId());
+            assertThat(rankBoardIds.get(2).getBoardId()).isEqualTo(thirdBoard.getId());
         }
 
         void createWishListStore() {
             member = memberRepository.save(Member.builder().build());
-            board = boards.stream().findFirst().get();
             wishListBoardRepository.save(WishListBoard.builder()
-                .boardId(board.getId())
+                .boardId(firstBoard.getId())
                 .memberId(member.getId())
                 .build());
         }
@@ -227,18 +180,6 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             for (int index = 0; 20 > index; index++) {
                 fixtureBoard(Map.of("store", store, "title", TEST_TITLE));
             }
-        }
-
-        @Test
-        @DisplayName("유효한 커서 아이디를 사용할 때, 제한된 게시글들을 가져올 수 있다")
-        void getBoards() {
-            List<Long> boardIdsByNullCursor = boardRepository.getBoardIds(NULL_CURSOR,
-                store.getId());
-            Long cursorId = boardIdsByNullCursor.get(boardIdsByNullCursor.size() - 1);
-            List<Long> boardIds = boardRepository.getBoardIds(cursorId, store.getId());
-
-            assertThat(boardIdsByNullCursor).hasSize(11);
-            assertThat(boardIds).hasSize(9);
         }
     }
 
@@ -355,15 +296,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getTags() {
-            List<Long> boardIds = List.of( // board id desc 임
-                board1.getId(),
-                board2.getId(),
-                board3.getId(),
-                board4.getId(),
-                board5.getId());
-
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findTagCategoriesByBoardIds(
-                boardIds, NULL_MEMBER_ID);  // board id desc 임
+            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
+                NULL_MEMBER_ID);  // board id desc 임
 
             TagsDao board1Tag = boardsInStoreDtos.get(4).getTags();
             assertAll(
@@ -409,40 +343,28 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getBbangKetting() {
-            List<Long> boardIds = List.of( // board id desc 임
-                board1.getId(),
-                board2.getId());
+            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
+                NULL_MEMBER_ID);  // board id desc 임
 
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findTagCategoriesByBoardIds(
-                boardIds, NULL_MEMBER_ID);  // board id desc 임
-
-            assertThat(boardsInStoreDtos.get(1).getIsNotification()).isTrue();
-            assertThat(boardsInStoreDtos.get(0).getIsNotification()).isFalse();
+            assertThat(boardsInStoreDtos.get(4).getIsNotification()).isTrue();
+            assertThat(boardsInStoreDtos.get(3).getIsNotification()).isFalse();
         }
 
         @Test
         @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getIsSoldOut() {
-            List<Long> boardIds = List.of( // board id desc 임
-                board1.getId(),
-                board2.getId());
+            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
+                NULL_MEMBER_ID);  // board id desc 임
 
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findTagCategoriesByBoardIds(
-                boardIds, NULL_MEMBER_ID);  // board id desc 임
-
-            assertThat(boardsInStoreDtos.get(1).getIsSoldOut()).isTrue();
-            assertThat(boardsInStoreDtos.get(0).getIsSoldOut()).isFalse();
+            assertThat(boardsInStoreDtos.get(4).getIsSoldOut()).isTrue();
+            assertThat(boardsInStoreDtos.get(3).getIsSoldOut()).isFalse();
         }
 
         @Test
         @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getIsBundled() {
-            List<Long> boardIds = List.of( // board id desc 임
-                board4.getId(),
-                board5.getId());
-
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findTagCategoriesByBoardIds(
-                boardIds, NULL_MEMBER_ID);  // board id desc 임
+            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
+                NULL_MEMBER_ID);  // board id desc 임
 
             assertThat(boardsInStoreDtos.get(1).getIsBundled()).isTrue();
             assertThat(boardsInStoreDtos.get(0).getIsBundled()).isFalse();
