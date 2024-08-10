@@ -430,8 +430,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             List<BoardInfoDto> boardsInStoreDtos = boardRepository.findTagCategoriesByBoardIds(
                 boardIds, NULL_MEMBER_ID);  // board id desc 임
 
-            assertThat(boardsInStoreDtos.get(1).getIsSoldout()).isTrue();
-            assertThat(boardsInStoreDtos.get(0).getIsSoldout()).isFalse();
+            assertThat(boardsInStoreDtos.get(1).getIsSoldOut()).isTrue();
+            assertThat(boardsInStoreDtos.get(0).getIsSoldOut()).isFalse();
         }
 
         @Test
