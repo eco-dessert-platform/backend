@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,11 +32,31 @@ public class BoardPreferenceStatistic {
     @Enumerated(EnumType.STRING)
     private PreferenceType preferenceType;
 
+    @Column(name = "basic_score", columnDefinition = "double")
+    @ColumnDefault("0")
+    private Double basicScore;
+
     @Column(name = "preference_weight", columnDefinition = "int")
     @ColumnDefault("1")
     private Integer preferenceWeight;
 
     @Column(name = "preference_score")
-    private Long preferenceScore;
+    @ColumnDefault("0")
+    private Double preferenceScore;
+
+    @PrePersist
+    public void prePersist(){
+        if(this.basicScore == null){
+            this.basicScore = 0.0;
+        }
+
+        if(this.preferenceWeight == null){
+            this.preferenceWeight = 1;
+        }
+
+        if(this.preferenceScore == null){
+            this.preferenceScore = 0.0;
+        }
+    }
 
 }
