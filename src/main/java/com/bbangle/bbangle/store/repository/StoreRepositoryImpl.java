@@ -14,9 +14,7 @@ import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.repository.util.WishListStoreFilter;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -30,10 +28,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private static final Long PAGE_SIZE = 20L;
     private static final Long EMPTY_PAGE_CURSOR = -1L;
     private static final Boolean EMPTY_PAGE_HAS_NEXT = false;
-
-    private final QStore store = QStore.store;
-    private final QBoard board = QBoard.board;
-    private final QWishListStore wishListStore = QWishListStore.wishListStore;
+    private static final QStore store = QStore.store;
+    private static final QBoard board = QBoard.board;
+    private static final  QWishListStore wishListStore = QWishListStore.wishListStore;
 
     private final JPAQueryFactory queryFactory;
     private final WishListStoreFilter wishListStoreFilter;
@@ -68,19 +65,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .join(store).on(store.eq(board.store))
             .where(board.id.eq(boardId))
             .fetchFirst();
-    }
-
-    @Override
-    public HashMap<Long, String> getAllStoreTitle() {
-        List<Tuple> fetch = queryFactory
-            .select(store.id, store.name)
-            .from(store)
-            .fetch();
-
-        HashMap<Long, String> storeMap = new HashMap<>();
-        fetch.forEach(tuple -> storeMap.put(tuple.get(store.id), tuple.get(store.name)));
-
-        return storeMap;
     }
 
     @Override

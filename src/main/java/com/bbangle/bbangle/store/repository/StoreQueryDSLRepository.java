@@ -6,16 +6,11 @@ import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import java.util.List;
 
-import java.util.HashMap;
-
-
 public interface StoreQueryDSLRepository {
 
     StoreDto findByBoardId(Long boardId);
 
     StoreDetailStoreDto getStoreResponse(Long meberId, Long storeId);
-
-    HashMap<Long, String> getAllStoreTitle();
 
     StoreCustomPage<List<StoreResponseDto>> getStoreList(Long cursorId, Long memberId);
 }
