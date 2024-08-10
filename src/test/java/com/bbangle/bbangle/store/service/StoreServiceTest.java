@@ -311,8 +311,8 @@ class StoreServiceTest extends AbstractIntegrationTest {
             StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
                 NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(4).getIsSoldout()).isTrue();
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(3).getIsSoldout()).isFalse();
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(4).getIsSoldOut()).isTrue();
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(3).getIsSoldOut()).isFalse();
         }
 
         @Test

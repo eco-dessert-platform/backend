@@ -10,7 +10,7 @@ public class BoardInfoDto {
     private String boardProfile;
     private String boardTitle;
     private Integer boardPrice;
-    private Boolean soldout;
+    private Boolean isSoldOut;
     private Boolean isNotification;
     private TagsDao tags;
     private Boolean isBundled;
@@ -21,7 +21,7 @@ public class BoardInfoDto {
         String boardProfile,
         String boardTitle,
         Integer boardPrice,
-        Integer soldout,
+        Integer isSoldOut,
         Boolean isNotification,
         Integer glutenFreeTag,
         Integer highProteinTag,
@@ -35,7 +35,7 @@ public class BoardInfoDto {
         this.boardProfile = boardProfile;
         this.boardTitle = boardTitle;
         this.boardPrice = boardPrice;
-        this.soldout = soldout > 0;
+        this.isSoldOut = isSoldOut > 0;
         this.isNotification = isNotification;
         this.isBundled = isBundled;
         this.isWished = isWished;

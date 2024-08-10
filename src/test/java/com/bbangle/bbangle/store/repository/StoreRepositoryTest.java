@@ -1,19 +1,16 @@
 package com.bbangle.bbangle.store.repository;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -22,13 +19,6 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
 
     private static final String TEST_TITLE = "TestTitle";
     private static final Long NULL_MEMBER_ID = null;
-
-    @Autowired
-    private BoardImgRepository boardImgRepository;
-
-    @Autowired
-    private WishListBoardRepository wishListProductRepository;
-
 
     @Nested
     @DisplayName("getStoreResponse 메서드는")
