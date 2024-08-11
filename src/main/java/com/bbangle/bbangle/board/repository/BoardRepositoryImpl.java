@@ -203,11 +203,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.profile,
                     board.title,
                     board.price,
+                    boardStatistic.boardReviewCount,
+                    boardStatistic.boardReviewGrade,
                     wishListBoard.id))
             .from(board)
             .leftJoin(wishListBoard).on(
                 wishListBoardFilter.equalMemberId(memberId)
                     .and(wishListBoardFilter.equalBoard(board)))
+            .join(boardStatistic).on(board.id.eq(boardStatistic.boardId))
             .where(board.id.in(cursorIdToBoardIds))
             .orderBy(board.id.desc())
             .fetch();
