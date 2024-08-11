@@ -13,7 +13,8 @@ public record FcmPush(
     String productTitle,
     PushType pushType,
     String days,
-    PushCategory pushCategory
+    PushCategory pushCategory,
+    boolean isSoldOut
 ) {
 
     @QueryProjection

@@ -91,9 +91,12 @@ public class PushService {
         return pushRepository.findPushList(pushCategory, memberId);
     }
 
-
     @Transactional(readOnly = true)
     public List<FcmRequest> getPushesForNotification() {
+        return editMessage(getMustSendAllPushes());
+    }
+
+    private List<FcmRequest> getMustSendAllPushes() {
         // 1. 신청된 모든 푸시와 그 상품 Id를 조회한다.
         List<FcmPush> subscribedPushList = pushRepository.findPushList();
         List<Long> subscribedProductIdList = subscribedPushList.stream()
@@ -111,13 +114,31 @@ public class PushService {
     }
 
 
-    public void editMessage(List<FcmRequest> requestList) {
+    public List<FcmRequest> editMessage(List<FcmRequest> requestList) {
         // 4. 알림 제목과 내용을 편집한다.
         for (FcmRequest request : requestList) {
-            String title = String.format("%s %s님이 기다리던 상품이 %s되었어요!", "\u23F0", request.getMemberName(), request.getPushCategory());
-            String body = String.format("[%s] '%s' 곧 품절될 수 있으니 지금 확인해보세요.", request.getBoardTitle(), request.getProductTitle());
+            String title = "";
+            String body = "";
+            if(!request.isSoldOut()){
+                title = String.format("%s %s님이 기다리던 상품이 %s되었어요!", "\u23F0", request.getMemberName(), request.getPushCategory());
+                body = String.format("[%s] '%s' %n 곧 품절될 수 있으니 지금 확인해보세요.", request.getBoardTitle(), request.getProductTitle());
+            } else if (isAfterSoldOutDay(request.getDays())){ //TODO 품절되고 날짜별 판별해 줘야함
+                title = String.format("%s 상품이 빠르게 품절 되었어요!", request.getProductTitle());
+                body = "주문 가능한 다른 요일에 알림 신청을 해주세요";
+            }
             request.editPushMessage(title, body);
         }
+        return requestList;
+    }
+
+    //사용자가 푸시 알림 신청한 요일 이전에 품절이 되었는지 판단
+    private boolean isAfterSoldOutDay(String days) {
+        /**
+         * TO 순원님
+         * 이 쪽을 구현해주시면 됩니다. 물론 꼭 이 위치 아니고 관련 코드 다 변경하셔도 됩니다
+         *
+         * */
+        return true;
     }
 
 

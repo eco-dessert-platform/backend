@@ -2,30 +2,36 @@ package com.bbangle.bbangle.push.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.push.domain.Push;
-import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.Message;
+import com.bbangle.bbangle.push.dto.FcmMessageDto;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import lombok.RequiredArgsConstructor;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+//TO.순원님
+//현재 주석 처리하거나 사용되지 않는 코드들은 다 이전 코드라고 생각해주시면 되요
+//나중에 쓸 일이 있을 수도 있을 꺼 같아서 남겨놨고 여기는 건드리실 필요 없습니다!
 @Service
 @RequiredArgsConstructor
 public class FcmService {
@@ -40,8 +46,7 @@ public class FcmService {
     private final ObjectMapper objectMapper;
     private final PushRepository pushRepository;
 
-
-    public void send(List<FcmRequest> requestList) {
+    /*public void send(List<FcmRequest> requestList) {
         OkHttpClient client = createOkHttpClient();
 
         for (FcmRequest request : requestList) {
@@ -65,14 +70,47 @@ public class FcmService {
                 throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);
             }
         }
+    }*/
+    //FIXME FOR TEST
+    /*public void send(Message msg) {
+        OkHttpClient client = createOkHttpClient();
+
+            String message = makeMessage(msg);
+            RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
+            Request httpRequest = createHttpRequest(requestBody);
+            try {
+                client.newCall(httpRequest).execute();
+            } catch (IOException e) {
+                throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);
+            }
+    }*/
+
+    public void sendMessageTo(FcmRequest fcmRequest) throws IOException {
+        String message = makeMessage(fcmRequest);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters()
+                .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer "+ getAccessToken());
+
+        HttpEntity<String> entity = new HttpEntity<>(message, httpHeaders);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                FCM_API_URL,
+                HttpMethod.POST,
+                entity,
+                String.class);
+
     }
 
 
     private String makeMessage(FcmRequest request) {
-        Message message = Message.of(request);
+        FcmMessageDto fcmMessageDto = FcmMessageDto.of(request);
 
         try {
-            return objectMapper.writeValueAsString(message);
+            return objectMapper.writeValueAsString(fcmMessageDto);
         } catch (JsonProcessingException e) {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }
@@ -99,7 +137,8 @@ public class FcmService {
 
 
     private String getAccessToken() {
-        try (InputStream inputStream = new ClassPathResource(FCM_SECRET_KEY_PATH).getInputStream()) {
+        try {
+            InputStream inputStream = new ClassPathResource("firebase/firebase_service_key.json").getInputStream();
             GoogleCredentials googleCredentials = GoogleCredentials
                     .fromStream(inputStream)
                     .createScoped(List.of(GOOGLE_AUTHENTICATION_URL));

@@ -16,12 +16,10 @@ public class PushScheduler {
     private final FcmService fcmService;
     private final PushService pushService;
 
-
     @Scheduled(cron = "5 0 12 * * ?")
     public void sendPush() {
         List<FcmRequest> requestList = pushService.getPushesForNotification();
-        pushService.editMessage(requestList);
-        fcmService.send(requestList);
+        //fcmService.send(requestList);
     }
 
 }

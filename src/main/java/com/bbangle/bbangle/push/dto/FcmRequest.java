@@ -18,6 +18,7 @@ public class FcmRequest {
     private String pushCategory;
     private String title;
     private String body;
+    private boolean isSoldOut;
 
     public FcmRequest(FcmPush fcmPush) {
         this.pushId = fcmPush.pushId();
@@ -28,6 +29,7 @@ public class FcmRequest {
         this.pushType = fcmPush.pushType().getDescription();
         this.days = fcmPush.days();
         this.pushCategory = fcmPush.pushCategory().getDescription();
+        this.isSoldOut = fcmPush.isSoldOut();
     }
 
     public void editPushMessage(String title, String body) {

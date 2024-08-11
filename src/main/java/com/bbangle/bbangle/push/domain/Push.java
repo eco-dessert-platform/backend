@@ -16,7 +16,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Table(name = "push")
+/**
+ *
+ * 현재 push 테이블이 이전 버전이라 아예 테이블을 따로 만들면 좋을 꺼 같아서
+ * 이름만 변경했습니다
+ * 추후 완료되면 이 Entity가 push 테이블로 들어갈 예정입니다
+ */
+@Table(name = "push_temp")
 @Getter
 @Entity
 @Builder

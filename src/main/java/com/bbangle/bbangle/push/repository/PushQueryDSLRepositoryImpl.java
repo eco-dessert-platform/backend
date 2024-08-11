@@ -56,13 +56,14 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
         return queryFactory.select(new QFcmPush(
                         push.id,
                         push.fcmToken,
-                        member.name,
+                        member.nickname,
                         board.title,
                         product.id,
                         product.title,
                         push.pushType,
                         push.days,
-                        push.pushCategory
+                        push.pushCategory,
+                        product.soldout
                 ))
                 .from(push)
                 .join(member).on(push.memberId.eq(member.id))
