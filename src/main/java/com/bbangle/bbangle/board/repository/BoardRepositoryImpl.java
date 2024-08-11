@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardWithTagDao;
+import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -16,6 +18,7 @@ import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGener
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -46,6 +49,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QProductImg productImage = QProductImg.productImg;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
+    private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
     private final WishListBoardFilter wishListBoardFilter;
@@ -118,7 +122,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.deliveryFee,
                     board.freeShippingConditions,
                     productImage.url)
-            ).from(board)
+            )
+            .from(board)
             .leftJoin(productImage)
             .on(productImage.board.eq(board))
             .where(board.id.eq(boardId))
@@ -195,8 +200,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<BoardsInStoreDto> findByBoardIds(List<Long> cursorIdToBoardIds,
-        Long memberId) {
+    public List<BoardsInStoreDto> findByBoardIds(
+        List<Long> cursorIdToBoardIds,
+        Long memberId
+    ) {
         return queryFactory.select(
                 new QBoardsInStoreDto(
                     board.id,
@@ -205,7 +212,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.price,
                     wishListBoard.id))
             .from(board)
-            .leftJoin(wishListBoard).on(
+            .leftJoin(wishListBoard)
+            .on(
                 wishListBoardFilter.equalMemberId(memberId)
                     .and(wishListBoardFilter.equalBoard(board)))
             .where(board.id.in(cursorIdToBoardIds))
@@ -220,6 +228,25 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(boardStatistic)
             .on(board.id.eq(boardStatistic.boardId))
             .where(boardStatistic.id.isNull())
+            .fetch();
+    }
+
+    @Override
+    public List<BoardWithTagDao> checkingNullWithPreferenceRanking() {
+        return queryFactory.select(new QBoardWithTagDao(
+                board.id,
+                product.glutenFreeTag,
+                product.highProteinTag,
+                product.sugarFreeTag,
+                product.veganTag,
+                product.ketogenicTag
+            ))
+            .from(product)
+            .join(board)
+            .on(product.board.id.eq(board.id))
+            .leftJoin(preferenceStatistic)
+            .on(board.id.eq(preferenceStatistic.boardId))
+            .where(preferenceStatistic.id.isNull())
             .fetch();
     }
 
