@@ -20,6 +20,8 @@ import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -83,7 +85,13 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 true,
                 false,
                 false,
-                false);
+                false,
+                BigDecimal.ONE,
+                10,
+                LocalDateTime.now(),
+                false,
+                10);
+
             boardResponseDao2 = new BoardResponseDao(
                 3L,
                 1L,
@@ -96,7 +104,12 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 true,
                 false,
                 false,
-                false);
+                false,
+                BigDecimal.ONE,
+                10,
+                LocalDateTime.now(),
+                false,
+                10);
         }
 
         @Test

@@ -20,7 +20,6 @@ public record BoardResponseDao(
     Boolean isSoldOut,
     Integer discountRate
 ) {
-
     @QueryProjection
     public BoardResponseDao(
         Long boardId,

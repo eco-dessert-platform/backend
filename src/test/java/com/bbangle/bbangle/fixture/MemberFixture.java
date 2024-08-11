@@ -26,4 +26,12 @@ public class MemberFixture {
             .build();
     }
 
+    public static Member sameKaKaoMember(Member quitKakaoMember){
+        return Member.builder()
+            .nickname(quitKakaoMember.getNickname())
+            .provider(OauthServerType.KAKAO)
+            .providerId(quitKakaoMember.getProviderId())
+            .build();
+    }
+
 }
