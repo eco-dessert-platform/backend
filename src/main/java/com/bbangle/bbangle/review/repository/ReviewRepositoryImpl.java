@@ -60,6 +60,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository{
                 .select(
                         new QReviewSingleDto(
                                 review.id,
+                                review.memberId,
                                 member.nickname,
                                 review.rate,
                                 review.badgeTaste,

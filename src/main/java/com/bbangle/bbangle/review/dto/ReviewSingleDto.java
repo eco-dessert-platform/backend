@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 public record ReviewSingleDto(
     Long id,
+    Long memberId,
     String nickname,
     BigDecimal rate,
     Badge badgeTaste,

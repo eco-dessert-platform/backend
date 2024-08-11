@@ -32,6 +32,18 @@ public class ReviewFixture {
             .build();
     }
 
+    public static Review createReviewWithBoardIdAndRateAndMember(Long boardId, double rate, Long memberId) {
+        return Review.builder()
+                .boardId(boardId)
+                .memberId(memberId)
+                .badgeBrix(Badge.SWEET)
+                .badgeTaste(Badge.GOOD)
+                .badgeTexture(Badge.SOFT)
+                .content("content")
+                .rate(BigDecimal.valueOf(rate))
+                .build();
+    }
+
     public static Review createReview() {
         return Review.builder()
             .badgeBrix(Badge.BAD)
