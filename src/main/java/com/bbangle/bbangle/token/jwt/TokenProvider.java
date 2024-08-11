@@ -14,35 +14,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-/**
- * 토큰 제공 클래스
- */
 @RequiredArgsConstructor
 @Service
 public class TokenProvider {
 
     private final JwtProperties jwtProperties;
 
-    /**
-     * JWT 토큰 생성
-     *
-     * @param memberId  유저 기본키
-     * @param expiredAt 만료기간
-     * @return JWT 토큰
-     */
     public String generateToken(Long memberId, Duration expiredAt) {
         Date now = new Date();
         return makeToken(new Date(now.getTime() + expiredAt.toMillis()), memberId);
     }
 
-
-    /**
-     * JWT 토큰 실제 생성
-     *
-     * @param expiry   만료 기간
-     * @param memberId 유저기본키
-     * @return JWT 토큰
-     */
     private String makeToken(Date expiry, Long memberId) {
         Date now = new Date();
 
@@ -57,12 +39,6 @@ public class TokenProvider {
             .compact();
     }
 
-    /**
-     * 토큰 유효성 검증
-     *
-     * @param token the token
-     * @return the boolean
-     */
     public boolean isValidToken(String token) {
         try {
             Jwts.parser()
@@ -74,12 +50,6 @@ public class TokenProvider {
         }
     }
 
-    /**
-     * 토큰 기반으로 인증 정보 가져오기
-     *
-     * @param token the token
-     * @return 인증 정보
-     */
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
         Long memberId = Long.valueOf((Integer) claims.get("id"));
@@ -88,12 +58,6 @@ public class TokenProvider {
         return new UsernamePasswordAuthenticationToken(memberId, token, authorities);
     }
 
-    /**
-     * 토큰 클레임 얻기
-     *
-     * @param token the token
-     * @return the claims
-     */
     private Claims getClaims(String token) {
         return Jwts.parser()
             .setSigningKey(jwtProperties.getSecretKey())

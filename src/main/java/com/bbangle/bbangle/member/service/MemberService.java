@@ -145,22 +145,10 @@ public class MemberService {
     }
 
     public Long getFirstJoinedMember(Member oauthMember) {
-        Member newMember = saveNewJoinedOauthMember(oauthMember);
+        Member newMember = memberRepository.save(oauthMember);
         Long newMemberId = newMember.getId();
         wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
-
         return newMemberId;
-    }
-
-    private Member saveNewJoinedOauthMember(Member oauthMember) {
-        Member newMember = Member.builder()
-            .nickname(oauthMember.getNickname())
-            .provider(oauthMember.getProvider())
-            .providerId(oauthMember.getProviderId())
-            .build();
-        memberRepository.save(newMember);
-
-        return newMember;
     }
 
     @Transactional(readOnly = true)

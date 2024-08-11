@@ -86,11 +86,12 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 false,
                 false,
                 false,
-                BigDecimal.valueOf(4),
-                4,
+                BigDecimal.ONE,
+                10,
                 LocalDateTime.now(),
                 false,
-                4);
+                10);
+
             boardResponseDao2 = new BoardResponseDao(
                 3L,
                 1L,
@@ -104,11 +105,11 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 false,
                 false,
                 false,
-                BigDecimal.valueOf(4),
-                4,
+                BigDecimal.ONE,
+                10,
                 LocalDateTime.now(),
                 false,
-                4);
+                10);
         }
 
         @Test

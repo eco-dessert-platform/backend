@@ -11,6 +11,7 @@ import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,7 @@ public interface ReviewQueryDSLRepository {
     List<ReviewCountPerBoardIdDto> getReviewCount();
     List<LikeCountPerReviewIdDto> getLikeCount(Long minimumBestReviewStandard);
     Map<Long, List<Long>> getBestReview(List<Long> reviewIds);
+    @Transactional
     void updateBestReview(List<Long> bestReviewIds);
     List<BoardGrade> groupByBoardIdAndGetReviewCountAndReviewRate();
     List<DateAndCountDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
