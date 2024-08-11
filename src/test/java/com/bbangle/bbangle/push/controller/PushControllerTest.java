@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.push.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+
 import com.bbangle.bbangle.DatabaseCleaner;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
