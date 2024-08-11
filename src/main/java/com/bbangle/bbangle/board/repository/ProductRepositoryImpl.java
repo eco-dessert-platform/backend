@@ -4,9 +4,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.QTitleDto;
-import com.bbangle.bbangle.board.dto.TagCategoryDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.HashSet;
 import java.util.List;
@@ -50,26 +48,6 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
                     return existCategories;
                 }
             ));
-    }
-
-    @Override
-    public List<TagCategoryDto> getTagCategory(List<Long> boardIds) {
-
-        return queryFactory.select(
-                Projections.constructor(
-                    TagCategoryDto.class,
-                    product.board.id,
-                    product.glutenFreeTag,
-                    product.sugarFreeTag,
-                    product.highProteinTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    product.category
-                )
-            )
-            .from(product)
-            .where(product.board.id.in(boardIds))
-            .fetch();
     }
 
     @Override
