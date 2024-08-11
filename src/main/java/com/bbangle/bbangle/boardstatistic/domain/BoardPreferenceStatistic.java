@@ -67,4 +67,8 @@ public class BoardPreferenceStatistic {
         }
     }
 
+    public void updateToBasicBoardScore(Double basicScore) {
+        this.basicScore = basicScore;
+    }
+
 }
