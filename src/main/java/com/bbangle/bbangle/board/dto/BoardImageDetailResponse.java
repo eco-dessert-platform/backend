@@ -8,7 +8,8 @@ import lombok.Getter;
 @Builder
 public class BoardImageDetailResponse {
 
-    private Long id;
+    private Long boardId;
+    private Long storeId;
     private String profile;
     private String title;
     private Integer price;
@@ -27,7 +28,8 @@ public class BoardImageDetailResponse {
         List<String> boardDetailList
     ) {
         return BoardImageDetailResponse.builder()
-            .id(boardDto.getId())
+            .boardId(boardDto.getBoardId())
+            .storeId(boardDto.getStoreId())
             .profile(boardDto.getProfile())
             .title(boardDto.getTitle())
             .price(boardDto.getPrice())
