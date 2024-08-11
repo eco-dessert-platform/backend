@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class BoardPreferenceStatisticService {
     private final BoardStatisticRepository boardStatisticRepository;
     private final BoardRepository boardRepository;
 
+    @Transactional
     public void updatingNonRankedBoards() {
         List<BoardWithTagDao> boardWithTagDaos = boardRepository.checkingNullWithPreferenceRanking();
         List<BoardPreferenceStatistic> boardPreferenceStatisticList = generateUnsavedPreferenceStatisticList(
@@ -57,6 +59,7 @@ public class BoardPreferenceStatisticService {
         return preferenceMap.values().stream().toList();
     }
 
+    @Transactional
     public void checkingBasicScoreAndUpdate() {
         List<BoardPreferenceStatistic> unmatchedBasicScore = preferenceStatisticRepository.findUnmatchedBasicScore();
         List<Long> unmatchedIdList = unmatchedBasicScore.stream()
@@ -64,16 +67,14 @@ public class BoardPreferenceStatisticService {
             .toList();
         List<BoardStatistic> boardStatisticList = boardStatisticRepository.findAllByBoardIds(
             unmatchedIdList);
-        unmatchedBasicScore
-            .forEach(preferenceStatistic -> {
-                boardStatisticList.forEach(
-                    basicStatistic -> {
-                        if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoardId())){
-                            preferenceStatistic.updateToBasicBoardScore(basicStatistic.getBasicScore());
-                        }
-                    }
-                );
-            });
+        for(BoardPreferenceStatistic preferenceStatistic : unmatchedBasicScore) {
+            for(BoardStatistic basicStatistic : boardStatisticList){
+                if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoardId())){
+                    preferenceStatistic.updateToBasicBoardScore(basicStatistic.getBasicScore());
+                    preferenceStatistic.updatePreferenceScore();
+                }
+            }
+        }
     }
 
 }
