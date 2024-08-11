@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 class RedisRepositoryTest extends AbstractIntegrationTest {
 
     final String boardNameSpace = RedisEnum.BOARD.name();
-    final String testKeyword = "비건";
+    final String testKeyword = "비건테스트";
     final String[] testBoardId = {"1", "2", "3", "4", "5"};
     @Autowired
     RedisRepository redisRepository;

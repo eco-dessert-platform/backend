@@ -4,9 +4,9 @@ package com.bbangle.bbangle.board.service;
 import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 
-import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
+import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
@@ -25,16 +25,11 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.store.dto.PopularBoardDto;
-import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -180,36 +175,8 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<PopularBoardResponse> getTopBoardInfo(Long memberId, Long storeId) {
-        List<Long> boardIds = boardRepository.getTopBoardIds(storeId);
-
-        if (boardIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<PopularBoardDto> boardDtos = boardRepository.getTopBoardInfo(boardIds, memberId);
-        Map<Long, Set<Category>> categorys = productRepository.getCategoryInfoByBoardId(boardIds);
-
-        boardDtos = sortByPopularity(boardIds, boardDtos); // 인기순 정렬
-
-        return combineBaseOnBoardId(boardDtos, categorys);
-    }
-
-    private List<PopularBoardDto> sortByPopularity(List<Long> orders,
-        List<PopularBoardDto> popularBoardDtos) {
-        return orders.stream().map(
-                id -> popularBoardDtos.stream()
-                    .filter(popularBoardDto -> popularBoardDto.getBoardId().equals(id))
-                    .findFirst()
-                    .get())
-            .toList();
-    }
-
-    private List<PopularBoardResponse> combineBaseOnBoardId(
-        List<PopularBoardDto> popularBoardDtos, Map<Long, Set<Category>> categorys) {
-        return popularBoardDtos.stream()
-            .map(popularBoardDto -> PopularBoardResponse.from(popularBoardDto, categorys))
-            .toList();
+    public List<BoardInfoDto> getTopBoardInfo(Long memberId, Long storeId) {
+        return boardRepository.findBestBoards(memberId, storeId);
     }
 
     @Transactional(readOnly = true)

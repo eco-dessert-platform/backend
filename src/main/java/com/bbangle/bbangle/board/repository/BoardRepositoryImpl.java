@@ -20,12 +20,6 @@ import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolv
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.store.dto.BoardsInStoreDto;
-import com.bbangle.bbangle.store.dto.PopularBoardDto;
-import com.bbangle.bbangle.store.dto.QBoardsInStoreDto;
-import com.bbangle.bbangle.store.dto.QPopularBoardDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.util.WishListBoardFilter;
@@ -34,7 +28,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -128,100 +121,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(productImage)
             .on(productImage.board.eq(board))
             .where(board.id.eq(boardId))
-            .fetch();
-    }
-
-    @Override
-    public List<Long> getTopBoardIds(Long storeId) {
-        return queryFactory.select(boardStatistic.boardId)
-            .from(boardStatistic)
-            .join(board)
-            .on(boardStatistic.boardId.eq(board.id))
-            .where(board.store.id.eq(storeId))
-            .orderBy(boardStatistic.basicScore.desc())
-            .limit(3)
-            .fetch();
-    }
-
-    @Override
-    public List<PopularBoardDto> getTopBoardInfo(List<Long> boardIds, Long memberId) {
-        return queryFactory
-            .select(
-                new QPopularBoardDto(
-                    board.id,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    wishListBoard.id))
-            .from(board)
-            .leftJoin(wishListBoard)
-            .on(wishListBoardFilter.equalMemberId(memberId)
-                .and(wishListBoardFilter.equalBoard(board)))
-            .where(board.id.in(boardIds))
-            .fetch();
-    }
-
-    @Override
-    public List<Long> getBoardIds(Long boardIdAsCursorId, Long storeId) {
-        BooleanBuilder cursorCondition = getBoardCursorCondition(boardIdAsCursorId);
-
-        return queryFactory
-            .select(board.id)
-            .from(board)
-            .where(
-                board.store.id.eq(storeId),
-                cursorCondition)
-            .limit(BOARD_PAGE_SIZE + 1L)
-            .orderBy(board.id.desc())
-            .fetch();
-    }
-
-    private BooleanBuilder getBoardCursorCondition(Long cursorId) {
-        BooleanBuilder booleanBuilder = new BooleanBuilder();
-        if (Objects.isNull(cursorId)) {
-            return booleanBuilder;
-        }
-        Long boardId = checkingBoardExistence(cursorId);
-
-        booleanBuilder.and(board.id.loe(boardId));
-        return booleanBuilder;
-    }
-
-    private Long checkingBoardExistence(Long cursorId) {
-        Long checkingId = queryFactory.select(board.id)
-            .from(board)
-            .where(board.id.eq(cursorId))
-            .fetchOne();
-
-        if (Objects.isNull(checkingId) || checkingId - 1 <= 0) {
-            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
-        }
-
-        return cursorId - 1;
-    }
-
-    @Override
-    public List<BoardsInStoreDto> findByBoardIds(
-        List<Long> cursorIdToBoardIds,
-        Long memberId
-    ) {
-        return queryFactory.select(
-                new QBoardsInStoreDto(
-                    board.id,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    boardStatistic.boardReviewCount,
-                    boardStatistic.boardReviewGrade,
-                    wishListBoard.id))
-            .from(board)
-            .leftJoin(wishListBoard)
-            .on(
-                wishListBoardFilter.equalMemberId(memberId)
-                    .and(wishListBoardFilter.equalBoard(board)))
-            .join(boardStatistic).on(board.id.eq(boardStatistic.boardId))
-            .where(board.id.in(cursorIdToBoardIds))
-            .orderBy(board.id.desc())
             .fetch();
     }
 
