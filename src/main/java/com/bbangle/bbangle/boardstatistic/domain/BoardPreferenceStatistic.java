@@ -71,4 +71,8 @@ public class BoardPreferenceStatistic {
         this.basicScore = basicScore;
     }
 
+    public void updatePreferenceScore() {
+        this.preferenceScore = basicScore * preferenceWeight;
+    }
+
 }
