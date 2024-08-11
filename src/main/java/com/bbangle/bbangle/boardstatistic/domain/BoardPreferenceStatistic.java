@@ -13,11 +13,13 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Builder
+@Getter
 @Table(name = "board_preference_statistic")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -45,6 +47,10 @@ public class BoardPreferenceStatistic {
     @Column(name = "preference_score")
     @ColumnDefault("0")
     private Double preferenceScore;
+
+    public void updateWeightWhileInitializing(int weight){
+        this.preferenceWeight = weight;
+    }
 
     @PrePersist
     public void prePersist(){
