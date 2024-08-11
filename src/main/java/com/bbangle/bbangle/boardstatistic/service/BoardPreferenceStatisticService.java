@@ -3,7 +3,9 @@ package com.bbangle.bbangle.boardstatistic.service;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +14,14 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BoardPreferenceStatisticService {
 
     private final BoardPreferenceStatisticRepository preferenceStatisticRepository;
+    private final BoardStatisticRepository boardStatisticRepository;
     private final BoardRepository boardRepository;
 
     public void updatingNonRankedBoards() {
@@ -53,6 +57,25 @@ public class BoardPreferenceStatisticService {
             }));
 
         return preferenceMap.values().stream().toList();
+    }
+
+    public void checkingBasicScoreAndUpdate() {
+        List<BoardPreferenceStatistic> unmatchedBasicScore = preferenceStatisticRepository.findUnmatchedBasicScore();
+        List<Long> unmatchedIdList = unmatchedBasicScore.stream()
+            .map(BoardPreferenceStatistic::getBoardId)
+            .toList();
+        List<BoardStatistic> boardStatisticList = boardStatisticRepository.findAllByBoardIds(
+            unmatchedIdList);
+        unmatchedBasicScore
+            .forEach(preferenceStatistic -> {
+                boardStatisticList.forEach(
+                    basicStatistic -> {
+                        if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoardId())){
+                            preferenceStatistic.updateToBasicBoardScore(basicStatistic.getBasicScore());
+                        }
+                    }
+                );
+            });
     }
 
 }
