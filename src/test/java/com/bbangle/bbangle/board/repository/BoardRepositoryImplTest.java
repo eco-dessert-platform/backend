@@ -20,9 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class BoardRepositoryImplTest extends AbstractIntegrationTest {
 
-    @Autowired
-    BoardPreferenceStatisticRepository preferenceStatisticRepository;
-
     private Board board1;
     private Board board2;
     private Product product1;
