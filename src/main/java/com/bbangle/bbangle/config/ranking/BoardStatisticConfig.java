@@ -2,6 +2,7 @@ package com.bbangle.bbangle.config.ranking;
 
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.service.BoardPreferenceStatisticService;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.review.domain.QReview;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
@@ -21,13 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardStatisticConfig {
 
     private final BoardStatisticService boardStatisticService;
+    private final BoardPreferenceStatisticService preferenceStatisticService;
 
     @Transactional
-    @Async
     @PostConstruct
     public void init() {
         boardStatisticService.updatingNonRankedBoards();
         boardStatisticService.checkingStatisticStatusAndUpdate();
+        preferenceStatisticService.updatingNonRankedBoards();
     }
 
 }
