@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Builder
+@Table(name = "board_preference_statistic")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class BoardPreferenceStatistic {
