@@ -7,7 +7,8 @@ import lombok.Getter;
 @Builder
 public class BoardDto {
 
-    private Long id;
+    private Long boardId;
+    private Long storeId;
     private String profile;
     private String title;
     private Integer price;
@@ -18,7 +19,8 @@ public class BoardDto {
 
     public static BoardDto from(BoardAndImageDto boardAndImage) {
         return BoardDto.builder()
-            .id(boardAndImage.id())
+            .boardId(boardAndImage.boardId())
+            .storeId(boardAndImage.storeId())
             .profile(boardAndImage.profile())
             .title(boardAndImage.title())
             .price(boardAndImage.price())

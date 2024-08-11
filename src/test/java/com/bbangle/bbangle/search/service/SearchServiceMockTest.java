@@ -91,6 +91,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 LocalDateTime.now(),
                 false,
                 10);
+
             boardResponseDao2 = new BoardResponseDao(
                 3L,
                 1L,
