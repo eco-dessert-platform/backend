@@ -12,6 +12,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQue
 
     List<ReviewDto> findByBoardId(Long boardId);
     @Query("SELECT r.id from Review r WHERE r.isBest = true")
-    @Transactional
     List<Long> getBestReviewIds();
 }

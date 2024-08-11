@@ -69,7 +69,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 삭제")
     @DeleteMapping("/{reviewId}")
     public CommonResult deleteReview(
-            @PathVariable
+            @PathVariable("reviewId")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId){

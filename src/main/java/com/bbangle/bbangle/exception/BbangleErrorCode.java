@@ -52,6 +52,7 @@ public enum BbangleErrorCode {
     REVIEW_NOT_FOUND(-32, "존재하지 않는 리뷰입니다", BAD_REQUEST),
     PUSH_NOT_FOUND(-33, "존재하지 않는 푸시 알림 신청입니다.", BAD_REQUEST),
     EMPTY_KEYWORD(-34, "검색어가 비어있습니다.", BAD_REQUEST),
+    REVIEW_MEMBER_NOT_PROPER(-35, "해당 리뷰를 작성한 사용자가 아닙니다.", BAD_REQUEST),
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;

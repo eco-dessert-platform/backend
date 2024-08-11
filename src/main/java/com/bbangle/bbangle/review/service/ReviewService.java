@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_MEMBER_NOT_PROPER;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
 import static com.bbangle.bbangle.image.domain.ImageCategory.REVIEW;
 import static java.util.Locale.ROOT;
@@ -212,6 +213,9 @@ public class ReviewService {
         memberRepository.findMemberById(memberId);
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
+        if(!review.getMemberId().equals(memberId)){
+            throw new BbangleException(REVIEW_MEMBER_NOT_PROPER);
+        }
         review.update(reviewRequest);
         List<String> urls = reviewRequest.urls();
         List<Image> images = imageRepository.findByDomainId(reviewId);
@@ -250,6 +254,11 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId, Long memberId) {
         memberRepository.findMemberById(memberId);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
+        if(!review.getMemberId().equals(memberId)){
+            throw new BbangleException(REVIEW_MEMBER_NOT_PROPER);
+        }
         List<Image> reviewImages = imageRepository.findByDomainId(reviewId);
         List<ReviewLike> reviewLikes = reviewLikeRepository.findByReviewId(reviewId);
         if (!ObjectUtils.isEmpty(reviewImages)) {
@@ -258,8 +267,6 @@ public class ReviewService {
         if(!ObjectUtils.isEmpty(reviewLikes)) {
             reviewLikeRepository.deleteAllByReviewId(reviewId);
         }
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BbangleException(REVIEW_NOT_FOUND));
         review.delete();
         boardStatisticService.updateReviewCount(review.getBoardId(), review.getRate(), DELETE);
     }

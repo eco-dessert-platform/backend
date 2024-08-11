@@ -23,6 +23,7 @@ public class ReviewInfoResponse {
     private LocalDateTime date;
     private Boolean isBest;
     private Long boardId;
+    private Boolean isMine;
 
     public static List<ReviewInfoResponse> createList(
             List<ReviewSingleDto> reviewSingleList,
@@ -63,6 +64,7 @@ public class ReviewInfoResponse {
                 .comment(reviewSingleDto.content())
                 .date(reviewSingleDto.createdAt())
                 .boardId(reviewSingleDto.boardId())
+                .isMine(reviewSingleDto.memberId().equals(memberId))
                 .build();
     }
 

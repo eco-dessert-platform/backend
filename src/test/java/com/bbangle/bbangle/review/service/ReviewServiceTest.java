@@ -355,7 +355,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         // given
         Long boardId = board.getId();
         Long memberId = member.getId();
-        Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
+        Review review = ReviewFixture.createReviewWithBoardIdAndRateAndMember(boardId, 4.0, memberId);
         Review savedReview = reviewRepository.save(review);
         List<Badge> badges = new ArrayList<>();
         badges.add(BAD);
