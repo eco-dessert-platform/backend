@@ -3,22 +3,11 @@ package com.bbangle.bbangle.search.dto.response.util;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.dao.TagsDao;
-import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -26,7 +15,6 @@ import lombok.NoArgsConstructor;
 public class SearchPageGenerator {
 
     private static final Long NO_NEXT_CURSOR = -1L;
-    private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
     public static SearchCustomPage<SearchResponse> getBoardPage(
         List<BoardResponseDao> boardDaos,
@@ -41,9 +29,10 @@ public class SearchPageGenerator {
 
         Long nextCursor = NO_NEXT_CURSOR;
         boolean hasNext = false;
-        if (boardResponseDtos.size() == HAS_NEXT_PAGE_SIZE) {
+        if (boardDaos.size() > BOARD_PAGE_SIZE) {
             hasNext = true;
-            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1).getBoardId();
+            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1).getBoardId() - 1;
+            boardDaos.remove(boardDaos.size() - 1);
         }
         boardResponseDtos = boardResponseDtos.stream().limit(BOARD_PAGE_SIZE).toList();
 
