@@ -78,10 +78,6 @@ public class SearchService {
 
         Long boardCount = searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort);
 
-        if (boards.size() > LIMIT_KEYWORD_COUNT) {
-            boardCount--;
-        }
-
         SearchCustomPage<SearchResponse> searchCustomPage = SearchPageGenerator.getBoardPage(
             boards,
             DEFAULT_BOARD,

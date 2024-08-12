@@ -11,6 +11,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.FixtureConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
@@ -61,8 +62,9 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         List<Long> boardIds = new ArrayList<>();
         for (int i = 0; 3 > i; i++) {
             Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            boardIds.add(
-                fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false)).getId());
+            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            boardIds.add(board.getId());
+            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
 
         FilterRequest filterRequest = FilterRequest.builder()
