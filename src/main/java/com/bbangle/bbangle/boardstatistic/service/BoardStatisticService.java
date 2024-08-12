@@ -22,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BoardStatisticService {
 
-    private static final Double BOARD_WISH_SCORE = 50.0;
-    private static final Double BOARD_VIEW_SCORE = 1.0;
-    private static final Double BOARD_REVIEW_SCORE = 50.0;
+    private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     private final BoardStatisticRepository boardStatisticRepository;
     private final BoardRepository boardRepository;
@@ -91,14 +89,14 @@ public class BoardStatisticService {
     @Transactional
     public void updateViewCount(Long boardId) {
         StatisticUpdate boardViewUpdate = StatisticUpdate.updateViewCount(boardId);
-        redisTemplate.opsForList().rightPush(String.valueOf(boardId), boardViewUpdate);
+        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, boardViewUpdate);
     }
 
     @Async
     @Transactional
     public void updateWishCount(Long boardId, boolean isWish) {
         StatisticUpdate boardWishUpdate = StatisticUpdate.updateWishCount(boardId, isWish);
-        redisTemplate.opsForList().rightPush(String.valueOf(boardId), boardWishUpdate);
+        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, boardWishUpdate);
     }
 
     @Async
@@ -110,8 +108,8 @@ public class BoardStatisticService {
     ) {
         StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReviewRate(boardId, rate);
         StatisticUpdate ReviewCountUpdate = StatisticUpdate.updateReviewCount(boardId);
-        redisTemplate.opsForList().rightPush(String.valueOf(boardId), ReviewRateUpdate);
-        redisTemplate.opsForList().rightPush(String.valueOf(boardId), ReviewCountUpdate);
+        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
+        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewCountUpdate);
     }
 
 }
