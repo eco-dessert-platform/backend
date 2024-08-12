@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
-import com.bbangle.bbangle.config.ranking.BoardWishCount;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardQueryDSLRepository;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;

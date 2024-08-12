@@ -3,7 +3,7 @@ package com.bbangle.bbangle.review.repository;
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.config.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.image.dto.ImageDto;

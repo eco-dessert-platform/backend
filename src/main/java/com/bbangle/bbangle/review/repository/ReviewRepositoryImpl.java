@@ -4,7 +4,7 @@ import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.config.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.image.domain.QImage;
 import com.bbangle.bbangle.image.dto.QImageDto;
 import com.bbangle.bbangle.review.domain.QReview;

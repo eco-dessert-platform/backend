@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.ranking.BoardStatisticConfig;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardStatisticConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
