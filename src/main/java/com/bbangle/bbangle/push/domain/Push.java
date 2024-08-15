@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.push.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.common.domain.Days;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,7 +18,7 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 
-@Table(name = "push_temp")
+@Table(name = "push")
 @Getter
 @Entity
 @Builder
