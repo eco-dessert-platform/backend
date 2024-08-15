@@ -41,7 +41,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = createPushRequest(product.getId());
 
         // when
         pushService.createPush(request, member.getId());
@@ -59,6 +59,7 @@ class PushServiceTest extends AbstractIntegrationTest {
     }
 
 
+
     @Test
     @Order(1)
     @DisplayName("푸시 알림 신청이 정상적으로 해제된다.")
@@ -68,7 +69,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createPush(newMember);
         Push push = pushRepository.save(newPush);
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), PushCategory.BBANGCKETING);
 
         // when
         pushService.cancelPush(request, member.getId());
@@ -95,7 +96,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
+        CreatePushRequest request = createPushRequest(push.getProductId());
 
         // when
         pushService.createPush(request, member.getId());
@@ -122,7 +123,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Member member = memberRepository.save(newMember);
         Push newPush = createPush(newMember);
         Push push = pushRepository.save(newPush);
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), PushCategory.BBANGCKETING);
 
         // when
         pushService.deletePush(request, member.getId());
@@ -143,8 +144,8 @@ class PushServiceTest extends AbstractIntegrationTest {
         create20Pushes(member);
 
         // when
-        List<PushResponse> bbangketingPushList = pushService.getPushes(String.valueOf(PushCategory.BBANGCKETING), member.getId());
-        List<PushResponse> restockPushList = pushService.getPushes(String.valueOf(PushCategory.RESTOCK), member.getId());
+        List<PushResponse> bbangketingPushList = pushService.getPushes(PushCategory.BBANGCKETING, member.getId());
+        List<PushResponse> restockPushList = pushService.getPushes(PushCategory.RESTOCK, member.getId());
         long pushCount = pushRepository.count();
 
         // then
@@ -163,7 +164,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = createPushRequest(product.getId());
         pushService.createPush(request, member.getId());
 
         // when
@@ -185,7 +186,7 @@ class PushServiceTest extends AbstractIntegrationTest {
         Board board = createBoard(store);
         Product product = createProduct(board);
         Member member = createMember();
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushType.DATE), null, String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = createPushRequest(product.getId());
         pushService.createPush(request, member.getId());
         List<FcmRequest> requestList = pushService.getPushesForNotification();
 
@@ -236,19 +237,22 @@ class PushServiceTest extends AbstractIntegrationTest {
         return storeRepository.save(StoreFixture.storeGenerator());
     }
 
-
     private Board createBoard(Store store) {
         return boardRepository.save(BoardFixture.randomBoard(store));
     }
-
 
     private Product createProduct(Board board) {
         return productRepository.save(ProductFixture.randomProduct(board));
     }
 
-
     private Member createMember() {
         return memberRepository.save(MemberFixture.createKakaoMember());
     }
+
+    private CreatePushRequest createPushRequest(Long productId) {
+        return new CreatePushRequest("testFcmToken1", PushType.DATE, null,
+                PushCategory.BBANGCKETING, null, productId);
+    }
+
 
 }

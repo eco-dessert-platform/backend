@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.push.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.Days;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,12 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-/**
- *
- * 현재 push 테이블이 이전 버전이라 아예 테이블을 따로 만들면 좋을 꺼 같아서
- * 이름만 변경했습니다
- * 추후 완료되면 이 Entity가 push 테이블로 들어갈 예정입니다
- */
+import java.time.LocalDate;
+
 @Table(name = "push_temp")
 @Getter
 @Entity
@@ -57,6 +54,9 @@ public class Push extends BaseEntity {
 
     @Column(name = "is_active", columnDefinition = "tinyint")
     private boolean active;
+
+    @Column(name = "date")
+    private LocalDate date;
 
 
     public void updateDays(String days) {

@@ -63,13 +63,11 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
 
 
     @Override
-    public Set<Long> findProductJustStocked(List<Long> subscribedProductIdList) {
-        return new HashSet<>(queryFactory.select(product.id)
+    public List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList) {
+        return queryFactory.select(product.id).distinct()
                 .from(product)
-                .where(product.soldout.isFalse()
-                        .and(product.id.in(subscribedProductIdList))
-                )
-                .fetch());
+                .where(product.id.in(subscribedProductIdList))
+                .fetch();
     }
 
 }

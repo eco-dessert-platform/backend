@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.push.dto;
 
+import com.bbangle.bbangle.push.domain.PushCategory;
 import jakarta.validation.constraints.NotNull;
 
 public record PushRequest(
@@ -8,6 +9,6 @@ public record PushRequest(
     @NotNull
     String pushType,
     @NotNull
-    String pushCategory
+    PushCategory pushCategory
 ) {
 }

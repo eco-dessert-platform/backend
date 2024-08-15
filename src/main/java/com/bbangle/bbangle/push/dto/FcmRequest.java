@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.push.dto;
 
+import com.bbangle.bbangle.push.domain.PushCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;

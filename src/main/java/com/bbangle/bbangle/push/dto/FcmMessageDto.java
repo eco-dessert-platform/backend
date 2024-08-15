@@ -20,7 +20,7 @@ public class FcmMessageDto {
         return FcmMessageDto.builder()
                 .validateOnly(false)
                 .message(Message.builder()
-                        .data(Notification.builder()
+                        .notification(Notification.builder()
                                 .title(request.getTitle())
                                 .body(request.getBody())
                                 .build())
@@ -34,7 +34,7 @@ public class FcmMessageDto {
     @Builder
     public static class Message {
         private String token;
-        private Notification data;
+        private Notification notification;
     }
 
     @Getter
@@ -44,10 +44,5 @@ public class FcmMessageDto {
     public static class Notification {
         private String title;
         private String body;
-
-        public Notification(FcmRequest request) {
-            this.title = request.getTitle();
-            this.body = request.getBody();
-        }
     }
 }

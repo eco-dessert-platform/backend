@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.push.dto;
 
+import com.bbangle.bbangle.common.domain.Days;
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.domain.PushType;
 import com.querydsl.core.annotations.QueryProjection;

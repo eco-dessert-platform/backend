@@ -27,14 +27,14 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
 
 
     @Override
-    public Push findPush(Long productId, String pushCategory, Long memberId) {
+    public Push findPush(Long productId, PushCategory pushCategory, Long memberId) {
         return queryFactory.selectFrom(push)
                 .where(commonFilter(memberId, productId, pushCategory))
                 .fetchFirst();
     }
 
     @Override
-    public List<PushResponse> findPushList(String pushCategory, Long memberId) {
+    public List<PushResponse> findPushList(PushCategory pushCategory, Long memberId) {
         return queryFactory.select(new QPushResponse(
                         product.id,
                         store.name,
@@ -73,7 +73,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                 .fetch();
     }
 
-    private BooleanBuilder commonFilter(Long memberId, Long productId, String pushCategory) {
+    private BooleanBuilder commonFilter(Long memberId, Long productId, PushCategory pushCategory) {
         BooleanBuilder builder = new BooleanBuilder();
 
         if (memberId != null) {
@@ -83,7 +83,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
             builder.and(push.productId.eq(productId));
         }
         if (pushCategory != null) {
-            builder.and(push.pushCategory.eq(PushCategory.valueOf(pushCategory)));
+            builder.and(push.pushCategory.eq(pushCategory));
         }
 
         return builder;
