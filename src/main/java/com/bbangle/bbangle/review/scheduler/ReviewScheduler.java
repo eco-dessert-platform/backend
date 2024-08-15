@@ -18,7 +18,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SchedulerFactory {
+public class ReviewScheduler {
     private final ReviewRepository reviewRepository;
     private final ImageRepository imageRepository;
     private static final Long MINIMUM_BEST_REVIEW_STANDARD = 5L;
@@ -26,7 +26,7 @@ public class SchedulerFactory {
 
 
 
-    @Scheduled(cron = "0 0 12 * * ?")//매일 낮 12시
+    @Scheduled(cron = "0 0 0 * * *")//매일 밤 12시
     @Transactional
     public void action() {
         log.info("Scheduler started ........");
