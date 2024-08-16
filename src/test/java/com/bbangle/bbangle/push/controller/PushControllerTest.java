@@ -13,10 +13,12 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
+import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.store.domain.Store;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -57,7 +59,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Product product = createProduct(board);
         createMember();
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), product.getId());
+        CreatePushRequest request = getCreatePushRequest(product.getId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -67,6 +69,8 @@ class PushControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+
 
 
     @Test
@@ -79,7 +83,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createPush(member);
         Push push = pushRepository.save(newPush);
 
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), PushCategory.BBANGCKETING);
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -101,7 +105,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createCanceledPush(member);
         Push push = pushRepository.save(newPush);
 
-        CreatePushRequest request = new CreatePushRequest("testFcmToken1", String.valueOf(PushCategory.BBANGCKETING), push.getProductId());
+        CreatePushRequest request = getCreatePushRequest(push.getProductId());
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -123,7 +127,7 @@ class PushControllerTest extends AbstractIntegrationTest {
         Push newPush = createPush(member);
         Push push = pushRepository.save(newPush);
 
-        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushCategory.BBANGCKETING));
+        PushRequest request = new PushRequest(push.getProductId(), String.valueOf(PushType.DATE), PushCategory.BBANGCKETING);
         String requestBody = objectMapper.writeValueAsString(request);
 
         // when & then
@@ -205,6 +209,10 @@ class PushControllerTest extends AbstractIntegrationTest {
                 .build();
 
         return memberRepository.save(member);
+    }
+
+    private static @NotNull CreatePushRequest getCreatePushRequest(Long productId) {
+        return new CreatePushRequest("testFcmToken1", PushType.DATE, null, PushCategory.BBANGCKETING, null, productId);
     }
 
 }

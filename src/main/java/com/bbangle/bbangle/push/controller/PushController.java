@@ -2,11 +2,12 @@ package com.bbangle.bbangle.push.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/push")
 @RequiredArgsConstructor
+@Slf4j
 public class PushController {
 
-    private final FcmService fcmService;
     private final PushService pushService;
     private final ResponseService responseService;
 
@@ -59,20 +60,10 @@ public class PushController {
 
 
     @GetMapping
-    public CommonResult getPush(
-            @RequestParam(value = "pushCategory") String pushCategory,
+    public CommonResult getPushes(
+            @RequestParam(value = "pushCategory") PushCategory pushCategory,
             @AuthenticationPrincipal Long memberId
     ) {
-        return responseService.getListResult(pushService.getPush(pushCategory, memberId));
+        return responseService.getListResult(pushService.getPushes(pushCategory, memberId));
     }
-
-
-//    @PostMapping("/push")
-//    public CommonResult sendPush(@RequestBody SendPushRequest request) {
-//        System.out.println("requestDto = " + request);
-//
-//        fcmService.sendPush(request);
-//        return responseService.getSuccessResult();
-//    }
-
 }

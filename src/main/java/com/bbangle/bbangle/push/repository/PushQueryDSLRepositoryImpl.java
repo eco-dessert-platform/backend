@@ -2,7 +2,9 @@ package com.bbangle.bbangle.push.repository;
 
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
+import com.bbangle.bbangle.push.dto.FcmPush;
 import com.bbangle.bbangle.push.dto.PushResponse;
+import com.bbangle.bbangle.push.dto.QFcmPush;
 import com.bbangle.bbangle.push.dto.QPushResponse;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.member.domain.QMember.member;
 import static com.bbangle.bbangle.push.domain.QPush.push;
 import static com.bbangle.bbangle.store.domain.QStore.store;
 
@@ -24,20 +27,20 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
 
 
     @Override
-    public Push findPush(Long productId, String pushCategory, Long memberId) {
+    public Push findPush(Long productId, PushCategory pushCategory, Long memberId) {
         return queryFactory.selectFrom(push)
                 .where(commonFilter(memberId, productId, pushCategory))
                 .fetchFirst();
     }
 
     @Override
-    public List<PushResponse> findPushList(String pushCategory, Long memberId) {
+    public List<PushResponse> findPushList(PushCategory pushCategory, Long memberId) {
         return queryFactory.select(new QPushResponse(
                         product.id,
                         store.name,
                         product.title,
                         board.profile,
-                        push.subscribed
+                        push.active
                 ))
                 .from(push)
                 .join(product).on(push.productId.eq(product.id))
@@ -48,7 +51,29 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
     }
 
 
-    private BooleanBuilder commonFilter(Long memberId, Long productId, String pushCategory) {
+    @Override
+    public List<FcmPush> findPushList() {
+        return queryFactory.select(new QFcmPush(
+                        push.id,
+                        push.fcmToken,
+                        member.nickname,
+                        board.title,
+                        product.id,
+                        product.title,
+                        push.pushType,
+                        push.days,
+                        push.pushCategory,
+                        product.soldout
+                ))
+                .from(push)
+                .join(member).on(push.memberId.eq(member.id))
+                .join(product).on(push.productId.eq(product.id))
+                .join(board).on(product.board.id.eq(board.id))
+                .where(push.active.isTrue())
+                .fetch();
+    }
+
+    private BooleanBuilder commonFilter(Long memberId, Long productId, PushCategory pushCategory) {
         BooleanBuilder builder = new BooleanBuilder();
 
         if (memberId != null) {
@@ -58,7 +83,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
             builder.and(push.productId.eq(productId));
         }
         if (pushCategory != null) {
-            builder.and(push.pushCategory.eq(PushCategory.valueOf(pushCategory)));
+            builder.and(push.pushCategory.eq(pushCategory));
         }
 
         return builder;

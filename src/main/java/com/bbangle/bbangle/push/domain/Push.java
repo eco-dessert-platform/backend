@@ -16,6 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Table(name = "push")
 @Getter
 @Entity
@@ -38,16 +40,30 @@ public class Push extends BaseEntity {
     @Column(name = "product_id")
     private Long productId;
 
+    @Column(name = "push_type", columnDefinition = "varchar")
+    @Enumerated(EnumType.STRING)
+    private PushType pushType;
+
+    @Column(name = "days")
+    private String days;
+
     @Column(name = "push_category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private PushCategory pushCategory;
 
-    @Column(name = "is_subscribed", columnDefinition = "tinyint")
-    private boolean subscribed;
+    @Column(name = "is_active", columnDefinition = "tinyint")
+    private boolean active;
+
+    @Column(name = "date")
+    private LocalDate date;
 
 
-    public void updateSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
+    public void updateDays(String days) {
+        this.days = days;
+    }
+
+    public void updateActive(boolean active) {
+        this.active = active;
     }
 
 }

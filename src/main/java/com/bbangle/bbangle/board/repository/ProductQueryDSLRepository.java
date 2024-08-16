@@ -9,6 +9,6 @@ import java.util.Set;
 public interface ProductQueryDSLRepository {
 
     Map<Long, Set<Category>> getCategoryInfoByBoardId(List<Long> boardIds);
-
     List<TitleDto> findAllTitle();
+    List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIds);
 }
