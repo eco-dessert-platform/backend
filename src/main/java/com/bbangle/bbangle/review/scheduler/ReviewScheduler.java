@@ -24,8 +24,6 @@ public class ReviewScheduler {
     private static final Long MINIMUM_BEST_REVIEW_STANDARD = 5L;
     private static final Long TEMP_DOMAINID = -1L;
 
-
-
     @Scheduled(cron = "0 0 0 * * *")//매일 밤 12시
     @Transactional
     public void action() {

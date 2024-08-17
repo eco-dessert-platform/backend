@@ -42,6 +42,8 @@ public class FcmService {
 
     public void sendMessage(List<FcmRequest> fcmRequests) {
         for(FcmRequest fcmRequest : fcmRequests) {
+            Push push = pushRepository.findById(fcmRequest.getPushId())
+                    .orElseThrow(() -> new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND));
             String message = makeMessage(fcmRequest);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters()
@@ -55,14 +57,9 @@ public class FcmService {
                         HttpMethod.POST,
                         entity,
                         String.class);
-                if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                    Push push = pushRepository.findById(fcmRequest.getPushId())
-                            .orElseThrow(() -> new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND));
-
-                    // 재입고 푸시 알림이 나간 경우 해당 푸시 알림을 비활성화 상태로 돌린다.
-                    if (fcmRequest.getPushCategory().equals(PushCategory.RESTOCK.getDescription())) {
-                        push.updateActive(false);
-                    }
+                if (responseEntity.getStatusCode().is2xxSuccessful()&&
+                    fcmRequest.getPushCategory().equals(PushCategory.RESTOCK.getDescription())) {
+                    push.updateActive(false);
                 }
             } catch (RuntimeException e) {
                 throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);

@@ -42,9 +42,8 @@ public class PushService {
                     .productId(request.productId())
                     .pushType(request.pushType())
                     .days(!StringUtils.isBlank(request.days()) ? request.days() : null)
-                    .date(!StringUtils.isBlank(request.date()) ? LocalDate.parse(request.date()) : null)
                     .pushCategory(request.pushCategory())
-                    .active(true)
+                    .isActive(true)
                     .build();
             pushRepository.save(newPush);
             return;
@@ -117,14 +116,17 @@ public class PushService {
         return requestList;
     }
 
-    private boolean shouldSendPush(FcmPush fcmPush, List<Long> targetProductIdSet) {
-        //TODO 날짜별 구현해야함(아직 프론트로부터 어떻게 API 요청이 오는 지 모름)
+    private boolean shouldSendPush(FcmPush fcmPush, List<Long> targetProductIds) {
         if (fcmPush.pushType() == PushType.DATE) {
-            return targetProductIdSet.contains(fcmPush.productId());
+            return targetProductIds.contains(fcmPush.productId()) && isEqualToday(fcmPush.date().toLocalDate());
         } else if (fcmPush.pushType() == PushType.WEEK) {
-            return targetProductIdSet.contains(fcmPush.productId()) && doDaysContainToday(fcmPush.days());
+            return targetProductIds.contains(fcmPush.productId()) && doDaysContainToday(fcmPush.days());
         }
         return false;
+    }
+
+    private boolean isEqualToday(LocalDate pushDate) {
+        return LocalDate.now().isEqual(pushDate);
     }
 
     private boolean doDaysContainToday(String days) {

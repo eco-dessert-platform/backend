@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)//test
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FcmMessageDto {
     @JsonProperty("validate_only")
     private boolean validateOnly;
