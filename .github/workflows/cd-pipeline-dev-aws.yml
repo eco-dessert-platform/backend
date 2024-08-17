@@ -1,7 +1,7 @@
 name: Dev 서버 CD 파이프라인 (메인 서버)
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
   push:
     branches:
       - dev
@@ -30,7 +30,7 @@ jobs:
 
       - name: Decode Firebase Service Account Key
         run: echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 -d > firebase_service_key.json
-        
+
       - name: build 실행
         run: ./gradlew build -x test
 
@@ -49,14 +49,14 @@ jobs:
             rm -f ~/docker/server/Bbangle-0.0.1-SNAPSHOT.jar
 
       - name: 파이어베이스 EC2로 전송
-        uses: appleboy/ssh-action@master
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.DEV_AWS_SSH_HOST }}
           username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
           key: ${{ secrets.DEV_AWS_SSH_KEY }}
           port: ${{ secrets.DEV_AWS_SSH_PORT }}
           source: "firebase_service_key.json"
-          target: "~/docker/server/firebase/firebase_service_key.json"
+          target: "~/docker/server/firebase"
 
       - name: jar 파일 운영 서버 전송
         uses: appleboy/scp-action@master
