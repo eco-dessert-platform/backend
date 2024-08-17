@@ -31,6 +31,7 @@ jobs:
         run: |
           mkdir -p src/main/resources/firebase
           echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 --decode > src/main/resources/firebase/firebase-service-key.json
+          find src
 
       - name: build 실행
         run: ./gradlew build -x test
