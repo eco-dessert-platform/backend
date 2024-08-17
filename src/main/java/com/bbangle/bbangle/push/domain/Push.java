@@ -16,8 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.LocalDate;
-
 @Table(name = "push")
 @Getter
 @Entity
@@ -52,18 +50,14 @@ public class Push extends BaseEntity {
     private PushCategory pushCategory;
 
     @Column(name = "is_active", columnDefinition = "tinyint")
-    private boolean active;
-
-    @Column(name = "date")
-    private LocalDate date;
-
+    private boolean isActive;
 
     public void updateDays(String days) {
         this.days = days;
     }
 
-    public void updateActive(boolean active) {
-        this.active = active;
+    public void updateActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
 }
