@@ -28,16 +28,8 @@ jobs:
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
           find src
 
-      - name: Setup Firebase service key
-        run: |
-          mkdir -p firebase
-          echo "${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }}" | base64 --decode > firebase/firebase_service_key.json
-          find src
-          cat firebase/firebase_service_key.json
-
-      - name: Copy Firebase service key to Docker container
-        run: |
-          docker cp firebase/firebase_service_key.json server:/firebase/firebase_service_key.json
+      - name: Decode Firebase Service Account Key
+        run: echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 -d > firebase_service_key.json
 
       - name: build 실행
         run: ./gradlew build -x test
@@ -46,15 +38,15 @@ jobs:
         run: |
           cp build/libs/Bbangle-0.0.1-SNAPSHOT.jar ./
 
-      - name: 기존 서버 내 jar 파일 삭제
+      - name: 파이어베이스 EC2로 전송
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_AWS_SSH_HOST }}
           username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
           key: ${{ secrets.DEV_AWS_SSH_KEY }}
           port: ${{ secrets.DEV_AWS_SSH_PORT }}
-          source: "firebase/firebase_service_key.json"
-          target: "~/firebase/"
+          source: "firebase_service_key.json"
+          target: "~/firebase/firebase_service_key.json"
 
       - name: jar 파일 운영 서버 전송
         uses: appleboy/scp-action@master
