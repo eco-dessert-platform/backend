@@ -43,6 +43,7 @@ jobs:
           
           # Example base64 decode command (replace *** with actual base64 encoded string)
           echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 --decode > firebase_service_key.json
+          cat firebase_service_key.json
         
       - name: build 실행
         run: ./gradlew build -x test
