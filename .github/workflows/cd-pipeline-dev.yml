@@ -41,10 +41,10 @@ jobs:
       - name: 파이어베이스 EC2로 전송
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
+          host: ${{ secrets.DEV_SSH_HOST }}
+          username: ${{ secrets.DEV_SSH_USERNAME }}
+          password: ${{ secrets.DEV_SSH_PASSWORD }}
+          port: ${{ secrets.DEV_SSH_PORT }}
           source: "firebase_service_key.json"
           target: "~/firebase/firebase_service_key.json"
 
