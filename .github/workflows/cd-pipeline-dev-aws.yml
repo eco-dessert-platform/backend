@@ -78,14 +78,3 @@ jobs:
           script: |
             chmod +x deploy-docker.sh
             ./deploy-docker.sh
-
-
-      - name: 파이어베이스 키 도커 컨테이너로 복사
-        uses: appleboy/ssh-action@v0.1.0
-        with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
-          script: |
-            docker cp ~/docker/server/firebase/firebase_service_key.json server:/firebase/firebase_service_key.json
