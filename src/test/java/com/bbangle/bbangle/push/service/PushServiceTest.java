@@ -242,7 +242,7 @@ class PushServiceTest extends AbstractIntegrationTest {
     }
 
     private Product createProduct(Board board) {
-        return productRepository.save(ProductFixture.randomProduct(board));
+        return productRepository.save(ProductFixture.randomProductWithOrderDate(board));
     }
 
     private Member createMember() {
