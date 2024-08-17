@@ -30,11 +30,24 @@ jobs:
       - name: Setup Firebase service key
         run: |
           mkdir -p src/main/resources/firebase
-          cd ./src/main/resources/firebase
+
+          # Navigate to the firebase directory
+          cd src/main/resources/firebase
+          
+          # Verify current directory
+          echo "Current working directory: $(pwd)"
           ls -a .
-          touch ./firebase_service_key.json
+          
+          # Create or update the firebase_service_key.json file
+          touch firebase_service_key.json
+          
+          # Example base64 decode command (replace *** with actual base64 encoded string)
           echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 --decode > firebase_service_key.json
+          
+          # List the contents of the src directory to verify
+          cd ../../
           find src
+
 
       - name: build 실행
         run: ./gradlew build -x test
