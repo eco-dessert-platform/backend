@@ -1,4 +1,4 @@
-name: Dev 서버 CD 파이프라인
+name: Dev 서버 CD 파이프라인 (메인 서버)
 
 on:
   workflow_dispatch: 
@@ -34,6 +34,10 @@ jobs:
           echo "${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }}" | base64 --decode > firebase/firebase_service_key.json
           find firebase
           cat firebase/firebase_service_key.json
+
+      - name: Copy Firebase service key to Docker container
+        run: |
+          docker cp firebase/firebase_service_key.json server:/firebase/firebase_service_key.json
         
       - name: build 실행
         run: ./gradlew build -x test
