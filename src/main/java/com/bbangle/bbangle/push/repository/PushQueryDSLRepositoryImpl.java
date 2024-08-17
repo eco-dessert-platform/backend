@@ -40,7 +40,7 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                         store.name,
                         product.title,
                         board.profile,
-                        push.active
+                        push.isActive
                 ))
                 .from(push)
                 .join(product).on(push.productId.eq(product.id))
@@ -63,13 +63,14 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                         push.pushType,
                         push.days,
                         push.pushCategory,
-                        product.soldout
+                        product.soldout,
+                        product.orderStartDate
                 ))
                 .from(push)
                 .join(member).on(push.memberId.eq(member.id))
                 .join(product).on(push.productId.eq(product.id))
                 .join(board).on(product.board.id.eq(board.id))
-                .where(push.active.isTrue())
+                .where(push.isActive.isTrue())
                 .fetch();
     }
 
