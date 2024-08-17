@@ -30,7 +30,7 @@ jobs:
       - name: Setup Firebase service key
         run: |
           mkdir -p src/main/resources/firebase
-          cd ./src/main/resources
+          cd ./src/main/resources/firebase
           ls -a .
           touch ./firebase-service-key.json
           echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 --decode > src/main/resources/firebase/firebase_service_key.json
