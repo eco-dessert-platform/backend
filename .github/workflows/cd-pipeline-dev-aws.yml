@@ -35,6 +35,19 @@ jobs:
           find src/main/resources
           cat src/main/resources/firebase/firebase_service_key.json
 
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ubuntu-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ubuntu-gradle-
+
+      - name: Grant Permission Gradlew
+        run: chmod +x gradlew
+
       - name: build 실행 (클린 빌드, 테스트 제외)
         run: ./gradlew clean build -x test
 
