@@ -34,8 +34,8 @@ jobs:
           echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 -d > src/main/resources/firebase/firebase_service_key.json
           find src/main/resources
 
-      - name: build 실행
-        run: ./gradlew build -x test
+      - name: build 실행 (클린 빌드, 테스트 제외)
+        run: ./gradlew clean build -x test
 
       - name: 실행 jar 파일 복사
         run: |
