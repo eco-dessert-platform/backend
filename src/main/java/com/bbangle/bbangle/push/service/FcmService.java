@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class FcmService {
@@ -36,7 +37,8 @@ public class FcmService {
     private String FCM_API_URL;
     @Value("${fcm.google-authentication-url}")
     private String GOOGLE_AUTHENTICATION_URL;
-
+    @Value("${fcm.key-path}")
+    private String FCM_SECRET_KEY_PATH;
     private final ObjectMapper objectMapper;
     private final PushRepository pushRepository;
 
@@ -87,7 +89,7 @@ public class FcmService {
 
     private String getAccessToken() {
         try {
-            InputStream inputStream = new ClassPathResource("firebase/firebase_service_key.json").getInputStream();
+            InputStream inputStream = new ClassPathResource(FCM_SECRET_KEY_PATH).getInputStream();
             GoogleCredentials googleCredentials = GoogleCredentials
                     .fromStream(inputStream)
                     .createScoped(List.of(GOOGLE_AUTHENTICATION_URL));
