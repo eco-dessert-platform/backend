@@ -11,8 +11,9 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
+import com.bbangle.bbangle.board.dto.ProductOrderDto;
+import com.bbangle.bbangle.board.dto.ProductOrderResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -25,11 +26,17 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.push.domain.Push;
+import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -590,55 +597,81 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
         void throwNotBoard() {
             assertThrows(BbangleException.class,
-                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+                () -> boardService.getProductResponse( NULL_MEMBER, NOT_EXSIST_ID));
         }
 
     }
 
-
     @Nested
-    @DisplayName("getProductResponse 메서드는")
-    class GetProductResponse {
-
-        List<Product> products;
-        Board targetBoard;
-        final Long NOT_EXSIST_ID = -1L;
+    @DisplayName("getTopBoardIds 메서드는")
+    class FindProductDtoById {
+        private Member testMember;
+        private Board testBoard;
+        private Product testProduct;
+        private Push testPush;
 
         @BeforeEach
-        void init() {
-            products = List.of(
-                fixtureProduct(Map.of(
-                    "title", TEST_TITLE,
-                    "category", Category.BREAD
-                )),
-                fixtureProduct(Map.of(
-                    "title", TEST_TITLE,
-                    "category", Category.SNACK
-                )));
+        void setUp() {
+            // Given: 테스트 데이터를 세팅합니다.
+            testMember = memberRepository.save(MemberFixture.createKakaoMember());
 
-            targetBoard = fixtureBoard(Map.of("productList", products));
+            testBoard = fixtureBoard(Collections.emptyMap());
+
+            testProduct = Product.builder()
+                .title("Sample Product")
+                .price(1000)
+                .category(Category.COOKIE) // 실제 Category 설정
+                .glutenFreeTag(true)
+                .highProteinTag(true)
+                .sugarFreeTag(true)
+                .veganTag(true)
+                .ketogenicTag(true)
+                .sugars(10)
+                .protein(5)
+                .carbohydrates(15)
+                .fat(3)
+                .weight(200)
+                .calories(500)
+                .monday(true)
+                .tuesday(true)
+                .wednesday(true)
+                .thursday(true)
+                .friday(true)
+                .saturday(true)
+                .sunday(true)
+                .orderStartDate(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .orderEndDate(LocalDateTime.of(2024, 1, 7, 23, 59))
+                .soldout(false)
+                .board(testBoard)
+                .build();
+
+            productRepository.save(testProduct);
+
+            testPush = Push.builder()
+                .productId(testProduct.getId())
+                .memberId(testMember.getId())
+                .pushType(PushType.DATE) // 실제 PushType 설정
+                .days("Monday,Friday")
+                .isActive(true)
+                .build();
+
+            pushRepository.save(testPush);
         }
 
         @Test
-        @DisplayName("유효한 boardId로 상품리스트를 조회할 수 있다")
-        void getProductResponseTest() {
-            ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
-            List<ProductDto> productList = productResponse.getProducts();
+        void testFindProductDtoById() {
+            // When: 실제 서비스 메서드를 호출합니다.
+            ProductResponse response = boardService.getProductResponse(testMember.getId(), testBoard.getId());
 
-            assertThat(productList).hasSize(2);
-            assertThat(productResponse.getBoardIsBundled()).isTrue();
-            productList.forEach(productDto -> {
-                assertThat(productDto.getId()).isNotNull();
-                assertThat(productDto.getTitle()).isNotNull();
-            });
+            // Then: 결과를 검증합니다.
+            assertThat(response).isNotNull();
+            assertThat(response.getBoardIsBundled()).isNotNull(); // isBundled 값 검증
+            assertThat(response.getProducts()).isNotEmpty();
+
+            ProductOrderResponse orderResponse = response.getProducts().get(0);
+            assertThat(orderResponse.getTitle()).isEqualTo("Sample Product");
+            assertThat(orderResponse.getPrice()).isEqualTo(1000);
+            assertThat(orderResponse.getGlutenFreeTag()).isTrue();
         }
-
-        @Test
-        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
-        void throwNotBoard() {
-            assertThrows(BbangleException.class,
-                () -> boardService.getProductResponse(NOT_EXSIST_ID));
-        }
-
     }
 }
