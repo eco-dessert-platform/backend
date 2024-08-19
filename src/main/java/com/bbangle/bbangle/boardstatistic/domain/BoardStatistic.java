@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.boardstatistic.domain;
 
+import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.update.UpdateType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -115,6 +117,12 @@ public class BoardStatistic {
 
     public void updateBasicScoreWhenInit() {
         this.basicScore = (double) (boardReviewCount * 50 + boardViewCount + boardWishCount * 50);
+    }
+
+    public void updateInBatch(StatisticUpdate updateInfo) {
+        if(updateInfo.updateType() == UpdateType.VIEW_COUNT){
+            updateViewCount();
+        }
     }
 
 }
