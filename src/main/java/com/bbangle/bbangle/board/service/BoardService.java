@@ -4,15 +4,15 @@ package com.bbangle.bbangle.board.service;
 import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 
-import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductOrderDto;
+import com.bbangle.bbangle.board.dto.ProductOrderResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -61,7 +61,8 @@ public class BoardService {
     ) {
         List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(filterRequest, sort, cursorId);
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards, DEFAULT_BOARD);
+        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
+            DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
             updateLikeStatus(boardPage, memberId);
@@ -116,7 +117,7 @@ public class BoardService {
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
 
         boardStatisticService.updateViewCount(boardId);
-        if(viewCountKey != null) {
+        if (viewCountKey != null) {
             redisTemplate.opsForValue().set(viewCountKey, "true");
         }
 
@@ -149,26 +150,26 @@ public class BoardService {
             .toList();
     }
 
-    private List<ProductDto> convertToProductDtos(List<Product> products) {
+    private List<ProductOrderResponse> convertToProductOrderResponse(
+        List<ProductOrderDto> products) {
         return products.stream()
-            .map(ProductDto::from)
+            .map(ProductOrderResponse::from)
             .toList();
     }
 
-    private Boolean isBundled(List<Product> products) {
+    private Boolean isBundled(List<ProductOrderDto> products) {
         return products.stream()
-            .map(Product::getCategory)
+            .map(ProductOrderDto::getCategory)
             .distinct()
             .count() > ONE_CATEGORY;
     }
 
     @Transactional(readOnly = true)
-    public ProductResponse getProductResponse(Long boardId) {
-        List<Product> products = productRepository.findByBoardId(boardId);
-
+    public ProductResponse getProductResponse(Long memberId, Long boardId) {
+        List<ProductOrderDto> products = productRepository.findProductDtoById(memberId, boardId);
         validateListNotEmpty(products, BOARD_NOT_FOUND);
 
-        List<ProductDto> productDtos = convertToProductDtos(products);
+        List<ProductOrderResponse> productDtos = convertToProductOrderResponse(products);
         Boolean isBundled = isBundled(products);
 
         return ProductResponse.of(isBundled, productDtos);

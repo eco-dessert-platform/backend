@@ -18,4 +18,11 @@ public class OrderAvailableDate {
             .endDate(product.getOrderEndDate())
             .build();
     }
+
+    public static OrderAvailableDate from(ProductOrderDto product) {
+        return OrderAvailableDate.builder()
+            .startDate(product.getOrderStartDate())
+            .endDate(product.getOrderEndDate())
+            .build();
+    }
 }

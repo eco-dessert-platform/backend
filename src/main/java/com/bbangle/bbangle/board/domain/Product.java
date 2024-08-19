@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 @Table(name = "product")
@@ -108,7 +109,7 @@ public class Product {
     @Column(name = "order_end_date")
     private LocalDateTime orderEndDate;
 
-    @Column(name = "is_soldout", columnDefinition = "tinyint")
-    private boolean soldout;
-
+    @NonNull
+    @Column(name = "is_soldout", columnDefinition = "tinyint default 0")
+    private boolean soldout = false;
 }
