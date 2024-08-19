@@ -2,6 +2,8 @@ package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
@@ -12,6 +14,7 @@ import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +28,7 @@ public class BoardStatisticService {
     private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     private final BoardStatisticRepository boardStatisticRepository;
+    private final BoardPreferenceStatisticRepository preferenceStatisticRepository;
     private final BoardRepository boardRepository;
     private final ReviewRepository reviewRepository;
     private final WishListBoardRepository wishListBoardRepository;
@@ -102,14 +106,32 @@ public class BoardStatisticService {
     @Async
     @Transactional
     public void updateReviewCount(
-        Long boardId,
-        BigDecimal rate,
-        boolean isCreate
+        Long boardId
     ) {
-        StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReviewRate(boardId, rate);
+        StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReviewRate(boardId);
         StatisticUpdate ReviewCountUpdate = StatisticUpdate.updateReviewCount(boardId);
         redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
         redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewCountUpdate);
+    }
+
+    @Transactional
+    public void updateStoredInfo(Map<Long, List<StatisticUpdate>> updateMap) {
+        List<Long> updateBoardIds = updateMap.keySet()
+            .stream()
+            .toList();
+
+        List<BoardStatistic> updateStatisticList = boardStatisticRepository.findAllByBoardIds(
+            updateBoardIds);
+
+        updateStatisticList.forEach(update -> {
+                List<StatisticUpdate> statisticUpdates = updateMap.get(update.getBoardId());
+                statisticUpdates.forEach(update::updateInBatch);
+            });
+
+
+        List<BoardPreferenceStatistic> updatePreferenceList = preferenceStatisticRepository.findAllByBoardIds(
+            updateBoardIds);
+
     }
 
 }
