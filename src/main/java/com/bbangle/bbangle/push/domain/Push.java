@@ -15,7 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.ToString;
 
 @Table(name = "push")
@@ -52,7 +53,7 @@ public class Push extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PushCategory pushCategory;
 
-    @NonNull
+    @NotNull
     @Column(name = "is_active", columnDefinition = "tinyint default 0")
     private boolean isActive = false;
 

@@ -75,7 +75,8 @@ public class ProductOrderResponse {
     }
 
     private static OrderDateByUserDTO getAppliedOrderDate(ProductOrderDto product) {
-        return OrderDateByUserDTO.from(product.getIsActive());
+        Boolean isActive = product.getIsActive() != null ? product.getIsActive() : false;
+        return OrderDateByUserDTO.from(isActive);
     }
 
     private static OrderAvailableDate getOrderAvailableDate(ProductOrderDto product) {
