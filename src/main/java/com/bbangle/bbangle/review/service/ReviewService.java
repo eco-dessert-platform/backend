@@ -61,7 +61,7 @@ public class ReviewService {
         badges.forEach(review::insertBadge);
         Review savedReview = reviewRepository.save(review);
         Long reviewId = savedReview.getId();
-        boardStatisticService.updateReviewCount(reviewRequest.boardId(), review.getRate(), WRITE);
+        boardStatisticService.updateReviewCount(reviewRequest.boardId());
         List<String> urls = reviewRequest.urls();
         if(Objects.isNull(urls)){
             return;
@@ -268,7 +268,7 @@ public class ReviewService {
             reviewLikeRepository.deleteAllByReviewId(reviewId);
         }
         review.delete();
-        boardStatisticService.updateReviewCount(review.getBoardId(), review.getRate(), DELETE);
+        boardStatisticService.updateReviewCount(review.getBoardId());
     }
 
     @Transactional
