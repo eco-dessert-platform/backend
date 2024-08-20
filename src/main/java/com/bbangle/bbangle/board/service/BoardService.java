@@ -110,7 +110,7 @@ public class BoardService {
             getFirstBoardInfo(boardAndImageDtos));
 
         boolean isWished = Objects.nonNull(memberId)
-            && wishListBoardRepository.existsByBoardIdAndMemberId(memberId, boardId);
+            && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
