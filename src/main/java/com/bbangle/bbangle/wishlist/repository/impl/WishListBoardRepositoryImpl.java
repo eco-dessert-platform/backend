@@ -3,6 +3,8 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
+import com.bbangle.bbangle.wishlist.dao.QWishListStatisticDao;
+import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardQueryDSLRepository;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -53,6 +55,17 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
                 .count(tuple.get(wishListBoard.id.count()).intValue())
                 .build())
             .toList();
+    }
+
+    @Override
+    public List<WishListStatisticDao> findWishStatisticByBoardIds(List<Long> boardWishUpdateId) {
+        return queryFactory.select(new QWishListStatisticDao(
+            wishListBoard.boardId,
+            wishListBoard.count()
+        )).from(wishListBoard)
+            .where(wishListBoard.boardId.in(boardWishUpdateId))
+            .groupBy(wishListBoard.boardId)
+            .fetch();
     }
 
 

@@ -54,7 +54,7 @@ public class UpdateBoardStatistic {
                 }
             }
 
-
+            boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId, boardViewCountUpdate, allUpdateBoard);
         }
 
 

@@ -27,7 +27,7 @@ public class MostReviewedCursorGenerator implements BoardCursorGenerator {
             return cursorBuilder;
         }
 
-        int boardReviewCount = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.boardReviewCount)
+        Long boardReviewCount = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.boardReviewCount)
                 .from(boardStatistic)
                 .where(boardStatistic.boardId.eq(cursorId))
                 .fetchOne())

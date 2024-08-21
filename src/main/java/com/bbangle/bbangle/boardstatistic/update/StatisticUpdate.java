@@ -5,11 +5,7 @@ public record StatisticUpdate(
     Long boardId
 ) {
 
-    public static StatisticUpdate updateReviewCount(Long boardId) {
-        return new StatisticUpdate(UpdateType.REVIEW, boardId);
-    }
-
-    public static StatisticUpdate updateReviewRate(Long boardId) {
+    public static StatisticUpdate updateReview(Long boardId) {
         return new StatisticUpdate(UpdateType.REVIEW, boardId);
     }
 

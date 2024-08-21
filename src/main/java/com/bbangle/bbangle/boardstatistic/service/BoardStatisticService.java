@@ -2,14 +2,15 @@ package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,9 +42,9 @@ public class BoardStatisticService {
             .map(board -> BoardStatistic.builder()
                 .boardId(board.getId())
                 .basicScore(0.0)
-                .boardReviewCount(0)
-                .boardWishCount(0)
-                .boardViewCount(0)
+                .boardReviewCount(0L)
+                .boardWishCount(0L)
+                .boardViewCount(0L)
                 .boardReviewGrade(BigDecimal.ZERO)
                 .build())
             .forEach(boardStatistics::add);
@@ -57,7 +58,7 @@ public class BoardStatisticService {
         List<BoardGrade> reviewGradeList = reviewRepository.groupByBoardIdAndGetReviewCountAndReviewRate();
         updatingBoardWishCount(wishCountList, allStatistics);
         updatingBoardReviewCountAndRate(reviewGradeList, allStatistics);
-        for(BoardStatistic statistic : allStatistics){
+        for (BoardStatistic statistic : allStatistics) {
             statistic.updateBasicScoreWhenInit();
         }
     }
@@ -68,8 +69,9 @@ public class BoardStatisticService {
     ) {
         for (BoardGrade boardGrade : reviewGradeList) {
             for (BoardStatistic statistic : allStatistics) {
-                if (boardGrade.boardId().equals(statistic.getBoardId())) {
-                    statistic.setBoardReviewCountWhenInit(boardGrade.count());
+                if (boardGrade.boardId()
+                    .equals(statistic.getBoardId())) {
+                    statistic.setBoardReviewCountWhenInit((long) boardGrade.count());
                     statistic.setBoardReviewRateWhenInit(boardGrade.grade());
                 }
             }
@@ -82,8 +84,9 @@ public class BoardStatisticService {
     ) {
         for (BoardWishCount wishCount : wishCountList) {
             for (BoardStatistic statistic : allStatistics) {
-                if (wishCount.boardId().equals(statistic.getBoardId())) {
-                    statistic.setBoardWishCountWhenInit(wishCount.count());
+                if (wishCount.boardId()
+                    .equals(statistic.getBoardId())) {
+                    statistic.setBoardWishCountWhenInit((long) wishCount.count());
                 }
             }
         }
@@ -93,45 +96,69 @@ public class BoardStatisticService {
     @Transactional
     public void updateViewCount(Long boardId) {
         StatisticUpdate boardViewUpdate = StatisticUpdate.updateViewCount(boardId);
-        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, boardViewUpdate);
+        redisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, boardViewUpdate);
     }
 
     @Async
     @Transactional
     public void updateWishCount(Long boardId, boolean isWish) {
         StatisticUpdate boardWishUpdate = StatisticUpdate.updateWishCount(boardId, isWish);
-        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, boardWishUpdate);
+        redisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, boardWishUpdate);
     }
 
     @Async
     @Transactional
-    public void updateReviewCount(
+    public void updateReview(
         Long boardId
     ) {
-        StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReviewRate(boardId);
-        StatisticUpdate ReviewCountUpdate = StatisticUpdate.updateReviewCount(boardId);
-        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
-        redisTemplate.opsForList().rightPush(STATISTIC_UPDATE_LIST, ReviewCountUpdate);
+        StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReview(boardId);
+        redisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
     }
 
     @Transactional
-    public void updateStoredInfo(Map<Long, List<StatisticUpdate>> updateMap) {
-        List<Long> updateBoardIds = updateMap.keySet()
-            .stream()
-            .toList();
-
-        List<BoardStatistic> updateStatisticList = boardStatisticRepository.findAllByBoardIds(
-            updateBoardIds);
-
-        updateStatisticList.forEach(update -> {
-                List<StatisticUpdate> statisticUpdates = updateMap.get(update.getBoardId());
-                statisticUpdates.forEach(update::updateInBatch);
+    public void updateInBatch(
+        List<Long> boardWishUpdateId,
+        List<Long> boardReviewUpdateId,
+        Map<Long, Integer> boardViewCountUpdate,
+        List<Long> allUpdateBoard
+    ) {
+        List<BoardStatistic> updateList = boardStatisticRepository.findAllByBoardIds(
+            allUpdateBoard);
+        boardViewCountUpdate.keySet()
+            .forEach(key -> {
+                for (BoardStatistic update : updateList) {
+                    if (update.getBoardId()
+                        .equals(key)) {
+                        update.updateViewCount(boardViewCountUpdate.get(key));
+                    }
+                }
             });
+        List<ReviewStatisticDao> reviewStatisticByBoardIds = reviewRepository.getReviewStatisticByBoardIds(
+            boardReviewUpdateId);
+        List<WishListStatisticDao> wishStatisticByBoardIds = wishListBoardRepository.findWishStatisticByBoardIds(
+            boardWishUpdateId);
 
+        for (BoardStatistic statistic : updateList) {
+            for (ReviewStatisticDao reviewStatisticDao : reviewStatisticByBoardIds) {
+                if (statistic.getBoardId()
+                    .equals(reviewStatisticDao.boardId())) {
+                    statistic.updateReviewGrade(
+                        BigDecimal.valueOf(reviewStatisticDao.averageRate()));
+                    statistic.updateReviewCount(reviewStatisticDao.reviewCount());
+                }
+            }
 
-        List<BoardPreferenceStatistic> updatePreferenceList = preferenceStatisticRepository.findAllByBoardIds(
-            updateBoardIds);
+            for (WishListStatisticDao dao : wishStatisticByBoardIds) {
+                if(statistic.getBoardId().equals(dao.boardId())) {
+                    statistic.updateWishCount(dao.wishListCount());
+                }
+            }
 
+        }
     }
 
 }
+

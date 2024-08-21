@@ -15,7 +15,7 @@ public record BoardResponseDao(
     Category category,
     TagsDao tagsDao,
     BigDecimal reviewRate,
-    Integer reviewCount,
+    Long reviewCount,
     LocalDateTime orderStartDate,
     Boolean isSoldOut,
     Integer discountRate
@@ -35,7 +35,7 @@ public record BoardResponseDao(
         Boolean veganTag,
         Boolean ketogenicTag,
         BigDecimal reviewRate,
-        Integer reviewCount,
+        Long reviewCount,
         LocalDateTime orderStartDate,
         Boolean isSoldOut,
         Integer discountRate

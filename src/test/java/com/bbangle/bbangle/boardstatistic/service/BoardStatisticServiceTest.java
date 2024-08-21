@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -86,7 +85,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         ArrayList<BigDecimal> boardReviewGrade = new ArrayList<>();
         List<Integer> count = new ArrayList<>();
         for (Review value : reviewList) {
-            boardStatisticService.updateReviewCount(
+            boardStatisticService.updateReview(
                 board.getId());
             BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
                 .orElseThrow();
@@ -106,8 +105,8 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     @DisplayName("정상적으로 Board의 review 삭제 시 reviewCount를 업데이트한다")
     void updateReviewRemoveCount() {
         //given, when
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
 
         //then
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
@@ -120,12 +119,12 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     @DisplayName("정상적으로 Board의 review 여러 개삭제 시 reviewCount를 업데이트한다")
     void updateReviewRemoveCountWithManySource() {
         //given, when
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
-        boardStatisticService.updateReviewCount(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
+        boardStatisticService.updateReview(board.getId());
 
         BigDecimal expectedScore = getAvgScore(List.of(reviewList.get(0), reviewList.get(3)));
         //then
