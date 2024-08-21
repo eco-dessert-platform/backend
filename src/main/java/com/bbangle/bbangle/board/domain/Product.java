@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -108,7 +109,7 @@ public class Product {
     @Column(name = "order_end_date")
     private LocalDateTime orderEndDate;
 
-    @Column(name = "is_soldout", columnDefinition = "tinyint")
-    private boolean soldout;
-
+    @NotNull
+    @Column(name = "is_soldout", columnDefinition = "tinyint default 0")
+    private boolean soldout = false;
 }

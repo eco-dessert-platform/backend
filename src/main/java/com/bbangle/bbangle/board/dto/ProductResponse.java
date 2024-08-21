@@ -9,11 +9,11 @@ import lombok.Getter;
 public class ProductResponse {
 
     Boolean boardIsBundled;
-    List<ProductDto> products;
+    List<ProductOrderResponse> products;
 
     public static ProductResponse of(
         Boolean boardIsBundled,
-        List<ProductDto> products
+        List<ProductOrderResponse> products
     ) {
         return ProductResponse.builder()
             .boardIsBundled(boardIsBundled)

@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -29,9 +30,11 @@ public class BoardFilterCreator {
 
         return builder;
     }
+
     private void addDaysOfWeekCondition() {
         if (filterRequest.orderAvailableToday() != null && filterRequest.orderAvailableToday()) {
-            DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+            DayOfWeek dayOfWeek = LocalDate.now()
+                .getDayOfWeek();
 
             switch (dayOfWeek) {
                 case MONDAY -> builder.and(product.monday.eq(true));
@@ -46,6 +49,19 @@ public class BoardFilterCreator {
     }
 
     private void addCategoryCondition() {
+        if (filterRequest.category() != null && filterRequest.category() == Category.ALL_BREAD) {
+            builder.and(product.category.in(
+                List.of(Category.BAGEL, Category.BREAD, Category.CAKE, Category.TART)));
+            return;
+        }
+
+        if (filterRequest.category() != null && filterRequest.category() == Category.ALL_SNACK) {
+            builder.and(product.category.in(
+                List.of(Category.COOKIE, Category.SNACK, Category.JAM, Category.ICE_CREAM,
+                    Category.YOGURT, Category.GRANOLA, Category.ETC)));
+            return;
+        }
+
         if (filterRequest.category() != null && filterRequest.category() != Category.ALL) {
             builder.and(product.category.eq(filterRequest.category()));
         }
@@ -75,4 +91,5 @@ public class BoardFilterCreator {
     private BooleanExpression loeExpression(NumberPath<Integer> path, Integer value) {
         return value == null ? null : path.loe(value);
     }
+
 }

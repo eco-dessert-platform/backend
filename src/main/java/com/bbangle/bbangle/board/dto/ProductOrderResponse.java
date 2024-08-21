@@ -1,20 +1,19 @@
 package com.bbangle.bbangle.board.dto;
 
+
 import static com.bbangle.bbangle.board.domain.OrderTypeEnum.DATE;
 import static com.bbangle.bbangle.board.domain.OrderTypeEnum.WEEK;
 
 import com.bbangle.bbangle.board.domain.OrderTypeEnum;
-import com.bbangle.bbangle.board.domain.Product;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.Objects;
-import java.util.Random;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class ProductDto {
+public class ProductOrderResponse {
 
     private Long id;
     private String title;
@@ -23,55 +22,69 @@ public class ProductDto {
     private Boolean sugarFreeTag;
     private Boolean veganTag;
     private Boolean ketogenicTag;
+    private Integer price;
     private Nutrient nutrient;
     private OrderTypeEnum orderType;
     @JsonInclude(Include.NON_NULL)
     private OrderAvailableWeek orderAvailableWeek;
     @JsonInclude(Include.NON_NULL)
+    private OrderWeekByUserDTO appliedOrderWeek;
+    @JsonInclude(Include.NON_NULL)
     private OrderAvailableDate orderAvailableDate;
-    private Boolean isNotified;
-    private Boolean soldout;
+    @JsonInclude(Include.NON_NULL)
+    private OrderDateByUserDTO appliedOrderDate;
+    private Boolean isSoldout;
 
-    public static ProductDto from(Product product) {
-
+    public static ProductOrderResponse from(ProductOrderDto product) {
         Nutrient nutrientDto = getNutrient(product);
         OrderTypeEnum orderType = getOrderType(product);
-        ProductDtoBuilder builder = ProductDto.builder()
+        ProductOrderResponseBuilder builder = ProductOrderResponse.builder()
             .id(product.getId())
             .title(product.getTitle())
-            .glutenFreeTag(product.isGlutenFreeTag())
-            .highProteinTag(product.isHighProteinTag())
-            .sugarFreeTag(product.isSugarFreeTag())
-            .veganTag(product.isVeganTag())
-            .ketogenicTag(product.isKetogenicTag())
+            .price(product.getPrice())
+            .glutenFreeTag(product.getGlutenFreeTag())
+            .highProteinTag(product.getHighProteinTag())
+            .sugarFreeTag(product.getSugarFreeTag())
+            .veganTag(product.getVeganTag())
+            .ketogenicTag(product.getKetogenicTag())
             .nutrient(nutrientDto)
             .orderType(orderType)
-            .isNotified(new Random().nextBoolean())
-            .soldout(product.isSoldout()); // 프론트 요청으로 임시로 생성
+            .isSoldout(product.getSoldout());
 
         if (orderType.equals(OrderTypeEnum.DATE)) {
             builder.orderAvailableDate(getOrderAvailableDate(product));
+            builder.appliedOrderDate(getAppliedOrderDate(product));
         } else {
             builder.orderAvailableWeek(getOrderAvailableWeek(product));
+            builder.appliedOrderWeek(getAppliedOrderWeek(product));
         }
 
         return builder.build();
     }
 
-    private static OrderTypeEnum getOrderType(Product product) {
+    private static OrderTypeEnum getOrderType(ProductOrderDto product) {
         return Objects.nonNull(product.getOrderStartDate()) ? DATE : WEEK;
     }
 
-    private static Nutrient getNutrient(Product product) {
+    private static Nutrient getNutrient(ProductOrderDto product) {
         return Nutrient.from(product);
     }
 
-    private static OrderAvailableDate getOrderAvailableDate(Product product) {
+    private static OrderWeekByUserDTO getAppliedOrderWeek(ProductOrderDto product) {
+        return OrderWeekByUserDTO.from(product.getDays());
+    }
+
+    private static OrderDateByUserDTO getAppliedOrderDate(ProductOrderDto product) {
+        Boolean isActive = product.getIsActive() != null ? product.getIsActive() : false;
+        return OrderDateByUserDTO.from(isActive);
+    }
+
+    private static OrderAvailableDate getOrderAvailableDate(ProductOrderDto product) {
         return OrderAvailableDate.from(product);
     }
 
-    private static OrderAvailableWeek getOrderAvailableWeek(Product product) {
+    private static OrderAvailableWeek getOrderAvailableWeek(ProductOrderDto product) {
+
         return OrderAvailableWeek.from(product);
     }
-
 }

@@ -36,7 +36,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .where(store.id.eq(storeId))
             .leftJoin(wishListStore)
             .on(wishListStoreFilter.equalMemberId(memberId)
-                .and(wishListStoreFilter.equalStoreId(store)))
+                .and(wishListStoreFilter.equalStoreId(store))
+                .and(wishListStore.isDeleted.isFalse()))
             .fetchOne();
     }
 
