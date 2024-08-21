@@ -28,4 +28,16 @@ public class OrderAvailableWeek {
             .build();
     }
 
+    public static OrderAvailableWeek from(ProductOrderDto product) {
+        return OrderAvailableWeek.builder()
+            .monday(product.getMonday())
+            .tuesday(product.getTuesday())
+            .wednesday(product.getWednesday())
+            .thursday(product.getThursday())
+            .friday(product.getFriday())
+            .saturday(product.getSaturday())
+            .sunday(product.getSunday())
+            .build();
+    }
+
 }

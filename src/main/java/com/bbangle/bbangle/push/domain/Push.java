@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.push.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.google.firebase.database.annotations.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.ToString;
 
 @Table(name = "push")
@@ -38,6 +41,7 @@ public class Push extends BaseEntity {
     @Column(name = "product_id")
     private Long productId;
 
+    @Nullable
     @Column(name = "push_type", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private PushType pushType;
@@ -49,8 +53,9 @@ public class Push extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PushCategory pushCategory;
 
-    @Column(name = "is_active", columnDefinition = "tinyint")
-    private boolean isActive;
+    @NotNull
+    @Column(name = "is_active", columnDefinition = "tinyint default 0")
+    private boolean isActive = false;
 
     public void updateDays(String days) {
         this.days = days;

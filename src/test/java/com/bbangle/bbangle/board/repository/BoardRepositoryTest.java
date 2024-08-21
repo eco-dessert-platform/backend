@@ -5,10 +5,10 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
@@ -299,45 +299,63 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
                 NULL_MEMBER_ID);  // board id desc 임
 
-            TagsDao board1Tag = boardsInStoreDtos.get(4).getTags();
+            List<String> board1Tag = boardsInStoreDtos.get(4).getTags();
             assertAll(
-                () -> assertThat(board1Tag.glutenFreeTag()).isTrue(),
-                () -> assertThat(board1Tag.highProteinTag()).isFalse(),
-                () -> assertThat(board1Tag.sugarFreeTag()).isFalse(),
-                () -> assertThat(board1Tag.veganTag()).isFalse(),
-                () -> assertThat(board1Tag.ketogenicTag()).isFalse());
+                () -> assertThat(board1Tag).contains(TagEnum.GLUTEN_FREE.label()),
+                () -> assertThat(board1Tag).doesNotContain(
+                    TagEnum.SUGAR_FREE.label(),
+                    TagEnum.VEGAN.label(),
+                    TagEnum.HIGH_PROTEIN.label(),
+                    TagEnum.KETOGENIC.label()
+                ));
 
-            TagsDao board2Tag = boardsInStoreDtos.get(3).getTags();
+            List<String> board2Tag = boardsInStoreDtos.get(3).getTags();
             assertAll(
-                () -> assertThat(board2Tag.glutenFreeTag()).isFalse(),
-                () -> assertThat(board2Tag.highProteinTag()).isTrue(),
-                () -> assertThat(board2Tag.sugarFreeTag()).isFalse(),
-                () -> assertThat(board2Tag.veganTag()).isFalse(),
-                () -> assertThat(board2Tag.ketogenicTag()).isFalse());
+                () -> assertThat(board2Tag)
+                    .contains(TagEnum.HIGH_PROTEIN.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.VEGAN.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
 
-            TagsDao board3Tag = boardsInStoreDtos.get(2).getTags();
+            List<String> board3Tag = boardsInStoreDtos.get(2).getTags();
             assertAll(
-                () -> assertThat(board3Tag.glutenFreeTag()).isFalse(),
-                () -> assertThat(board3Tag.highProteinTag()).isFalse(),
-                () -> assertThat(board3Tag.sugarFreeTag()).isTrue(),
-                () -> assertThat(board3Tag.veganTag()).isFalse(),
-                () -> assertThat(board3Tag.ketogenicTag()).isFalse());
+                () -> assertThat(board3Tag)
+                    .contains(TagEnum.SUGAR_FREE.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.VEGAN.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
 
-            TagsDao board4Tag = boardsInStoreDtos.get(1).getTags();
+            List<String> board4Tag = boardsInStoreDtos.get(1).getTags();
             assertAll(
-                () -> assertThat(board4Tag.glutenFreeTag()).isFalse(),
-                () -> assertThat(board4Tag.highProteinTag()).isFalse(),
-                () -> assertThat(board4Tag.sugarFreeTag()).isFalse(),
-                () -> assertThat(board4Tag.veganTag()).isTrue(),
-                () -> assertThat(board4Tag.ketogenicTag()).isFalse());
+                () -> assertThat(board4Tag)
+                    .contains(TagEnum.VEGAN.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
 
-            TagsDao board5Tag = boardsInStoreDtos.get(0).getTags();
+            List<String> board5Tag = boardsInStoreDtos.get(0).getTags();
             assertAll(
-                () -> assertThat(board5Tag.glutenFreeTag()).isFalse(),
-                () -> assertThat(board5Tag.highProteinTag()).isFalse(),
-                () -> assertThat(board5Tag.sugarFreeTag()).isFalse(),
-                () -> assertThat(board5Tag.veganTag()).isFalse(),
-                () -> assertThat(board5Tag.ketogenicTag()).isTrue());
+                () -> assertThat(board5Tag)
+                    .contains(TagEnum.KETOGENIC.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.VEGAN.label()
+                    )
+            );
         }
 
         @Test
@@ -346,8 +364,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
                 NULL_MEMBER_ID);  // board id desc 임
 
-            assertThat(boardsInStoreDtos.get(4).getIsNotification()).isTrue();
-            assertThat(boardsInStoreDtos.get(3).getIsNotification()).isFalse();
+            assertThat(boardsInStoreDtos.get(1).getIsBundled()).isTrue();
+            assertThat(boardsInStoreDtos.get(0).getIsBundled()).isFalse();
         }
 
         @Test
