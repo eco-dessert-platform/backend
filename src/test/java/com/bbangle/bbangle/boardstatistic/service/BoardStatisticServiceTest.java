@@ -83,7 +83,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         ArrayList<BigDecimal> rates = new ArrayList<>();
         ArrayList<BigDecimal> boardReviewGrade = new ArrayList<>();
-        List<Integer> count = new ArrayList<>();
+        List<Long> count = new ArrayList<>();
         for (Review value : reviewList) {
             boardStatisticService.updateReview(
                 board.getId());
@@ -138,7 +138,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     @DisplayName("정상적으로 Board를 찜할 시 wishCount를 업데이트한다")
     void updateWishCount() {
         //given, when
-        boardStatisticService.updateWishCount(board.getId(), IS_CREATE);
+        boardStatisticService.updateWishCount(board.getId());
 
         //then
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
@@ -150,8 +150,8 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     @DisplayName("정상적으로 Board를 찜 취소 시 wishCount를 업데이트한다")
     void updateWishCancelCount() {
         //given, when
-        boardStatisticService.updateWishCount(board.getId(), IS_CREATE);
-        boardStatisticService.updateWishCount(board.getId(), IS_REMOVE);
+        boardStatisticService.updateWishCount(board.getId());
+        boardStatisticService.updateWishCount(board.getId());
 
         //then
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())

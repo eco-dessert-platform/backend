@@ -13,7 +13,7 @@ public record StatisticUpdate(
         return new StatisticUpdate(UpdateType.VIEW_COUNT, boardId);
     }
 
-    public static StatisticUpdate updateWishCount(Long boardId, Boolean isWished) {
+    public static StatisticUpdate updateWishCount(Long boardId) {
         return new StatisticUpdate(UpdateType.WISH_COUNT, boardId);
     }
 

@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishListBoardService {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
-    private static final Boolean WISH = true;
-    private static final Boolean WISH_CANCEL = false;
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
@@ -44,7 +42,7 @@ public class WishListBoardService {
         validateIsWishAvailable(board.getId(), member.getId());
 
         makeNewWish(board, wishlistFolder, member);
-        boardStatisticService.updateWishCount(boardId, WISH);
+        boardStatisticService.updateWishCount(boardId);
     }
 
 
@@ -56,7 +54,7 @@ public class WishListBoardService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
-        boardStatisticService.updateWishCount(boardId, WISH_CANCEL);
+        boardStatisticService.updateWishCount(boardId);
     }
 
     @Transactional
