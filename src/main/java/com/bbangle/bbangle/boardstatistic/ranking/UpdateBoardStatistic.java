@@ -25,7 +25,7 @@ public class UpdateBoardStatistic {
     private final RedisTemplate<String, Object> updateRedisTemplate;
     private final BoardStatisticService boardStatisticService;
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(cron = "0 0 * * * *")
     public void updateStatistic() {
         log.info("start update ranking");
 
