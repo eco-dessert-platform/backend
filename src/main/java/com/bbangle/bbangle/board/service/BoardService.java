@@ -31,6 +31,7 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class BoardService {
     private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
     private final WishListBoardRepository wishListBoardRepository;
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)

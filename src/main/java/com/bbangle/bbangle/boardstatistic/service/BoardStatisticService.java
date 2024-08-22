@@ -2,6 +2,7 @@ package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,8 @@ public class BoardStatisticService {
     private final BoardRepository boardRepository;
     private final ReviewRepository reviewRepository;
     private final WishListBoardRepository wishListBoardRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("updateRedisTemplate")
+    private final RedisTemplate<String, Object> updateRedisTemplate;
 
     public void updatingNonRankedBoards() {
         List<Board> unRankedBoards = boardRepository.checkingNullRanking();
@@ -96,15 +99,15 @@ public class BoardStatisticService {
     @Transactional
     public void updateViewCount(Long boardId) {
         StatisticUpdate boardViewUpdate = StatisticUpdate.updateViewCount(boardId);
-        redisTemplate.opsForList()
+        updateRedisTemplate.opsForList()
             .rightPush(STATISTIC_UPDATE_LIST, boardViewUpdate);
     }
 
     @Async
     @Transactional
-    public void updateWishCount(Long boardId, boolean isWish) {
-        StatisticUpdate boardWishUpdate = StatisticUpdate.updateWishCount(boardId, isWish);
-        redisTemplate.opsForList()
+    public void updateWishCount(Long boardId) {
+        StatisticUpdate boardWishUpdate = StatisticUpdate.updateWishCount(boardId);
+        updateRedisTemplate.opsForList()
             .rightPush(STATISTIC_UPDATE_LIST, boardWishUpdate);
     }
 
@@ -114,7 +117,7 @@ public class BoardStatisticService {
         Long boardId
     ) {
         StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReview(boardId);
-        redisTemplate.opsForList()
+        updateRedisTemplate.opsForList()
             .rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
     }
 
@@ -157,6 +160,24 @@ public class BoardStatisticService {
                 }
             }
 
+        }
+
+        for(BoardStatistic statistic : updateList){
+            for(Long id : allUpdateBoard){
+                if(statistic.getBoardId().equals(id)){
+                    statistic.updateBasicScoreWhenInit();
+                }
+            }
+        }
+        List<BoardPreferenceStatistic> preferenceUpdate = preferenceStatisticRepository.findAllByBoardIds(
+            allUpdateBoard);
+        for(BoardPreferenceStatistic preference : preferenceUpdate){
+            for(BoardStatistic statistic : updateList){
+                if(preference.getBoardId().equals(statistic.getBoardId())){
+                    preference.updateToBasicBoardScore(statistic.getBasicScore());
+                    preference.updatePreferenceScore();
+                }
+            }
         }
     }
 

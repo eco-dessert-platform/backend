@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,13 +19,13 @@ import org.springframework.stereotype.Component;
 public class UpdateBoardStatistic {
 
     private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
-
-    private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("updateRedisTemplate")
+    private final RedisTemplate<String, Object> updateRedisTemplate;
     private final BoardStatisticService boardStatisticService;
 
     @Scheduled(cron = "0 0 * * * *")
     public void updateStatistic() {
-        if (redisTemplate.opsForList()
+        if (updateRedisTemplate.opsForList()
             .size(STATISTIC_UPDATE_LIST) == 0) {
             return;
         }
@@ -33,9 +34,9 @@ public class UpdateBoardStatistic {
         Map<Long, Integer> boardViewCountUpdate = new HashMap<>();
         List<Long> allUpdateBoard = new ArrayList<>();
 
-        for (int i = 0; i < redisTemplate.opsForList()
+        for (int i = 0; i < updateRedisTemplate.opsForList()
             .size(STATISTIC_UPDATE_LIST); i++) {
-            Object updateInfo = redisTemplate.opsForList()
+            Object updateInfo = updateRedisTemplate.opsForList()
                 .leftPop(STATISTIC_UPDATE_LIST);
             if (updateInfo instanceof StatisticUpdate update) {
                 allUpdateBoard.add(update.boardId());
