@@ -8,12 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UpdateBoardStatistic {
@@ -23,23 +25,27 @@ public class UpdateBoardStatistic {
     private final RedisTemplate<String, Object> updateRedisTemplate;
     private final BoardStatisticService boardStatisticService;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 300000)
     public void updateStatistic() {
+        log.info("start update ranking");
+
         if (updateRedisTemplate.opsForList()
             .size(STATISTIC_UPDATE_LIST) == 0) {
             return;
         }
+
         List<Long> boardWishUpdateId = new ArrayList<>();
         List<Long> boardReviewUpdateId = new ArrayList<>();
         Map<Long, Integer> boardViewCountUpdate = new HashMap<>();
         List<Long> allUpdateBoard = new ArrayList<>();
 
-        for (int i = 0; i < updateRedisTemplate.opsForList()
-            .size(STATISTIC_UPDATE_LIST); i++) {
+        while (updateRedisTemplate.opsForList()
+            .size(STATISTIC_UPDATE_LIST) > 0) {
             Object updateInfo = updateRedisTemplate.opsForList()
                 .leftPop(STATISTIC_UPDATE_LIST);
             if (updateInfo instanceof StatisticUpdate update) {
                 allUpdateBoard.add(update.boardId());
+                log.info("statistic{}", updateInfo);
 
                 if (update.updateType() == UpdateType.VIEW_COUNT) {
                     boardViewCountUpdate.put(update.boardId(),
@@ -56,6 +62,7 @@ public class UpdateBoardStatistic {
             }
 
             boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId, boardViewCountUpdate, allUpdateBoard);
+            log.info("end update ranking");
         }
 
 
