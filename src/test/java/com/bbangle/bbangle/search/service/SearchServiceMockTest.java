@@ -87,7 +87,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 false,
                 false,
                 BigDecimal.ONE,
-                10,
+                10L,
                 LocalDateTime.now(),
                 false,
                 10);
@@ -106,7 +106,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 false,
                 false,
                 BigDecimal.ONE,
-                10,
+                10L,
                 LocalDateTime.now(),
                 false,
                 10);

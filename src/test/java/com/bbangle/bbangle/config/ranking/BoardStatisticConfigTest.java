@@ -1,11 +1,11 @@
 package com.bbangle.bbangle.config.ranking;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardStatisticConfig;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
@@ -15,7 +15,6 @@ import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

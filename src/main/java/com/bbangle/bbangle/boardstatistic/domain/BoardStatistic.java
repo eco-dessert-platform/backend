@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.boardstatistic.domain;
 
+import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.update.UpdateType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,13 +35,13 @@ public class BoardStatistic {
     private Double basicScore;
 
     @Column(name = "board_wish_count")
-    private int boardWishCount;
+    private Long boardWishCount;
 
     @Column(name = "board_review_count")
-    private int boardReviewCount;
+    private Long boardReviewCount;
 
     @Column(name = "board_view_count")
-    private int boardViewCount;
+    private Long boardViewCount;
 
     @Column(name = "board_review_grade")
     private BigDecimal boardReviewGrade;
@@ -52,60 +54,27 @@ public class BoardStatistic {
         basicScore -= score;
     }
 
-    public void setBoardWishCountWhenInit(int boardViewCount) {
+    public void setBoardWishCountWhenInit(Long boardViewCount) {
         this.boardWishCount = boardViewCount;
     }
 
-    public void updateViewCount() {
-        this.boardViewCount++;
+    public void updateViewCount(int count) {
+        this.boardViewCount += count;
     }
 
-    public void updateWishCount(boolean isWish) {
-        if (isWish) {
-            this.boardWishCount++;
-            return;
-        }
-        boardWishCount--;
+    public void updateWishCount(Long wishCount) {
+        this.boardWishCount = wishCount;
     }
 
-    public void updateReviewCount(boolean isCreate) {
-        if (isCreate) {
-            this.boardReviewCount++;
-            return;
-        }
-        boardReviewCount--;
+    public void updateReviewCount(Long reviewCount) {
+       this.boardViewCount = reviewCount;
     }
 
-    public void updateReviewGrade(BigDecimal rate, boolean isCreate) {
-        if (isCreate && boardReviewCount == 0) {
-            this.boardReviewGrade = rate;
-            return;
-        }
-
-        if (isCreate && boardReviewCount > 0) {
-            BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
-            this.boardReviewGrade = (wrappedReviewCount
-                .multiply(this.boardReviewGrade)
-                .add(rate))
-                .divide(wrappedReviewCount.add(BigDecimal.ONE), RoundingMode.HALF_UP);
-            return;
-        }
-
-        if (!isCreate && boardReviewCount > 1) {
-            BigDecimal wrappedReviewCount = BigDecimal.valueOf(boardReviewCount);
-            this.boardReviewGrade = (wrappedReviewCount
-                .multiply(this.boardReviewGrade)
-                .subtract(rate))
-                .divide(wrappedReviewCount.subtract(BigDecimal.ONE), RoundingMode.HALF_UP);
-            return;
-        }
-
-        if (!isCreate && boardReviewCount == 1) {
-            this.boardReviewGrade = boardReviewGrade.subtract(rate);
-        }
+    public void updateReviewGrade(BigDecimal reviewGrade) {
+        this.boardReviewGrade = reviewGrade;
     }
 
-    public void setBoardReviewCountWhenInit(int count) {
+    public void setBoardReviewCountWhenInit(Long count) {
         this.boardReviewCount = count;
     }
 

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config.ranking;
+package com.bbangle.bbangle.boardstatistic.ranking;
 
 import lombok.Builder;
 

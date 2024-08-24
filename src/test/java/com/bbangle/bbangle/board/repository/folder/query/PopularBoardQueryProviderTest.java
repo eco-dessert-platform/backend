@@ -78,6 +78,7 @@ class PopularBoardQueryProviderTest extends AbstractIntegrationTest {
                     new WishListBoardRequest(anotherWishListFolder.getId()));
             }
         }
+        updateBoardStatistic.updateStatistic();
     }
 
     @Test

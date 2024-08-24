@@ -2,20 +2,24 @@ package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.config.ranking.BoardGrade;
-import com.bbangle.bbangle.config.ranking.BoardWishCount;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import com.bbangle.bbangle.review.service.ReviewService;
+import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +28,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BoardStatisticService {
 
-    private static final Double BOARD_WISH_SCORE = 50.0;
-    private static final Double BOARD_VIEW_SCORE = 1.0;
-    private static final Double BOARD_REVIEW_SCORE = 50.0;
+    private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     private final BoardStatisticRepository boardStatisticRepository;
+    private final BoardPreferenceStatisticRepository preferenceStatisticRepository;
     private final BoardRepository boardRepository;
     private final ReviewRepository reviewRepository;
     private final WishListBoardRepository wishListBoardRepository;
+    @Qualifier("updateRedisTemplate")
+    private final RedisTemplate<String, Object> updateRedisTemplate;
 
     public void updatingNonRankedBoards() {
         List<Board> unRankedBoards = boardRepository.checkingNullRanking();
@@ -40,9 +45,9 @@ public class BoardStatisticService {
             .map(board -> BoardStatistic.builder()
                 .boardId(board.getId())
                 .basicScore(0.0)
-                .boardReviewCount(0)
-                .boardWishCount(0)
-                .boardViewCount(0)
+                .boardReviewCount(0L)
+                .boardWishCount(0L)
+                .boardViewCount(0L)
                 .boardReviewGrade(BigDecimal.ZERO)
                 .build())
             .forEach(boardStatistics::add);
@@ -56,7 +61,7 @@ public class BoardStatisticService {
         List<BoardGrade> reviewGradeList = reviewRepository.groupByBoardIdAndGetReviewCountAndReviewRate();
         updatingBoardWishCount(wishCountList, allStatistics);
         updatingBoardReviewCountAndRate(reviewGradeList, allStatistics);
-        for(BoardStatistic statistic : allStatistics){
+        for (BoardStatistic statistic : allStatistics) {
             statistic.updateBasicScoreWhenInit();
         }
     }
@@ -67,8 +72,9 @@ public class BoardStatisticService {
     ) {
         for (BoardGrade boardGrade : reviewGradeList) {
             for (BoardStatistic statistic : allStatistics) {
-                if (boardGrade.boardId().equals(statistic.getBoardId())) {
-                    statistic.setBoardReviewCountWhenInit(boardGrade.count());
+                if (boardGrade.boardId()
+                    .equals(statistic.getBoardId())) {
+                    statistic.setBoardReviewCountWhenInit((long) boardGrade.count());
                     statistic.setBoardReviewRateWhenInit(boardGrade.grade());
                 }
             }
@@ -81,8 +87,9 @@ public class BoardStatisticService {
     ) {
         for (BoardWishCount wishCount : wishCountList) {
             for (BoardStatistic statistic : allStatistics) {
-                if (wishCount.boardId().equals(statistic.getBoardId())) {
-                    statistic.setBoardWishCountWhenInit(wishCount.count());
+                if (wishCount.boardId()
+                    .equals(statistic.getBoardId())) {
+                    statistic.setBoardWishCountWhenInit((long) wishCount.count());
                 }
             }
         }
@@ -91,37 +98,88 @@ public class BoardStatisticService {
     @Async
     @Transactional
     public void updateViewCount(Long boardId) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(
-                () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        boardStatistic.updateViewCount();
-        boardStatistic.updateBasicScore(BOARD_VIEW_SCORE, true);
+        StatisticUpdate boardViewUpdate = StatisticUpdate.updateViewCount(boardId);
+        updateRedisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, boardViewUpdate);
     }
 
     @Async
     @Transactional
-    public void updateWishCount(Long boardId, boolean isWish) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(
-                () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-
-        boardStatistic.updateWishCount(isWish);
-        boardStatistic.updateBasicScore(BOARD_WISH_SCORE, isWish);
+    public void updateWishCount(Long boardId) {
+        StatisticUpdate boardWishUpdate = StatisticUpdate.updateWishCount(boardId);
+        updateRedisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, boardWishUpdate);
     }
 
     @Async
     @Transactional
-    public void updateReviewCount(
-        Long boardId,
-        BigDecimal rate,
-        boolean isCreate
+    public void updateReview(
+        Long boardId
     ) {
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(boardId)
-            .orElseThrow(
-                () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
-        boardStatistic.updateReviewGrade(rate, isCreate);
-        boardStatistic.updateReviewCount(isCreate);
-        boardStatistic.updateBasicScore(BOARD_REVIEW_SCORE, isCreate);
+        StatisticUpdate ReviewRateUpdate = StatisticUpdate.updateReview(boardId);
+        updateRedisTemplate.opsForList()
+            .rightPush(STATISTIC_UPDATE_LIST, ReviewRateUpdate);
+    }
+
+    @Transactional
+    public void updateInBatch(
+        List<Long> boardWishUpdateId,
+        List<Long> boardReviewUpdateId,
+        Map<Long, Integer> boardViewCountUpdate,
+        List<Long> allUpdateBoard
+    ) {
+        List<BoardStatistic> updateList = boardStatisticRepository.findAllByBoardIds(
+            allUpdateBoard);
+        boardViewCountUpdate.keySet()
+            .forEach(key -> {
+                for (BoardStatistic update : updateList) {
+                    if (update.getBoardId()
+                        .equals(key)) {
+                        update.updateViewCount(boardViewCountUpdate.get(key));
+                    }
+                }
+            });
+        List<ReviewStatisticDao> reviewStatisticByBoardIds = reviewRepository.getReviewStatisticByBoardIds(
+            boardReviewUpdateId);
+        List<WishListStatisticDao> wishStatisticByBoardIds = wishListBoardRepository.findWishStatisticByBoardIds(
+            boardWishUpdateId);
+
+        for (BoardStatistic statistic : updateList) {
+            for (ReviewStatisticDao reviewStatisticDao : reviewStatisticByBoardIds) {
+                if (statistic.getBoardId()
+                    .equals(reviewStatisticDao.boardId())) {
+                    statistic.updateReviewGrade(
+                        BigDecimal.valueOf(reviewStatisticDao.averageRate()));
+                    statistic.updateReviewCount(reviewStatisticDao.reviewCount());
+                }
+            }
+
+            for (WishListStatisticDao dao : wishStatisticByBoardIds) {
+                if(statistic.getBoardId().equals(dao.boardId())) {
+                    statistic.updateWishCount(dao.wishListCount());
+                }
+            }
+
+        }
+
+        for(BoardStatistic statistic : updateList){
+            for(Long id : allUpdateBoard){
+                if(statistic.getBoardId().equals(id)){
+                    statistic.updateBasicScoreWhenInit();
+                }
+            }
+        }
+        List<BoardPreferenceStatistic> preferenceUpdate = preferenceStatisticRepository.findAllByBoardIds(
+            allUpdateBoard);
+        for(BoardPreferenceStatistic preference : preferenceUpdate){
+            for(BoardStatistic statistic : updateList){
+                if(preference.getBoardId().equals(statistic.getBoardId())){
+                    preference.updateToBasicBoardScore(statistic.getBasicScore());
+                    preference.updatePreferenceScore();
+                }
+            }
+        }
     }
 
 }
+

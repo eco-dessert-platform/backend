@@ -16,8 +16,8 @@ public enum SortType {
     HIGH_PRICE("높은 가격순", () -> List.of(QBoard.board.price.desc(), QBoard.board.id.desc())),
     RECOMMEND("추천순", () -> List.of(QBoardStatistic.boardStatistic.basicScore.desc(), QBoard.board.id.desc())),
     MOST_WISHED("찜 많은 순", () -> List.of(QBoardStatistic.boardStatistic.boardWishCount.desc(), QBoard.board.id.desc())),
-    MOST_REVIEWED("리뷰 많은 순", () -> List.of(QBoardStatistic.boardStatistic.basicScore.desc(), QBoard.board.id.desc())),
-    HIGHEST_RATED("만족도 순", () -> List.of(QBoardStatistic.boardStatistic.basicScore.desc(), QBoard.board.id.desc()));
+    MOST_REVIEWED("리뷰 많은 순", () -> List.of(QBoardStatistic.boardStatistic.boardReviewCount.desc(), QBoard.board.id.desc())),
+    HIGHEST_RATED("만족도 순", () -> List.of(QBoardStatistic.boardStatistic.boardReviewGrade.desc(), QBoard.board.id.desc()));
 
     private final String description;
     private final Supplier<List<OrderSpecifier<?>>> setOrder;

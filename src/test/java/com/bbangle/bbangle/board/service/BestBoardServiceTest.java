@@ -52,6 +52,7 @@ class BestBoardServiceTest extends AbstractIntegrationTest {
                 BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
 
             createWishListStore();
+            updateBoardStatistic.updateStatistic();
         }
 
         @Test

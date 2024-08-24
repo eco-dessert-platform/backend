@@ -22,7 +22,7 @@ public final class BoardResponseDto {
     private final Boolean isBundled;
     private final List<String> tags;
     private final Double reviewRate;
-    private final Integer reviewCount;
+    private final Long reviewCount;
     private final Boolean isBbangcketing;
     private final Boolean isSoldOut;
     private final Integer discountRate;
@@ -39,7 +39,7 @@ public final class BoardResponseDto {
         Boolean isBundled,
         List<String> tags,
         Double reviewRate,
-        Integer reviewCount,
+        Long reviewCount,
         Boolean isBbangcketing,
         Boolean isSoldOut,
         Integer discountRate

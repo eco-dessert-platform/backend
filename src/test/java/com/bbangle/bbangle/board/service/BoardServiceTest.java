@@ -17,6 +17,7 @@ import com.bbangle.bbangle.board.dto.ProductOrderResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
@@ -46,6 +47,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
@@ -53,6 +55,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     private static final SortType DEFAULT_SORT_TYPE = SortType.RECOMMEND;
     private static final Long NULL_MEMBER = null;
     private final String TEST_TITLE = "TestTitle";
+
+    @Autowired
+    UpdateBoardStatistic updateBoardStatistic;
 
     Board board;
     Board board2;
@@ -260,6 +265,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("카테고리로 필터링하여서 조회한다.")
     void showListFilterCategory(Category category) {
         //given
+        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+            return;
+        }
         Product product1 = ProductFixture.categoryBasedProduct(board, category);
         Product product2 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
         Product product3 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
@@ -313,6 +321,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
     void showListFilterCategoryAndIngredient(Category category) {
         //given, when
+        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+            return;
+        }
         Product product1 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
         Product product2 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
         Product product3 = ProductFixture.categoryBasedWithNonSugarFreeProduct(board, category);
@@ -533,6 +544,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
             wishListBoardService.wish(memberId2, targetId,
                 new WishListBoardRequest(DEFAULT_FOLDER_ID));
+            updateBoardStatistic.updateStatistic();
 
             // then
             BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(

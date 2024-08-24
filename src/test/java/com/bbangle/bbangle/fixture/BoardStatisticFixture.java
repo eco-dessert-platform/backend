@@ -10,9 +10,9 @@ public class BoardStatisticFixture {
         return BoardStatistic.builder()
             .boardId(board.getId())
             .basicScore(0.0)
-            .boardViewCount(0)
-            .boardWishCount(0)
-            .boardReviewCount(0)
+            .boardViewCount(0L)
+            .boardWishCount(0L)
+            .boardReviewCount(0L)
             .boardReviewGrade(BigDecimal.ZERO)
             .build();
     }
@@ -21,9 +21,9 @@ public class BoardStatisticFixture {
         return BoardStatistic.builder()
             .boardId(board.getId())
             .basicScore(basicScore)
-            .boardViewCount(0)
-            .boardWishCount(0)
-            .boardReviewCount(0)
+            .boardViewCount(0L)
+            .boardWishCount(0L)
+            .boardReviewCount(0L)
             .boardReviewGrade(BigDecimal.ZERO)
             .build();
     }

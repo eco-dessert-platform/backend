@@ -3,7 +3,8 @@ package com.bbangle.bbangle.review.repository;
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.config.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
+import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.image.dto.ImageDto;
@@ -33,4 +34,7 @@ public interface ReviewQueryDSLRepository {
     List<DateAndCountDto> countReviewCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
     List<AnalyticsCumulationResponseDto> countCumulatedReviewBeforeEndDate(LocalDate startLocalDate, LocalDate endLocalDate);
     List<ReviewDto> findByBoardId(Long boardId);
+
+    List<ReviewStatisticDao> getReviewStatisticByBoardIds(List<Long> boardReviewUpdateId);
+
 }
