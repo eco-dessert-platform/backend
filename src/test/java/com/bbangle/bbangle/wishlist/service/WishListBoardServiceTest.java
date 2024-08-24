@@ -87,10 +87,6 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
-            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-                .get();
-            assertThat(boardStatistic.getBasicScore()).isEqualTo(50.0);
-            assertThat(boardStatistic.getBoardWishCount()).isOne();
         }
 
         @Test

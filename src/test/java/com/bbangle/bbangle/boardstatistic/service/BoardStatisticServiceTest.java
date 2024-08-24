@@ -8,6 +8,8 @@ import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.update.UpdateType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardPreferenceStatisticFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
@@ -30,13 +32,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 
 class BoardStatisticServiceTest extends AbstractIntegrationTest {
+
+    private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     @Autowired
     BoardStatisticService boardStatisticService;
     @Autowired
     UpdateBoardStatistic updateBoardStatistic;
+    @Autowired
+    @Qualifier("updateRedisTemplate")
+    RedisTemplate<String, Object> updateTemplate;
 
     Board board;
     Review review;
@@ -74,6 +83,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     void updateViewCount() {
         //given, when
         boardStatisticService.updateViewCount(board.getId());
+        updateBoardStatistic.updateStatistic();
 
         //then
         BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
@@ -85,25 +95,22 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     @DisplayName("정상적으로 Board의 review 작성 시 reviewCount를 업데이트한다")
     void updateReviewWriteCount() {
         //given, when
+        boardStatisticService.updateReview(board.getId());
 
-        ArrayList<BigDecimal> rates = new ArrayList<>();
-        ArrayList<BigDecimal> boardReviewGrade = new ArrayList<>();
-        List<Long> count = new ArrayList<>();
-        for (Review value : reviewList) {
-            boardStatisticService.updateReview(
-                board.getId());
-            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-                .orElseThrow();
-            rates.add(value.getRate());
-            count.add(boardStatistic.getBoardReviewCount());
-            boardReviewGrade.add(boardStatistic.getBoardReviewGrade());
+        //then
+        List<StatisticUpdate> list = new ArrayList<>();
+        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+            list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
         //then
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
-        assertThat(boardStatistic.getBoardReviewCount()).isEqualTo(reviewList.size());
-        assertThat(boardStatistic.getBoardReviewGrade().doubleValue()).isEqualTo(avgScore.doubleValue());
+        assertThat(list).hasSize(1);
+        list.forEach(
+            update -> {
+                Assertions.assertThat(update.boardId()).isEqualTo(board.getId());
+                Assertions.assertThat(update.updateType()).isEqualTo(UpdateType.REVIEW);
+            }
+        );
     }
 
     @Test
@@ -114,10 +121,19 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         boardStatisticService.updateReview(board.getId());
 
         //then
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
-        assertThat(boardStatistic.getBoardReviewCount()).isZero();
-        assertThat(boardStatistic.getBoardReviewGrade()).isZero();
+        List<StatisticUpdate> list = new ArrayList<>();
+        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+            list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
+        }
+
+        //then
+        assertThat(list).hasSize(2);
+        list.forEach(
+            update -> {
+                Assertions.assertThat(update.boardId()).isEqualTo(board.getId());
+                Assertions.assertThat(update.updateType()).isEqualTo(UpdateType.REVIEW);
+            }
+        );
     }
 
     @Test
@@ -131,12 +147,19 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         boardStatisticService.updateReview(board.getId());
         boardStatisticService.updateReview(board.getId());
 
-        BigDecimal expectedScore = getAvgScore(List.of(reviewList.get(0), reviewList.get(3)));
+        List<StatisticUpdate> list = new ArrayList<>();
+        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+            list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
+        }
+
         //then
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
-        assertThat(boardStatistic.getBoardReviewCount()).isEqualTo(2);
-        assertThat(boardStatistic.getBoardReviewGrade().doubleValue()).isEqualTo(expectedScore.doubleValue());
+        assertThat(list).hasSize(6);
+        list.forEach(
+            update -> {
+                Assertions.assertThat(update.boardId()).isEqualTo(board.getId());
+                Assertions.assertThat(update.updateType()).isEqualTo(UpdateType.REVIEW);
+            }
+        );
     }
 
     @Test
@@ -146,9 +169,19 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         boardStatisticService.updateWishCount(board.getId());
 
         //then
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
-        assertThat(boardStatistic.getBoardWishCount()).isOne();
+        List<StatisticUpdate> list = new ArrayList<>();
+        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+            list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
+        }
+
+        //then
+        assertThat(list).hasSize(1);
+        list.forEach(
+            update -> {
+                Assertions.assertThat(update.boardId()).isEqualTo(board.getId());
+                Assertions.assertThat(update.updateType()).isEqualTo(UpdateType.WISH_COUNT);
+            }
+        );
     }
 
     @Test
@@ -159,9 +192,19 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         boardStatisticService.updateWishCount(board.getId());
 
         //then
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
-        assertThat(boardStatistic.getBoardWishCount()).isZero();
+        List<StatisticUpdate> list = new ArrayList<>();
+        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+            list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
+        }
+
+        //then
+        assertThat(list).hasSize(2);
+        list.forEach(
+            update -> {
+                Assertions.assertThat(update.boardId()).isEqualTo(board.getId());
+                Assertions.assertThat(update.updateType()).isEqualTo(UpdateType.WISH_COUNT);
+            }
+        );
     }
 
     private BigDecimal getAvgScore(List<Review> reviews){
@@ -179,6 +222,9 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void setup(){
+            while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+                updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST);
+            }
             Store store = storeRepository.save(StoreFixture.storeGenerator());
             board = boardRepository.save(BoardFixture.randomBoard(store));
             board2 = boardRepository.save(BoardFixture.randomBoard(store));
@@ -195,6 +241,8 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 게시글이 업데이트 된다.")
         void updateSuccess() {
             //given
+            BoardStatistic boardStatisticb = boardStatisticRepository.findByBoardId(board.getId()).orElseThrow();
+            BoardStatistic boardStatistic2b = boardStatisticRepository.findByBoardId(board2.getId()).orElseThrow();
             boardStatisticService.updateViewCount(board.getId());
             boardStatisticService.updateViewCount(board.getId());
             boardStatisticService.updateViewCount(board2.getId());
@@ -212,7 +260,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
             //then
             Assertions.assertThat(boardStatistic.getBoardViewCount()).isEqualTo(2);
             Assertions.assertThat(boardStatistic2.getBoardViewCount()).isEqualTo(3);
-            Assertions.assertThat(boardStatistic.getBasicScore()).isEqualTo(3);
+            Assertions.assertThat(boardStatistic.getBasicScore()).isEqualTo(2);
             Assertions.assertThat(boardStatistic2.getBasicScore()).isEqualTo(3);
             boardPreference.forEach(
                 preference -> {

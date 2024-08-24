@@ -11,6 +11,7 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.image.repository.ImageRepository;
@@ -38,8 +39,10 @@ import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntr
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
@@ -56,6 +59,8 @@ import static java.util.Collections.emptyMap;
 @SpringBootTest
 @AutoConfigureMockMvc
 public abstract class AbstractIntegrationTest {
+
+    private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     @Autowired
     protected MockMvc mockMvc;
@@ -109,6 +114,11 @@ public abstract class AbstractIntegrationTest {
     protected ImageRepository imageRepository;
     @Autowired
     protected BoardPreferenceStatisticRepository preferenceStatisticRepository;
+    @Autowired
+    protected UpdateBoardStatistic updateBoardStatistic;
+    @Autowired
+    @Qualifier("updateRedisTemplate")
+    protected RedisTemplate<String, Object> updateTemplate;
 
     @BeforeEach
     void before() {
@@ -128,6 +138,7 @@ public abstract class AbstractIntegrationTest {
         pushRepository.deleteAllInBatch();
         imageRepository.deleteAllInBatch();
         preferenceStatisticRepository.deleteAllInBatch();
+        updateTemplate.delete(STATISTIC_UPDATE_LIST);
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
@@ -206,7 +217,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
-        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(BoardStatistic.class);
+        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
+            BoardStatistic.class);
         setBuilderParams(params, builder);
 
         if (!params.containsKey("board")) {
@@ -238,7 +250,9 @@ public abstract class AbstractIntegrationTest {
 
         // product 에 다시 board 를 세팅해줘야 조인이 됨
         productRepository.saveAll(
-            products.stream().peek(it -> it.setBoard(board)).collect(Collectors.toList())
+            products.stream()
+                .peek(it -> it.setBoard(board))
+                .collect(Collectors.toList())
         );
 
         return board;
@@ -256,4 +270,5 @@ public abstract class AbstractIntegrationTest {
             builder = builder.set(entry.getKey(), entry.getValue());
         }
     }
+
 }

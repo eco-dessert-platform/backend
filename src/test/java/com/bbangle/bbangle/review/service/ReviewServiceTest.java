@@ -100,8 +100,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         reviewService.makeReview(reviewRequest, members.get(0)
                 .getId());
         List<Review> reviewList = reviewRepository.findAll();
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-                .orElseThrow();
+
         //then
         assertThat(reviewList).hasSize(1);
         assertThat(reviewList.get(0)
@@ -110,9 +109,6 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             .getBadgeBrix()).isEqualTo(PLAIN);
         assertThat(reviewList.get(0)
             .getBadgeTexture()).isEqualTo(SOFT);
-        assertThat(boardStatistic.getBoardReviewCount()).isOne();
-        assertThat(boardStatistic.getBoardReviewGrade()
-            .doubleValue()).isEqualTo(DEFAULT_REVIEW_RATE.doubleValue());
     }
 
     @Test

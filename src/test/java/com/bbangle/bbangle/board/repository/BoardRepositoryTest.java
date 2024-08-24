@@ -148,6 +148,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
         void getPopularBoard() {
+            updateBoardStatistic.updateStatistic();
             List<BoardInfoDto> rankBoardIds = boardRepository.findBestBoards(NULL_MEMBER_ID,
                 store.getId());
 

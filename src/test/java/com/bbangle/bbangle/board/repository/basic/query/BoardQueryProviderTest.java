@@ -9,6 +9,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
@@ -39,7 +40,8 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
 
     @Autowired
     BoardCursorGeneratorMapping boardCursorGeneratorMapping;
-
+    @Autowired
+    UpdateBoardStatistic updateBoardStatistic;
     @Autowired
     BoardQueryProviderResolver boardQueryProviderResolver;
 
@@ -77,6 +79,7 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                     new WishListBoardRequest(DEFAULT_FOLDER_ID));
             }
         }
+        updateBoardStatistic.updateStatistic();
     }
 
     @Nested
