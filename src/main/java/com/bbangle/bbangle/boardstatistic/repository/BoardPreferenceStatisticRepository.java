@@ -12,4 +12,6 @@ public interface BoardPreferenceStatisticRepository extends JpaRepository<BoardP
     @Query(value = "select bs from BoardPreferenceStatistic bs where bs.boardId in :boardIds")
     List<BoardPreferenceStatistic> findAllByBoardIds(@Param("boardIds") List<Long> boardIds);
 
+    List<BoardPreferenceStatistic> findAllByBoardId(Long boardId);
+
 }
