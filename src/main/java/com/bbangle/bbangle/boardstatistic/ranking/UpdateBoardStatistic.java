@@ -60,10 +60,9 @@ public class UpdateBoardStatistic {
                     boardWishUpdateId.add(update.boardId());
                 }
             }
-
-            boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId, boardViewCountUpdate, allUpdateBoard);
-            log.info("end update ranking");
         }
+        boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId, boardViewCountUpdate, allUpdateBoard);
+        log.info("end update ranking");
 
 
     }
