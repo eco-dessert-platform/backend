@@ -4,101 +4,64 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
-import com.bbangle.bbangle.push.dto.FcmMessageDto;
 import com.bbangle.bbangle.push.dto.FcmRequest;
+import com.bbangle.bbangle.push.dto.FcmTestDto;
 import com.bbangle.bbangle.push.repository.PushRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.StringHttpMessageConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FcmService {
-
-    @Value("${fcm.api-url}")
-    private String FCM_API_URL;
-    @Value("${fcm.google-authentication-url}")
-    private String GOOGLE_AUTHENTICATION_URL;
-    @Value("${fcm.key-path}")
-    private String FCM_SECRET_KEY_PATH;
-    private final ObjectMapper objectMapper;
     private final PushRepository pushRepository;
 
     public void sendMessage(List<FcmRequest> fcmRequests) {
         for(FcmRequest fcmRequest : fcmRequests) {
             Push push = pushRepository.findById(fcmRequest.getPushId())
                     .orElseThrow(() -> new BbangleException(BbangleErrorCode.PUSH_NOT_FOUND));
-            String message = makeMessage(fcmRequest);
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters()
-                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-
-            HttpEntity<String> entity = getHttpEntity(message);
-
+            Message message = getMessage(fcmRequest);
             try{
-                ResponseEntity<String> responseEntity = restTemplate.exchange(
-                        FCM_API_URL,
-                        HttpMethod.POST,
-                        entity,
-                        String.class);
-                if (responseEntity.getStatusCode().is2xxSuccessful()&&
-                    fcmRequest.getPushCategory().equals(PushCategory.RESTOCK.getDescription())) {
+                FirebaseMessaging.getInstance().send(message);
+                if (fcmRequest.getPushCategory().equals(PushCategory.RESTOCK.getDescription())) {
                     push.updateActive(false);
                 }
-            } catch (RuntimeException e) {
-                throw new BbangleException(BbangleErrorCode.FCM_CONNECTION_ERROR);
+            }catch (FirebaseMessagingException e){
+                log.error(e.getMessage());
             }
         }
     }
 
-    private @NotNull HttpEntity<String> getHttpEntity(String message) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken());
-        return new HttpEntity<>(message, httpHeaders);
+    private static Message getMessage(FcmRequest fcmRequest) {
+       return Message.builder()
+                .setNotification(Notification.builder()
+                        .setTitle(fcmRequest.getTitle())
+                        .setBody(fcmRequest.getBody())
+                        .build())
+                .setToken(fcmRequest.getFcmToken())
+                .build();
     }
 
-
-    private String makeMessage(FcmRequest request) {
-        FcmMessageDto fcmMessageDto = FcmMessageDto.of(request);
-
-        try {
-            return objectMapper.writeValueAsString(fcmMessageDto);
-        } catch (JsonProcessingException e) {
-            throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
+    public void sendTest(FcmTestDto fcmTestDto){
+        Message message = Message.builder()
+                .setNotification(Notification.builder()
+                        .setTitle(fcmTestDto.title())
+                        .setBody(fcmTestDto.body())
+                        .build())
+                .setToken(fcmTestDto.fcmToken())
+                .build();
+        try{
+            FirebaseMessaging.getInstance().send(message);
+        }catch (FirebaseMessagingException e){
+            log.error(e.getMessage());
         }
     }
-
-    private String getAccessToken() {
-        try {
-            InputStream inputStream = new ClassPathResource(FCM_SECRET_KEY_PATH).getInputStream();
-            GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(inputStream)
-                    .createScoped(List.of(GOOGLE_AUTHENTICATION_URL));
-
-            googleCredentials.refreshIfExpired();
-            return googleCredentials.getAccessToken().getTokenValue();
-        } catch (IOException e) {
-            throw new BbangleException(BbangleErrorCode.GOOGLE_AUTHENTICATION_ERROR);
-        }
-    }
-
 }
