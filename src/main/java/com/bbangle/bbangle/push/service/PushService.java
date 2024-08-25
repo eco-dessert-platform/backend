@@ -108,7 +108,7 @@ public class PushService {
                 title = String.format("%s님이 기다리던 상품이 %s되었어요! %s", request.getMemberName(), request.getPushCategory(), "\uD83D\uDE4C");
                 body = String.format("[%s] '%s' %n 곧 품절될 수 있으니 지금 확인해보세요.", request.getBoardTitle(), request.getProductTitle());
             } else if (request.getPushType().equals(PushType.WEEK.getDescription())){
-                title = String.format("%s, %s 상품이 빠르게 품절 되었어요!", "\uD83D\uDEAB", request.getProductTitle());
+                title = String.format("%s %s 상품이 빠르게 품절 되었어요!", "\uD83D\uDEAB", request.getProductTitle());
                 body = "주문 가능한 다른 요일에 알림 신청을 해주세요";
             }
             request.editPushMessage(title, body);
