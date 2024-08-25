@@ -62,7 +62,7 @@ public class BoardService {
         Long memberId
     ) {
         List<BoardResponseDao> boards = boardRepository
-            .getBoardResponseList(filterRequest, sort, cursorId);
+            .getBoardResponseList(memberId, filterRequest, sort, cursorId);
         BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
             DEFAULT_BOARD);
 

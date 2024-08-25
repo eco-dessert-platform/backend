@@ -13,6 +13,8 @@ import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
+import com.bbangle.bbangle.board.repository.basic.cursor.PreferenceRecommendCursorGenerator;
+import com.bbangle.bbangle.board.repository.basic.query.PreferenceRecommendBoardQueryProviderResolver;
 import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
@@ -20,9 +22,14 @@ import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolv
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.preference.domain.Preference;
+import com.bbangle.bbangle.preference.domain.PreferenceType;
+import com.bbangle.bbangle.preference.domain.QMemberPreference;
+import com.bbangle.bbangle.preference.domain.QPreference;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.repository.util.WishListBoardFilter;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -37,6 +44,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
 
+    private static final QMemberPreference memberPreference = QMemberPreference.memberPreference;
+    private static final QPreference preference = QPreference.preference;
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QProductImg productImage = QProductImg.productImg;
@@ -45,9 +54,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
-    private final WishListBoardFilter wishListBoardFilter;
+    private final PreferenceRecommendBoardQueryProviderResolver preferenceProviderResolver;
     private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
     private final BoardInFolderCursorGeneratorMapping boardInFolderCursorGeneratorMapping;
+    private final PreferenceRecommendCursorGenerator preferenceRecommendCursorGenerator;
 
     private final JPAQueryFactory queryFactory;
 
@@ -64,6 +74,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public List<BoardResponseDao> getBoardResponseList(
+        Long memberId,
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId
@@ -73,6 +84,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .mappingCursorGenerator(sort)
             .getCursor(cursorId);
         OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
+        if(sort == SortType.RECOMMEND && memberId != null){
+            PreferenceType selectedPreference = getMemberPreference(memberId).getPreferenceType();
+            if(selectedPreference == null){
+                throw new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND);
+            }
+            cursorInfo = preferenceRecommendCursorGenerator.getCursor(cursorId, selectedPreference);
+            orderExpression = List.of(QBoardPreferenceStatistic.boardPreferenceStatistic.preferenceScore.desc()).toArray(new OrderSpecifier[0]);
+            return preferenceProviderResolver.findBoards(filter, cursorInfo, orderExpression, memberId, selectedPreference);
+        }
 
         return boardQueryProviderResolver.resolve(sort)
             .findBoards(filter, cursorInfo, orderExpression);
@@ -172,6 +192,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(product)
             .on(board.id.eq(product.board.id))
             .where(filter)
+            .fetchOne();
+    }
+
+    private Preference getMemberPreference(Long memberId){
+        return queryFactory.select(preference)
+            .from(preference)
+            .join(memberPreference)
+            .on(preference.id.eq(memberPreference.preferenceId))
+            .where(memberPreference.memberId.eq(memberId))
             .fetchOne();
     }
 
