@@ -27,6 +27,7 @@ public class GlobalControllerAdvice {
 
     private final ResponseService responseService;
     private final SlackAdaptor slackAdaptor;
+    private final static int SERVER_ERROR_CODE = 990;
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -47,7 +48,10 @@ public class GlobalControllerAdvice {
         HttpServletRequest request,
         BbangleException ex
     ) {
-        slackAdaptor.sendAlert(request, ex);
+        if(ex.getBbangleErrorCode().getCode() < SERVER_ERROR_CODE) {
+            slackAdaptor.sendAlert(request, ex);
+        }
+
         CommonResult result = responseService.getFailResult(
             hasText(ex.getMessage()) ? ex.getMessage() : "error",
             ex.getBbangleErrorCode().getCode()
