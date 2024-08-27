@@ -9,6 +9,7 @@ import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +22,8 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class RealSlackAdaptor implements SlackAdaptor {
 
-    private static final String WEB_HOOK_URL = "https://hooks.slack.com/services/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";
+    @Value("${slack.webhook-url}")
+    private String WEB_HOOK_URL;
     private final RestTemplate restTemplate = new RestTemplate();
 
     public void sendAlert(HttpServletRequest httpServletRequest, Throwable t) {
