@@ -69,55 +69,45 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
     @Override
     public List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId) {
         return queryFactory
-            .select(
-                Projections.constructor(
-                    ProductOrderDto.class,
-                    product.id,
-                    product.title,
-                    product.price,
-                    product.category,
-                    product.glutenFreeTag,
-                    product.highProteinTag,
-                    product.sugarFreeTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    product.sugars,
-                    product.protein,
-                    product.carbohydrates,
-                    product.fat,
-                    product.weight,
-                    product.calories,
-                    product.monday,
-                    product.tuesday,
-                    product.wednesday,
-                    product.thursday,
-                    product.friday,
-                    product.saturday,
-                    product.sunday,
-                    product.orderStartDate,
-                    product.orderEndDate,
-                    product.soldout,
-                    push.pushType,
-                    push.days,
-                    push.isActive
-                ))
-            .from(product)
-            .leftJoin(push).on(
-                product.id.eq(push.productId)
-                    .and(memberId != null ? push.memberId.eq(memberId)
-                        : Expressions.booleanTemplate("false")))
-            .where(product.board.id.eq(boardId))
-            .orderBy(product.id.desc())
-            .fetch();
+                .select(
+                        Projections.constructor(
+                                ProductOrderDto.class,
+                                product.id,
+                                product.title,
+                                product.price,
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                product.sugars,
+                                product.protein,
+                                product.carbohydrates,
+                                product.fat,
+                                product.weight,
+                                product.calories,
+                                product.monday,
+                                product.tuesday,
+                                product.wednesday,
+                                product.thursday,
+                                product.friday,
+                                product.saturday,
+                                product.sunday,
+                                product.orderStartDate,
+                                product.orderEndDate,
+                                product.soldout,
+                                push.pushType,
+                                push.days,
+                                push.isActive
+                        ))
+                .from(product)
+                .leftJoin(push).on(
+                        product.id.eq(push.productId)
+                                .and(memberId != null ? push.memberId.eq(memberId)
+                                        : Expressions.booleanTemplate("false")))
+                .where(product.board.id.eq(boardId))
+                .orderBy(product.id.desc())
+                .fetch();
     }
-
-
-    @Override
-    public List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList) {
-        return queryFactory.select(product.id).distinct()
-            .from(product)
-            .where(product.id.in(subscribedProductIdList))
-            .fetch();
-    }
-
 }

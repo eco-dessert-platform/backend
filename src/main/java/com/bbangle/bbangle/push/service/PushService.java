@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.push.service;
 
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -20,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ public class PushService {
 
     private final PushRepository pushRepository;
     private final MemberRepository memberRepository;
-    private final ProductRepository productRepository;
 
     @Transactional
     public void createPush(CreatePushRequest request, Long memberId) {
@@ -40,16 +40,22 @@ public class PushService {
                     .fcmToken(request.fcmToken())
                     .memberId(memberId)
                     .productId(request.productId())
-                    .pushType(request.pushType())
-                    .days(!StringUtils.isBlank(request.days()) ? request.days() : null)
+                    .pushType(request.pushType() != null ? request.pushType() : null)
+                    .days(isDaysNull(request) ? null : request.days())
                     .pushCategory(request.pushCategory())
                     .isActive(true)
                     .build();
             pushRepository.save(newPush);
             return;
         }
-        push.updateDays(request.days());
+        if(!isDaysNull(request)){
+            push.updateDays(request.days());
+        }
         push.updateActive(true);
+    }
+
+    private static boolean isDaysNull(CreatePushRequest request) {
+        return StringUtils.isBlank(request.days());
     }
 
     @Transactional
@@ -87,11 +93,9 @@ public class PushService {
 
     private List<FcmRequest> getMustSendAllPushes() {
         List<FcmPush> activatedPushes = pushRepository.findPushList();
-        List<Long> subscribedProductIds = activatedPushes.stream()
+        Set<Long> targetProductIds = new HashSet<>(activatedPushes.stream()
                 .map(FcmPush::productId)
-                .toList();
-
-        List<Long> targetProductIds = productRepository.findProductsByActivatedProductIds(subscribedProductIds);
+                .toList());
 
         return activatedPushes.stream()
                 .filter(fcmPush -> shouldSendPush(fcmPush, targetProductIds))
@@ -116,8 +120,10 @@ public class PushService {
         return requestList;
     }
 
-    private boolean shouldSendPush(FcmPush fcmPush, List<Long> targetProductIds) {
-        if (fcmPush.pushType() == PushType.DATE) {
+    private boolean shouldSendPush(FcmPush fcmPush, Set<Long> targetProductIds) {
+        if(fcmPush.pushCategory() == PushCategory.RESTOCK){
+            return true;
+        } else if (fcmPush.pushType() == PushType.DATE) {
             return targetProductIds.contains(fcmPush.productId()) && isEqualToday(fcmPush.date().toLocalDate());
         } else if (fcmPush.pushType() == PushType.WEEK) {
             return targetProductIds.contains(fcmPush.productId()) && doDaysContainToday(fcmPush.days());
