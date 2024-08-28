@@ -31,7 +31,6 @@ public class OauthService {
     @Transactional
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode) {
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
-        //TODO 구글, 카카오 식별자 필요
         Long memberId = memberRepository.findByProviderAndProviderId(oauthMember.getProvider(),
                 oauthMember.getProviderId())
             .orElseGet(() -> memberService.getFirstJoinedMember(oauthMember));
