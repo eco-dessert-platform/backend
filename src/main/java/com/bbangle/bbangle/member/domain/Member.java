@@ -50,6 +50,10 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(name = "nickname")
     private String nickname;
 
+    @Column(name = "sex")
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
+
     @Column(name = "birth")
     private String birth;
 
@@ -132,7 +136,7 @@ public class Member extends BaseEntity implements UserDetails {
             UserValidator.validateBirthDate(request.birthDate());
         }
         UserValidator.validateNickname(request.nickname());
-
+        this.sex = request.sex();
         this.birth = request.birthDate();
         this.nickname = request.nickname();
     }

@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.member.dto;
 
+import com.bbangle.bbangle.member.domain.Sex;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -9,6 +10,8 @@ public record MemberInfoRequest(
     String nickname,
     @NotNull(message = "생년 월일은 필수입니다..")
     String birthDate,
+    @NotNull(message = "성별은 필수입니다.")
+    Sex sex,
     boolean isAllowingMarketing,
     @NotNull(message = "개인정보 약관 동의는 필수입니다.")
     boolean isPersonalInfoConsented,
