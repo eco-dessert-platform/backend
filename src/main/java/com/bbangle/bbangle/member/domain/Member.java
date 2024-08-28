@@ -131,12 +131,10 @@ public class Member extends BaseEntity implements UserDetails {
         if (request.birthDate() != null) {
             UserValidator.validateBirthDate(request.birthDate());
         }
-        UserValidator.validatePhoneNumber(request.phoneNumber());
         UserValidator.validateNickname(request.nickname());
 
         this.birth = request.birthDate();
         this.nickname = request.nickname();
-        this.phone = request.phoneNumber();
     }
 
     public void updateProfile(String imgUrl) {

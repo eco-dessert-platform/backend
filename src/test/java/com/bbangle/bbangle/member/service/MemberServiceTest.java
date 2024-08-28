@@ -66,7 +66,6 @@ class MemberServiceTest extends AbstractIntegrationTest {
         //given, when
         MemberInfoRequest request = new MemberInfoRequest(
             "nickname",
-            "01000000000",
             "1999-01-01",
             true,
             true,
