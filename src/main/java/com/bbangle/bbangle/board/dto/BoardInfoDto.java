@@ -16,7 +16,7 @@ public class BoardInfoDto {
     private Integer price;
     private Integer discountRate;
     BigDecimal reviewRate;
-    Integer reviewCount;
+    Long reviewCount;
     private Boolean isSoldOut;
     private Boolean isBbangcketing;
     private List<String> tags;
@@ -30,7 +30,7 @@ public class BoardInfoDto {
         Integer boardPrice,
         Integer boardDiscount,
         BigDecimal boardReviewGrade,
-        Integer boardReviewCount,
+        Long boardReviewCount,
         Integer isSoldOut,
         Boolean isNotification,
         Integer glutenFreeTag,
