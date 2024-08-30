@@ -3,6 +3,7 @@ package com.bbangle.bbangle.member.service;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.domain.Sex;
 import com.bbangle.bbangle.member.dto.MemberAssignResponse;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
@@ -66,8 +67,8 @@ class MemberServiceTest extends AbstractIntegrationTest {
         //given, when
         MemberInfoRequest request = new MemberInfoRequest(
             "nickname",
-            "01000000000",
             "1999-01-01",
+            Sex.MAN,
             true,
             true,
             true
