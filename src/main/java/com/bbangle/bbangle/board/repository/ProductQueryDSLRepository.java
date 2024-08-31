@@ -20,6 +20,4 @@ public interface ProductQueryDSLRepository {
     Map<Long, Push> findPushByProductIds(List<Long> productIds, Long memberId);
 
     List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId);
-
-    List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList);
 }

@@ -60,7 +60,6 @@ class ProductServiceTest extends AbstractIntegrationTest {
     }
 
 
-
     @Nested
     @DisplayName("getTopBoardIds 메서드는")
     class FindProductDtoById {
@@ -75,7 +74,8 @@ class ProductServiceTest extends AbstractIntegrationTest {
             // Given: 테스트 데이터를 세팅합니다.
             testMember = memberRepository.save(MemberFixture.createKakaoMember());
 
-            testBoard = fixtureBoard(Collections.emptyMap());
+            testBoard = BoardFixture.randomBoard(null);
+            testBoard = boardRepository.save(testBoard);
 
             testProduct = Product.builder()
                 .title("Sample Product")
@@ -129,7 +129,8 @@ class ProductServiceTest extends AbstractIntegrationTest {
             assertThat(response.getBoardIsBundled()).isNotNull(); // isBundled 값 검증
             assertThat(response.getProducts()).isNotEmpty();
 
-            ProductOrderResponseBase orderResponse = response.getProducts().get(0);
+            ProductOrderResponseBase orderResponse = response.getProducts()
+                .get(response.getProducts().size() - 1);
             ProductOrderResponse productOrderResponse = orderResponse.getProductOrderResponse();
             assertThat(productOrderResponse.getTitle()).isEqualTo("Sample Product");
             assertThat(productOrderResponse.getPrice()).isEqualTo(1000);

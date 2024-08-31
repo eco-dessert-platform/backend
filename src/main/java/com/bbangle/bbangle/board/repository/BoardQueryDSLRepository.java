@@ -16,6 +16,7 @@ public interface BoardQueryDSLRepository {
     List<TitleDto> findAllTitle();
 
     List<BoardResponseDao> getBoardResponseList(
+        Long memberId,
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId

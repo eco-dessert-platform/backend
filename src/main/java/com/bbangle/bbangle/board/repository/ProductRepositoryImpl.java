@@ -146,13 +146,4 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             .orderBy(product.id.desc())
             .fetch();
     }
-
-    @Override
-    public List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList) {
-        return queryFactory.select(product.id).distinct()
-            .from(product)
-            .where(product.id.in(subscribedProductIdList))
-            .fetch();
-    }
-
 }

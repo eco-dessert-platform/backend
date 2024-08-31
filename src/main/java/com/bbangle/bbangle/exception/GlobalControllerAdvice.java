@@ -47,7 +47,6 @@ public class GlobalControllerAdvice {
         HttpServletRequest request,
         BbangleException ex
     ) {
-        slackAdaptor.sendAlert(request, ex);
         CommonResult result = responseService.getFailResult(
             hasText(ex.getMessage()) ? ex.getMessage() : "error",
             ex.getBbangleErrorCode().getCode()
