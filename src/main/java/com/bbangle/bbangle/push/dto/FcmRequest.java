@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.push.dto;
 
-import com.bbangle.bbangle.push.domain.PushCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -27,7 +26,7 @@ public class FcmRequest {
         this.memberName = fcmPush.memberName();
         this.boardTitle = fcmPush.boardTitle();
         this.productTitle = fcmPush.productTitle();
-        this.pushType = fcmPush.pushType().getDescription();
+        this.pushType = fcmPush.pushType() != null ? fcmPush.pushType().getDescription() : null;
         this.days = fcmPush.days();
         this.pushCategory = fcmPush.pushCategory().getDescription();
         this.isSoldOut = fcmPush.isSoldOut();

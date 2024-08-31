@@ -14,6 +14,4 @@ public interface ProductQueryDSLRepository {
     List<TitleDto> findAllTitle();
 
     List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId);
-
-    List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList);
 }

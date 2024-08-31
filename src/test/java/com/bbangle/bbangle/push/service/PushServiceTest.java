@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -251,7 +252,7 @@ class PushServiceTest extends AbstractIntegrationTest {
 
     private CreatePushRequest createPushRequest(Long productId) {
         return new CreatePushRequest("testFcmToken1", PushType.DATE, null,
-                PushCategory.BBANGCKETING, null, productId);
+                PushCategory.BBANGCKETING, LocalDate.now().toString(), productId);
     }
 
 
