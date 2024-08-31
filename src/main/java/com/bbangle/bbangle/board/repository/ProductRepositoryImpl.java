@@ -1,15 +1,19 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.ProductOrderDto;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -67,6 +71,37 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
     }
 
     @Override
+    public List<Product> findByBoardId(Long boardId) {
+        return queryFactory
+            .selectFrom(product)
+            .where(product.board.id.eq(boardId))
+            .fetch();
+    }
+
+    @Override
+    public Map<Long, Push> findPushByProductIds(List<Long> productIds, Long memberId) {
+        List<Push> pushList = queryFactory.selectFrom(push)
+            .where(
+                Expressions.allOf(
+                    push.memberId.eq(memberId),
+                    push.productId.in(productIds),
+                    push.isActive.isTrue()
+                )
+            )
+            .fetch();
+
+        if (pushList.isEmpty()) {
+            return Collections.emptyMap();
+        } else {
+            Map<Long, Push> maps = new HashMap<>();
+
+            pushList.forEach(push1 -> maps.put(push1.getProductId(), push1));
+
+            return maps;
+        }
+    }
+
+    @Override
     public List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId) {
         return queryFactory
             .select(
@@ -105,12 +140,12 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             .leftJoin(push).on(
                 product.id.eq(push.productId)
                     .and(memberId != null ? push.memberId.eq(memberId)
-                        : Expressions.booleanTemplate("false")))
+                        : Expressions.booleanTemplate("false"))
+                    .and(push.isActive.eq(true)))
             .where(product.board.id.eq(boardId))
             .orderBy(product.id.desc())
             .fetch();
     }
-
 
     @Override
     public List<Long> findProductsByActivatedProductIds(List<Long> subscribedProductIdList) {

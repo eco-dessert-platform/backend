@@ -11,12 +11,8 @@ import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductOrderDto;
-import com.bbangle.bbangle.board.dto.ProductOrderResponse;
-import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -42,11 +38,10 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-    private static final int ONE_CATEGORY = 1;
 
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
-    private final ProductRepository productRepository;
+
     private final MemberRepository memberRepository;
     private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
@@ -152,31 +147,6 @@ public class BoardService {
             .toList();
     }
 
-    private List<ProductOrderResponse> convertToProductOrderResponse(
-        List<ProductOrderDto> products) {
-        return products.stream()
-            .map(ProductOrderResponse::from)
-            .toList();
-    }
-
-    private Boolean isBundled(List<ProductOrderDto> products) {
-        return products.stream()
-            .map(ProductOrderDto::getCategory)
-            .distinct()
-            .count() > ONE_CATEGORY;
-    }
-
-    @Transactional(readOnly = true)
-    public ProductResponse getProductResponse(Long memberId, Long boardId) {
-        List<ProductOrderDto> products = productRepository.findProductDtoById(memberId, boardId);
-        validateListNotEmpty(products, BOARD_NOT_FOUND);
-
-        List<ProductOrderResponse> productDtos = convertToProductOrderResponse(products);
-        Boolean isBundled = isBundled(products);
-
-        return ProductResponse.of(isBundled, productDtos);
-    }
-
     @Transactional(readOnly = true)
     public List<BoardInfoDto> getTopBoardInfo(Long memberId, Long storeId) {
         return boardRepository.findBestBoards(memberId, storeId);
@@ -188,3 +158,4 @@ public class BoardService {
     }
 
 }
+

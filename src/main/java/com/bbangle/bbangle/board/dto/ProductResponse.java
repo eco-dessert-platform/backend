@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.board.dto.product.ProductOrderResponseBase;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,17 +9,7 @@ import lombok.Getter;
 @Builder
 public class ProductResponse {
 
+    List<ProductOrderResponseBase> products;
     Boolean boardIsBundled;
-    List<ProductOrderResponse> products;
-
-    public static ProductResponse of(
-        Boolean boardIsBundled,
-        List<ProductOrderResponse> products
-    ) {
-        return ProductResponse.builder()
-            .boardIsBundled(boardIsBundled)
-            .products(products)
-            .build();
-    }
-
+    Boolean isSoldOut;
 }

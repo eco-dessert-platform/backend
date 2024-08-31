@@ -12,8 +12,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
-import com.bbangle.bbangle.board.dto.ProductOrderDto;
-import com.bbangle.bbangle.board.dto.ProductOrderResponse;
+import com.bbangle.bbangle.board.dto.product.ProductOrderResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -36,8 +35,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.AssertionsForClassTypes;
-import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -265,7 +262,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("카테고리로 필터링하여서 조회한다.")
     void showListFilterCategory(Category category) {
         //given
-        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+        if (category == Category.ALL_BREAD || category == Category.ALL_SNACK) {
             return;
         }
         Product product1 = ProductFixture.categoryBasedProduct(board, category);
@@ -321,7 +318,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
     void showListFilterCategoryAndIngredient(Category category) {
         //given, when
-        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+        if (category == Category.ALL_BREAD || category == Category.ALL_SNACK) {
             return;
         }
         Product product1 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
@@ -604,19 +601,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
             assertThat(boardDetailUrl).isEqualTo(TEST_URL);
             assertThat(boardImageUrl).isEqualTo(TEST_URL);
         }
-
-        @Test
-        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
-        void throwNotBoard() {
-            assertThrows(BbangleException.class,
-                () -> boardService.getProductResponse( NULL_MEMBER, NOT_EXSIST_ID));
-        }
-
     }
 
     @Nested
     @DisplayName("getTopBoardIds 메서드는")
     class FindProductDtoById {
+
         private Member testMember;
         private Board testBoard;
         private Product testProduct;
@@ -668,22 +658,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .build();
 
             pushRepository.save(testPush);
-        }
-
-        @Test
-        void testFindProductDtoById() {
-            // When: 실제 서비스 메서드를 호출합니다.
-            ProductResponse response = boardService.getProductResponse(testMember.getId(), testBoard.getId());
-
-            // Then: 결과를 검증합니다.
-            assertThat(response).isNotNull();
-            assertThat(response.getBoardIsBundled()).isNotNull(); // isBundled 값 검증
-            assertThat(response.getProducts()).isNotEmpty();
-
-            ProductOrderResponse orderResponse = response.getProducts().get(0);
-            assertThat(orderResponse.getTitle()).isEqualTo("Sample Product");
-            assertThat(orderResponse.getPrice()).isEqualTo(1000);
-            assertThat(orderResponse.getGlutenFreeTag()).isTrue();
         }
     }
 }
