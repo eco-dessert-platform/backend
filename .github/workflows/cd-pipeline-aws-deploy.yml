@@ -1,0 +1,87 @@
+name: Deploy 서버 CD 파이프라인 (메인 서버)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  job:
+    name: 메인 서버 재배포
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: 체크 아웃
+        uses: actions/checkout@v3
+
+      - name: JDK 17 설치
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: application.yml 정보 넣기
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML_AWS }}" | base64 --decode > src/main/resources/application-production.yml
+          find src
+
+      - name: FcmKey 정보 넣기
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 -d > src/main/resources/firebase/firebase_service_key.json
+          find src/main/resources
+          cat src/main/resources/firebase/firebase_service_key.json
+
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ubuntu-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ubuntu-gradle-
+
+      - name: Grant Permission Gradlew
+        run: chmod +x gradlew
+
+      - name: build 실행 (클린 빌드, 테스트 제외)
+        run: ./gradlew clean build -x test
+
+      - name: 실행 jar 파일 복사
+        run: |
+          cp build/libs/Bbangle-0.0.1-SNAPSHOT.jar ./
+
+      - name: 기존 서버 내 jar 파일 삭제
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          script: |
+            rm -f ~/docker/server/Bbangle-0.0.1-SNAPSHOT.jar
+
+      - name: jar 파일 운영 서버 전송
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          source: "Bbangle-0.0.1-SNAPSHOT.jar"
+          target: "~/docker/server"
+
+      - name: 이미지 새로 build 및 docker 서버 재실행
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_AWS_SSH_HOST }}
+          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEV_AWS_SSH_KEY }}
+          port: ${{ secrets.DEV_AWS_SSH_PORT }}
+          script: |
+            chmod +x deploy-docker.sh
+            ./deploy-docker.sh
