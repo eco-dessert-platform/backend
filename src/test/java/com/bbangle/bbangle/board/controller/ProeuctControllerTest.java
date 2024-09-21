@@ -1,13 +1,12 @@
 package com.bbangle.bbangle.board.controller;
 
-
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.service.ProductService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -29,11 +28,12 @@ class ProeuctControllerTest extends AbstractIntegrationTest {
     void testGetProductResponseWithMemberId() throws Exception {
         Long memberId = 1L;
 
-        ProductResponse productResponse = ProductResponse.builder()
-            .products(List.of())
-            .boardIsBundled(true)
-            .isSoldOut(true)
-            .build();
+        ProductResponse productResponse = new ProductResponse(
+            List.of(),
+            true,
+            true
+        );
+
 
         // Mocking 서비스 메서드 호출
         when(productService.getProductResponseWithPush(anyLong(), anyLong())).thenReturn(productResponse);
@@ -47,11 +47,11 @@ class ProeuctControllerTest extends AbstractIntegrationTest {
     @Test
     void testGetProductResponseWithoutMemberId() throws Exception {
 
-        ProductResponse productResponse = ProductResponse.builder()
-            .products(List.of())
-            .boardIsBundled(true)
-            .isSoldOut(true)
-            .build();
+        ProductResponse productResponse = new ProductResponse(
+            List.of(),
+            true,
+            true
+        );
 
         // Mocking 서비스 메서드 호출
         when(productService.getProductResponse(anyLong())).thenReturn(productResponse);

@@ -7,43 +7,19 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductResponse;
-import com.bbangle.bbangle.board.dto.product.ProductOrderResponse;
-import com.bbangle.bbangle.board.dto.product.ProductOrderResponseBase;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.abstracts.ProductOrderResponseBase;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushType;
-import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
 
 class ProductServiceTest extends AbstractIntegrationTest {
 
@@ -131,10 +107,9 @@ class ProductServiceTest extends AbstractIntegrationTest {
 
             ProductOrderResponseBase orderResponse = response.getProducts()
                 .get(response.getProducts().size() - 1);
-            ProductOrderResponse productOrderResponse = orderResponse.getProductOrderResponse();
-            assertThat(productOrderResponse.getTitle()).isEqualTo("Sample Product");
-            assertThat(productOrderResponse.getPrice()).isEqualTo(1000);
-            assertThat(productOrderResponse.getGlutenFreeTag()).isTrue();
+            assertThat(orderResponse.getTitle()).isEqualTo("Sample Product");
+            assertThat(orderResponse.getPrice()).isEqualTo(1000);
+            assertThat(orderResponse.getGlutenFreeTag()).isTrue();
         }
     }
 }

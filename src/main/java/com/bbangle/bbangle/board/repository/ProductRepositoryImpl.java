@@ -4,9 +4,9 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.ProductOrderDto;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.types.Projections;
@@ -102,11 +102,11 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
     }
 
     @Override
-    public List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId) {
+    public List<ProductDtoAtBoardDetail> findProductDtoById(Long memberId, Long boardId) {
         return queryFactory
             .select(
                 Projections.constructor(
-                    ProductOrderDto.class,
+                    ProductDtoAtBoardDetail.class,
                     product.id,
                     product.title,
                     product.price,

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.dto;
+package com.bbangle.bbangle.board.dto.orders;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class ProductOrderDto {
+public class ProductDtoAtBoardDetail {
 
     private Long id;
     private String title;
@@ -47,12 +47,12 @@ public class ProductOrderDto {
     private String days;
     private Boolean isActive;
 
-    public static ProductOrderDto of(Product product) {
+    public static ProductDtoAtBoardDetail of(Product product) {
         return of(product, null);
     }
 
-    public static ProductOrderDto of(Product product, Push push) {
-        ProductOrderDtoBuilder productOrderDtoBuilder = ProductOrderDto.builder()
+    public static ProductDtoAtBoardDetail of(Product product, Push push) {
+        ProductDtoAtBoardDetailBuilder productOrderDtoBuilder = ProductDtoAtBoardDetail.builder()
             .id(product.getId())
             .title(product.getTitle())
             .price(product.getPrice())
@@ -83,11 +83,13 @@ public class ProductOrderDto {
             productOrderDtoBuilder.pushType(push.getPushType())
                 .days(push.getDays())
                 .isActive(push.isActive());
-        } else {
-            productOrderDtoBuilder.pushType(null)
-                .days("")
-                .isActive(false);
+
+            return productOrderDtoBuilder.build();
         }
+
+        productOrderDtoBuilder.pushType(null)
+            .days("")
+            .isActive(false);
 
         return productOrderDtoBuilder.build();
     }

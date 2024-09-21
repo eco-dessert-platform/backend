@@ -1,14 +1,13 @@
-package com.bbangle.bbangle.board.dto;
+package com.bbangle.bbangle.board.dto.orders;
 
-import com.bbangle.bbangle.board.dto.product.ProductOrderResponseBase;
+import com.bbangle.bbangle.board.dto.orders.abstracts.ProductOrderResponseBase;
 import java.util.List;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public class ProductResponse {
-
     List<ProductOrderResponseBase> products;
     Boolean boardIsBundled;
     Boolean isSoldOut;

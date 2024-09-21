@@ -3,7 +3,7 @@ package com.bbangle.bbangle.board.controller;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.board.service.ProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -149,10 +149,13 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        ProductResponse productResponse = Objects.nonNull(memberId) ?
-            productService.getProductResponseWithPush(memberId, boardId) :
-            productService.getProductResponse(boardId);
+        if (Objects.nonNull(memberId)) {
+            ProductResponse productResponse = productService.getProductResponseWithPush(memberId,
+                boardId);
+            return responseService.getSingleResult(productResponse);
+        }
 
+        ProductResponse productResponse = productService.getProductResponse(boardId);
         return responseService.getSingleResult(productResponse);
     }
 

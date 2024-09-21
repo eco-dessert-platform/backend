@@ -1,11 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.product.ProductOrderResponseBase;
-import com.bbangle.bbangle.board.service.container.ProductOrderDtos;
-import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
+import com.bbangle.bbangle.board.dto.orders.abstracts.ProductOrderResponseBase;
+import com.bbangle.bbangle.board.service.factory.ProductOrderFactory;
+import com.bbangle.bbangle.board.service.helper.ProductDtoAtBoardDetailsHelper;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.board.service.container.Products;
+import com.bbangle.bbangle.board.service.util.ProductsUtil;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.Push;
@@ -29,22 +31,22 @@ public class ProductService {
             throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
         }
 
-        Products productList = Products.fromList(products);
-
-        List<Long> productIds = productList.getIds();
-        boolean isBundled = productList.getIsBundled();
-        boolean isSoldOut = productList.getIsSoldOut();
+        List<Long> productIds = ProductsUtil.getIds(products);
+        boolean isBundled = ProductsUtil.getIsBundled(products);
+        boolean isSoldOut = ProductsUtil.getIsSoldOut(products);
 
         Map<Long, Push> pushMap = productRepository.findPushByProductIds(productIds, memberId);
 
-        List<ProductOrderResponseBase> productOrderResponses = ProductOrderDtos.of(productList, pushMap)
-            .convertToProductOrderResponse();
+        List<ProductDtoAtBoardDetail> productOrderResponses = ProductDtoAtBoardDetailsHelper.getDtoList(products, pushMap);
+        List<ProductOrderResponseBase> responseBases = productOrderResponses.stream()
+            .map(ProductOrderFactory::resolve)
+            .toList();
 
-        return ProductResponse.builder()
-            .products(productOrderResponses)
-            .isSoldOut(isSoldOut)
-            .boardIsBundled(isBundled)
-            .build();
+        return new ProductResponse(
+            responseBases,
+            isBundled,
+            isSoldOut
+        );
     }
 
     @Transactional(readOnly = true)
@@ -55,18 +57,18 @@ public class ProductService {
             throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
         }
 
-        Products productList = Products.fromList(products);
+        boolean isBundled = ProductsUtil.getIsBundled(products);
+        boolean isSoldOut = ProductsUtil.getIsSoldOut(products);
 
-        boolean isBundled = productList.getIsBundled();
-        boolean isSoldOut = productList.getIsSoldOut();
+        List<ProductDtoAtBoardDetail> productOrderResponses = ProductDtoAtBoardDetailsHelper.getDtoList(products);
+        List<ProductOrderResponseBase> responseBases = productOrderResponses.stream()
+            .map(ProductOrderFactory::resolve)
+            .toList();
 
-        List<ProductOrderResponseBase> productOrderResponses = ProductOrderDtos.of(productList)
-            .convertToProductOrderNonMemberResponse();
-
-        return ProductResponse.builder()
-            .products(productOrderResponses)
-            .isSoldOut(isSoldOut)
-            .boardIsBundled(isBundled)
-            .build();
+        return new ProductResponse(
+            responseBases,
+            isBundled,
+            isSoldOut
+        );
     }
 }
