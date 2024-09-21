@@ -22,6 +22,7 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://landing.bbangle.store",
                         "http://api.bbangle.store",
                         "http://www.bbangle.store",
+                        "https://www.bbanggree.com",
                         "https://api.bbangle.store",
                         "https://www.bbangle.store",
                         "http://115.85.181.105:3001"
