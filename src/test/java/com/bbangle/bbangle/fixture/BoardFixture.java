@@ -28,13 +28,6 @@ public class BoardFixture {
             .status(true)
             .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
-            .sunday(orderAvailable.get(0))
-            .monday(orderAvailable.get(1))
-            .tuesday(orderAvailable.get(2))
-            .wednesday(orderAvailable.get(3))
-            .thursday(orderAvailable.get(4))
-            .friday(orderAvailable.get(5))
-            .saturday(orderAvailable.get(6))
             .isDeleted(false)
             .build();
     }
@@ -57,13 +50,6 @@ public class BoardFixture {
             .status(true)
             .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
-            .sunday(orderAvailable.get(0))
-            .monday(orderAvailable.get(1))
-            .tuesday(orderAvailable.get(2))
-            .wednesday(orderAvailable.get(3))
-            .thursday(orderAvailable.get(4))
-            .friday(orderAvailable.get(5))
-            .saturday(orderAvailable.get(6))
             .isDeleted(false)
             .build();
     }
@@ -85,13 +71,6 @@ public class BoardFixture {
             .status(true)
             .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
-            .sunday(orderAvailable.get(0))
-            .monday(orderAvailable.get(1))
-            .tuesday(orderAvailable.get(2))
-            .wednesday(orderAvailable.get(3))
-            .thursday(orderAvailable.get(4))
-            .friday(orderAvailable.get(5))
-            .saturday(orderAvailable.get(6))
             .isDeleted(false)
             .build();
     }

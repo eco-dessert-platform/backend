@@ -9,6 +9,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
@@ -39,22 +40,24 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
 
     @Autowired
     BoardCursorGeneratorMapping boardCursorGeneratorMapping;
-
+    @Autowired
+    UpdateBoardStatistic updateBoardStatistic;
     @Autowired
     BoardQueryProviderResolver boardQueryProviderResolver;
 
     private Store store;
     private Long lastSavedBoardId;
     private Long firstSavedBoardId;
-    private Member member;
+    private Long memberId;
 
     @BeforeEach
     void setup() {
         Store newStore = StoreFixture.storeGenerator();
         store = storeRepository.save(newStore);
         for (int i = 0; i < BOARD_SIZE; i++) {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            member = memberRepository.save(member);
+            memberId = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
@@ -72,10 +75,11 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(firstProduct);
             productRepository.save(secondProduct);
             if (i % 2 == 1) {
-                wishListBoardService.wish(member.getId(), savedBoard.getId(),
+                wishListBoardService.wish(memberId, savedBoard.getId(),
                     new WishListBoardRequest(DEFAULT_FOLDER_ID));
             }
         }
+        updateBoardStatistic.updateStatistic();
     }
 
     @Nested

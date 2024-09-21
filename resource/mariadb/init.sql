@@ -41,6 +41,7 @@ CREATE TABLE search
     is_deleted tinyint,
     keyword    VARCHAR(255) NOT NULL,
     created_at DATETIME(6),
+    modified_at DATETIME(6),
     CONSTRAINT search_pk PRIMARY KEY (id),
     CONSTRAINT fk_member_search FOREIGN KEY (member_id) REFERENCES member (id)
 );
@@ -58,35 +59,25 @@ CREATE TABLE store
     CONSTRAINT store_pk PRIMARY KEY (id)
 );
 
-CREATE TABLE product_board
+create table product_board
 (
-    id                       bigint auto_increment
-        primary key,
-    store_id                 bigint            not null,
-    title                    varchar(50)       not null,
-    price                    int               not null,
-    status                   tinyint           not null,
-    profile                  varchar(255)      null,
-    detail                   varchar(255)      not null,
-    purchase_url             varchar(255)      not null,
-    view                     int     default 0 not null,
-    sunday                   tinyint default 0 not null,
-    monday                   tinyint default 0 not null,
-    tuesday                  tinyint default 0 not null,
-    wednesday                tinyint default 0 not null,
-    thursday                 tinyint default 0 not null,
-    friday                   tinyint default 0 not null,
-    saturday                 tinyint default 0 not null,
-    created_at               datetime(6)       null,
-    modified_at              datetime(6)       null,
-    is_deleted               tinyint           null,
-    wish_cnt                 int               null,
-    delivery_fee             int               null,
-    free_shipping_conditions int               null,
+    id                       bigint auto_increment primary key,
+    store_id                 bigint        not null,
+    title                    varchar(50)   not null,
+    price                    int           not null,
+    is_soldout               tinyint       not null,
+    profile                  varchar(255)  null,
+    purchase_url             varchar(255)  not null,
+    view                     int default 0 not null,
+    created_at               datetime(6)   null,
+    modified_at              datetime(6)   null,
+    is_deleted               tinyint       null,
+    wish_cnt                 int           null,
+    delivery_fee             int           null,
+    free_shipping_conditions int           null,
     constraint fk_store_product_board
         foreign key (store_id) references store (id)
 ) charset = utf8mb4;
-
 
 
 CREATE TABLE wishlist_folder
@@ -128,10 +119,9 @@ CREATE TABLE wishlist_store
     CONSTRAINT fk_store_wishlist_store FOREIGN KEY (store_id) REFERENCES store (id)
 );
 
-CREATE TABLE product
+create table product
 (
-    id               bigint auto_increment
-        primary key,
+    id               bigint auto_increment primary key,
     product_board_id bigint            not null,
     title            varchar(50)       not null,
     price            int               null,
@@ -156,12 +146,10 @@ CREATE TABLE product
     fat              int               null,
     weight           int               null,
     calories         int               null,
-    soldout          tinyint default 0 not null,
+    is_soldout       tinyint default 0 not null,        null,
     constraint fk_product_board_product
         foreign key (product_board_id) references product_board (id)
 ) charset = utf8mb4;
-
-
 
 CREATE TABLE product_img
 (
@@ -190,7 +178,7 @@ CREATE TABLE boardStatistic
     board_review_count INT     NOT NULL default 0,
     board_view_count   INT     NOT NULL default 0,
     board_view_grade   DECIMAL NOT NULL default 0,
-    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    CONSTRAINT product_img_pk PRIMARY KEY (id)
 );
 
 CREATE TABLE notice
@@ -201,6 +189,7 @@ CREATE TABLE notice
     CONSTRAINT product_img_pk PRIMARY KEY (id),
     created_at DATETIME(6)
 );
+
 create table product_detail
 (
     id               bigint auto_increment,
@@ -211,6 +200,7 @@ create table product_detail
     constraint fk_product_board_product_detail
         foreign key (product_board_id) references product_board (id)
 );
+
 create table withdrawal
 (
     id          bigint auto_increment,
@@ -223,3 +213,18 @@ create table withdrawal
         foreign key (member_id) references member (id)
 );
 
+CREATE TABLE push
+(
+    id            BIGINT AUTO_INCREMENT,
+    fcm_token     VARCHAR(255) NOT NULL,
+    member_id     BIGINT       NOT NULL,
+    product_id    BIGINT       NOT NULL,
+    push_type     VARCHAR(255) NOT NULL,
+    days          VARCHAR(255) NOT NULL,
+    push_category VARCHAR(255) NOT NULL,
+    is_active     TINYINT      NOT NULL,
+    created_at    DATETIME(6)  NULL,
+    modified_at   DATETIME(6)  NULL,
+    CONSTRAINT push_pk PRIMARY KEY (id),
+    INDEX idx_member_product_id (member_id, product_id)
+);

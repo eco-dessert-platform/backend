@@ -4,20 +4,26 @@ import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
+import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.review.repository.ReviewRepository;
+import com.bbangle.bbangle.push.repository.PushRepository;
+import com.bbangle.bbangle.push.service.FcmService;
+import com.bbangle.bbangle.push.service.PushService;
 import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
@@ -31,18 +37,21 @@ import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import static java.util.Collections.emptyMap;
 
@@ -50,6 +59,8 @@ import static java.util.Collections.emptyMap;
 @SpringBootTest
 @AutoConfigureMockMvc
 public abstract class AbstractIntegrationTest {
+
+    private static final String STATISTIC_UPDATE_LIST = "STATISTIC_UPDATE_LIST";
 
     @Autowired
     protected MockMvc mockMvc;
@@ -69,6 +80,10 @@ public abstract class AbstractIntegrationTest {
     protected AnalyticsService analyticsService;
     @Autowired
     protected WishListBoardService wishListBoardService;
+    @Autowired
+    protected PushService pushService;
+    @Autowired
+    protected FcmService fcmService;
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
@@ -93,6 +108,17 @@ public abstract class AbstractIntegrationTest {
     protected BoardDetailRepository boardDetailRepository;
     @Autowired
     protected NotificationRepository notificationRepository;
+    @Autowired
+    protected PushRepository pushRepository;
+    @Autowired
+    protected ImageRepository imageRepository;
+    @Autowired
+    protected BoardPreferenceStatisticRepository preferenceStatisticRepository;
+    @Autowired
+    protected UpdateBoardStatistic updateBoardStatistic;
+    @Autowired
+    @Qualifier("updateRedisTemplate")
+    protected RedisTemplate<String, Object> updateTemplate;
 
     @BeforeEach
     void before() {
@@ -109,6 +135,10 @@ public abstract class AbstractIntegrationTest {
         wishListStoreRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
         notificationRepository.deleteAllInBatch();
+        pushRepository.deleteAllInBatch();
+        imageRepository.deleteAllInBatch();
+        preferenceStatisticRepository.deleteAllInBatch();
+        updateTemplate.delete(STATISTIC_UPDATE_LIST);
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
@@ -187,7 +217,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
-        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(BoardStatistic.class);
+        ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
+            BoardStatistic.class);
         setBuilderParams(params, builder);
 
         if (!params.containsKey("board")) {
@@ -219,7 +250,9 @@ public abstract class AbstractIntegrationTest {
 
         // product 에 다시 board 를 세팅해줘야 조인이 됨
         productRepository.saveAll(
-            products.stream().peek(it -> it.setBoard(board)).collect(Collectors.toList())
+            products.stream()
+                .peek(it -> it.setBoard(board))
+                .collect(Collectors.toList())
         );
 
         return board;
@@ -237,4 +270,5 @@ public abstract class AbstractIntegrationTest {
             builder = builder.set(entry.getKey(), entry.getValue());
         }
     }
+
 }

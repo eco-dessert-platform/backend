@@ -1,24 +1,32 @@
 package com.bbangle.bbangle.search.repository;
 
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
-import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
-import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.member.domain.Member;
-import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SearchQueryDSLRepository {
-    Long getSearchedBoardAllCount(SearchBoardRequest boardRequest, List<Long> boardIds);
 
-    SearchBoardResponse getSearchedBoard(Long memberId, List<Long> boardIds, SearchBoardRequest searchBoardRequest, Pageable pageable, Long searchedBoardAllCount);
-    List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable);
+    List<BoardResponseDao> getBoardResponseList(
+        List<Long> boardIds,
+        FilterRequest filterRequest,
+        SortType sort,
+        Long cursorId
+    );
 
-    List<KeywordDto> getRecencyKeyword(Member member);
+    Long getAllCount(
+        List<Long> boardIds,
+        FilterRequest filterRequest,
+        SortType sort
+    );
 
-    String[] getBestKeyword();
+    List<KeywordDto> getRecencyKeyword(Long memberId);
 
-    void markAsDeleted(String keyword, Member member);
+    String[] getBestKeyword(LocalDateTime beforeOneDayTime);
+
+    void markAsDeleted(String keyword, Long memberId);
 
 }

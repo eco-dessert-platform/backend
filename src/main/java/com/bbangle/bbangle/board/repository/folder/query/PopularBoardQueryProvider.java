@@ -50,7 +50,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
                     board.id,
                     store.id,
                     store.name,
-                    store.profile,
+                    board.profile,
                     board.title,
                     board.price,
                     product.category,
@@ -58,7 +58,12 @@ public class PopularBoardQueryProvider implements QueryGenerator{
                     product.highProteinTag,
                     product.sugarFreeTag,
                     product.veganTag,
-                    product.ketogenicTag
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
                 )).from(product)
             .join(board)
             .on(product.board.id.eq(board.id))

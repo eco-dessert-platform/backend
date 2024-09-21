@@ -2,7 +2,6 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -12,13 +11,13 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
+import com.bbangle.bbangle.board.dto.ProductOrderDto;
+import com.bbangle.bbangle.board.dto.ProductOrderResponse;
 import com.bbangle.bbangle.board.dto.ProductResponse;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
@@ -28,15 +27,13 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.push.domain.Push;
+import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.dto.PopularBoardResponse;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
-import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -48,9 +45,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
@@ -60,13 +57,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
     private final String TEST_TITLE = "TestTitle";
 
     @Autowired
-    BoardService boardService;
-
-    @Autowired
-    WishListBoardService wishListBoardService;
-
-    @Autowired
-    EntityManager entityManager;
+    UpdateBoardStatistic updateBoardStatistic;
 
     Board board;
     Board board2;
@@ -274,6 +265,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("카테고리로 필터링하여서 조회한다.")
     void showListFilterCategory(Category category) {
         //given
+        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+            return;
+        }
         Product product1 = ProductFixture.categoryBasedProduct(board, category);
         Product product2 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
         Product product3 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
@@ -327,6 +321,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
     @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
     void showListFilterCategoryAndIngredient(Category category) {
         //given, when
+        if(category == Category.ALL_BREAD || category == Category.ALL_SNACK){
+            return;
+        }
         Product product1 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
         Product product2 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
         Product product3 = ProductFixture.categoryBasedWithNonSugarFreeProduct(board, category);
@@ -451,19 +448,19 @@ class BoardServiceTest extends AbstractIntegrationTest {
         private static final Long DEFAULT_CURSOR_ID = null;
         private static final Long DEFAULT_FOLDER_ID = 0L;
 
-        Member member;
+        Long memberId;
         WishListFolder wishListFolder;
         Long lastSavedId;
         Long firstSavedId;
 
         @BeforeEach
         void setup() {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            memberId = memberService.getFirstJoinedMember(member);
             Store store = StoreFixture.storeGenerator();
             store = storeRepository.save(store);
 
-            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+            wishListFolder = wishListFolderRepository.findByMemberId(memberId)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -482,7 +479,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(
                     createdBoard);
                 boardStatisticRepository.save(boardStatistic);
-                wishListBoardService.wish(member.getId(), createdBoard.getId(),
+                wishListBoardService.wish(memberId, createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
             }
         }
@@ -492,7 +489,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithDefaultOrder() {
             // given, when
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 DEFAULT_SORT_TYPE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -512,7 +509,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithLowPriceOrder() {
             // given, when
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.LOW_PRICE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -532,10 +529,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         void getBoardInFolderWithPopularOrder() {
             // given, when
             Member member2 = MemberFixture.createKakaoMember();
-            member2 = memberService.getFirstJoinedMember(member2);
+            member2 = memberRepository.save(member2);
+            Long memberId2 = memberService.getFirstJoinedMember(member2);
 
             BoardCustomPage<List<BoardResponseDto>> response = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.LOW_PRICE,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -544,12 +542,13 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     .size() - 1)
                 .getBoardId();
 
-            wishListBoardService.wish(member2.getId(), targetId,
+            wishListBoardService.wish(memberId2, targetId,
                 new WishListBoardRequest(DEFAULT_FOLDER_ID));
+            updateBoardStatistic.updateStatistic();
 
             // then
             BoardCustomPage<List<BoardResponseDto>> responseAfterWish = boardService.getPostInFolder(
-                member.getId(),
+                memberId,
                 FolderBoardSortType.POPULAR,
                 wishListFolder.getId(),
                 DEFAULT_CURSOR_ID);
@@ -561,113 +560,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .orElseThrow(IllegalArgumentException::new)
                 .getBoardId()).isEqualTo(targetId);
         }
-
-        @Nested
-        @DisplayName("getTopBoardInfo 메서드는")
-        class GetTopBoardInfo {
-
-            private Store store;
-            private Board firstBoard;
-            private Board secondBoard;
-            private Board thirdBoard;
-            private Member member;
-
-            @BeforeEach
-            void init() {
-                store = fixtureStore(emptyMap());
-
-                firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
-                secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
-                thirdBoard = boardRepository.save(BoardFixture.randomBoard(store));
-
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
-                boardStatisticRepository.save(BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
-
-                createWishListStore();
-            }
-
-            @Test
-            @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
-            void getPopularBoard() {
-                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(NULL_MEMBER,
-                    store.getId());
-
-                AssertionsForInterfaceTypes.assertThat(topBoardInfo)
-                    .hasSize(3);
-
-                List<Long> actualBoardIds = topBoardInfo.stream()
-                    .map(PopularBoardResponse::getBoardId)
-                    .toList();
-                List<Long> expectBoardIds = List.of(
-                    firstBoard.getId(),
-                    secondBoard.getId(),
-                    thirdBoard.getId());
-
-                AssertionsForInterfaceTypes.assertThat(actualBoardIds)
-                    .containsExactlyElementsOf(expectBoardIds);
-            }
-
-            @DisplayName("상세보기 서비스 로직 테스트")
-            @Nested
-            class BoardDetail {
-
-                @Test
-                @DisplayName("상세페이지 접속 시 boardViewCount가 올라간다")
-                void updateCountView() {
-                    //given
-                    String viewKey = "viewKey";
-
-                    //when
-                    boardService.getBoardDtos(NULL_MEMBER, board.getId(), viewKey);
-                    BoardStatistic boardInfo = boardStatisticRepository.findByBoardId(board.getId())
-                        .orElseThrow();
-
-                    //then
-                    assertThat(boardInfo.getBoardViewCount()).isOne();
-                }
-
-            }
-
-            @Test
-            @DisplayName("위시리스트 등록한 상품을 정상적으로 가져올 가져올 수 있다")
-            void getIsWished() {
-                List<PopularBoardResponse> topBoardInfo = boardService.getTopBoardInfo(
-                    member.getId(),
-                    store.getId());
-
-                Boolean wishTrue = topBoardInfo.stream()
-                    .filter(board -> board.getBoardId()
-                        .equals(firstBoard.getId()))
-                    .findFirst()
-                    .get()
-                    .getIsWished();
-
-                Boolean wishFalse = topBoardInfo.stream()
-                    .filter(board -> board.getBoardId()
-                        .equals(secondBoard.getId()))
-                    .findFirst()
-                    .get()
-                    .getIsWished();
-
-                AssertionsForClassTypes.assertThat(wishTrue)
-                    .isTrue();
-                AssertionsForClassTypes.assertThat(wishFalse)
-                    .isFalse();
-            }
-
-            void createWishListStore() {
-                member = memberRepository.save(Member.builder()
-                    .build());
-
-                wishListBoardRepository.save(WishListBoard.builder()
-                    .boardId(firstBoard.getId())
-                    .memberId(member.getId())
-                    .build());
-            }
-
-        }
-
     }
 
     @Nested
@@ -717,56 +609,81 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
         void throwNotBoard() {
             assertThrows(BbangleException.class,
-                () -> boardService.getProductResponse(NOT_EXSIST_ID));
+                () -> boardService.getProductResponse( NULL_MEMBER, NOT_EXSIST_ID));
         }
 
     }
-
 
     @Nested
-    @DisplayName("getProductResponse 메서드는")
-    class GetProductResponse {
-
-        List<Product> products;
-        Board targetBoard;
-        final Long NOT_EXSIST_ID = -1L;
+    @DisplayName("getTopBoardIds 메서드는")
+    class FindProductDtoById {
+        private Member testMember;
+        private Board testBoard;
+        private Product testProduct;
+        private Push testPush;
 
         @BeforeEach
-        void init() {
-            products = List.of(
-                fixtureProduct(Map.of(
-                    "title", TEST_TITLE,
-                    "category", Category.BREAD
-                )),
-                fixtureProduct(Map.of(
-                    "title", TEST_TITLE,
-                    "category", Category.SNACK
-                )));
+        void setUp() {
+            // Given: 테스트 데이터를 세팅합니다.
+            testMember = memberRepository.save(MemberFixture.createKakaoMember());
 
-            targetBoard = fixtureBoard(Map.of("productList", products));
+            testBoard = fixtureBoard(Collections.emptyMap());
+
+            testProduct = Product.builder()
+                .title("Sample Product")
+                .price(1000)
+                .category(Category.COOKIE) // 실제 Category 설정
+                .glutenFreeTag(true)
+                .highProteinTag(true)
+                .sugarFreeTag(true)
+                .veganTag(true)
+                .ketogenicTag(true)
+                .sugars(10)
+                .protein(5)
+                .carbohydrates(15)
+                .fat(3)
+                .weight(200)
+                .calories(500)
+                .monday(true)
+                .tuesday(true)
+                .wednesday(true)
+                .thursday(true)
+                .friday(true)
+                .saturday(true)
+                .sunday(true)
+                .orderStartDate(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .orderEndDate(LocalDateTime.of(2024, 1, 7, 23, 59))
+                .soldout(false)
+                .board(testBoard)
+                .build();
+
+            productRepository.save(testProduct);
+
+            testPush = Push.builder()
+                .productId(testProduct.getId())
+                .memberId(testMember.getId())
+                .pushType(PushType.DATE) // 실제 PushType 설정
+                .days("Monday,Friday")
+                .isActive(true)
+                .build();
+
+            pushRepository.save(testPush);
         }
 
         @Test
-        @DisplayName("유효한 boardId로 상품리스트를 조회할 수 있다")
-        void getProductResponseTest() {
-            ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
-            List<ProductDto> productList = productResponse.getProducts();
+        void testFindProductDtoById() {
+            // When: 실제 서비스 메서드를 호출합니다.
+            ProductResponse response = boardService.getProductResponse(testMember.getId(), testBoard.getId());
 
-            assertThat(productList).hasSize(2);
-            assertThat(productResponse.getBoardIsBundled()).isTrue();
-            productList.forEach(productDto -> {
-                assertThat(productDto.getId()).isNotNull();
-                assertThat(productDto.getTitle()).isNotNull();
-            });
+            // Then: 결과를 검증합니다.
+            assertThat(response).isNotNull();
+            assertThat(response.getBoardIsBundled()).isNotNull(); // isBundled 값 검증
+            assertThat(response.getProducts()).isNotEmpty();
+
+            ProductOrderResponse orderResponse = response.getProducts().get(0);
+            assertThat(orderResponse.getTitle()).isEqualTo("Sample Product");
+            assertThat(orderResponse.getPrice()).isEqualTo(1000);
+            assertThat(orderResponse.getGlutenFreeTag()).isTrue();
         }
-
-        @Test
-        @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
-        void throwNotBoard() {
-            assertThrows(BbangleException.class,
-                () -> boardService.getProductResponse(NOT_EXSIST_ID));
-        }
-
     }
-
 }

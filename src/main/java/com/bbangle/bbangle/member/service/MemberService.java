@@ -2,16 +2,20 @@ package com.bbangle.bbangle.member.service;
 
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.domain.Withdrawal;
+import com.bbangle.bbangle.member.dto.MemberAssignResponse;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
+import com.bbangle.bbangle.preference.repository.MemberPreferenceRepository;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListFolderService;
@@ -44,6 +48,7 @@ public class MemberService {
     private final WishListBoardService wishListBoardService;
     private final WithdrawalRepository withdrawalRepository;
     private final WishListFolderService wishListFolderService;
+    private final MemberPreferenceRepository memberPreferenceRepository;
 
     @PostConstruct
     public void initSetting() {
@@ -139,23 +144,20 @@ public class MemberService {
         }
     }
 
-    public Member getFirstJoinedMember(Member oauthMember) {
-        Member newMember = saveNewJoinedOauthMember(oauthMember);
+    public Long getFirstJoinedMember(Member oauthMember) {
+        Member newMember = memberRepository.save(oauthMember);
         Long newMemberId = newMember.getId();
         wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
-
-        return newMember;
+        return newMemberId;
     }
 
-    private Member saveNewJoinedOauthMember(Member oauthMember) {
-        Member newMember = Member.builder()
-            .nickname(oauthMember.getNickname())
-            .provider(oauthMember.getProvider())
-            .providerId(oauthMember.getProviderId())
-            .build();
-        memberRepository.save(newMember);
+    @Transactional(readOnly = true)
+    public MemberAssignResponse getIsAssigned(Long memberId) {
 
-        return newMember;
+        boolean isFullyAssigned = signatureAgreementRepository.existsByMemberId(memberId);
+        boolean isPreferenceAssigned = memberPreferenceRepository.existsByMemberId(memberId);
+
+        return new MemberAssignResponse(isFullyAssigned, isPreferenceAssigned);
     }
 
 }

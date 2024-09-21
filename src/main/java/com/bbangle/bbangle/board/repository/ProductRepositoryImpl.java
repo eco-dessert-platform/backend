@@ -3,17 +3,21 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.TagCategoryDto;
+import com.bbangle.bbangle.board.dto.ProductOrderDto;
+import com.bbangle.bbangle.board.dto.QTitleDto;
+import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
 
 @Repository
 @Slf4j
@@ -22,6 +26,7 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
 
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
+    private static final QPush push = QPush.push;
 
     private final JPAQueryFactory queryFactory;
 
@@ -51,22 +56,58 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
     }
 
     @Override
-    public List<TagCategoryDto> getTagCategory(List<Long> boardIds) {
-
+    public List<TitleDto> findAllTitle() {
         return queryFactory.select(
-                Projections.constructor(
-                    TagCategoryDto.class,
+                new QTitleDto(
                     product.board.id,
-                    product.glutenFreeTag,
-                    product.sugarFreeTag,
-                    product.highProteinTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    product.category
-                )
-            )
+                    product.title))
             .from(product)
-            .where(product.board.id.in(boardIds))
+            .orderBy(board.id.desc())
             .fetch();
+    }
+
+    @Override
+    public List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId) {
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                ProductOrderDto.class,
+                                product.id,
+                                product.title,
+                                product.price,
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                product.sugars,
+                                product.protein,
+                                product.carbohydrates,
+                                product.fat,
+                                product.weight,
+                                product.calories,
+                                product.monday,
+                                product.tuesday,
+                                product.wednesday,
+                                product.thursday,
+                                product.friday,
+                                product.saturday,
+                                product.sunday,
+                                product.orderStartDate,
+                                product.orderEndDate,
+                                product.soldout,
+                                push.pushType,
+                                push.days,
+                                push.isActive
+                        ))
+                .from(product)
+                .leftJoin(push).on(
+                        product.id.eq(push.productId)
+                                .and(memberId != null ? push.memberId.eq(memberId)
+                                        : Expressions.booleanTemplate("false")))
+                .where(product.board.id.eq(boardId))
+                .orderBy(product.id.desc())
+                .fetch();
     }
 }

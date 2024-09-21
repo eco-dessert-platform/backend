@@ -26,7 +26,6 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //동현님 말대로 연관매핑 안해보고 해보기
     @Column(name = "member_id")
     @NotNull
     private Long memberId;
@@ -35,17 +34,14 @@ public class Review extends BaseEntity {
     @NotNull
     private Long boardId;
 
-    @NotNull
     @Column(name = "badge_taste", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTaste;
 
-    @NotNull
     @Column(name = "badge_brix", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeBrix;
 
-    @NotNull
     @Column(name = "badge_texture", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private Badge badgeTexture;
@@ -82,6 +78,16 @@ public class Review extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public static Review of(ReviewRequest reviewRequest, Long memberId) {
+        return Review.builder()
+                .content(reviewRequest.content())
+                .rate(reviewRequest.rate())
+                .memberId(memberId)
+                .boardId(reviewRequest.boardId())
+                .isBest(false)
+                .build();
     }
 
 }

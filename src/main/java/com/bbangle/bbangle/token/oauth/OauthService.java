@@ -31,28 +31,27 @@ public class OauthService {
     @Transactional
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode) {
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
-        //TODO 구글, 카카오 식별자 필요
-        Member saved = memberRepository.findByProviderAndProviderId(oauthMember.getProvider(),
+        Long memberId = memberRepository.findByProviderAndProviderId(oauthMember.getProvider(),
                 oauthMember.getProviderId())
             .orElseGet(() -> memberService.getFirstJoinedMember(oauthMember));
 
-        String refreshToken = tokenProvider.generateToken(saved, REFRESH_TOKEN_DURATION);
-        String accessToken = tokenProvider.generateToken(saved, ACCESS_TOKEN_DURATION);
+        String refreshToken = tokenProvider.generateToken(memberId, REFRESH_TOKEN_DURATION);
+        String accessToken = tokenProvider.generateToken(memberId, ACCESS_TOKEN_DURATION);
 
         Optional<RefreshToken> refreshTokenByMemberId =
-            refreshTokenRepository.findByMemberId(saved.getId());
+            refreshTokenRepository.findByMemberId(memberId);
 
         refreshTokenByMemberId.ifPresentOrElse(
             token -> refreshTokenByMemberId.get().update(refreshToken),
-            () -> saveRefreshToken(refreshToken, saved));
+            () -> saveRefreshToken(refreshToken, memberId));
 
         return new LoginTokenResponse(accessToken, refreshToken);
     }
 
-    private void saveRefreshToken(String refreshToken, Member saved) {
+    private void saveRefreshToken(String refreshToken, Long memberId) {
         RefreshToken saveToken = RefreshToken.builder()
             .refreshToken(refreshToken)
-            .memberId(saved.getId())
+            .memberId(memberId)
             .build();
 
         refreshTokenRepository.save(saveToken);

@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.ranking.BoardStatisticConfig;
+import com.bbangle.bbangle.boardstatistic.ranking.BoardStatisticConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -63,7 +63,6 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
      * -> 이 부분은 테스트하다 변경한 내용이라 원상복구하셔도 됩니다!
      */
 
-
 //    @BeforeEach
 //    void setUpMockMvc() {
 //        this.mockMvc = MockMvcBuilders.standaloneSetup(
@@ -71,15 +70,16 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
 //            .build();
 //    }
 
-    Member member;
+    Long memberId;
     Long firstSavedId;
     Long lastSavedId;
 
     @BeforeEach
     void createData() {
         wishListStoreRepository.deleteAll();
-        member = MemberFixture.createKakaoMember();
+        Member member = MemberFixture.createKakaoMember();
         member = memberRepository.save(member);
+        memberId = member.getId();
         createWishListStore(member);
     }
 
@@ -91,11 +91,11 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
                 .isDeleted(false)
                 .build();
             Store save = storeRepository.save(store);
-            if(i == 1){
+            if (i == 1) {
                 firstSavedId = save.getId();
             }
 
-            if(i == 25){
+            if (i == 25) {
                 lastSavedId = save.getId();
             }
             if (i != 25) {
@@ -111,7 +111,7 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
     @DisplayName("위시리스트 스토어 전체 조회를 시행한다")
     @Test
     void getWishListStores() throws Exception {
-        String authentication = getAuthentication(member);
+        String authentication = getAuthentication(memberId);
         mockMvc.perform(get("/api/v1/likes/stores")
                 .header(HttpHeaders.AUTHORIZATION, authentication))
             .andExpect(jsonPath("$.result.hasNext").value(true))
@@ -123,7 +123,7 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
     @DisplayName("위시리스트 삭제를 시행한다")
     @Test
     void deleteWishListStore() throws Exception {
-        String authentication = getAuthentication(member);
+        String authentication = getAuthentication(memberId);
         mockMvc.perform(patch("/api/v1/likes/store/" + firstSavedId)
                 .header(HttpHeaders.AUTHORIZATION, authentication))
             .andExpect(status().isOk())
@@ -133,15 +133,15 @@ class WishListStoreControllerTest extends AbstractIntegrationTest {
     @DisplayName("위시리스트 추가를 시행한다")
     @Test
     void addWishListStore() throws Exception {
-        String authentication = getAuthentication(member);
+        String authentication = getAuthentication(memberId);
         mockMvc.perform(post("/api/v1/likes/store/" + lastSavedId)
                 .header(HttpHeaders.AUTHORIZATION, authentication))
             .andExpect(status().isOk())
             .andDo(print());
     }
 
-    private String getAuthentication(Member member) {
-        String token = tokenProvider.generateToken(member, Duration.ofMinutes(1));
+    private String getAuthentication(Long memberId) {
+        String token = tokenProvider.generateToken(memberId, Duration.ofMinutes(1));
         return "Bearer " + token;
     }
 

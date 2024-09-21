@@ -35,7 +35,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
     private Store store;
     private Long lastSavedBoardId;
     private Long firstSavedBoardId;
-    private Member member;
+    private Long memberId;
 
     @Autowired
     BoardCursorGeneratorMapping boardCursorGeneratorMapping;
@@ -45,8 +45,9 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
         Store newStore = StoreFixture.storeGenerator();
         store = storeRepository.save(newStore);
         for (int i = 0; i < 12; i++) {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            member = memberRepository.save(member);
+            memberId = memberService.getFirstJoinedMember(member);
             Board newBoard = BoardFixture.randomBoardWithPrice(store, i * 1000 + 1000);
             Board savedBoard = boardRepository.save(newBoard);
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(savedBoard);
@@ -64,7 +65,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
             productRepository.save(firstProduct);
             productRepository.save(secondProduct);
             if (i % 2 == 1) {
-                wishListBoardService.wish(member.getId(), savedBoard.getId(),
+                wishListBoardService.wish(memberId, savedBoard.getId(),
                     new WishListBoardRequest(DEFAULT_FOLDER_ID));
             }
         }
@@ -224,7 +225,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .getCursor(NULL_CURSOR);
 
             //then
-            assertThat(recommendCursor.getValue()).isNull();
+            assertThat(recommendCursor.getValue()).isEqualTo(QBoard.board.isDeleted.eq(false));
         }
 
         @Test
@@ -241,8 +242,10 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder()
+                .and(QBoard.board.isDeleted.eq(false))
                 .and(QBoardStatistic.boardStatistic.basicScore.lt(expectedScore))
-                .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore).and(QBoard.board.id.loe(firstSavedBoardId)))
+                .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore)
+                    .and(QBoard.board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then

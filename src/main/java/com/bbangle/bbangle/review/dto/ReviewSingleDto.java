@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 public record ReviewSingleDto(
     Long id,
+    Long memberId,
     String nickname,
     BigDecimal rate,
     Badge badgeTaste,
@@ -15,7 +16,8 @@ public record ReviewSingleDto(
     Badge badgeTexture,
     String content,
     LocalDateTime createdAt,
-    Boolean isBest
+    Boolean isBest,
+    Long boardId
 ) {
     @QueryProjection
     public ReviewSingleDto { // Noncompliant - method is empty

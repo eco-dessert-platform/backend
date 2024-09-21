@@ -5,7 +5,6 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
@@ -49,7 +48,6 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
-    private final BoardStatisticService boardStatisticService;
     private final StoreService storeService;
     private final ReviewService reviewService;
 
@@ -79,6 +77,15 @@ public class BoardController {
             cursorId,
             memberId);
         return responseService.getSingleResult(boardResponseList);
+    }
+
+    @GetMapping("/count")
+    public CommonResult getCount(
+        @ParameterObject
+        FilterRequest filterRequest
+    ) {
+        Long boardCount = boardService.getFilteredBoardCount(filterRequest);
+        return responseService.getSingleResult(boardCount);
     }
 
     @GetMapping("/folders/{folderId}")
@@ -123,10 +130,12 @@ public class BoardController {
     ) {
         String viewCountKey = getViewCountKey(boardId, httpServletRequest);
         if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
-            BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, NON_VIEW_KEY);
+            BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId,
+                NON_VIEW_KEY);
             return responseService.getSingleResult(response);
         }
-        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId, viewCountKey);
+        BoardImageDetailResponse response = boardService.getBoardDtos(memberId, boardId,
+            viewCountKey);
         return responseService.getSingleResult(response);
     }
 
@@ -134,8 +143,11 @@ public class BoardController {
     @GetMapping("/{boardId}/product")
     public CommonResult getProductResponse(
         @PathVariable("boardId")
-        Long boardId) {
-        ProductResponse productResponse = boardService.getProductResponse(boardId);
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId
+    ) {
+        ProductResponse productResponse = boardService.getProductResponse(memberId, boardId);
 
         return responseService.getSingleResult(productResponse);
     }

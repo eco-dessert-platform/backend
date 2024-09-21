@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
-import org.springframework.web.multipart.MultipartFile;
 
 public record ReviewRequest(
     @NotNull
@@ -20,6 +19,6 @@ public record ReviewRequest(
     String content,
     @NotNull
     Long boardId,
-    List<String> photos
+    List<String> urls
 ) {
 }

@@ -8,13 +8,17 @@ import com.bbangle.bbangle.image.repository.ImageRepository;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-
+    @Value("${bucket.domain}")
+    private String bucketDomain;
+    @Value("${cdn.domain}")
+    private String cdnDomain;
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
 
@@ -29,6 +33,22 @@ public class ImageService {
         return save(category, image, domainId, 0);
     }
 
+    /**
+     *
+     * 도메인 id 없이 임시로 저장이 필요할 때가 있어서 만듬
+     * (추후 팀원들 논의 되면 리팩토링 예정)
+     */
+    public List<String> saveAll(
+        ImageCategory category,
+        List<MultipartFile> images
+    ){
+        return saveAll(category, images, -1);
+    }
+
+    public void move(String fromPath, String toPath){
+        s3Service.copyImage(fromPath, toPath);
+    }
+
     public String save(
         ImageCategory category,
         MultipartFile image,
@@ -36,7 +56,7 @@ public class ImageService {
         int order
     ) {
         String imagePath = s3Service.saveImage(image, imageFolderPathResolver(category, domainId));
-
+        imagePath = imagePath.replace(bucketDomain, cdnDomain);
         Image entity = createEntity(category, domainId, imagePath, order);
         imageRepository.save(entity);
 
@@ -51,11 +71,9 @@ public class ImageService {
         AtomicInteger order = new AtomicInteger(0);
 
         List<Image> entities = imageList.stream().map(image -> {
-            String imagePath = s3Service.saveImage(
-                image,
-                imageFolderPathResolver(category, domainId)
-            );
-
+            String pathFromS3 = imageFolderPathResolver(category, domainId);
+            String imagePath = s3Service.saveImage(image, pathFromS3);
+            imagePath = imagePath.replace(bucketDomain, cdnDomain);
             return createEntity(category, domainId, imagePath, order.getAndIncrement());
         }).toList();
 
@@ -69,6 +87,10 @@ public class ImageService {
             .stream()
             .map(Image::getPath)
             .toList();
+    }
+
+    public void deleteImages(List<String> urls){
+        s3Service.deleteImages(urls);
     }
 
     private Image createEntity(
@@ -87,7 +109,7 @@ public class ImageService {
 
     private String imageFolderPathResolver(ImageCategory category, Long domainId) {
         return String.format(
-            "/%s/%d",
+            "%s/%d",
             category.name().toLowerCase(ROOT),
             domainId
         );

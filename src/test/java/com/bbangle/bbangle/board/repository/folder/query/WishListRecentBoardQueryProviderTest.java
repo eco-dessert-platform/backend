@@ -30,8 +30,8 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
     private static final boolean INGREDIENT_TRUE = true;
     private static final boolean INGREDIENT_FALSE = false;
 
-    Member member;
     WishListFolder wishListFolder;
+    Long memberId;
     Long firstSavedId;
     Long lastSavedId;
     Long savedId;
@@ -39,15 +39,17 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
     Product product2;
     Board createdBoard;
     Store store;
+    BoardStatistic boardStatistic;
 
     @BeforeEach
-    void generalSetUp(){
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+    void generalSetUp() {
+        Member member = MemberFixture.createKakaoMember();
+        member = memberRepository.save(member);
+        memberId = memberService.getFirstJoinedMember(member);
         store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
 
-        wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+        wishListFolder = wishListFolderRepository.findByMemberId(memberId)
             .stream()
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -66,9 +68,9 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             productRepository.save(product);
             product2 = productWIthKetogenicYogurt(createdBoard);
             productRepository.save(product2);
-            BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+            boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
 
         }
@@ -82,8 +84,8 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
                 FolderBoardSortType.WISHLIST_RECENT.getOrderSpecifier(),
                 wishListFolder).getBoards();
 
-            BoardResponseDao boardResponseDao = getBoardResponseDao(createdBoard, product, store);
-            BoardResponseDao boardResponseDao2 = getBoardResponseDao(createdBoard, product2, store);
+            BoardResponseDao boardResponseDao = getBoardResponseDao(createdBoard, product, store, boardStatistic);
+            BoardResponseDao boardResponseDao2 = getBoardResponseDao(createdBoard, product2, store, boardStatistic);
 
             //then
             BoardResponseDao actual = boards.get(0);
@@ -94,11 +96,16 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             assertThat(actual.price()).isEqualTo(boardResponseDao.price());
             assertThat(actual.title()).isEqualTo(boardResponseDao.title());
             assertThat(actual.category()).isEqualTo(boardResponseDao.category());
-            assertThat(actual.tagsDao().veganTag()).isEqualTo(boardResponseDao.tagsDao().veganTag());
-            assertThat(actual.tagsDao().highProteinTag()).isEqualTo(boardResponseDao.tagsDao().highProteinTag());
-            assertThat(actual.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao.tagsDao().ketogenicTag());
-            assertThat(actual.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao.tagsDao().sugarFreeTag());
-            assertThat(actual.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao.tagsDao().glutenFreeTag());
+            assertThat(actual.tagsDao().veganTag()).isEqualTo(
+                boardResponseDao.tagsDao().veganTag());
+            assertThat(actual.tagsDao().highProteinTag()).isEqualTo(
+                boardResponseDao.tagsDao().highProteinTag());
+            assertThat(actual.tagsDao().ketogenicTag()).isEqualTo(
+                boardResponseDao.tagsDao().ketogenicTag());
+            assertThat(actual.tagsDao().sugarFreeTag()).isEqualTo(
+                boardResponseDao.tagsDao().sugarFreeTag());
+            assertThat(actual.tagsDao().glutenFreeTag()).isEqualTo(
+                boardResponseDao.tagsDao().glutenFreeTag());
 
             BoardResponseDao actual2 = boards.get(1);
             assertThat(actual2.boardId()).isEqualTo(boardResponseDao2.boardId());
@@ -108,19 +115,24 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             assertThat(actual2.price()).isEqualTo(boardResponseDao2.price());
             assertThat(actual2.title()).isEqualTo(boardResponseDao2.title());
             assertThat(actual2.category()).isEqualTo(boardResponseDao2.category());
-            assertThat(actual2.tagsDao().veganTag()).isEqualTo(boardResponseDao2.tagsDao().veganTag());
-            assertThat(actual2.tagsDao().highProteinTag()).isEqualTo(boardResponseDao2.tagsDao().highProteinTag());
-            assertThat(actual2.tagsDao().ketogenicTag()).isEqualTo(boardResponseDao2.tagsDao().ketogenicTag());
-            assertThat(actual2.tagsDao().sugarFreeTag()).isEqualTo(boardResponseDao2.tagsDao().sugarFreeTag());
-            assertThat(actual2.tagsDao().glutenFreeTag()).isEqualTo(boardResponseDao2.tagsDao().glutenFreeTag());
+            assertThat(actual2.tagsDao().veganTag()).isEqualTo(
+                boardResponseDao2.tagsDao().veganTag());
+            assertThat(actual2.tagsDao().highProteinTag()).isEqualTo(
+                boardResponseDao2.tagsDao().highProteinTag());
+            assertThat(actual2.tagsDao().ketogenicTag()).isEqualTo(
+                boardResponseDao2.tagsDao().ketogenicTag());
+            assertThat(actual2.tagsDao().sugarFreeTag()).isEqualTo(
+                boardResponseDao2.tagsDao().sugarFreeTag());
+            assertThat(actual2.tagsDao().glutenFreeTag()).isEqualTo(
+                boardResponseDao2.tagsDao().glutenFreeTag());
 
         }
 
-        private BoardResponseDao getBoardResponseDao(Board board, Product product, Store store) {
+        private BoardResponseDao getBoardResponseDao(Board board, Product product, Store store, BoardStatistic boardStatistic) {
             return new BoardResponseDao(board.getId(),
                 store.getId(),
                 store.getName(),
-                store.getProfile(),
+                board.getProfile(),
                 board.getTitle(),
                 board.getPrice(),
                 product.getCategory(),
@@ -128,17 +140,22 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
                 product.isHighProteinTag(),
                 product.isSugarFreeTag(),
                 product.isVeganTag(),
-                product.isKetogenicTag());
+                product.isKetogenicTag(),
+                boardStatistic.getBoardReviewGrade(),
+                boardStatistic.getBoardReviewCount(),
+                product.getOrderEndDate(),
+                product.isSoldout(),
+                board.getDiscountRate());
         }
 
     }
 
     @Nested
     @DisplayName("위시리스트에 담은 순으로 BoardDao를 정상적으로 담는다")
-    class BoardInFolderWithWishListRecentOrder{
+    class BoardInFolderWithWishListRecentOrder {
 
         @BeforeEach
-        void setup(){
+        void setup() {
             for (int i = 0; i < 12; i++) {
                 Board createdBoard = BoardFixture.randomBoardWithPrice(store, i * 1000);
                 createdBoard = boardRepository.save(createdBoard);
@@ -152,16 +169,17 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
                 Product product2 = ProductFixture.randomProduct(createdBoard);
                 productRepository.save(product);
                 productRepository.save(product2);
-                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
+                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(
+                    createdBoard);
                 boardStatisticRepository.save(boardStatistic);
-                wishListBoardService.wish(member.getId(), createdBoard.getId(),
+                wishListBoardService.wish(memberId, createdBoard.getId(),
                     new WishListBoardRequest(wishListFolder.getId()));
             }
         }
 
         @Test
         @DisplayName("정상적으로 위시리스트에 담은 순으로 DAO를 조회한다.")
-        void getBoardResponseDaoWithWishListRecent(){
+        void getBoardResponseDaoWithWishListRecent() {
             //given, when
             List<BoardResponseDao> boardResponseDaoList = new WishListRecentBoardQueryProvider(
                 queryFactory,
@@ -172,8 +190,9 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
 
             //then
             assertThat(boardResponseDaoList).hasSize(22);
-            assertThat(boardResponseDaoList.stream().findFirst().get().boardId()).isEqualTo(lastSavedId);
-            for(long i = lastSavedId; i <= firstSavedId; i++){
+            assertThat(boardResponseDaoList.stream().findFirst().get().boardId()).isEqualTo(
+                lastSavedId);
+            for (long i = lastSavedId; i <= firstSavedId; i++) {
                 final long finalizedId = i;
                 assertThat(boardResponseDaoList
                     .stream()

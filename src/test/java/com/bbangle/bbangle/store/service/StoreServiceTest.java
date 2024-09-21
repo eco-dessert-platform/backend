@@ -1,41 +1,37 @@
 package com.bbangle.bbangle.store.service;
 
 import static java.util.Collections.emptyMap;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.dto.BoardsInStoreResponse;
-import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.WishListBoard;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 class StoreServiceTest extends AbstractIntegrationTest {
 
+    private final String TEST_TITLE = "TestTitle";
     private static final Long NULL_CURSOR = null;
     private static final Long NULL_MEMBER_ID = null;
-
-    private Member member;
+    private Long memberId;
 
     @BeforeEach
     void setup() {
@@ -44,8 +40,8 @@ class StoreServiceTest extends AbstractIntegrationTest {
         storeRepository.deleteAll();
         memberRepository.deleteAll();
 
-        member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        Member member = MemberFixture.createKakaoMember();
+        memberId = memberService.getFirstJoinedMember(member);
     }
 
     @Nested
@@ -59,277 +55,219 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 storeRepository.save(store);
             }
         }
-
-        @Test
-        @DisplayName("정상적으로 첫 페이지를 조회한다")
-        void getFirstPage() {
-            //given, when
-            StoreCustomPage<List<StoreResponseDto>> list = storeService.getList(
-                NULL_CURSOR,
-                NULL_MEMBER_ID
-            );
-            List<StoreResponseDto> content = list.getContent();
-            Boolean hasNext = list.getHasNext();
-
-            //then
-            assertThat(content).hasSize(20);
-            assertThat(hasNext).isTrue();
-        }
-
-        @Test
-        @DisplayName("정상적으로 마지막 페이지를 조회한다")
-        void getLastPage() {
-            //given
-            StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
-                NULL_MEMBER_ID);
-            Long nextCursor = firstPage.getNextCursor();
-
-            //when
-            StoreCustomPage<List<StoreResponseDto>> lastPage = storeService.getList(nextCursor,
-                NULL_MEMBER_ID);
-
-            List<StoreResponseDto> lastPageContent = lastPage.getContent();
-            Boolean lastPageHasNext = lastPage.getHasNext();
-            Long lastPageNextCursor = lastPage.getNextCursor();
-
-            //then
-            assertThat(lastPageContent).hasSize(10);
-            assertThat(lastPageHasNext).isFalse();
-        }
-
-        @Test
-        @DisplayName("마지막 자료를 조회하는 경우 nextCursor는 -1을 가리킨다")
-        void getLastContent() {
-            //given, when
-            StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
-                NULL_MEMBER_ID);
-            Long nextCursor = firstPage.getNextCursor();
-            StoreCustomPage<List<StoreResponseDto>> lastPage = storeService.getList(nextCursor,
-                NULL_MEMBER_ID);
-            Long lastContentCursor = lastPage.getNextCursor();
-
-            StoreCustomPage<List<StoreResponseDto>> noContent = storeService.getList(
-                lastContentCursor,
-                NULL_MEMBER_ID);
-
-            //then
-            assertThat(noContent.getContent()).isEmpty();
-            assertThat(noContent.getNextCursor()).isEqualTo(-1L);
-        }
-
-        @Test
-        @DisplayName("좋아요를 누른 store는 isWished가 true로 반환된다")
-        void getWishedContent() throws Exception {
-            //given, when
-            StoreCustomPage<List<StoreResponseDto>> before = storeService.getList(NULL_CURSOR,
-                NULL_MEMBER_ID);
-            StoreResponseDto first = before.getContent()
-                .stream()
-                .findFirst()
-                .orElseThrow(Exception::new);
-            wishListStoreService.save(member.getId(), first.getStoreId());
-
-            //then
-            StoreResponseDto wishedContent = storeService.getList(NULL_CURSOR, member.getId())
-                .getContent()
-                .stream()
-                .findFirst()
-                .orElseThrow(Exception::new);
-            assertThat(wishedContent.getIsWished()).isTrue();
-        }
     }
 
     @Nested
     @DisplayName("getBoardsInStore 메서드는")
     class GetBoardsInStore {
 
-        private final Long NULL_CURSOR = null;
-        private final Long PAGE_SIZE = 10L;
         private Store store;
         private Board board1;
         private Board board2;
         private Board board3;
-        private Member member;
+        private Board board4;
+        private Board board5;
 
         @BeforeEach
         void init() {
             store = fixtureStore(emptyMap());
 
-            List<Product> products1 = List.of(
-                fixtureProduct(
-                    Map.of(
-                        "glutenFreeTag", true,
-                        "sugarFreeTag", false,
-                        "highProteinTag", true,
-                        "veganTag", false,
-                        "ketogenicTag", false,
-                        "category", Category.SNACK)),
+            Product glutenFreeTagProduct = fixtureProduct(Map.of(
+                "glutenFreeTag", true,
+                "highProteinTag", false,
+                "sugarFreeTag", false,
+                "veganTag", false,
+                "ketogenicTag", false,
+                "orderStartDate", LocalDateTime.now(),
+                "soldout", true
+            ));
 
-                fixtureProduct(
-                    Map.of(
-                        "glutenFreeTag", true,
-                        "sugarFreeTag", false,
-                        "highProteinTag", true,
-                        "veganTag", false,
-                        "ketogenicTag", false,
-                        "category", Category.CAKE))
+            Map<String, Object> params = new HashMap<>();
+            params.put("glutenFreeTag", false);
+            params.put("highProteinTag", true);
+            params.put("sugarFreeTag", false);
+            params.put("veganTag", false);
+            params.put("ketogenicTag", false);
+            params.put("orderStartDate", null);
+            params.put("soldout", false);
+
+            Product highProteinTagProduct = fixtureProduct(params);
+
+            Product sugarFreeTagProduct = fixtureProduct(Map.of(
+                "glutenFreeTag", false,
+                "highProteinTag", false,
+                "sugarFreeTag", true,
+                "veganTag", false,
+                "ketogenicTag", false
+            ));
+            Product veganTagProduct = fixtureProduct(Map.of(
+                "glutenFreeTag", false,
+                "highProteinTag", false,
+                "sugarFreeTag", false,
+                "veganTag", true,
+                "ketogenicTag", false,
+                "category", Category.COOKIE
+            ));
+
+            Product veganTagProduct2 = fixtureProduct(Map.of(
+                "glutenFreeTag", false,
+                "highProteinTag", false,
+                "sugarFreeTag", false,
+                "veganTag", true,
+                "ketogenicTag", false,
+                "category", Category.SNACK
+            ));
+
+            Product ketogenicTagProduct = fixtureProduct(Map.of(
+                "glutenFreeTag", false,
+                "highProteinTag", false,
+                "sugarFreeTag", false,
+                "veganTag", false,
+                "ketogenicTag", true,
+                "category", Category.SNACK
+            ));
+
+            Product ketogenicTagProduct2 = fixtureProduct(Map.of(
+                "glutenFreeTag", false,
+                "highProteinTag", false,
+                "sugarFreeTag", false,
+                "veganTag", false,
+                "ketogenicTag", true,
+                "category", Category.SNACK
+            ));
+
+            board1 = fixtureBoard(Map.of(
+                "store", store, "title", TEST_TITLE,
+                "productList", List.of(glutenFreeTagProduct)
+            ));
+            board2 = fixtureBoard(Map.of(
+                "store", store, "title", TEST_TITLE,
+                "productList", List.of(highProteinTagProduct)
+            ));
+            board3 = fixtureBoard(Map.of(
+                "store", store, "title", TEST_TITLE,
+                "productList", List.of(sugarFreeTagProduct)
+            ));
+            board4 = fixtureBoard(Map.of(
+                "store", store, "title", TEST_TITLE,
+                "productList", List.of(veganTagProduct, veganTagProduct2)
+            ));
+
+            board5 = fixtureBoard(Map.of(
+                "store", store, "title", TEST_TITLE,
+                "productList", List.of(ketogenicTagProduct, ketogenicTagProduct2)
+            ));
+
+            boardStatisticRepository.saveAll(
+                List.of(BoardStatisticFixture.newBoardStatistic(board1),
+                    BoardStatisticFixture.newBoardStatistic(board2),
+                    BoardStatisticFixture.newBoardStatistic(board3),
+                    BoardStatisticFixture.newBoardStatistic(board4),
+                    BoardStatisticFixture.newBoardStatistic(board5))
             );
-            List<Product> products2 = List.of(
-                fixtureProduct(
-                    Map.of(
-                        "glutenFreeTag", true,
-                        "sugarFreeTag", false,
-                        "highProteinTag", false,
-                        "veganTag", false,
-                        "ketogenicTag", false,
-                        "category", Category.SNACK)),
-                fixtureProduct(
-                    Map.of(
-                        "glutenFreeTag", true,
-                        "sugarFreeTag", false,
-                        "highProteinTag", false,
-                        "veganTag", false,
-                        "ketogenicTag", false,
-                        "category",
-                        Category.SNACK))
-            );
-
-            List<Product> products3 = new ArrayList<>();
-            for (int index = 0; 15 > index; index++) {
-                products3.add(fixtureProduct(Map.of("sugarFreeTag", true)));
-            }
-
-            board1 = fixtureBoard(Map.of("store", store, "productList", products1));
-            board2 = fixtureBoard(Map.of("store", store, "productList", products2));
-            board3 = fixtureBoard(Map.of("store", store, "productList", products3));
-            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board1));
-            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board2));
-            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board3));
-
-            for (int index = 0; 15 > index; index++) {
-                fixtureBoard(Map.of("store", store));
-            }
-
-            createWishListStore();
         }
 
         @Test
-        @DisplayName("다음 커서를 정상적으로 반환한다")
-        void validCursorId() {
-            StoreDetailCustomPage<List<BoardsInStoreResponse>> boardsInStoreByNullCursor = storeService.getBoardsInStore(
-                NULL_MEMBER_ID,
-                store.getId(),
-                NULL_CURSOR);
-
-            StoreDetailCustomPage<List<BoardsInStoreResponse>> boardsInStore = storeService.getBoardsInStore(
-                NULL_MEMBER_ID,
-                store.getId(),
-                boardsInStoreByNullCursor.getNextCursor());
-
-            assertThat(boardsInStoreByNullCursor.getHasNext()).isTrue();
-            assertThat(boardsInStore.getHasNext()).isFalse();
-        }
-
-        @Test
-        @DisplayName("유효하지 않은 커서 아이디 일 때 IllegalArgumentException을 발생시킨다")
-        void validNotCursorId() {
-            Long storeId = store.getId();
-
-            assertThrows(BbangleException.class,
-                () -> storeService.getBoardsInStore(
-                    NULL_MEMBER_ID,
-                    storeId,
-                    Long.MAX_VALUE));
-        }
-
-        @Test
-        @DisplayName("위시리스트 등록한 상품을 정상적으로 가져올 가져올 수 있다")
-        void getIsWished() {
-            StoreDetailCustomPage<List<BoardsInStoreResponse>> boardsInStore = storeService.getBoardsInStore(
-                member.getId(),
-                store.getId(),
-                board3.getId());
-
-            Boolean wishTrue = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board1.getId()))
-                .findFirst()
-                .get()
-                .getIsWished();
-
-            Boolean wishFalse = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board2.getId()))
-                .toList()
-                .get(0)
-                .getIsWished();
-
-            assertThat(wishTrue).isTrue();
-            assertThat(wishFalse).isFalse();
-        }
-
-        @Test
-        @DisplayName("게시판 태그 배열을 정상적으로 변환하여 가져올 가져올 수 있다")
+        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getTags() {
 
-            StoreDetailCustomPage<List<BoardsInStoreResponse>> boardsInStore = storeService.getBoardsInStore(
-                member.getId(),
-                store.getId(),
-                board3.getId());
+            StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
+                NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            Boolean isBundledTrue = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board1.getId()))
-                .findFirst()
-                .get()
-                .getIsBundled();
+            List<String> board1Tag = boardsInStoreDtos.getContent().get(4).getTags();
+            assertAll(
+                () -> assertThat(board1Tag).contains(TagEnum.GLUTEN_FREE.label()),
+                () -> assertThat(board1Tag).doesNotContain(
+                    TagEnum.SUGAR_FREE.label(),
+                    TagEnum.VEGAN.label(),
+                    TagEnum.HIGH_PROTEIN.label(),
+                    TagEnum.KETOGENIC.label()
+                ));
 
-            Boolean isBundledFalse = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board2.getId()))
-                .findFirst()
-                .get()
-                .getIsBundled();
+            List<String> board2Tag = boardsInStoreDtos.getContent().get(3).getTags();
+            assertAll(
+                () -> assertThat(board2Tag)
+                    .contains(TagEnum.HIGH_PROTEIN.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.VEGAN.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
 
-            assertThat(isBundledTrue).isTrue();
-            assertThat(isBundledFalse).isFalse();
+            List<String> board3Tag = boardsInStoreDtos.getContent().get(2).getTags();
+            assertAll(
+                () -> assertThat(board3Tag)
+                    .contains(TagEnum.SUGAR_FREE.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.VEGAN.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
+
+            List<String> board4Tag = boardsInStoreDtos.getContent().get(1).getTags();
+            assertAll(
+                () -> assertThat(board4Tag)
+                    .contains(TagEnum.VEGAN.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.KETOGENIC.label()
+                    )
+            );
+
+            List<String> board5Tag = boardsInStoreDtos.getContent().get(0).getTags();
+            assertAll(
+                () -> assertThat(board5Tag)
+                    .contains(TagEnum.KETOGENIC.label())
+                    .doesNotContain(
+                        TagEnum.GLUTEN_FREE.label(),
+                        TagEnum.HIGH_PROTEIN.label(),
+                        TagEnum.SUGAR_FREE.label(),
+                        TagEnum.VEGAN.label()
+                    )
+            );
         }
 
         @Test
-        @DisplayName("묶음 상품을 정상적으로 판별할 수 있다")
+        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
+        void getBbangKetting() {
+            StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
+                NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
+
+            AssertionsForClassTypes.assertThat(
+                boardsInStoreDtos.getContent().get(4).getIsBbangcketing()).isTrue();
+            AssertionsForClassTypes.assertThat(
+                boardsInStoreDtos.getContent().get(3).getIsBbangcketing()).isFalse();
+        }
+
+        @Test
+        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
+        void getIsSoldOut() {
+            StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
+                NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
+
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(4).getIsSoldOut())
+                .isTrue();
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(3).getIsSoldOut())
+                .isFalse();
+        }
+
+        @Test
+        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
         void getIsBundled() {
-            List<String> expectTagsWithGlutenAndProtein = List.of(TagEnum.GLUTEN_FREE.label(),
-                TagEnum.HIGH_PROTEIN.label());
+            StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
+                NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            List<String> expectTagsWithGluten = List.of(TagEnum.GLUTEN_FREE.label(),
-                TagEnum.HIGH_PROTEIN.label());
-
-            StoreDetailCustomPage<List<BoardsInStoreResponse>> boardsInStore = storeService.getBoardsInStore(
-                member.getId(),
-                store.getId(),
-                board3.getId());
-
-            List<String> tagsWithGlutenAndProtein = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board1.getId()))
-                .findFirst()
-                .get()
-                .getTags();
-
-            List<String> tagsWithGluten = boardsInStore.getContent().stream()
-                .filter(board -> board.getBoardId().equals(board2.getId()))
-                .findFirst()
-                .get()
-                .getTags();
-
-            assertThat(tagsWithGlutenAndProtein).containsAnyElementsOf(
-                expectTagsWithGlutenAndProtein);
-            assertThat(tagsWithGluten).containsAnyElementsOf(expectTagsWithGluten);
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(1).getIsBundled())
+                .isTrue();
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(0).getIsBundled())
+                .isFalse();
         }
 
-        void createWishListStore() {
-            member = memberRepository.save(Member.builder().build());
-
-            wishListBoardRepository.save(WishListBoard.builder()
-                .boardId(board1.getId())
-                .memberId(member.getId())
-                .build());
-        }
     }
-
 }

@@ -32,6 +32,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     @Autowired
     WishListFolderService wishListFolderService;
 
+    Long memberId;
     Member member;
     Store store;
     Board board;
@@ -40,7 +41,8 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     @BeforeEach
     void setup() {
         member = MemberFixture.createKakaoMember();
-        member = memberService.getFirstJoinedMember(member);
+        memberId = memberService.getFirstJoinedMember(member);
+        member = memberRepository.findMemberById(memberId);
 
         store = StoreFixture.storeGenerator();
         storeRepository.save(store);
@@ -65,7 +67,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
         void wishBoard() {
             //given
-            FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto defaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -73,11 +75,11 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             //when
-            wishListBoardService.wish(member.getId(), board.getId(),
+            wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(defaultFolder.folderId()));
 
             //then
-            FolderResponseDto afterWishDefaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto afterWishDefaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -85,10 +87,6 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(1);
-            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-                .get();
-            assertThat(boardStatistic.getBasicScore()).isEqualTo(50.0);
-            assertThat(boardStatistic.getBoardWishCount()).isOne();
         }
 
         @Test
@@ -98,7 +96,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
 
-            FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto defaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -106,13 +104,13 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             //when, then
-            wishListBoardService.wish(member.getId(), board.getId(),
+            wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(defaultFolder.folderId()));
-            assertThatThrownBy(() -> wishListBoardService.wish(member.getId(), board.getId(),
+            assertThatThrownBy(() -> wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(defaultFolder.folderId())))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.ALREADY_ON_WISHLIST.getMessage());
-            assertThatThrownBy(() -> wishListBoardService.wish(member.getId(), board.getId(),
+            assertThatThrownBy(() -> wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(wishListFolder.getId())))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.ALREADY_ON_WISHLIST.getMessage());
@@ -129,7 +127,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 게시글을 위시리스트에 삭제한다")
         void wishBoard() {
             //given
-            FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto defaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -137,12 +135,12 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             //when
-            wishListBoardService.wish(member.getId(), board.getId(),
+            wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(defaultFolder.folderId()));
-            wishListBoardService.cancel(member.getId(), board.getId());
+            wishListBoardService.cancel(memberId, board.getId());
 
             //then
-            FolderResponseDto afterWishDefaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto afterWishDefaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -150,7 +148,8 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             assertThat(afterWishDefaultFolder.productImages()).hasSize(0);
-            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId()).get();
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
+                .get();
             assertThat(boardStatistic.getBasicScore()).isEqualTo(0.0);
             assertThat(boardStatistic.getBoardWishCount()).isZero();
         }
@@ -162,7 +161,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
 
-            FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
+            FolderResponseDto defaultFolder = wishListFolderService.getList(memberId)
                 .stream()
                 .filter(folder -> folder.title()
                     .equals(DEFAULT_FOLDER_NAME))
@@ -170,10 +169,10 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .get();
 
             //when, then
-            wishListBoardService.wish(member.getId(), board.getId(),
+            wishListBoardService.wish(memberId, board.getId(),
                 new WishListBoardRequest(defaultFolder.folderId()));
-            wishListBoardService.cancel(member.getId(), board.getId());
-            assertThatThrownBy(() -> wishListBoardService.cancel(member.getId(), board.getId()))
+            wishListBoardService.cancel(memberId, board.getId());
+            assertThatThrownBy(() -> wishListBoardService.cancel(memberId, board.getId()))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
         }

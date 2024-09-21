@@ -2,18 +2,16 @@ package com.bbangle.bbangle.review.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
+import com.bbangle.bbangle.image.domain.Image;
+import com.bbangle.bbangle.image.domain.ImageCategory;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.review.domain.ReviewImg;
 import com.bbangle.bbangle.review.domain.ReviewLike;
-import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,8 +39,6 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     private static final String BASE_PATH = "/api/v1/review/";
     @Autowired
     private ReviewLikeRepository reviewLikeRepository;
-    @Autowired
-    private ReviewImgRepository reviewImgRepository;
 
     @BeforeEach
     public void setUp() {
@@ -71,11 +67,13 @@ class ReviewControllerTest extends AbstractIntegrationTest {
                 .build();
         reviewLikeRepository.save(reviewLike);
 
-        ReviewImg reviewImg = ReviewImg.builder()
-                .reviewId(savedReview.getId())
-                .url("testImage")
+        Image reviewImg = Image.builder()
+                .path("testImage")
+                .domainId(savedReview.getId())
+                .imageCategory(ImageCategory.REVIEW)
                 .build();
-        reviewImgRepository.save(reviewImg);
+
+        imageRepository.save(reviewImg);
     }
 
     @Test
@@ -169,7 +167,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("리뷰의 사진을 크게 본다")
     void getImage() throws Exception{
-        Long reviewImgId = reviewImgRepository.findAll().stream().findFirst().get().getId();
+        Long reviewImgId = imageRepository.findAll().stream().findFirst().get().getId();
         mockMvc.perform(get(BASE_PATH+"/images/"+reviewImgId))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -179,7 +177,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @DisplayName("리뷰의 사진을 삭제한다")
     @WithCustomMockUser
     void deleteImage() throws Exception{
-        Long reviewImgId = reviewImgRepository.findAll().stream().findFirst().get().getId();
+        Long reviewImgId = imageRepository.findAll().stream().findFirst().get().getId();
         mockMvc.perform(delete(BASE_PATH+"/image/"+reviewImgId))
                 .andExpect(status().isOk())
                 .andDo(print());

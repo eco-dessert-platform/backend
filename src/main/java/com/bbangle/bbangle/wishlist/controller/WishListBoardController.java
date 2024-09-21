@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.wishlist.controller;
 
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -10,7 +9,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +25,7 @@ public class WishListBoardController {
     public CommonResult wish(
         @AuthenticationPrincipal
         Long memberId,
-        @PathVariable
+        @PathVariable("boardId")
         Long boardId,
         @RequestBody
         WishListBoardRequest wishRequest
@@ -40,7 +38,7 @@ public class WishListBoardController {
     public CommonResult cancel(
         @AuthenticationPrincipal
         Long memberId,
-        @PathVariable
+        @PathVariable("boardId")
         Long boardId
     ) {
         wishListBoardService.cancel(memberId, boardId);

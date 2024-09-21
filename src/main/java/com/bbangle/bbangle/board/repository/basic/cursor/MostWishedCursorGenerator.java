@@ -27,7 +27,7 @@ public class MostWishedCursorGenerator implements BoardCursorGenerator {
         if (cursorId == null) {
             return cursorBuilder;
         }
-        Integer targetWishCount = Optional.ofNullable(jpaQueryFactory
+        Long targetWishCount = Optional.ofNullable(jpaQueryFactory
                 .select(boardStatistic.boardWishCount)
                 .from(boardStatistic)
                 .where(boardStatistic.boardId.eq(cursorId))

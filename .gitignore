@@ -5,6 +5,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 *.yml
+*.json
 
 ### STS ###
 .apt_generated
@@ -222,10 +223,9 @@ redis/data/dump.rdb
 .idea/
 
 /src/main/generated/
-!/.github/
-!/.github/workflows/cd-pipeline-dev.yml
-!/.github/workflows/cd-pipeline-dev.yml
 
 *.env
 
 .jqwik-database
+!/.github/workflows/cd-pipeline-dev-aws.yml
+!/.github/workflows/cd-pipeline-aws-deploy.yml

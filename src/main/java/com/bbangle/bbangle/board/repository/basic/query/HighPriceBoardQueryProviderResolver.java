@@ -6,6 +6,7 @@ import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class HighPriceBoardQueryProviderResolver implements BoardQueryProvider{
 
     private static final QBoard board = QBoard.board;
+    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
 
@@ -53,13 +55,20 @@ public class HighPriceBoardQueryProviderResolver implements BoardQueryProvider{
                     product.highProteinTag,
                     product.sugarFreeTag,
                     product.veganTag,
-                    product.ketogenicTag
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
                 ))
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();

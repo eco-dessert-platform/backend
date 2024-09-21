@@ -4,9 +4,6 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
@@ -53,23 +50,9 @@ class BoardControllerTest extends AbstractIntegrationTest {
             Store store = storeGenerator();
             storeRepository.save(store);
 
-            board = boardGenerator(store,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true);
+            board = boardGenerator(store);
 
-            board2 = boardGenerator(store,
-                true,
-                false,
-                true,
-                true,
-                false,
-                true,
-                true);
+            board2 = boardGenerator(store);
             Board save1 = boardRepository.save(board);
             Board save2 = boardRepository.save(board2);
             boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(save1));
@@ -168,47 +151,40 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andDo(print());
         }
 
-    @Nested
-    @DisplayName("getProduct 메서드는")
-    class GetProduct {
+        @Nested
+        @DisplayName("getProduct 메서드는")
+        class GetProduct {
+
+            @Test
+            @DisplayName("유효한 boardId로 상품 정보를 가져올 수 있다")
+            void getProductInfo() throws Exception {
+                Long boardId = board.getId();
+                mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+            }
+
+            @Test
+            @DisplayName("유효하지 않은 boardId를 요청 시 400에 에러를 발생시킨다")
+            void throwError() throws Exception {
+                mockMvc.perform(get("/api/v1/boards/9999/product"))
+                    .andExpect(status().is4xxClientError())
+                    .andDo(print());
+            }
+        }
+
 
         @Test
-        @DisplayName("유효한 boardId로 상품 정보를 가져올 수 있다")
-        void getProductInfo() throws Exception {
+        @DisplayName("")
+        void getProductTest() throws Exception {
             Long boardId = board.getId();
             mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
                 .andExpect(status().isOk())
                 .andDo(print());
         }
 
-        @Test
-        @DisplayName("유효하지 않은 boardId를 요청 시 400에 에러를 발생시킨다")
-        void throwError() throws Exception {
-            mockMvc.perform(get("/api/v1/boards/9999/product"))
-                .andExpect(status().is4xxClientError())
-                .andDo(print());
-        }
-    }
-
-
-    @Test
-    @DisplayName("")
-    void getProductTest() throws Exception {
-        Long boardId = board.getId();
-        mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
-            .andExpect(status().isOk())
-            .andDo(print());
-    }
-
         private Board boardGenerator(
-            Store store,
-            boolean sunday,
-            boolean monday,
-            boolean tuesday,
-            boolean wednesday,
-            boolean thursday,
-            boolean friday,
-            boolean saturday
+            Store store
         ) {
             return Board.builder()
                 .store(store)
@@ -217,14 +193,6 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .status(true)
                 .profile("profile")
                 .purchaseUrl("purchaseUrl")
-                .sunday(sunday)
-                .monday(monday)
-                .tuesday(tuesday)
-                .wednesday(wednesday)
-                .thursday(thursday)
-                .friday(friday)
-                .saturday(saturday)
-                .isDeleted(sunday)
                 .build();
         }
 
@@ -267,8 +235,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
 
         private static final boolean INGREDIENT_TRUE = true;
         private static final boolean INGREDIENT_FALSE = false;
-
-        Member member;
+        Long memberId;
         Board createdBoard;
         Product product;
         Store store;
@@ -276,12 +243,13 @@ class BoardControllerTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void setup() {
-            member = MemberFixture.createKakaoMember();
-            member = memberService.getFirstJoinedMember(member);
+            Member member = MemberFixture.createKakaoMember();
+            member = memberRepository.save(member);
+            memberId = memberService.getFirstJoinedMember(member);
             store = StoreFixture.storeGenerator();
             store = storeRepository.save(store);
 
-            wishListFolder = wishListFolderRepository.findByMemberId(member.getId())
+            wishListFolder = wishListFolderRepository.findByMemberId(memberId)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("기본 폴더가 생성되어 있지 않아 테스트 실패"));
@@ -295,7 +263,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
             BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(createdBoard);
             boardStatisticRepository.save(boardStatistic);
 
-            wishListBoardService.wish(member.getId(), createdBoard.getId(),
+            wishListBoardService.wish(memberId, createdBoard.getId(),
                 new WishListBoardRequest(wishListFolder.getId()));
         }
 
@@ -303,7 +271,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
         @DisplayName("정상적으로 폴더 안의 게시글을 조회할 수 있다.")
         void getBoardInFolder() throws Exception {
             //given
-            String authentication = getAuthentication(member);
+            String authentication = getAuthentication(memberId);
 
             mockMvc.perform(get("/api/v1/boards/folders/" + wishListFolder.getId())
                     .header(HttpHeaders.AUTHORIZATION, authentication))
@@ -315,18 +283,23 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeId").value(store.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeName").value(store.getName()))
-                .andExpect(jsonPath("$.result.content[0].thumbnail").value(store.getProfile()))
+                .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getProfile()))
                 .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
                 .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
                 .andExpect(jsonPath("$.result.content[0].isWished").value(true))
                 .andExpect(jsonPath("$.result.content[0].isBundled").value(false))
                 .andExpect(jsonPath("$.result.content[0].tags[0]").value("ketogenic"))
+                .andExpect(jsonPath("$.result.content[0].reviewRate").value(0.0))
+                .andExpect(jsonPath("$.result.content[0].reviewCount").value(0))
+                .andExpect(jsonPath("$.result.content[0].isBbangcketing").value(false))
+                .andExpect(jsonPath("$.result.content[0].isSoldOut").value(false))
+                .andExpect(jsonPath("$.result.content[0].discountRate").value(0))
                 .andExpect(jsonPath("$.result.nextCursor").value(-1))
                 .andExpect(jsonPath("$.result.hasNext").value(false));
         }
 
-        private String getAuthentication(Member member) {
-            String token = tokenProvider.generateToken(member, Duration.ofMinutes(1));
+        private String getAuthentication(Long memberId) {
+            String token = tokenProvider.generateToken(memberId, Duration.ofMinutes(1));
             return "Bearer " + token;
         }
 

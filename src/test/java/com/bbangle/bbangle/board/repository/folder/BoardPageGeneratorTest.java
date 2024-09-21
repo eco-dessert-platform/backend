@@ -10,6 +10,8 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.fixture.TagDaoFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,21 +20,21 @@ class BoardPageGeneratorTest {
 
     static List<BoardResponseDao> testList = List.of(
         new BoardResponseDao(1L, 1L, "store1", "thumbnail1", "title1", 1000,
-            Category.BREAD, TagDaoFixture.getSugarFreeTagDao()),
+            Category.BREAD, TagDaoFixture.getSugarFreeTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(1L, 1L, "store1", "thumbnail1", "title1", 1000,
-            Category.YOGURT, TagDaoFixture.getGlutenFreeTagAndHighProteinTagDao()),
+            Category.YOGURT, TagDaoFixture.getGlutenFreeTagAndHighProteinTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(2L, 2L, "store2", "thumbnail2", "title2", 2000,
-            Category.BREAD, TagDaoFixture.getProteinHighTagDao()),
+            Category.BREAD, TagDaoFixture.getKetogenicTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(2L, 2L, "store2", "thumbnail2", "title2", 2000,
-            Category.BREAD, TagDaoFixture.getProteinHighTagDao()),
+            Category.BREAD, TagDaoFixture.getKetogenicTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(2L, 2L, "store2", "thumbnail2", "title2", 2000,
-            Category.BREAD, TagDaoFixture.getKetogenicTagDao()),
+            Category.BREAD, TagDaoFixture.getProteinHighTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
-            Category.SNACK, TagDaoFixture.getSugarFreeAndVeganTagDao()),
+            Category.SNACK, TagDaoFixture.getSugarFreeTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
-            Category.JAM, TagDaoFixture.getGlutenFreeTagAndHighProteinTagDao()),
+            Category.JAM, TagDaoFixture.getGlutenFreeTagAndHighProteinTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10),
         new BoardResponseDao(3L, 3L, "store3", "thumbnail3", "title3", 3000,
-            Category.SNACK, TagDaoFixture.getVeganTagDao())
+            Category.SNACK, TagDaoFixture.getVeganTagDao(), BigDecimal.ONE, 1L, LocalDateTime.now(), true, 10)
     );
 
     List<String> tag1 = List.of("sugarFree", "glutenFree", "highProtein");

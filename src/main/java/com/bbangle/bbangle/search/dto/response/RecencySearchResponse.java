@@ -10,9 +10,16 @@ import lombok.Builder;
 public record RecencySearchResponse(
     List<KeywordDto> content
 ) {
-    public static RecencySearchResponse getEmpty(){
+
+    public static RecencySearchResponse of(List<KeywordDto> kewords) {
         return RecencySearchResponse.builder()
-                .content(Collections.emptyList())
-                .build();
+            .content(kewords)
+            .build();
+    }
+
+    public static RecencySearchResponse getEmpty() {
+        return RecencySearchResponse.builder()
+            .content(Collections.emptyList())
+            .build();
     }
 }

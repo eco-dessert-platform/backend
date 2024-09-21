@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Category {
     ALL("전체"),
+    ALL_BREAD("빵 전체"),
+    ALL_SNACK("간식 전체"),
     BREAD("식빵/모닝빵"),
     COOKIE("쿠키/비스킷/크래커"),
     BAGEL("베이글/도넛"),
