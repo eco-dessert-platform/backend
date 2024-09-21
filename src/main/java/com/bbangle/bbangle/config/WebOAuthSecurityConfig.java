@@ -38,7 +38,9 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
         "http://115.85.181.105:8000",
         "https://www.bbangle.store",
         "https://api.bbangle.store",
-        "http://115.85.181.105:3001"
+        "http://115.85.181.105:3001",
+        "https://www.bbanggree.com",
+        "https://api.bbanggree.com",
     };
     private final TokenProvider tokenProvider;
 
