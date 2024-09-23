@@ -78,10 +78,10 @@ jobs:
       - name: 이미지 새로 build 및 docker 서버 재실행
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
           script: |
             chmod +x deploy-docker.sh
             ./deploy-docker.sh
