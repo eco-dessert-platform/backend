@@ -23,9 +23,9 @@ public class MemberProductOrderDateResponse extends ProductOrderResponseBase {
 
     public boolean judgeIsNotified(ProductDtoAtBoardDetail product) {
         if (Boolean.TRUE.equals(product.getSoldout())) {
-            return product.getPushType().equals(PushType.RESTOCK);
+            return PushType.RESTOCK.equals(product.getPushType());
         }
 
-        return product.getPushType().equals(PushType.DATE);
+        return PushType.DATE.equals(product.getPushType());
     }
 }
