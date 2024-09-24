@@ -39,7 +39,7 @@ public class ProductService {
 
         List<ProductDtoAtBoardDetail> productOrderResponses = ProductDtoAtBoardDetailsHelper.getDtoList(products, pushMap);
         List<ProductOrderResponseBase> responseBases = productOrderResponses.stream()
-            .map(ProductOrderFactory::resolve)
+            .map(productDto -> ProductOrderFactory.resolve(productDto, memberId))
             .toList();
 
         return new ProductResponse(
