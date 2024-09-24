@@ -10,11 +10,11 @@ public class ProductOrderDateResponse extends ProductOrderResponseBase {
 
     private OrderAvailableDate orderAvailableDate;
 
-    public ProductOrderDateResponse(ProductDtoAtBoardDetail product, OrderTypeEnum orderType) {
+    public ProductOrderDateResponse(ProductDtoAtBoardDetail product) {
         super(product);
 
         this.orderAvailableDate = OrderAvailableDate.from(product);
-        this.orderType = orderType;
+        this.orderType = OrderTypeEnum.DATE;
         this.isSoldout = product.getSoldout();
     }
 }

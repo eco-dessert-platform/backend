@@ -10,11 +10,11 @@ public class ProductOrderWeekResponse extends ProductOrderResponseBase {
 
     private OrderAvailableWeek orderAvailableWeek;
 
-    public ProductOrderWeekResponse(ProductDtoAtBoardDetail product, OrderTypeEnum orderType) {
+    public ProductOrderWeekResponse(ProductDtoAtBoardDetail product) {
         super(product);
 
         this.orderAvailableWeek = OrderAvailableWeek.from(product);
-        this.orderType = orderType;
+        this.orderType = OrderTypeEnum.WEEK;
         this.isSoldout = product.getSoldout();
 
     }

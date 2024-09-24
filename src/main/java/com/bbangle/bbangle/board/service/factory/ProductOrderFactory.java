@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.service.factory;
 
-import com.bbangle.bbangle.board.domain.OrderTypeEnum;
 import com.bbangle.bbangle.board.dto.orders.MemberProductOrderDateResponse;
 import com.bbangle.bbangle.board.dto.orders.MemberProductOrderWeekResponse;
 import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
@@ -33,31 +32,25 @@ public class ProductOrderFactory {
             product.getOrderEndDate().isAfter(LocalDateTime.now());
     }
 
-    private static ProductOrderResponseBase resolveForOrderDate(ProductDtoAtBoardDetail product, Long memberId) {
-        if (isMember(memberId) && !isSoldOut(product)) {
-            return new MemberProductOrderDateResponse(product, OrderTypeEnum.DATE);
-        } else if (isMember(memberId) && isSoldOut(product)) {
-            return new MemberProductOrderDateResponse(product, OrderTypeEnum.NULL);
+    private static ProductOrderResponseBase resolveForOrderDate(ProductDtoAtBoardDetail product,
+        Long memberId) {
+        if (isMember(memberId)) {
+            return new MemberProductOrderDateResponse(product);
         }
 
-        return new ProductOrderDateResponse(product, OrderTypeEnum.NULL);
+        return new ProductOrderDateResponse(product);
     }
 
-    private static ProductOrderResponseBase resolveForWeekOrder(ProductDtoAtBoardDetail product, Long memberId) {
-        if (isMember(memberId) && !isSoldOut(product)) {
-            return new MemberProductOrderWeekResponse(product, OrderTypeEnum.DATE);
-        } else if (isMember(memberId) && isSoldOut(product)) {
-            return new MemberProductOrderWeekResponse(product, OrderTypeEnum.NULL);
+    private static ProductOrderResponseBase resolveForWeekOrder(ProductDtoAtBoardDetail product,
+        Long memberId) {
+        if (isMember(memberId)) {
+            return new MemberProductOrderWeekResponse(product);
         }
 
-        return new ProductOrderWeekResponse(product, OrderTypeEnum.NULL);
+        return new ProductOrderWeekResponse(product);
     }
 
     private static boolean isMember(Long memberId) {
         return Objects.nonNull(memberId);
-    }
-
-    private static boolean isSoldOut(ProductDtoAtBoardDetail product) {
-        return Boolean.FALSE.equals(product.getSoldout());
     }
 }
