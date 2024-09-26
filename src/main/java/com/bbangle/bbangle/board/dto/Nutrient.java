@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,7 +27,7 @@ public class Nutrient {
             .build();
     }
 
-    public static Nutrient from(ProductOrderDto product) {
+    public static Nutrient from(ProductDtoAtBoardDetail product) {
         return Nutrient.builder()
             .sugars(product.getSugars())
             .protein(product.getProtein())

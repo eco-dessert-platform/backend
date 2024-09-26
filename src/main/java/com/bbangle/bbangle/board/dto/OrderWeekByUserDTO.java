@@ -1,19 +1,24 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.push.domain.PushCategory;
+import com.bbangle.bbangle.push.domain.PushType;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder(access = AccessLevel.PRIVATE)
-public record OrderWeekByUserDTO(
-    Boolean monday,
-    Boolean tuesday,
-    Boolean wednesday,
-    Boolean thursday,
-    Boolean friday,
-    Boolean saturday,
-    Boolean sunday
-) {
+public class OrderWeekByUserDTO {
+
+    Boolean monday;
+    Boolean tuesday;
+    Boolean wednesday;
+    Boolean thursday;
+    Boolean friday;
+    Boolean saturday;
+    Boolean sunday;
+
     public static OrderWeekByUserDTO from(String day) {
         if (Objects.isNull(day) || day.trim().isEmpty()) {
             return empty();
@@ -21,7 +26,7 @@ public record OrderWeekByUserDTO(
 
         OrderWeekByUserDTOBuilder builder = OrderWeekByUserDTO.builder()
             .monday(false)
-            .thursday(false)
+            .tuesday(false)
             .wednesday(false)
             .thursday(false)
             .friday(false)
@@ -33,27 +38,27 @@ public record OrderWeekByUserDTO(
         }
 
         if (day.contains("TUESDAY")) {
-            builder.monday(true);
+            builder.tuesday(true);
         }
 
         if (day.contains("WEDNESDAY")) {
-            builder.monday(true);
+            builder.wednesday(true);
         }
 
         if (day.contains("THURSDAY")) {
-            builder.monday(true);
+            builder.thursday(true);
         }
 
         if (day.contains("FRIDAY")) {
-            builder.monday(true);
+            builder.friday(true);
         }
 
         if (day.contains("SATURDAY")) {
-            builder.monday(true);
+            builder.saturday(true);
         }
 
         if (day.contains("SUNDAY")) {
-            builder.monday(true);
+            builder.sunday(true);
         }
 
         return builder.build();

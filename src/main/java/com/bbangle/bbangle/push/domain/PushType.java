@@ -10,7 +10,9 @@ public enum PushType {
     @JsonProperty("DATE")
     DATE("날짜"),
     @JsonProperty("WEEK")
-    WEEK("요일");
+    WEEK("요일"),
+    @JsonProperty("RESTOCK")
+    RESTOCK("재입고");
 
     private final String description;
 }

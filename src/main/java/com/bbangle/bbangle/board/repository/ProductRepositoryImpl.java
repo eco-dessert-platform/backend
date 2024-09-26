@@ -1,15 +1,19 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.ProductOrderDto;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
+import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -67,47 +71,79 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
     }
 
     @Override
-    public List<ProductOrderDto> findProductDtoById(Long memberId, Long boardId) {
+    public List<Product> findByBoardId(Long boardId) {
         return queryFactory
-                .select(
-                        Projections.constructor(
-                                ProductOrderDto.class,
-                                product.id,
-                                product.title,
-                                product.price,
-                                product.category,
-                                product.glutenFreeTag,
-                                product.highProteinTag,
-                                product.sugarFreeTag,
-                                product.veganTag,
-                                product.ketogenicTag,
-                                product.sugars,
-                                product.protein,
-                                product.carbohydrates,
-                                product.fat,
-                                product.weight,
-                                product.calories,
-                                product.monday,
-                                product.tuesday,
-                                product.wednesday,
-                                product.thursday,
-                                product.friday,
-                                product.saturday,
-                                product.sunday,
-                                product.orderStartDate,
-                                product.orderEndDate,
-                                product.soldout,
-                                push.pushType,
-                                push.days,
-                                push.isActive
-                        ))
-                .from(product)
-                .leftJoin(push).on(
-                        product.id.eq(push.productId)
-                                .and(memberId != null ? push.memberId.eq(memberId)
-                                        : Expressions.booleanTemplate("false")))
-                .where(product.board.id.eq(boardId))
-                .orderBy(product.id.desc())
-                .fetch();
+            .selectFrom(product)
+            .where(product.board.id.eq(boardId))
+            .fetch();
+    }
+
+    @Override
+    public Map<Long, Push> findPushByProductIds(List<Long> productIds, Long memberId) {
+        List<Push> pushList = queryFactory.selectFrom(push)
+            .where(
+                Expressions.allOf(
+                    push.memberId.eq(memberId),
+                    push.productId.in(productIds),
+                    push.isActive.isTrue()
+                )
+            )
+            .fetch();
+
+        if (pushList.isEmpty()) {
+            return Collections.emptyMap();
+        } else {
+            Map<Long, Push> maps = new HashMap<>();
+
+            pushList.forEach(push1 -> maps.put(push1.getProductId(), push1));
+
+            return maps;
+        }
+    }
+
+    @Override
+    public List<ProductDtoAtBoardDetail> findProductDtoById(Long memberId, Long boardId) {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    ProductDtoAtBoardDetail.class,
+                    product.id,
+                    product.title,
+                    product.price,
+                    product.category,
+                    product.glutenFreeTag,
+                    product.highProteinTag,
+                    product.sugarFreeTag,
+                    product.veganTag,
+                    product.ketogenicTag,
+                    product.sugars,
+                    product.protein,
+                    product.carbohydrates,
+                    product.fat,
+                    product.weight,
+                    product.calories,
+                    product.monday,
+                    product.tuesday,
+                    product.wednesday,
+                    product.thursday,
+                    product.friday,
+                    product.saturday,
+                    product.sunday,
+                    product.orderStartDate,
+                    product.orderEndDate,
+                    product.soldout,
+                    push.pushType,
+                    push.days,
+                    push.isActive
+                ))
+            .from(product)
+            .leftJoin(push).on(
+                product.id.eq(push.productId)
+                    .and(memberId != null ? push.memberId.eq(memberId)
+                        : Expressions.booleanTemplate("false"))
+                    .and(push.isActive.eq(true)))
+            .where(product.board.id.eq(boardId))
+            .orderBy(product.id.desc())
+            .fetch();
     }
 }

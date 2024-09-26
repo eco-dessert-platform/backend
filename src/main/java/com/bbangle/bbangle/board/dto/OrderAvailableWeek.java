@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -28,7 +29,7 @@ public class OrderAvailableWeek {
             .build();
     }
 
-    public static OrderAvailableWeek from(ProductOrderDto product) {
+    public static OrderAvailableWeek from(ProductDtoAtBoardDetail product) {
         return OrderAvailableWeek.builder()
             .monday(product.getMonday())
             .tuesday(product.getTuesday())
