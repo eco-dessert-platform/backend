@@ -228,3 +228,4 @@ redis/data/dump.rdb
 
 .jqwik-database
 !/.github/workflows/cd-pipeline-dev-aws.yml
+!/.github/workflows/cd-pipeline-aws-deploy.yml

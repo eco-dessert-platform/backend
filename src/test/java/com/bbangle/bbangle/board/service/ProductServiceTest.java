@@ -1,63 +1,40 @@
-package com.bbangle.bbangle.board.repository;
+package com.bbangle.bbangle.board.service;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.abstracts.ProductOrderResponseBase;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushType;
-import com.bbangle.bbangle.store.domain.Store;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-public class ProductRepositoryTest extends AbstractIntegrationTest {
+class ProductServiceTest extends AbstractIntegrationTest {
 
-    @Autowired
-    private ProductRepository productRepository;
+    final Long NOT_EXSIST_ID = -1L;
 
-    @Nested
-    @DisplayName("getTopBoardIds 메서드는")
-    class GetTopBoardIds {
+    @Test
+    @DisplayName("유효하지 않은 boardId로 조회 시 BbangleException을 발생시킨다")
+    void throwNotBoard() {
+        assertThrows(BbangleException.class,
+            () -> productService.getProductResponse(NOT_EXSIST_ID));
 
-        private Board board;
-
-        @BeforeEach
-        void init() {
-            Store store = fixtureStore(Map.of());
-
-            List<Product> products = List.of(
-                fixtureProduct(Map.of("category", Category.BREAD)),
-                fixtureProduct(Map.of("category", Category.SNACK)));
-
-            board = fixtureBoard(Map.of("store", store, "productList", products));
-        }
-
-        @Test
-        @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
-        void getPopularBoard() {
-            List<Long> boardIds = List.of(board.getId());
-            Map<Long, Set<Category>> products = productRepository.getCategoryInfoByBoardId(
-                boardIds);
-
-            Set<Category> actualCategories = products.get(board.getId());
-            Category[] expectCatetegories = new Category[]{Category.BREAD, Category.SNACK};
-
-            assertThat(actualCategories).containsExactlyInAnyOrder(expectCatetegories);
-        }
+        assertThrows(BbangleException.class,
+            () -> productService.getProductResponseWithPush(NOT_EXSIST_ID, NOT_EXSIST_ID));
     }
+
 
     @Nested
     @DisplayName("getTopBoardIds 메서드는")
@@ -73,7 +50,8 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
             // Given: 테스트 데이터를 세팅합니다.
             testMember = memberRepository.save(MemberFixture.createKakaoMember());
 
-            testBoard = fixtureBoard(Collections.emptyMap());
+            testBoard = BoardFixture.randomBoard(null);
+            testBoard = boardRepository.save(testBoard);
 
             testProduct = Product.builder()
                 .title("Sample Product")
@@ -119,19 +97,19 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         @Test
         void testFindProductDtoById() {
             // When: 실제 서비스 메서드를 호출합니다.
-            List<ProductDtoAtBoardDetail> result = productRepository.findProductDtoById(testMember.getId(),
+            ProductResponse response = productService.getProductResponseWithPush(testMember.getId(),
                 testBoard.getId());
 
             // Then: 결과를 검증합니다.
-            assertThat(result).isNotNull();
-            assertThat(result).hasSize(2);
-            ProductDtoAtBoardDetail dto = result.get(0);
-            assertThat(dto.getTitle()).isEqualTo("Sample Product");
-            assertThat(dto.getPrice()).isEqualTo(1000);
-            assertThat(dto.getGlutenFreeTag()).isTrue();
-            assertThat(dto.getPushType()).isEqualTo(PushType.DATE);
-            assertThat(dto.getIsActive()).isTrue();
-            // 필요한 다른 필드도 검증할 수 있습니다.
+            assertThat(response).isNotNull();
+            assertThat(response.getBoardIsBundled()).isNotNull(); // isBundled 값 검증
+            assertThat(response.getProducts()).isNotEmpty();
+
+            ProductOrderResponseBase orderResponse = response.getProducts()
+                .get(response.getProducts().size() - 1);
+            assertThat(orderResponse.getTitle()).isEqualTo("Sample Product");
+            assertThat(orderResponse.getPrice()).isEqualTo(1000);
+            assertThat(orderResponse.getGlutenFreeTag()).isTrue();
         }
     }
 }

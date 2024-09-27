@@ -16,6 +16,7 @@ public class BoardDto {
     private Boolean status;
     private Integer deliveryFee;
     private Integer freeShippingConditions;
+    private int discountRate;
 
     public static BoardDto from(BoardAndImageDto boardAndImage) {
         return BoardDto.builder()
@@ -28,6 +29,7 @@ public class BoardDto {
             .status(boardAndImage.status())
             .deliveryFee(boardAndImage.deliveryFee())
             .freeShippingConditions(boardAndImage.freeShippingConditions())
+            .discountRate(boardAndImage.discountRate())
             .build();
     }
 }

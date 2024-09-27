@@ -16,7 +16,6 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.Duration;
 import org.apache.http.HttpHeaders;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -283,7 +282,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeId").value(store.getId()))
                 .andExpect(jsonPath("$.result.content[0].storeName").value(store.getName()))
-                .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getProfile()))
+                .andExpect(
+                    jsonPath("$.result.content[0].thumbnail").value(createdBoard.getProfile()))
                 .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
                 .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
                 .andExpect(jsonPath("$.result.content[0].isWished").value(true))

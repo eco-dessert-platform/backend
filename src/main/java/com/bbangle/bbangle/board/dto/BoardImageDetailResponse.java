@@ -17,6 +17,7 @@ public class BoardImageDetailResponse {
     private Boolean status;
     private Integer deliveryFee;
     private Integer freeShippingConditions;
+    private int discountRate;
     private Boolean isWished;
     private List<String> boardImages;
     private List<String> boardDetails;
@@ -37,6 +38,7 @@ public class BoardImageDetailResponse {
             .status(boardDto.getStatus())
             .deliveryFee(boardDto.getDeliveryFee())
             .freeShippingConditions(boardDto.getFreeShippingConditions())
+            .discountRate(boardDto.getDiscountRate())
             .isWished(isWished)
             .boardImages(boardImageDtoList)
             .boardDetails(boardDetailList)
