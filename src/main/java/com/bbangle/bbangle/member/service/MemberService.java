@@ -16,6 +16,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
 import com.bbangle.bbangle.preference.repository.MemberPreferenceRepository;
+import com.bbangle.bbangle.survey.repository.SurveyRepository;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListFolderService;
@@ -49,6 +50,7 @@ public class MemberService {
     private final WithdrawalRepository withdrawalRepository;
     private final WishListFolderService wishListFolderService;
     private final MemberPreferenceRepository memberPreferenceRepository;
+    private final SurveyRepository surveyRepository;
 
     @PostConstruct
     public void initSetting() {
@@ -156,8 +158,9 @@ public class MemberService {
 
         boolean isFullyAssigned = signatureAgreementRepository.existsByMemberId(memberId);
         boolean isPreferenceAssigned = memberPreferenceRepository.existsByMemberId(memberId);
+        boolean isSurveyed = surveyRepository.existsByMemberId(memberId);
 
-        return new MemberAssignResponse(isFullyAssigned, isPreferenceAssigned);
+        return new MemberAssignResponse(isFullyAssigned, isPreferenceAssigned, isSurveyed);
     }
 
 }
