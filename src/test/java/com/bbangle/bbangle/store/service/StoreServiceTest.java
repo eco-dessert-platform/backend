@@ -269,5 +269,18 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 .isFalse();
         }
 
+        @Test
+        @DisplayName("스토어에 상품이 없을 때 빈 데이터를 반환한다")
+        void getEmptyOnStoreHavingNot() {
+            //given
+            Store emptyStore = fixtureStore(emptyMap());
+
+            //when
+            StoreDetailCustomPage<List<BoardInfoDto>> boardsInStoreDtos = storeService.getBoardsInStore(
+                    NULL_MEMBER_ID, emptyStore.getId(), NULL_CURSOR);  // board id desc 임
+
+            //then
+            assertThat(boardsInStoreDtos.getContent()).isEmpty();
+        }
     }
 }
