@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.push.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.google.firebase.database.annotations.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,7 +41,8 @@ public class Push extends BaseEntity {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "push_type", columnDefinition = "varchar")
+    @Nullable
+    @Column(name = "push_type", columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private PushType pushType;
 
