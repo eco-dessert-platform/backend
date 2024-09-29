@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class OrderAvailableDate {
             .build();
     }
 
-    public static OrderAvailableDate from(ProductOrderDto product) {
+    public static OrderAvailableDate from(ProductDtoAtBoardDetail product) {
         return OrderAvailableDate.builder()
             .startDate(product.getOrderStartDate())
             .endDate(product.getOrderEndDate())

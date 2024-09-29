@@ -10,6 +10,7 @@ public record BoardAndImageDto(
     Boolean status,
     Integer deliveryFee,
     Integer freeShippingConditions,
+    int discountRate,
     String url
 ) {
 

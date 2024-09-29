@@ -3,8 +3,9 @@ package com.bbangle.bbangle.board.controller;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.board.service.ProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -29,7 +31,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,6 +49,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final ProductService productService;
     private final StoreService storeService;
     private final ReviewService reviewService;
 
@@ -147,8 +149,13 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        ProductResponse productResponse = boardService.getProductResponse(memberId, boardId);
+        if (Objects.nonNull(memberId)) {
+            ProductResponse productResponse = productService.getProductResponseWithPush(memberId,
+                boardId);
+            return responseService.getSingleResult(productResponse);
+        }
 
+        ProductResponse productResponse = productService.getProductResponse(boardId);
         return responseService.getSingleResult(productResponse);
     }
 

@@ -135,6 +135,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     board.status,
                     board.deliveryFee,
                     board.freeShippingConditions,
+                    board.discountRate,
                     productImage.url)
             )
             .from(board)

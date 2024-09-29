@@ -6,7 +6,7 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.ProductOrderDto;
+import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.push.domain.Push;
@@ -119,13 +119,13 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         @Test
         void testFindProductDtoById() {
             // When: 실제 서비스 메서드를 호출합니다.
-            List<ProductOrderDto> result = productRepository.findProductDtoById(testMember.getId(),
+            List<ProductDtoAtBoardDetail> result = productRepository.findProductDtoById(testMember.getId(),
                 testBoard.getId());
 
             // Then: 결과를 검증합니다.
             assertThat(result).isNotNull();
             assertThat(result).hasSize(2);
-            ProductOrderDto dto = result.get(0);
+            ProductDtoAtBoardDetail dto = result.get(0);
             assertThat(dto.getTitle()).isEqualTo("Sample Product");
             assertThat(dto.getPrice()).isEqualTo(1000);
             assertThat(dto.getGlutenFreeTag()).isTrue();

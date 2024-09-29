@@ -110,6 +110,6 @@ public class Product {
     private LocalDateTime orderEndDate;
 
     @NotNull
-    @Column(name = "is_soldout", columnDefinition = "tinyint default 0")
-    private boolean soldout = false;
+    @Column(name = "is_soldout", columnDefinition = "tinyint")
+    private boolean soldout;
 }

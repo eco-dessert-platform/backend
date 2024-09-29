@@ -42,7 +42,7 @@ public class Push extends BaseEntity {
     private Long productId;
 
     @Nullable
-    @Column(name = "push_type", columnDefinition = "varchar")
+    @Column(name = "push_type", columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     private PushType pushType;
 
