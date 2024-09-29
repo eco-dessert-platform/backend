@@ -27,6 +27,7 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YML_FINAL_DEV }}" | base64 --decode > src/main/resources/application.yml
           find src
+          cat src/main/resources/application.yml
 
       - name: FcmKey 정보 넣기
         run: |
