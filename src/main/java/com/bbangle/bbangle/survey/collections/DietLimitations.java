@@ -2,11 +2,29 @@ package com.bbangle.bbangle.survey.collections;
 
 import com.bbangle.bbangle.survey.domain.DietLimitationInfo;
 import com.bbangle.bbangle.survey.enums.DietLimitation;
+import java.util.ArrayList;
 import java.util.List;
 
 public record DietLimitations(
     List<DietLimitation> dietLimitations
 ) {
+
+    public static List<DietLimitation> of(DietLimitationInfo dietLimitationInfo) {
+        List<DietLimitation> dietLimitationList = new ArrayList<>();
+        if(dietLimitationInfo.getDiabetes()){
+            dietLimitationList.add(DietLimitation.DIABETES);
+        }
+        if(dietLimitationInfo.getLactoseIntolerance()){
+            dietLimitationList.add(DietLimitation.LACTOSE_INTOLERANCE);
+        }
+        if(dietLimitationInfo.getNotApplicable()){
+            dietLimitationList.add(DietLimitation.NOT_APPLICABLE);
+        }
+        if(dietLimitationInfo.getGlutenIntolerance()){
+            dietLimitationList.add(DietLimitation.GLUTEN_INTOLERANCE);
+        }
+        return dietLimitationList;
+    }
 
     public DietLimitationInfo getInfo() {
         boolean lactoseIntolerance = false;

@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record SurveyInfo (
     DietLimitations dietLimitations,
-    HateFoods hateFoods,
+    UnmatchedIngredients unmatchedIngredients,
     HealthConcerns healthConcerns,
     IsVegetarians isVegetarians
 ){
