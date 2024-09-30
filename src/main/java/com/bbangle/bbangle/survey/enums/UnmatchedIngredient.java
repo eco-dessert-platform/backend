@@ -3,7 +3,7 @@ package com.bbangle.bbangle.survey.enums;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum UnmatchedIngredients {
+public enum UnmatchedIngredient {
     FLOUR("밀가루"),
     WHOLE_WHEAT("통밀"),
     RICE("쌀"),
