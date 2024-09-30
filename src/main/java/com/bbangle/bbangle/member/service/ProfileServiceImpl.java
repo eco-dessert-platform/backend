@@ -28,7 +28,7 @@ public class ProfileServiceImpl implements ProfileService {
         return ProfileInfoResponseDto.builder()
             .profileImg(member.getProfile())
             .nickname(member.getNickname())
-            .phoneNumber(member.getPhone())
+            .sex(member.getSex())
             .birthDate(member.getBirth())
             .build();
     }
