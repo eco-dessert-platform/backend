@@ -26,7 +26,8 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://api.bbanggree.com",
                         "https://api.bbangle.store",
                         "https://www.bbangle.store",
-                        "http://115.85.181.105:3001"
+                        "http://115.85.181.105:3001",
+                            "https://main.d3uov82w7b8w2n.amplifyapp.com"
                     )
                     .allowedHeaders("*")
                     .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
