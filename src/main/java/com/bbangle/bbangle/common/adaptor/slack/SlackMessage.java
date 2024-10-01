@@ -26,7 +26,7 @@ public class SlackMessage {
     @AllArgsConstructor
     public static class SlackBlock {
         private String type; // ex) header, section
-        private SlackText slackText;
+        private SlackText text;
 
 
         public static SlackBlock createBlock(String part, String type, String title) {
