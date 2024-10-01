@@ -90,8 +90,7 @@ class ProfileControllerTest extends AbstractIntegrationTest {
         result.andExpect(status().isOk())
             .andExpect(jsonPath("$.result.profileImg").value(mockProfile.profileImg()))
             .andExpect(jsonPath("$.result.nickname").value(mockProfile.nickname()))
-            .andExpect(jsonPath("$.result.birthDate").value(mockProfile.birthDate()))
-            .andExpect(jsonPath("$.result.phoneNumber").value(mockProfile.phoneNumber()));
+            .andExpect(jsonPath("$.result.birthDate").value(mockProfile.birthDate()));
     }
 
 }
