@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQueryDSLRepository {
 
-    List<ReviewDto> findByBoardId(Long boardId);
     @Query("SELECT r.id from Review r WHERE r.isBest = true")
     List<Long> getBestReviewIds();
 }

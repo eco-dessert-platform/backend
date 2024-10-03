@@ -359,7 +359,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                 )
             )
             .from(review)
-            .where(review.boardId.eq(boardId))
+            .where(review.boardId.eq(boardId).and(notDeleted()))
             .fetch();
     }
 
