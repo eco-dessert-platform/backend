@@ -10,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @ActiveProfiles("test")
@@ -25,7 +24,13 @@ public class DatabaseCleaner implements InitializingBean {
         tableNames = em.getMetamodel()
                 .getEntities().stream()
                 .filter(entity -> entity.getJavaType().getAnnotation(Entity.class) != null)
-                .map(entity -> entity.getJavaType().getAnnotation(Table.class).name())
+                .map(entity -> {
+                    Table tableAnnotation = entity.getJavaType().getAnnotation(Table.class);
+                    if (tableAnnotation != null) {
+                        return tableAnnotation.name();
+                    } else {
+                        return entity.getJavaType().getSimpleName().toLowerCase(); // 기본 테이블 이름을 사용
+                    }})
                 .toList();
     }
 
