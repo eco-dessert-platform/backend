@@ -117,7 +117,7 @@ public class BoardService {
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
             .stream()
-            .map(this::buildFullUrl) // Using a method reference for clarity
+            .map(this::buildFullUrl)
             .toList();
 
         boardStatisticService.updateViewCount(boardId);
