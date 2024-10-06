@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,9 @@ public class BoardService {
     private final WishListBoardRepository wishListBoardRepository;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
+    @Value("${cdn.domain}")
+    private String cdnDomain;
+
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -111,7 +115,10 @@ public class BoardService {
             && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
-        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
+        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
+            .stream()
+            .map(this::buildFullUrl)
+            .toList();
 
         boardStatisticService.updateViewCount(boardId);
         if (viewCountKey != null) {
@@ -123,6 +130,10 @@ public class BoardService {
             isWished,
             boardImageUrls,
             boardDetailUrls);
+    }
+
+    private String buildFullUrl(String url) {
+        return cdnDomain + url;
     }
 
     private void updateLikeStatus(
