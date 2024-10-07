@@ -15,7 +15,7 @@ public record IsVegetarians(
             isVegetarianList.add(IsVegetarian.MEAT);
         }
         if (isVegetarianInfo.getEgg()) {
-            isVegetarianList.add(IsVegetarian.EGG);
+            isVegetarianList.add(IsVegetarian.ANIMAL_EGG);
         }
         if (isVegetarianInfo.getFruit()) {
             isVegetarianList.add(IsVegetarian.FRUIT);
@@ -53,7 +53,7 @@ public record IsVegetarians(
                 diary = true;
             }
 
-            if (isVegetarian == IsVegetarian.EGG) {
+            if (isVegetarian == IsVegetarian.ANIMAL_EGG) {
                 egg = true;
             }
 
