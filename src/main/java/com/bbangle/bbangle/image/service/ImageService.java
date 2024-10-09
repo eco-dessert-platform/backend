@@ -8,6 +8,7 @@ import com.bbangle.bbangle.image.repository.ImageRepository;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,7 +57,7 @@ public class ImageService {
         int order
     ) {
         String imagePath = s3Service.saveImage(image, imageFolderPathResolver(category, domainId));
-        imagePath = imagePath.replace(bucketDomain, cdnDomain);
+        imagePath = removeBucketDomainInFolder(imagePath);
         Image entity = createEntity(category, domainId, imagePath, order);
         imageRepository.save(entity);
 
@@ -73,7 +74,7 @@ public class ImageService {
         List<Image> entities = imageList.stream().map(image -> {
             String pathFromS3 = imageFolderPathResolver(category, domainId);
             String imagePath = s3Service.saveImage(image, pathFromS3);
-            imagePath = imagePath.replace(bucketDomain, cdnDomain);
+            imagePath = removeBucketDomainInFolder(imagePath);
             return createEntity(category, domainId, imagePath, order.getAndIncrement());
         }).toList();
 
@@ -91,6 +92,14 @@ public class ImageService {
 
     public void deleteImages(List<String> urls){
         s3Service.deleteImages(urls);
+    }
+
+    public String addCdnDomain(String url){
+        return cdnDomain+url;
+    }
+
+    private @NotNull String removeBucketDomainInFolder(String imagePath) {
+        return imagePath.replace(bucketDomain, "");
     }
 
     private Image createEntity(

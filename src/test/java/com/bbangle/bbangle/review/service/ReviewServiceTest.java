@@ -34,6 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.ion.Decimal;
@@ -50,7 +51,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReviewServiceTest extends AbstractIntegrationTest {
 
     private static final BigDecimal DEFAULT_REVIEW_RATE = new BigDecimal("4.0");
-
+    @Value("${cdn.domain}")
+    private String cdnDomain;
     @Autowired
     ReviewService reviewService;
 
@@ -304,7 +306,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         ReviewImagesResponse reviewImages = reviewService.getReviewImages(1L);
 
         // then
-        assertThat(reviewImages.previewImages().get(0)).isEqualTo("testPath");
+        assertThat(reviewImages.previewImages().get(0)).isEqualTo(cdnDomain+"testPath");
         assertThat(reviewImages.previewImages()).hasSize(3);
     }
 
@@ -341,7 +343,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         assertThat(allImages.getHasNext()).isFalse();
         assertThat(allImages.getContent().get(0))
                 .extracting("url")
-                .isEqualTo("testPath");
+                .isEqualTo(cdnDomain+"testPath");
 
     }
 

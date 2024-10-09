@@ -18,7 +18,7 @@ import com.bbangle.bbangle.review.dto.*;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -40,9 +40,6 @@ public class ReviewService {
     private static final Boolean DELETE = false;
     private static final Long PAGE_SIZE = 10L;
     private static final Long NON_MEMBER = 0L;
-
-    @Value("${cdn.domain}")
-    private String cdnDomain;
     private final BoardStatisticService boardStatisticService;
     private final ReviewRepository reviewRepository;
     private final BoardRepository boardRepository;
@@ -107,10 +104,10 @@ public class ReviewService {
         if (hasNext) {
             reviewSingleList.remove(reviewSingleList.get(reviewSingListSize - 1));
         }
-        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : reviewSingleList){
-            reviewManager.getTagMap(reviewSingleDto, tagMap);
+            tagMap = reviewManager.getTagMap(reviewSingleDto, tagMap);
         }
         Map<Long, List<Long>> likeMap = makeLikeMap(reviewCursor);
         List<ReviewInfoResponse> reviewInfoResponseList =
@@ -144,7 +141,7 @@ public class ReviewService {
         ReviewCursor reviewCursor = ReviewCursor.builder()
                 .reviewId(reviewId)
                 .build();
-        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         reviewManager.getTagMap(reviewDetail, tagMap);
         Map<Long, List<Long>> likeMap = makeLikeMap(reviewCursor);
@@ -153,7 +150,11 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewImagesResponse getReviewImages(Long reviewId) {
-        return new ReviewImagesResponse(imageService.findImagePathById(REVIEW, reviewId));
+        List<String> imagePathById = imageService.findImagePathById(REVIEW, reviewId);
+        imagePathById = imagePathById.stream()
+                .map(imageService::addCdnDomain)
+                .toList();
+        return new ReviewImagesResponse(imagePathById);
     }
 
     @Transactional(readOnly = true)
@@ -174,7 +175,7 @@ public class ReviewService {
         if (hasNext) {
             myReviewList.remove(myReviewList.get(myReviewListSize - 1));
         }
-        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        Map<Long, List<ImageDto>> imageMap = getImageMap(reviewCursor);
         Map<Long, List<String>> tagMap = new HashMap<>();
         for(ReviewSingleDto reviewSingleDto : myReviewList){
             reviewManager.getTagMap(reviewSingleDto, tagMap);
@@ -185,9 +186,16 @@ public class ReviewService {
         return ReviewCustomPage.from(reviewInfoResponseList, nextCursor, hasNext);
     }
 
+    private @NotNull Map<Long, List<ImageDto>> getImageMap(ReviewCursor reviewCursor) {
+        Map<Long, List<ImageDto>> imageMap = reviewRepository.getImageMap(reviewCursor);
+        addCdnDomainToMap(imageMap);
+        return imageMap;
+    }
+
     @Transactional(readOnly = true)
     public ImageCustomPage<List<ImageDto>> getAllImagesByBoardId(Long boardId, Long cursorId) {
         List<ImageDto> allImagesByBoardId = reviewRepository.getAllImagesByBoardId(boardId, cursorId);
+        addCdnDomainToUrl(allImagesByBoardId);
         if(ObjectUtils.isEmpty(allImagesByBoardId)){
             return new ImageCustomPage<>(Collections.emptyList(), 0L, false);
         }
@@ -205,7 +213,7 @@ public class ReviewService {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
         return ImageDto.builder()
-                .url(image.getPath())
+                .url(imageService.addCdnDomain(image.getPath()))
                 .build();
     }
     @Transactional
@@ -232,8 +240,7 @@ public class ReviewService {
                     imagePaths.remove(url);
                 }
             }
-            List<String> changedPaths = removeCdnDomain(imagePaths);
-            imageService.deleteImages(changedPaths);
+            imageService.deleteImages(imagePaths);
             imageRepository.deleteAllByPathIn(imagePaths);
         }
         urls = urls.stream()
@@ -243,12 +250,6 @@ public class ReviewService {
             return;
         }
         moveImages(urls, reviewId);
-    }
-
-    private List<String> removeCdnDomain(List<String> paths) {
-        return paths.stream()
-                .map(path -> path.replace(cdnDomain, ""))
-                .toList();
     }
 
     @Transactional
@@ -278,10 +279,6 @@ public class ReviewService {
         imageRepository.delete(reviewImg);
     }
 
-    private boolean checkHasNext(int size) {
-        return size >= PAGE_SIZE + 1;
-    }
-
     @Transactional
     public SummarizedReviewResponse getSummarizedReview(Long boardId) {
         List<ReviewDto> reviews = reviewRepository.findByBoardId(boardId);
@@ -295,6 +292,24 @@ public class ReviewService {
         List<String> popularBadgeList = reviewStatistics.getPopularBadgeList(reviews);
 
         return SummarizedReviewResponse.of(averageRatingScore, reviewCount, popularBadgeList);
+    }
+
+    private void addCdnDomainToMap(Map<Long, List<ImageDto>> imageMap) {
+        imageMap.forEach((domainId, imageDtos) -> addCdnDomainToUrl(imageDtos));
+    }
+
+    private boolean checkHasNext(int size) {
+        return size >= PAGE_SIZE + 1;
+    }
+
+    private void addCdnDomainToUrl(List<ImageDto> imageDtos) {
+        for(int i = 0; i < imageDtos.size(); i++){
+            ImageDto imageDto = imageDtos.get(i);
+            String url = imageDto.getUrl();
+            Long id = imageDto.getId();
+            imageDtos.remove(i);
+            imageDtos.add(i, new ImageDto(id, imageService.addCdnDomain(url)));
+        }
     }
 
     private String createNewStoragePath(String extractedFileName, Long reviewId){
@@ -311,7 +326,7 @@ public class ReviewService {
     private void updateImagePath(Long reviewId, List<String> fromPaths, List<Image> images, List<String> toPaths) {
         List<String> deletedPath = new ArrayList<>();
         for(int i = 0; i < fromPaths.size(); i++){
-            images.get(i).update(reviewId, cdnDomain + toPaths.get(i));
+            images.get(i).update(reviewId, toPaths.get(i));
             imageService.move(fromPaths.get(i), toPaths.get(i));
             deletedPath.add(fromPaths.get(i));
         }
@@ -328,7 +343,6 @@ public class ReviewService {
     private List<String> makeTempStoragePath(List<Image> images) {
         return images.stream()
                 .map(Image::getPath)
-                .map(path -> path.replace(cdnDomain, ""))
                 .toList();
     }
 

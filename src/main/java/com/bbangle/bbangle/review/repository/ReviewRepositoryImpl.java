@@ -84,7 +84,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     public List<ReviewSingleDto> getReviewSingleList(Long boardId, Long cursorId) {
         return getPureReviewSingleDto()
             .where(eqBoardId(boardId).and(getCursorCondition(cursorId)))
-            .orderBy(review.createdAt.desc())
+            .orderBy(review.id.desc())
             .limit(PAGE_SIZE + 1)
             .fetch();
     }
@@ -148,7 +148,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
             .fetch();
         BooleanBuilder imageCondition = new BooleanBuilder();
         if (requestCursor != null) {
-            imageCondition.and(image.domainId.loe(requestCursor));
+            imageCondition.and(image.id.loe(requestCursor));
         }
         imageCondition.and(image.domainId.in(fetch));
         return queryFactory
@@ -158,7 +158,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
             ))
             .from(image)
             .where(imageCondition)
-            .orderBy(image.createdAt.desc())
+            .orderBy(image.id.desc())
             .limit(PAGE_SIZE + 1)
             .fetch();
     }
