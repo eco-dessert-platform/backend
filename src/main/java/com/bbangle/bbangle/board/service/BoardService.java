@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_URL_NULL;
 
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
@@ -115,10 +116,15 @@ public class BoardService {
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
 
+        if (Objects.isNull(boardDto.getProfile())) {
+            throw new BbangleException(IMAGE_URL_NULL);
+        }
+
         String boardProfileUrl = buildFullUrl(boardDto.getProfile());
 
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
             .stream()
+            .filter(Objects::nonNull)
             .map(this::buildFullUrl)
             .toList();
 
@@ -136,6 +142,10 @@ public class BoardService {
     }
 
     private String buildFullUrl(String url) {
+        if (Objects.isNull(url)) {
+            throw new BbangleException(IMAGE_URL_NULL);
+        }
+
         if (url.contains(HTTP)) {
             return url;
         }
