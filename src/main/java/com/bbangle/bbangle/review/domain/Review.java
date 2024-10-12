@@ -64,6 +64,11 @@ public class Review extends BaseEntity {
             case GOOD, BAD -> this.badgeTaste = badge;
             case SWEET, PLAIN -> this.badgeBrix = badge;
             case SOFT, DRY -> this.badgeTexture = badge;
+            case NULL -> {
+                this.badgeTaste = badge;
+                this.badgeBrix = badge;
+                this.badgeTexture = badge;
+            }
         }
     }
 
