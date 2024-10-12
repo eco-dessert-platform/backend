@@ -4,19 +4,18 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Collections;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BoardCustomPage<T> extends CustomPage<T> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long boardCount;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long storeCount;
-
-    public BoardCustomPage(T content, Long requestCursor, Double cursorScore, Boolean hasNext) {
-        super(content, requestCursor, hasNext);
-    }
 
     public BoardCustomPage(
         T content,

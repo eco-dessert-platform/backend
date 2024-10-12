@@ -6,26 +6,29 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BoardResponseDto {
 
-    private final Long boardId;
-    private final Long storeId;
-    private final String storeName;
-    private final String thumbnail;
-    private final String title;
-    private final int price;
+    private Long boardId;
+    private Long storeId;
+    private String storeName;
+    private String thumbnail;
+    private String title;
+    private int price;
     private Boolean isWished;
-    private final Boolean isBundled;
-    private final List<String> tags;
-    private final Double reviewRate;
-    private final Long reviewCount;
-    private final Boolean isBbangcketing;
-    private final Boolean isSoldOut;
-    private final Integer discountRate;
+    private Boolean isBundled;
+    private List<String> tags;
+    private Double reviewRate;
+    private Long reviewCount;
+    private Boolean isBbangcketing;
+    private Boolean isSoldOut;
+    private Integer discountRate;
 
     @Builder
     public BoardResponseDto(
