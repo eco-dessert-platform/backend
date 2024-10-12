@@ -51,8 +51,6 @@ public class BoardService {
     @Value("${cdn.domain}")
     private String cdn;
 
-
-
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
