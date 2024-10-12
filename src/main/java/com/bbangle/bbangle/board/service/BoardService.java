@@ -39,10 +39,9 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-
+    private static final String HTTP = "http";
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
-
     private final MemberRepository memberRepository;
     private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
@@ -50,7 +49,8 @@ public class BoardService {
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     @Value("${cdn.domain}")
-    private String cdnDomain;
+    private String cdn;
+
 
 
     @Transactional(readOnly = true)
@@ -115,6 +115,9 @@ public class BoardService {
             && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
+
+        String boardProfileUrl = buildFullUrl(boardDto.getProfile());
+
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
             .stream()
             .map(this::buildFullUrl)
@@ -128,12 +131,17 @@ public class BoardService {
         return BoardImageDetailResponse.from(
             boardDto,
             isWished,
+            boardProfileUrl,
             boardImageUrls,
             boardDetailUrls);
     }
 
     private String buildFullUrl(String url) {
-        return cdnDomain + url;
+        if (url.contains(HTTP)) {
+            return url;
+        }
+
+        return cdn + url;
     }
 
     private void updateLikeStatus(
