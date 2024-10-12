@@ -89,7 +89,8 @@ public class BoardService {
 
     private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
         return boardAndImageDtos.stream()
-            .map(BoardAndImageDto::url)
+            .filter(imageDto -> Objects.nonNull(imageDto.url()))
+            .map(imageDto -> buildFullUrl(imageDto.url()))
             .toList();
     }
 
