@@ -25,7 +25,6 @@ public class ReviewScheduler {
     private static final Long TEMP_DOMAINID = -1L;
 
     @Scheduled(cron = "0 0 0 * * *")//매일 밤 12시
-    @Transactional
     public void action() {
         log.info("Scheduler started ........");
         List<Long> bestReviewIds = getBestReviewIds();
