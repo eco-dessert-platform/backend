@@ -204,9 +204,12 @@ public class BoardPageGenerator {
                 LinkedHashMap::new
             ));
 
-        return uniqueBoardMap.values()
+        List<BoardResponseDao> resultList = uniqueBoardMap.values()
             .stream()
             .toList();
+
+        uniqueBoardMap.clear();
+        return resultList;
     }
 
     private static List<String> extractTags(List<TagsDao> tagsDaoList) {
