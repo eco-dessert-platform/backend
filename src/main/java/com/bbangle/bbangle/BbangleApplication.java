@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@EnableCaching
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class BbangleApplication {
