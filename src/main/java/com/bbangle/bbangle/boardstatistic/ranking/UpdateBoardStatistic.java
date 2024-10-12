@@ -10,6 +10,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ public class UpdateBoardStatistic {
     private final BoardStatisticService boardStatisticService;
 
     @Scheduled(cron = "0 0 * * * *")
+    @CacheEvict(value = "recommendContents", key = "'defaultRecommendCache'", cacheManager = "contentCacheManager")
     public void updateStatistic() {
         log.info("start update ranking");
 
