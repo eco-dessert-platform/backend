@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_URL_NULL;
 
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
@@ -39,10 +40,9 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-
+    private static final String HTTP = "http";
     private final BoardRepository boardRepository;
     private final BoardDetailRepository boardDetailRepository;
-
     private final MemberRepository memberRepository;
     private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
@@ -50,8 +50,7 @@ public class BoardService {
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     @Value("${cdn.domain}")
-    private String cdnDomain;
-
+    private String cdn;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -91,7 +90,8 @@ public class BoardService {
 
     private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
         return boardAndImageDtos.stream()
-            .map(BoardAndImageDto::url)
+            .filter(imageDto -> Objects.nonNull(imageDto.url()))
+            .map(imageDto -> buildFullUrl(imageDto.url()))
             .toList();
     }
 
@@ -115,8 +115,16 @@ public class BoardService {
             && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
+
+        if (Objects.isNull(boardDto.getProfile())) {
+            throw new BbangleException(IMAGE_URL_NULL);
+        }
+
+        String boardProfileUrl = buildFullUrl(boardDto.getProfile());
+
         List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
             .stream()
+            .filter(Objects::nonNull)
             .map(this::buildFullUrl)
             .toList();
 
@@ -128,12 +136,21 @@ public class BoardService {
         return BoardImageDetailResponse.from(
             boardDto,
             isWished,
+            boardProfileUrl,
             boardImageUrls,
             boardDetailUrls);
     }
 
     private String buildFullUrl(String url) {
-        return cdnDomain + url;
+        if (Objects.isNull(url)) {
+            throw new BbangleException(IMAGE_URL_NULL);
+        }
+
+        if (url.contains(HTTP)) {
+            return url;
+        }
+
+        return cdn + url;
     }
 
     private void updateLikeStatus(

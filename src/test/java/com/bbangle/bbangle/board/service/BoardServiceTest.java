@@ -41,6 +41,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
@@ -563,6 +564,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
         final Long memberId = null;
         final String TEST_URL = "www.TESTURL.com";
         final Long NOT_EXSIST_ID = -1L;
+        @Value("${cdn.domain}")
+        private String cdn;
 
         @BeforeEach
         void init() {
@@ -594,8 +597,9 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .findFirst()
                 .get();
 
-            assertThat(boardDetailUrl).isEqualTo(TEST_URL);
-            assertThat(boardImageUrl).isEqualTo(TEST_URL);
+            String cdnWithFilePath = cdn + TEST_URL;
+            assertThat(boardDetailUrl).isEqualTo(cdnWithFilePath);
+            assertThat(boardImageUrl).isEqualTo(cdnWithFilePath);
         }
     }
 

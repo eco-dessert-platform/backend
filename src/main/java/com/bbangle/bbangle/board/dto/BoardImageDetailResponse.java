@@ -25,13 +25,14 @@ public class BoardImageDetailResponse {
     public static BoardImageDetailResponse from(
         BoardDto boardDto,
         Boolean isWished,
+        String boardProfileUrl,
         List<String> boardImageDtoList,
         List<String> boardDetailList
     ) {
         return BoardImageDetailResponse.builder()
             .boardId(boardDto.getBoardId())
             .storeId(boardDto.getStoreId())
-            .profile(boardDto.getProfile())
+            .profile(boardProfileUrl)
             .title(boardDto.getTitle())
             .price(boardDto.getPrice())
             .purchaseUrl(boardDto.getPurchaseUrl())
