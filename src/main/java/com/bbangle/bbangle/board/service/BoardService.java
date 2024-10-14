@@ -30,6 +30,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +53,12 @@ public class BoardService {
     @Value("${cdn.domain}")
     private String cdn;
 
-    @Transactional(readOnly = true)
+    @Cacheable(
+        value = "recommendContents",
+        key = "'defaultRecommendCache'",
+        cacheManager = "contentCacheManager",
+        condition = "#filterRequest.glutenFreeTag == null && #filterRequest.highProteinTag == null && #filterRequest.sugarFreeTag == null && #filterRequest.veganTag == null && #filterRequest.ketogenicTag == null && #filterRequest.category == null && #filterRequest.minPrice == null && #filterRequest.maxPrice == null && #filterRequest.orderAvailableToday == null && #sort == T(com.bbangle.bbangle.board.sort.SortType).RECOMMEND && #cursorId == null && #memberId == null"
+    )
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
@@ -130,7 +136,8 @@ public class BoardService {
 
         boardStatisticService.updateViewCount(boardId);
         if (viewCountKey != null) {
-            redisTemplate.opsForValue().set(viewCountKey, "true");
+            redisTemplate.opsForValue()
+                .set(viewCountKey, "true");
         }
 
         return BoardImageDetailResponse.from(

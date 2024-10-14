@@ -64,8 +64,13 @@ public class BoardPageGenerator {
 
         boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
 
-        return getBoardResponseDtos(boardResponseDaoList, isInFolder, isBundled, tagMapByBoardId,
+        List<BoardResponseDto> boardResponseDtos = getBoardResponseDtos(boardResponseDaoList,
+            isInFolder, isBundled, tagMapByBoardId,
             isSoldOut, isBbangcketing);
+
+        clearLinkedHashMap(tagMapByBoardId, isBundled, isSoldOut, isBbangcketing);
+
+        return boardResponseDtos;
     }
 
     private static Map<Long, Boolean> getIsBbangcketing(List<BoardResponseDao> boardResponseDaoList) {
@@ -199,9 +204,12 @@ public class BoardPageGenerator {
                 LinkedHashMap::new
             ));
 
-        return uniqueBoardMap.values()
+        List<BoardResponseDao> resultList = uniqueBoardMap.values()
             .stream()
             .toList();
+
+        uniqueBoardMap.clear();
+        return resultList;
     }
 
     private static List<String> extractTags(List<TagsDao> tagsDaoList) {
@@ -224,6 +232,18 @@ public class BoardPageGenerator {
         if (condition) {
             tags.add(tag);
         }
+    }
+
+    private static void clearLinkedHashMap(
+        Map<Long, List<String>> tagMapByBoardId,
+        Map<Long, Boolean> isBundled,
+        Map<Long, Boolean> isSoldOut,
+        Map<Long, Boolean> isBbangcketing
+    ) {
+        tagMapByBoardId.clear();
+        isBundled.clear();
+        isSoldOut.clear();
+        isBbangcketing.clear();
     }
 
 }
