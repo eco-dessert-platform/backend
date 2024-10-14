@@ -9,6 +9,7 @@ import com.bbangle.bbangle.member.service.ProfileService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,7 +59,7 @@ public class ProfileController {
         return responseService.getSingleResult(new MessageDto(AVAILABLE_NICKNAME, true));
     }
 
-    @PutMapping
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResult update(
         @RequestPart(required = false)
         InfoUpdateRequest infoUpdateRequest,
