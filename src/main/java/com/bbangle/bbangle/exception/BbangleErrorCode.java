@@ -55,6 +55,7 @@ public enum BbangleErrorCode {
     REVIEW_MEMBER_NOT_PROPER(-35, "해당 리뷰를 작성한 사용자가 아닙니다.", BAD_REQUEST),
     EMPTY_PRODUCT_ITEM(-36, "게시판 아이디에 해당하는 상품이 없습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     SURVEY_NOT_FOUND(-37, "수정하고자 하는 설문 정보가 존재하지 않습니다.", NOT_FOUND),
+    IMAGE_URL_NULL(-37, "Image URL이 Null입니다.", NOT_FOUND),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

@@ -151,9 +151,8 @@ public class Member extends BaseEntity implements UserDetails {
             this.birth = request.birthDate();
         }
 
-        if (request.phoneNumber() != null) {
-            UserValidator.validatePhoneNumber(request.phoneNumber());
-            this.phone = request.phoneNumber();
+        if (request.sex() != null) {
+            this.sex = request.sex();
         }
 
         if (request.nickname() != null) {

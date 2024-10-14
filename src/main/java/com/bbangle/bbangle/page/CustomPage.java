@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 public class CustomPage<T> {
 
     private T content;
-    private final Long nextCursor;
-    private final Boolean hasNext;
+    private Long nextCursor;
+    private Boolean hasNext;
 
 }
