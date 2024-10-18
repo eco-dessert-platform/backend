@@ -2,11 +2,13 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
+import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
+import com.bbangle.bbangle.board.domain.QRandomBoard;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
@@ -28,6 +30,7 @@ import com.bbangle.bbangle.preference.domain.Preference;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.domain.QMemberPreference;
 import com.bbangle.bbangle.preference.domain.QPreference;
+import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
@@ -52,6 +55,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
+    private static final QRandomBoard randomBoard = QRandomBoard.randomBoard;
+    private static final QStore store = QStore.store;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
     private final PreferenceRecommendBoardQueryProviderResolver preferenceProviderResolver;
@@ -194,6 +199,57 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .on(board.id.eq(product.board.id))
             .where(filter)
             .fetchOne();
+    }
+
+    @Override
+    public List<BoardResponseDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber) {
+        if(cursorId == null){
+            cursorId = 1L;
+        }
+        Long randomBoardId = queryFactory.select(randomBoard.id)
+            .from(randomBoard)
+            .where(randomBoard.randomBoardId.eq(cursorId).and(randomBoard.setNumber.eq(setNumber)))
+            .fetchOne();
+        List<Long> boardIds = queryFactory.select(randomBoard.randomBoardId)
+            .from(randomBoard)
+            .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
+            .orderBy(randomBoard.id.asc())
+            .limit(BOARD_PAGE_SIZE + 1)
+            .fetch();
+
+        return queryFactory.select(
+                new QBoardResponseDao(
+                    board.id,
+                    store.id,
+                    store.name,
+                    board.profile,
+                    board.title,
+                    board.price,
+                    product.category,
+                    product.glutenFreeTag,
+                    product.highProteinTag,
+                    product.sugarFreeTag,
+                    product.veganTag,
+                    product.ketogenicTag,
+                    boardStatistic.boardReviewGrade,
+                    boardStatistic.boardReviewCount,
+                    product.orderEndDate,
+                    product.soldout,
+                    board.discountRate
+                ))
+            .from(product)
+            .join(board)
+            .on(product.board.id.eq(board.id))
+            .join(store)
+            .on(board.store.id.eq(store.id))
+            .join(randomBoard)
+            .on(randomBoard.randomBoardId.eq(board.id))
+            .join(boardStatistic)
+            .on(boardStatistic.boardId.eq(board.id))
+            .where(board.id.in(boardIds))
+            .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
+            .orderBy(randomBoard.id.asc())
+            .fetch();
     }
 
     private Preference getMemberPreference(Long memberId){

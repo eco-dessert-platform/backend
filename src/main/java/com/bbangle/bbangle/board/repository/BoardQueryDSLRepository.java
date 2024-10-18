@@ -39,5 +39,7 @@ public interface BoardQueryDSLRepository {
 
     Long getBoardCount(FilterRequest filterRequest);
 
+    List<BoardResponseDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber);
+
 }
 
