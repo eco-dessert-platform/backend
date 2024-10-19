@@ -7,7 +7,7 @@ public enum Badge {
     PLAIN("담백해요"),
     SOFT("부드러워요"),
     DRY("퍽퍽해요"),
-    NULL("NULL");
+    NULL("");
 
     private final String action;
 
