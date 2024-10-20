@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.service.factory.ProductOrderFactory;
 import com.bbangle.bbangle.board.service.helper.ProductDtoAtBoardDetailsHelper;
 import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.board.service.util.ProductsUtil;
+import com.bbangle.bbangle.board.util.ProductsUtil;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.Push;

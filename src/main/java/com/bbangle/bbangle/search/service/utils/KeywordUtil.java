@@ -4,7 +4,6 @@ import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOr
 
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.util.MorphemeAnalyzer;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +16,13 @@ public class KeywordUtil {
     private static final String BEST_KEYWORD_KEY = "keyword";
     private static final String[] DEFAULT_SEARCH_KEYWORDS = {"글루텐프리", "비건", "저당", "키토제닉"};
 
-    private final MorphemeAnalyzer morphemeAnalyzer;
+    private final Tokenizer tokenizer;
     private final RedisRepository redisRepository;
 
     public List<Long> getBoardIds(String keyword) {
         checkNullOrEmptyKeyword(keyword);
 
-        List<String> keywordTokens = morphemeAnalyzer.getAllTokenizer(keyword);
+        List<String> keywordTokens = tokenizer.getAllTokenizer(keyword);
 
         return keywordTokens.stream()
             .map(key -> redisRepository.get(RedisEnum.BOARD.name(), key))
