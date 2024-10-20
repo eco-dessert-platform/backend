@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.page.ProcessedDataCursorResponse;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.domain.Search;
@@ -62,7 +62,7 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    public SearchCustomPage<SearchResponse> getBoardList(
+    public ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
         String keyword,
@@ -78,7 +78,7 @@ public class SearchService {
 
         Long boardCount = searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort);
 
-        SearchCustomPage<SearchResponse> searchCustomPage = SearchPageGenerator.getBoardPage(
+        ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage = SearchPageGenerator.getBoardPage(
             boards,
             DEFAULT_BOARD,
             boardCount);
@@ -91,13 +91,13 @@ public class SearchService {
     }
 
     private void updateLikeStatus(
-        SearchCustomPage<SearchResponse> searchCustomPage,
+        ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage,
         Long memberId
     ) {
         List<Long> responseList = extractIds(searchCustomPage);
         List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
 
-        searchCustomPage.getContent()
+        searchCustomPage.getData()
             .getBoards()
             .stream()
             .filter(board -> likedContentIds.contains(board.getBoardId()))
@@ -105,9 +105,9 @@ public class SearchService {
     }
 
     private List<Long> extractIds(
-        SearchCustomPage<SearchResponse> searchCustomPage
+        ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage
     ) {
-        return searchCustomPage.getContent()
+        return searchCustomPage.getData()
             .getBoards()
             .stream()
             .map(BoardResponseDto::getBoardId)

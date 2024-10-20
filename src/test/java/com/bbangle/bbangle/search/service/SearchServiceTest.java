@@ -20,7 +20,7 @@ import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.page.ProcessedDataCursorResponse;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
@@ -39,7 +39,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
 
 @Import(FixtureConfig.class)
 class SearchServiceTest extends AbstractIntegrationTest {
@@ -116,7 +115,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
 
             when(keywordUtil.getBoardIds(any())).thenReturn(boardIds);
 
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
+            ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage = searchService.getBoardList(
                 filterRequest,
                 sort,
                 keyword,
@@ -126,7 +125,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
 
             Long nextCursor = searchCustomPage.getNextCursor();
 
-            SearchCustomPage<SearchResponse> newSearchCustomPage = searchService.getBoardList(
+            ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> newSearchCustomPage = searchService.getBoardList(
                 filterRequest,
                 sort,
                 keyword,
@@ -135,13 +134,13 @@ class SearchServiceTest extends AbstractIntegrationTest {
             );
 
             assertAll(
-                () -> assertThat(newSearchCustomPage.getContent().getBoards()).hasSize(
+                () -> assertThat(newSearchCustomPage.getData().getBoards()).hasSize(
                     5),
-                () -> assertThat(newSearchCustomPage.getContent().getItemAllCount()).isEqualTo(15)
+                () -> assertThat(newSearchCustomPage.getData().getItemAllCount()).isEqualTo(15)
             );
 
-            List<BoardResponseDto> resultAll = new ArrayList<>(searchCustomPage.getContent().getBoards());
-            resultAll.addAll(newSearchCustomPage.getContent().getBoards());
+            List<BoardResponseDto> resultAll = new ArrayList<>(searchCustomPage.getData().getBoards());
+            resultAll.addAll(newSearchCustomPage.getData().getBoards());
 
             switch (sort) {
                 case RECENT:
