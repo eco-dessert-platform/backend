@@ -19,7 +19,7 @@ public class ReviewManager {
         String textureAction = reviewSingle.badgeTexture().action();
         List<String> tags = List.of(tasteAction, brixAction, textureAction);
         tags = tags.stream()
-                .filter(tag -> !tag.isEmpty())
+                .filter(tag -> !tag.equals(Badge.NULL.action()))
                 .toList();
         tagMap.put(reviewSingle.id(), tags);
         return tagMap;
