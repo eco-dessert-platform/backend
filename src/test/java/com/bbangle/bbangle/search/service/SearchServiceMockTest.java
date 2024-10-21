@@ -10,10 +10,11 @@ import static org.mockito.Mockito.when;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.page.ProcessedDataCursorResponse;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
@@ -127,7 +128,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             when(searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort)).thenReturn(
                 boardCount);
 
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
+            ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage = searchService.getBoardList(
                 filterRequest,
                 sort,
                 keyword,
@@ -138,8 +139,8 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             assertAll(
                 () -> assertThat(searchCustomPage.getNextCursor()).isEqualTo(-1L),
                 () -> assertThat(searchCustomPage.getHasNext()).isFalse(),
-                () -> assertThat(searchCustomPage.getContent().getBoards()).hasSize(2),
-                () -> assertThat(searchCustomPage.getContent().getItemAllCount()).isEqualTo(
+                () -> assertThat(searchCustomPage.getData().getBoards()).hasSize(2),
+                () -> assertThat(searchCustomPage.getData().getItemAllCount()).isEqualTo(
                     boardCount)
             );
         }
