@@ -117,11 +117,13 @@ public class ReviewService {
 
     @Transactional
     public void insertLike(Long reviewId, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+        reviewLikeRepository.findByMemberIdAndReviewId(memberId, reviewId)
+                .ifPresent(reviewLike -> {
+                    throw new BbangleException(BbangleErrorCode.REVIEW_ALREADY_LIKED);
+                });
 
         reviewLikeRepository.save(ReviewLike.builder()
-                .memberId(member.getId())
+                .memberId(memberId)
                 .reviewId(reviewId)
                 .build());
     }
