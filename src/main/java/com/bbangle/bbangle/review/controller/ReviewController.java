@@ -96,7 +96,7 @@ public class ReviewController {
     }
 
     @Operation(summary = "도움되요 추가")
-    @GetMapping(value = "/like/{reviewId}")
+    @PostMapping(value = "/like/{reviewId}")
     public CommonResult insertLike(
             @PathVariable("reviewId")
             Long reviewId,
