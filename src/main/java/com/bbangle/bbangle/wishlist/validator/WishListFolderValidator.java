@@ -14,9 +14,9 @@ public class WishListFolderValidator {
             throw new BbangleException(BbangleErrorCode.INVALID_FOLDER_TITLE);
         }
 
-        if(title.equals(DEFAULT_FOLDER_NAME)){
-            throw new BbangleException(BbangleErrorCode.DEFAULT_FOLDER_NAME_USED);
-        }
+//        if(title.equals(DEFAULT_FOLDER_NAME)){
+//            throw new BbangleException(BbangleErrorCode.DEFAULT_FOLDER_NAME_USED);
+//        }
     }
 
     public static void validateMember(Member member) {
