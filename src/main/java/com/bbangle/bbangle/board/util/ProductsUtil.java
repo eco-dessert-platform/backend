@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.service.util;
+package com.bbangle.bbangle.board.util;
 
 import com.bbangle.bbangle.board.domain.Product;
 import java.util.List;
