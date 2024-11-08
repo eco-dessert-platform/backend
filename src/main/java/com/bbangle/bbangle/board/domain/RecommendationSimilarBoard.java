@@ -28,22 +28,20 @@ import lombok.ToString;
 public class RecommendationSimilarBoard extends CreatedAtBaseEntity {
 
     @Id
-    @Column(name = "query_item")
-    Long queryItem;
+    private Long queryItem;
 
-    @Column(name = "recommendation_item")
-    Long recommendationItem;
+    private Long recommendationItem;
 
-    BigDecimal score;
+    private BigDecimal score;
 
     @Id
-    Integer rank;
+    private Integer rank;
 
-    @Column(name = "recommendation_theme")
-    @Enumerated(EnumType.STRING)
-    SimilarityTypeEnum recommendationTheme;
+    @Column(length = 30, columnDefinition = "varchar")
+    @Enumerated(value = EnumType.STRING)
+    private SimilarityTypeEnum recommendationTheme;
 
-    @Column(name = "model_version")
+    @Column(length = 30, columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
-    SimilarityModelVerEnum modelVersion;
+    private SimilarityModelVerEnum modelVersion;
 }
