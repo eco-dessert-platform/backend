@@ -3,14 +3,12 @@ package com.bbangle.bbangle.common.domain;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import org.hibernate.annotations.CreationTimestamp;
 @Getter
 @MappedSuperclass
-public class BaseEntity extends CreatedAtBaseEntity {
+public class CreatedAtBaseEntity {
 
-    @UpdateTimestamp
-    private LocalDateTime modifiedAt;
-
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }
 
