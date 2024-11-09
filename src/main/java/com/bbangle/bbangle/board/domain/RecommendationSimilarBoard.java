@@ -41,11 +41,11 @@ public class RecommendationSimilarBoard extends CreatedAtBaseEntity {
     @Column(name = "score")
     private BigDecimal score;
 
-    @Column(length = 30, columnDefinition = "varchar")
+    @Column(name = "recommendation_theme", length = 30, columnDefinition = "varchar")
     @Enumerated(value = EnumType.STRING)
     private SimilarityTypeEnum recommendationTheme;
 
-    @Column(length = 30, columnDefinition = "varchar")
+    @Column(name = "model_version", length = 30, columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
     private SimilarityModelVerEnum modelVersion;
 }
