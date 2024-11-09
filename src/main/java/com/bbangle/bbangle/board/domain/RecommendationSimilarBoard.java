@@ -28,14 +28,18 @@ import lombok.ToString;
 public class RecommendationSimilarBoard extends CreatedAtBaseEntity {
 
     @Id
+    @Column(name = "query_item")
     private Long queryItem;
 
+    @Id
+    @Column(name = "rank")
+    private Integer rank;
+
+    @Column(name = "recommendation_item")
     private Long recommendationItem;
 
+    @Column(name = "score")
     private BigDecimal score;
-
-    @Id
-    private Integer rank;
 
     @Column(length = 30, columnDefinition = "varchar")
     @Enumerated(value = EnumType.STRING)
