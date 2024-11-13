@@ -29,21 +29,23 @@ public class RecommendationSimilarBoard extends CreatedAtBaseEntity {
 
     @Id
     @Column(name = "query_item")
-    Long queryItem;
-
-    @Column(name = "recommendation_item")
-    Long recommendationItem;
-
-    BigDecimal score;
+    private Long queryItem;
 
     @Id
-    Integer rank;
+    @Column(name = "rank")
+    private Integer rank;
 
-    @Column(name = "recommendation_theme")
-    @Enumerated(EnumType.STRING)
-    SimilarityTypeEnum recommendationTheme;
+    @Column(name = "recommendation_item")
+    private Long recommendationItem;
 
-    @Column(name = "model_version")
+    @Column(name = "score")
+    private BigDecimal score;
+
+    @Column(name = "recommendation_theme", length = 30, columnDefinition = "varchar")
+    @Enumerated(value = EnumType.STRING)
+    private SimilarityTypeEnum recommendationTheme;
+
+    @Column(name = "model_version", length = 30, columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
-    SimilarityModelVerEnum modelVersion;
+    private SimilarityModelVerEnum modelVersion;
 }
