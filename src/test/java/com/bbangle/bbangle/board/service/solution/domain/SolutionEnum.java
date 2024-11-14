@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.service.domain;
+package com.bbangle.bbangle.board.service.solution.domain;
 
 public enum SolutionEnum {
     태그("태그"),
