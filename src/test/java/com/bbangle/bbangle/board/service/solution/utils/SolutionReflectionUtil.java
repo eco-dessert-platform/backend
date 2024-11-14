@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.service.solution.utils;
 
-import com.bbangle.bbangle.board.service.domain.SolutionEnum;
+import com.bbangle.bbangle.board.service.solution.domain.SolutionEnum;
+import com.bbangle.bbangle.board.service.solution.factory.SolutionDaoFactory;
 import java.util.Map;
 import java.util.Map.Entry;
 import lombok.AccessLevel;
