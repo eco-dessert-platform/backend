@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.service.solution.generator;
+package com.bbangle.bbangle.board.service.solution.resolver;
 
 public interface Resolver<TInput, TOutput> {
     TOutput resolve(TInput tInput);
