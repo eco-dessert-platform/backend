@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.service.solution.dao;
 
 import com.bbangle.bbangle.board.domain.Category;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,14 +13,14 @@ public class CategoryDao implements Dao {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false; // null 또는 다른 클래스면 false
+        if (Objects.isNull(obj) || getClass() != obj.getClass()) return false;
 
-        CategoryDao other = (CategoryDao) obj; // 타입 캐스팅
-        return category != null ? category.equals(other.category) : other.category == null; // category 비교
+        CategoryDao other = (CategoryDao) obj;
+        return Objects.nonNull(category) ? category.equals(other.category) : Objects.isNull(other.category);
     }
 
     @Override
     public int hashCode() {
-        return category != null ? category.hashCode() : 0;
+        return Objects.nonNull(category) ? category.hashCode() : 0;
     }
 }
