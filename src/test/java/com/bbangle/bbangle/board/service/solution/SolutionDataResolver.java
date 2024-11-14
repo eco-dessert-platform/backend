@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.service.solution;
 
-import com.bbangle.bbangle.board.service.domain.SolutionEnum;
+import com.bbangle.bbangle.board.service.solution.domain.SolutionEnum;
 import com.bbangle.bbangle.board.service.solution.utils.SolutionReflectionUtil;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -17,11 +17,15 @@ public class SolutionDataResolver {
         SolutionContext context,
         Map<Long, List<T>> boardInfo
     ) {
+        Map<Long, EnumMap<SolutionEnum, List<Object>>> boardMap = new HashMap<>();
+
         boardInfo.forEach((boardId, data) -> {
             Map<SolutionEnum, List<Object>> processedData = processData(context, data);
-            Map<Long, EnumMap<SolutionEnum, List<Object>>> boardMap = createBoardMap(boardId, processedData);
-            context.getData().add(boardMap);
+
+            boardMap.put(boardId, new EnumMap<>(processedData));
         });
+
+        context.setData(boardMap);
     }
 
     private <T> Map<SolutionEnum, List<Object>> processData(

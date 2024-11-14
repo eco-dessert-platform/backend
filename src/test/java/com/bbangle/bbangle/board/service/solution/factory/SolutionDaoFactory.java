@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.board.service.solution.utils;
+package com.bbangle.bbangle.board.service.solution.factory;
 
-import com.bbangle.bbangle.board.service.domain.SolutionEnum;
+import com.bbangle.bbangle.board.service.solution.domain.SolutionEnum;
 import com.bbangle.bbangle.board.service.solution.dao.CategoryDao;
 import com.bbangle.bbangle.board.service.solution.dao.SoldOutDao;
 import com.bbangle.bbangle.board.service.solution.dao.TagsDao;

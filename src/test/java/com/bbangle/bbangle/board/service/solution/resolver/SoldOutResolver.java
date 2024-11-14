@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.service.solution.generator;
+package com.bbangle.bbangle.board.service.solution.resolver;
 
 import com.bbangle.bbangle.board.service.solution.dao.SoldOutDao;
 import java.util.List;

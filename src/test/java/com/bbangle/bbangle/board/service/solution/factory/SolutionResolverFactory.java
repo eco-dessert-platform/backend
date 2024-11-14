@@ -1,10 +1,10 @@
-package com.bbangle.bbangle.board.service.solution.utils;
+package com.bbangle.bbangle.board.service.solution.factory;
 
-import com.bbangle.bbangle.board.service.domain.SolutionEnum;
-import com.bbangle.bbangle.board.service.solution.generator.CategoryResolver;
-import com.bbangle.bbangle.board.service.solution.generator.Resolver;
-import com.bbangle.bbangle.board.service.solution.generator.SoldOutResolver;
-import com.bbangle.bbangle.board.service.solution.generator.TagResolver;
+import com.bbangle.bbangle.board.service.solution.domain.SolutionEnum;
+import com.bbangle.bbangle.board.service.solution.resolver.CategoryResolver;
+import com.bbangle.bbangle.board.service.solution.resolver.Resolver;
+import com.bbangle.bbangle.board.service.solution.resolver.SoldOutResolver;
+import com.bbangle.bbangle.board.service.solution.resolver.TagResolver;
 import java.util.EnumMap;
 import java.util.Map;
 
