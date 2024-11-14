@@ -460,6 +460,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
                 "rate", BigDecimal.valueOf(4.5)
             ));
 
+            boardStatisticService.updatingNonRankedBoards();
+
             SummarizedReviewResponse response = reviewService.getSummarizedReview(
                 targetBoard.getId());
 
