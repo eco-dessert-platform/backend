@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.service;
 
-import com.bbangle.bbangle.board.common.TagUtils;
+import com.bbangle.bbangle.board.util.TagUtils;
 import com.bbangle.bbangle.board.dto.BoardInfo;
 import com.bbangle.bbangle.board.dto.SimilarityBoardDto;
 import com.bbangle.bbangle.board.dto.SimilarityBoardResponse;

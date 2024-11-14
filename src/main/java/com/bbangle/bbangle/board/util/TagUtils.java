@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.common;
+package com.bbangle.bbangle.board.util;
 
 import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.TagEnum;

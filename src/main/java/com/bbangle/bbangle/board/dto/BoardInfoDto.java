@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.common.TagUtils;
+import com.bbangle.bbangle.board.util.TagUtils;
 import com.bbangle.bbangle.board.dao.TagsDao;
 import java.math.BigDecimal;
 import java.util.Collections;
