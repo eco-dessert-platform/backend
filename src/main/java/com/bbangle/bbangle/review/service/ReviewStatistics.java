@@ -26,7 +26,7 @@ public class ReviewStatistics {
 
     private static final int DEFAULT_VALUE = 0;
     private static final int INCREMENT_VALUE = 1;
-    private static final String NULL = null;
+    private static final String BLANK_BADGE = "blank badge";
 
     private final BoardStatisticRepository boardStatisticRepository;
 
@@ -44,7 +44,7 @@ public class ReviewStatistics {
                 getPopularBrixBadge(reviews),
                 getPopularTextureBadge(reviews)
             )
-            .filter(Objects::nonNull)
+            .filter(badge -> !badge.equals(BLANK_BADGE))
             .toList();
     }
 
@@ -67,7 +67,7 @@ public class ReviewStatistics {
         Badge nagativeBadge) {
 
         if (reviews.isEmpty()) {
-            return NULL;
+            return BLANK_BADGE;
         }
 
         Map<Badge, Integer> badgeMap = new EnumMap<>(Badge.class);
@@ -84,7 +84,7 @@ public class ReviewStatistics {
         int nagativeBadgeCount = badgeMap.getOrDefault(nagativeBadge, DEFAULT_VALUE);
 
         if (positiveBadgeCount == DEFAULT_VALUE && nagativeBadgeCount == DEFAULT_VALUE) {
-            return NULL;
+            return BLANK_BADGE;
         }
 
         return positiveBadgeCount >= nagativeBadgeCount ? positiveBadge.name() : nagativeBadge.name();
