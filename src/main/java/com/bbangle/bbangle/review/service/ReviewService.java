@@ -283,7 +283,7 @@ public class ReviewService {
 
     @Transactional
     public SummarizedReviewResponse getSummarizedReview(Long boardId) {
-        List<ReviewDto> reviews = reviewRepository.findByBoardId(boardId);
+        List<ReviewBadgeDto> reviews = reviewRepository.findReviewBadgeByBoardId(boardId);
 
         if (reviews.isEmpty()) {
             return SummarizedReviewResponse.getEmpty();
