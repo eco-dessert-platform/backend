@@ -63,8 +63,8 @@ public class ReviewStatistics {
     private String calculatePopularBadge(
         List<ReviewDto> reviews,
         Function<ReviewDto, Badge> badgeFunction,
-        Badge badge1,
-        Badge badge2) {
+        Badge positiveBadge,
+        Badge nagativeBadge) {
 
         if (reviews.isEmpty()) {
             return NULL;
@@ -76,17 +76,17 @@ public class ReviewStatistics {
             .map(badgeFunction)
             .filter(badge ->
                 badge != Badge.NULL
-                    && (badge1.equals(badge)
-                    || badge2.equals(badge)))
+                    && (positiveBadge.equals(badge)
+                    || nagativeBadge.equals(badge)))
             .forEach(badge -> badgeMap.merge(badge, INCREMENT_VALUE, Integer::sum));
 
-        int badge1Count = badgeMap.getOrDefault(badge1, DEFAULT_VALUE);
-        int badge2Count = badgeMap.getOrDefault(badge2, DEFAULT_VALUE);
+        int positiveBadgeCount = badgeMap.getOrDefault(positiveBadge, DEFAULT_VALUE);
+        int nagativeBadgeCount = badgeMap.getOrDefault(nagativeBadge, DEFAULT_VALUE);
 
-        if (badge1Count == DEFAULT_VALUE && badge2Count == DEFAULT_VALUE) {
+        if (positiveBadgeCount == DEFAULT_VALUE && nagativeBadgeCount == DEFAULT_VALUE) {
             return NULL;
         }
 
-        return badge1Count >= badge2Count ? badge1.name() : badge2.name();
+        return positiveBadgeCount >= nagativeBadgeCount ? positiveBadge.name() : nagativeBadge.name();
     }
 }
