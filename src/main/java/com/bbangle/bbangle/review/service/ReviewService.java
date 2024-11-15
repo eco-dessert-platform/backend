@@ -289,7 +289,7 @@ public class ReviewService {
             return SummarizedReviewResponse.getEmpty();
         }
 
-        BigDecimal averageRatingScore = reviewStatistics.getAverageRatingScore(reviews);
+        BigDecimal averageRatingScore = reviewStatistics.getAverageRatingScore(boardId);
         int reviewCount = reviewStatistics.count(reviews);
         List<String> popularBadgeList = reviewStatistics.getPopularBadgeList(reviews);
 

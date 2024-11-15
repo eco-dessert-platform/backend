@@ -17,11 +17,4 @@ public class ReviewDto {
     private Badge badgeTexture;
     private BigDecimal rate;
     private String content;
-
-    public ReviewDto(Badge badgeTaste, Badge badgeBrix, Badge badgeTexture, BigDecimal rate) {
-        this.badgeTaste = badgeTaste;
-        this.badgeBrix = badgeBrix;
-        this.badgeTexture = badgeTexture;
-        this.rate = rate;
-    }
 }

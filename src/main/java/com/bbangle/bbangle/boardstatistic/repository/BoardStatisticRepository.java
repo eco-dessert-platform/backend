@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.boardstatistic.repository;
 
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,7 @@ public interface BoardStatisticRepository extends JpaRepository<BoardStatistic, 
 
     @Query(value = "select bs from BoardStatistic bs where bs.boardId in :boardIds")
     List<BoardStatistic> findAllByBoardIds(@Param("boardIds") List<Long> boardIds);
+
+    @Query(value = "select boardReviewGrade from BoardStatistic where boardId = :boardId")
+    BigDecimal findBoardReviewGradeByBoardId(@Param("boardId") Long boardId);
 }

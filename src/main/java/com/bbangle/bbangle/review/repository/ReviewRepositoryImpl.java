@@ -354,8 +354,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                     ReviewDto.class,
                     review.badgeTaste,
                     review.badgeBrix,
-                    review.badgeTexture,
-                    review.rate
+                    review.badgeTexture
                 )
             )
             .from(review)
