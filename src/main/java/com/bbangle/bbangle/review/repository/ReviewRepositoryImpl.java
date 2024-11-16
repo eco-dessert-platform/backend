@@ -15,6 +15,7 @@ import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.QReviewLike;
 import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.review.dto.QReviewSingleDto;
+import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
 import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
@@ -354,6 +355,22 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                     ReviewDto.class,
                     review.badgeTaste,
                     review.badgeBrix,
+                    review.badgeTexture,
+                    review.rate
+                )
+            )
+            .from(review)
+            .where(review.boardId.eq(boardId).and(notDeleted()))
+            .fetch();
+    }
+
+    @Override
+    public List<ReviewBadgeDto> findReviewBadgeByBoardId(Long boardId) {
+        return queryFactory.select(
+                Projections.constructor(
+                    ReviewBadgeDto.class,
+                    review.badgeTaste,
+                    review.badgeBrix,
                     review.badgeTexture
                 )
             )
@@ -361,6 +378,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
             .where(review.boardId.eq(boardId).and(notDeleted()))
             .fetch();
     }
+
 
     @Override
     public List<ReviewStatisticDao> getReviewStatisticByBoardIds(List<Long> boardReviewUpdateId) {

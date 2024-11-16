@@ -9,12 +9,11 @@ import static com.bbangle.bbangle.review.domain.Badge.SWEET;
 
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.dto.ReviewDto;
+import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +33,11 @@ public class ReviewStatistics {
         return boardStatisticRepository.findBoardReviewGradeByBoardId(boardId);
     }
 
-    public int count(List<ReviewDto> reviews) {
+    public int count(List<ReviewBadgeDto> reviews) {
         return reviews.size();
     }
 
-    public List<String> getPopularBadgeList(List<ReviewDto> reviews) {
+    public List<String> getPopularBadgeList(List<ReviewBadgeDto> reviews) {
         return Stream.of(
                 getPopularTasteBadge(reviews),
                 getPopularBrixBadge(reviews),
@@ -48,21 +47,21 @@ public class ReviewStatistics {
             .toList();
     }
 
-    private String getPopularTasteBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTaste, GOOD, BAD);
+    private String getPopularTasteBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeTaste, GOOD, BAD);
     }
 
-    private String getPopularBrixBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeBrix, SWEET, PLAIN);
+    private String getPopularBrixBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeBrix, SWEET, PLAIN);
     }
 
-    private String getPopularTextureBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, SOFT, DRY);
+    private String getPopularTextureBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeTexture, SOFT, DRY);
     }
 
     private String calculatePopularBadge(
-        List<ReviewDto> reviews,
-        Function<ReviewDto, Badge> badgeFunction,
+        List<ReviewBadgeDto> reviews,
+        Function<ReviewBadgeDto, Badge> badgeFunction,
         Badge positiveBadge,
         Badge nagativeBadge) {
 
