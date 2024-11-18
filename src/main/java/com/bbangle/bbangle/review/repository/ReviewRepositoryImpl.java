@@ -14,6 +14,7 @@ import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.domain.QReviewLike;
 import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.review.dto.QReviewDto;
 import com.bbangle.bbangle.review.dto.QReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
 import com.bbangle.bbangle.review.dto.ReviewDto;
@@ -351,8 +352,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     @Override
     public List<ReviewDto> findByBoardId(Long boardId) {
         return queryFactory.select(
-                Projections.constructor(
-                    ReviewDto.class,
+                new QReviewDto(
                     review.badgeTaste,
                     review.badgeBrix,
                     review.badgeTexture,
