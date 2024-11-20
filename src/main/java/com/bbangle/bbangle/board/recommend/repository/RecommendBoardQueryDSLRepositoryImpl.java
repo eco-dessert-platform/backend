@@ -29,7 +29,7 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    QSegmentIntolerance segmentIntolerance = QSegmentIntolerance.segmentIntolerance;
+    private static final QSegmentIntolerance segmentIntolerance = QSegmentIntolerance.segmentIntolerance;
 
     private final JPAQueryFactory queryFactory;
 
