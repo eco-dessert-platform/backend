@@ -65,6 +65,9 @@ public class BoardService {
         Long cursorId,
         Long memberId
     ) {
+        if(sort == SortType.RECOMMEND){
+            sort = SortType.MOST_WISHED;
+        }
         List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(memberId, filterRequest, sort, cursorId);
         BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
