@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.orders.ProductResponse;
+import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.board.service.ProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -52,6 +53,7 @@ public class BoardController {
     private final ProductService productService;
     private final StoreService storeService;
     private final ReviewService reviewService;
+    private final RecommendBoardService recommendBoardService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -73,6 +75,14 @@ public class BoardController {
         Long memberId
     ) {
         sort = settingDefaultSortTypeIfNull(sort);
+        if(memberId != null && sort == SortType.RECOMMEND){
+            BoardCustomPage<List<BoardResponseDto>> boardResponseList = recommendBoardService.getBoardList(
+                filterRequest,
+                cursorId,
+                memberId);
+
+            return responseService.getSingleResult(boardResponseList);
+        }
         BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
             filterRequest,
             sort,
