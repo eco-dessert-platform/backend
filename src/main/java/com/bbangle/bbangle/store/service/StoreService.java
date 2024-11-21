@@ -2,7 +2,7 @@ package com.bbangle.bbangle.store.service;
 
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.page.StoreDetailCustomPage;
+import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -19,7 +19,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 @RequiredArgsConstructor
 public class StoreService {
 
-    private static final Long PAGE_SIZE = 10L;
+    private static final int PAGE_SIZE = 10;
 
     private final StoreRepository storeRepository;
     private final WishListStoreRepository wishListStoreRepository;
@@ -41,7 +41,7 @@ public class StoreService {
         return storeRepository.getStoreResponse(memberId, storeId);
     }
 
-    public StoreDetailCustomPage<List<BoardInfoDto>> getBoardsInStore(Long memberId,
+    public CursorPageResponse<BoardInfoDto> getBoardsInStore(Long memberId,
         Long storeId,
         Long boardIdAsCursorId) {
 
@@ -49,21 +49,6 @@ public class StoreService {
             boardRepository.findBoardsByStoreWithCursor(storeId, memberId, boardIdAsCursorId) :
             boardRepository.findBoardsByStore(storeId, memberId);
 
-        // 이 부분 통합 작업이 필요해 보임
-        boolean hasNext = checkingHasNextStoreDetail(boardInfoDtos);
-
-        if (hasNext) {
-            boardInfoDtos.remove(
-                boardInfoDtos.get(boardInfoDtos.size() - 1));
-        }
-
-        return  StoreDetailCustomPage.from(boardInfoDtos, hasNext);
+        return CursorPageResponse.of(boardInfoDtos, PAGE_SIZE, BoardInfoDto::getBoardId);
     }
-
-    private boolean checkingHasNextStoreDetail(
-        List<BoardInfoDto> storeDetailResponse) {
-        return storeDetailResponse.size() >= PAGE_SIZE + 1;
-    }
-
-
 }

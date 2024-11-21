@@ -9,7 +9,6 @@ import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.service.utils.TitleUtil;
-import com.bbangle.bbangle.util.MorphemeAnalyzer;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,10 +29,10 @@ public class SearchLoadService {
     private final BoardRepository boardRepository;
     private final ProductRepository productRepository;
     private final SearchRepository searchRepository;
-    private final MorphemeAnalyzer morphemeAnalyzer;
     private final RedisRepository redisRepository;
     private final KeywordUtil keywordUtil;
     private final AutoCompleteUtil autoCompleteUtil;
+    private final TitleUtil titleUtil;
 
     @PostConstruct
     @Scheduled(cron = "0 0 0 * * *")
@@ -47,13 +46,11 @@ public class SearchLoadService {
         List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
         List<TitleDto> productTitleDtos = productRepository.findAllTitle();
 
-        List<TitleDto> boardTokenizedTitles = TitleUtil.fromTokenizer(boardTitleDtos,
-            morphemeAnalyzer);
-        List<TitleDto> productTokenizedTitles = TitleUtil.fromTokenizer(productTitleDtos,
-            morphemeAnalyzer);
+        List<TitleDto> boardTokenizedTitles = titleUtil.toTokenizer(boardTitleDtos);
+        List<TitleDto> productTokenizedTitles = titleUtil.toTokenizer(productTitleDtos);
         boardTokenizedTitles.addAll(productTokenizedTitles);
 
-        Map<String, List<String>> mappingTitles = TitleUtil.getTitleBoardIdsMapping(
+        Map<String, List<String>> mappingTitles = titleUtil.getTitleBoardIdsMapping(
             boardTokenizedTitles);
 
         cacheKeyword(mappingTitles);
@@ -75,13 +72,11 @@ public class SearchLoadService {
         List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
         List<TitleDto> productTitleDtos = productRepository.findAllTitle();
 
-        List<TitleDto> boardTokenizedTitles = TitleUtil.fromTokenizer(boardTitleDtos,
-            morphemeAnalyzer);
-        List<TitleDto> productTokenizedTitles = TitleUtil.fromTokenizer(productTitleDtos,
-            morphemeAnalyzer);
+        List<TitleDto> boardTokenizedTitles = titleUtil.toTokenizer(boardTitleDtos);
+        List<TitleDto> productTokenizedTitles = titleUtil.toTokenizer(productTitleDtos);
         boardTokenizedTitles.addAll(productTokenizedTitles);
 
-        List<String> titles = TitleUtil.getTitles(boardTokenizedTitles);
+        List<String> titles = titleUtil.getTitles(boardTokenizedTitles);
         autoCompleteUtil.insertAll(titles);
     }
 

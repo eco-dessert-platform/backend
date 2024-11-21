@@ -6,79 +6,86 @@ import static com.bbangle.bbangle.review.domain.Badge.GOOD;
 import static com.bbangle.bbangle.review.domain.Badge.PLAIN;
 import static com.bbangle.bbangle.review.domain.Badge.SOFT;
 import static com.bbangle.bbangle.review.domain.Badge.SWEET;
-import static java.math.BigDecimal.ROUND_DOWN;
 
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.dto.ReviewDto;
+import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ReviewStatistics {
 
-    public BigDecimal getAverageRatingScore(List<ReviewDto> reviews) {
-        int reviewsSize = count(reviews);
+    private static final int DEFAULT_VALUE = 0;
+    private static final int INCREMENT_VALUE = 1;
+    private static final String BLANK_BADGE = "blank badge";
 
-        BigDecimal totalCount = new BigDecimal(reviewsSize);
+    private final BoardStatisticRepository boardStatisticRepository;
 
-        float ratingScore = 0f;
-        for (ReviewDto review : reviews) {
-            ratingScore += review.getRate().floatValue();
-        }
-
-        return new BigDecimal(ratingScore).divide(totalCount, 2, ROUND_DOWN);
+    public BigDecimal getAverageRatingScore(Long boardId) {
+        return boardStatisticRepository.findBoardReviewGradeByBoardId(boardId);
     }
 
-    public int count(List<ReviewDto> reviews) {
+    public int count(List<ReviewBadgeDto> reviews) {
         return reviews.size();
     }
 
-    public List<String> getPopularBadgeList(List<ReviewDto> reviews) {
-        return List.of(
-            getPopularTasteBadge(reviews),
-            getPopularBrixBadge(reviews),
-            getPopularTextureBadge(reviews));
+    public List<String> getPopularBadgeList(List<ReviewBadgeDto> reviews) {
+        return Stream.of(
+                getPopularTasteBadge(reviews),
+                getPopularBrixBadge(reviews),
+                getPopularTextureBadge(reviews)
+            )
+            .filter(badge -> !badge.equals(BLANK_BADGE))
+            .toList();
     }
 
-    private String getPopularTasteBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTaste, GOOD, BAD);
+    private String getPopularTasteBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeTaste, GOOD, BAD);
     }
 
-    private String getPopularBrixBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeBrix, SWEET, PLAIN);
+    private String getPopularBrixBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeBrix, SWEET, PLAIN);
     }
 
-    private String getPopularTextureBadge(List<ReviewDto> reviews) {
-        return calculatePopularBadge(reviews, ReviewDto::getBadgeTexture, SOFT, DRY);
+    private String getPopularTextureBadge(List<ReviewBadgeDto> reviews) {
+        return calculatePopularBadge(reviews, ReviewBadgeDto::getBadgeTexture, SOFT, DRY);
     }
 
     private String calculatePopularBadge(
-        List<ReviewDto> reviews,
-        Function<ReviewDto, Badge> badgeFunction,
-        Badge badge1,
-        Badge badge2) {
-        Map<Badge, Integer> badgeMap = new HashMap<>();
+        List<ReviewBadgeDto> reviews,
+        Function<ReviewBadgeDto, Badge> badgeFunction,
+        Badge positiveBadge,
+        Badge nagativeBadge) {
 
-        int halfReviewsSize = count(reviews) / 2;
-
-        for (ReviewDto review : reviews) {
-            Badge badge = badgeFunction.apply(review);
-
-            int badgeCount = badgeMap.getOrDefault(badge, 0);
-
-            // 뱃지 카운트가 전체의 반 이상이면 인기 많은 뱃지로 반복문 조기 종료
-            if (halfReviewsSize < badgeCount) {
-                break;
-            }
-
-            badgeMap.put(badge, badgeCount + 1);
+        if (reviews.isEmpty()) {
+            return BLANK_BADGE;
         }
 
-        return badgeMap.getOrDefault(badge1, 0) >= badgeMap.getOrDefault(badge2, 0) ?
-            badge1.name() : badge2.name();
+        Map<Badge, Integer> badgeMap = new EnumMap<>(Badge.class);
+
+        reviews.stream()
+            .map(badgeFunction)
+            .filter(badge ->
+                badge != Badge.NULL
+                    && (positiveBadge.equals(badge)
+                    || nagativeBadge.equals(badge)))
+            .forEach(badge -> badgeMap.merge(badge, INCREMENT_VALUE, Integer::sum));
+
+        int positiveBadgeCount = badgeMap.getOrDefault(positiveBadge, DEFAULT_VALUE);
+        int nagativeBadgeCount = badgeMap.getOrDefault(nagativeBadge, DEFAULT_VALUE);
+
+        if (positiveBadgeCount == DEFAULT_VALUE && nagativeBadgeCount == DEFAULT_VALUE) {
+            return BLANK_BADGE;
+        }
+
+        return positiveBadgeCount >= nagativeBadgeCount ? positiveBadge.name() : nagativeBadge.name();
     }
 }
