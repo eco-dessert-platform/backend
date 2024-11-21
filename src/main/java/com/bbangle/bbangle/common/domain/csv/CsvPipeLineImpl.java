@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class CsvPipeLineImpl<T, U> implements CsvPipLine<T, U> {
+    private static final int HEADER_INDEX = 0;
 
     private Map<String, Integer> headerOrders;
     private List<List<String>> contents;
@@ -43,16 +44,20 @@ public class CsvPipeLineImpl<T, U> implements CsvPipLine<T, U> {
     }
 
     private void setHeader(List<List<String>> csvData) {
+        if (csvData.isEmpty() || csvData.get(HEADER_INDEX).isEmpty()) {
+            throw new IllegalArgumentException("CSV 데이터에 헤더가 없습니다.");
+        }
+
         headerOrders = new HashMap<>();
 
-        List<String> headers = csvData.get(0);
+        List<String> headers = csvData.get(HEADER_INDEX);
         for (int i = 0; headers.size() > i; i++) {
             headerOrders.put(headers.get(i), i);
         }
     }
 
     private void setContents(List<List<String>> csvData) {
-        csvData.remove(0);
+        csvData.remove(HEADER_INDEX);
         contents = csvData;
     }
 }
