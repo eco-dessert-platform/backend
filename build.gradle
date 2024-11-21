@@ -157,6 +157,9 @@ dependencies {
     // test
     implementation 'net.datafaker:datafaker:2.1.0'
     testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:1.0.16'
+
+    // CSV
+    implementation 'org.apache.commons:commons-csv:1.10.0'
 }
 
 // Querydsl 설정부
