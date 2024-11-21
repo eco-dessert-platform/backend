@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.common.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_CONVERT_ERROR;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_READ_ERROR;
+
+import com.bbangle.bbangle.exception.BbangleException;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,11 +13,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class CsvService {
 
@@ -28,7 +34,8 @@ public class CsvService {
                 records.add(row);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
+            throw new BbangleException(CSV_NOT_READ_ERROR);
         }
         return records;
     }
@@ -52,7 +59,8 @@ public class CsvService {
                 currentRow++;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
+            throw new BbangleException(CSV_NOT_READ_ERROR);
         }
         return records;
     }
@@ -71,7 +79,8 @@ public class CsvService {
 
             csvPrinter.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
+            throw new BbangleException(CSV_NOT_CONVERT_ERROR);
         }
 
         return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
