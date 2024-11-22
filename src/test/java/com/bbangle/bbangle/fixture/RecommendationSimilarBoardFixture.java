@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
 import com.bbangle.bbangle.board.domain.SimilarityModelVerEnum;
 import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
@@ -11,10 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Logger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -22,6 +21,27 @@ import lombok.extern.slf4j.Slf4j;
 public class RecommendationSimilarBoardFixture {
 
     private static final int LIMIT_SIMILAR_BOARD_COUNT = 3;
+
+    public static RecommendationSimilarBoard getRandomSingleEntity(
+        Board targetBoard,
+        Board recommandationBoard,
+        int rank
+    ) {
+        Random random = new Random();
+        BigDecimal randomScore = BigDecimal.valueOf(random.nextDouble(0, 1));
+        List<RecommendationSimilarBoard> recommendationSimilarBoards = new ArrayList<>(3);
+
+        return RecommendationSimilarBoard.builder()
+            .queryItem(targetBoard.getId())
+            .recommendationItem(recommandationBoard.getId())
+            .score(randomScore)
+            .rank(rank)
+            .recommendationTheme(random.nextInt() % 2 == 0 ? SimilarityTypeEnum.SIMILARITY
+                : SimilarityTypeEnum.DEFAULT)
+            .modelVersion(random.nextInt() % 2 == 0 ? SimilarityModelVerEnum.V1
+                : SimilarityModelVerEnum.DEFAULT)
+            .build();
+    }
 
     public static List<RecommendationSimilarBoard> getRandom(
         Long boardId,

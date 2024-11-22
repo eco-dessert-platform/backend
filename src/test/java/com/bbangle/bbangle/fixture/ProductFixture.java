@@ -101,21 +101,38 @@ public class ProductFixture {
             .build();
     }
 
+    public static Product randomSoldOutProduct(Board board, Boolean isSoldOut) {
+        String dishName = getProductTitle();
+        List<Boolean> productIngredient = getRandomIngredient(6);
+
+        return Product.builder()
+            .board(board)
+            .title(dishName)
+            .veganTag(productIngredient.get(0))
+            .ketogenicTag(productIngredient.get(1))
+            .sugarFreeTag(productIngredient.get(2))
+            .highProteinTag(productIngredient.get(3))
+            .glutenFreeTag(productIngredient.get(4))
+            .category(Category.BREAD)
+            .soldout(isSoldOut)
+            .build();
+    }
+
     public static Product randomProductWithOrderDate(Board board) {
         String dishName = getProductTitle();
         List<Boolean> productIngredient = getRandomIngredient(6);
 
         return Product.builder()
-                .board(board)
-                .title(dishName)
-                .veganTag(productIngredient.get(0))
-                .ketogenicTag(productIngredient.get(1))
-                .sugarFreeTag(productIngredient.get(2))
-                .highProteinTag(productIngredient.get(3))
-                .glutenFreeTag(productIngredient.get(4))
-                .category(Category.BREAD)
-                .orderStartDate(LocalDateTime.now())
-                .build();
+            .board(board)
+            .title(dishName)
+            .veganTag(productIngredient.get(0))
+            .ketogenicTag(productIngredient.get(1))
+            .sugarFreeTag(productIngredient.get(2))
+            .highProteinTag(productIngredient.get(3))
+            .glutenFreeTag(productIngredient.get(4))
+            .category(Category.BREAD)
+            .orderStartDate(LocalDateTime.now())
+            .build();
     }
 
     public static Product gluetenFreeProduct(Board board) {

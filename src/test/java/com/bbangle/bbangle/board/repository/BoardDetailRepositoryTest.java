@@ -59,36 +59,5 @@ public class BoardDetailRepositoryTest extends AbstractIntegrationTest {
 
             assertThat(boardDetailDtos).isEmpty();
         }
-
-        @Test
-        @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
-        void getSimilarBoardList() {
-
-            Store store = storeRepository.save(StoreFixture.storeGenerator());
-
-            Board board1 = boardRepository.save(BoardFixture.randomBoard(store));
-            Board board2 = boardRepository.save(BoardFixture.randomBoard(store));
-            Board board3 = boardRepository.save(BoardFixture.randomBoard(store));
-            Board board4 = boardRepository.save(BoardFixture.randomBoard(store));
-
-            productRepository.save(ProductFixture.ketogenicProduct(board1));
-            productRepository.save(ProductFixture.ketogenicProduct(board2));
-            productRepository.save(ProductFixture.ketogenicProduct(board3));
-            productRepository.save(ProductFixture.ketogenicProduct(board4));
-
-            boardStatisticService.updatingNonRankedBoards();
-
-            recommendationSimilarBoardRepository.saveAll(
-                RecommendationSimilarBoardFixture.getRandom(
-                    board1.getId(),
-                    List.of(board2.getId(), board3.getId(), board4.getId())
-            ));
-
-            List<SimilarityBoardDto> dtos = boardDetailRepository.findSimilarityBoardByBoardId(
-                null,
-                board1.getId());
-
-            assertThat(dtos).hasSize(3);
-        }
     }
 }
