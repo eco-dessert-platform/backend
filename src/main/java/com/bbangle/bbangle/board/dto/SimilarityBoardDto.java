@@ -2,7 +2,6 @@ package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
 import com.querydsl.core.annotations.QueryProjection;
 import java.math.BigDecimal;
 import lombok.Getter;
@@ -23,7 +22,6 @@ public class SimilarityBoardDto {
     Boolean isSoldOut;
     Category category;
     Boolean isWished;
-    SimilarityTypeEnum similarityType;
 
     @QueryProjection
     public SimilarityBoardDto(
@@ -43,7 +41,6 @@ public class SimilarityBoardDto {
         Boolean ketogenicTag,
         Boolean isSoldOut,
         Category category,
-        SimilarityTypeEnum similarityType,
         Boolean isWished
     ) {
         this.boardId = boardId;
@@ -57,7 +54,6 @@ public class SimilarityBoardDto {
         this.reviewCount = reviewCount;
         this.isSoldOut = isSoldOut;
         this.category = category;
-        this.similarityType = similarityType;
         this.isWished = isWished;
         this.tagsDao = TagsDao.builder()
             .glutenFreeTag(glutenFreeTag)
