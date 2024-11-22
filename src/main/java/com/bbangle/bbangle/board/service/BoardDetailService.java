@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class BoardDetailService {
 
     private static final int RECOMMENDATION_ITEM_COUNT = 3;
+    private static final int ZERO_INSUFFICIENT = 0;
     private final BoardStatisticRepository boardStatisticRepository;
     private final BoardDetailRepository boardDetailRepository;
 
@@ -29,15 +30,7 @@ public class BoardDetailService {
             boardDetailRepository.findSimilarityBoardIdsByNotSoldOut(boardId,
                 RECOMMENDATION_ITEM_COUNT));
 
-        int insufficientNumber = RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
-        if (insufficientNumber > 0) {
-            List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(30).stream()
-                .filter(id -> !similarityOrderByBoardIds.contains(id)).toList();
-
-            Collections.shuffle(popularBoardIds);
-
-            similarityOrderByBoardIds.addAll(popularBoardIds.stream().limit(3).toList());
-        }
+        addRandomRecommandationBoard(similarityOrderByBoardIds);
 
         List<SimilarityBoardDto> similarityBoardDtos = boardDetailRepository.findSimilarityBoardByBoardId(
             memberId, similarityOrderByBoardIds);
@@ -81,6 +74,18 @@ public class BoardDetailService {
             Comparator.comparingInt(dto -> similarityOrderByBoardIds.indexOf(dto.getBoardId())));
 
         return boardResponses;
+    }
+
+    private void addRandomRecommandationBoard(List<Long> similarityOrderByBoardIds) {
+        int insufficientNumber = RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
+        if (insufficientNumber > ZERO_INSUFFICIENT) {
+            List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(30).stream()
+                .filter(id -> !similarityOrderByBoardIds.contains(id)).toList();
+
+            Collections.shuffle(popularBoardIds);
+
+            similarityOrderByBoardIds.addAll(popularBoardIds.stream().limit(3).toList());
+        }
     }
 }
 
