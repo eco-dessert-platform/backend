@@ -80,7 +80,8 @@ public class BoardDetailService {
         int insufficientNumber = RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
         if (insufficientNumber > ZERO_INSUFFICIENT) {
             List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(30).stream()
-                .filter(id -> !similarityOrderByBoardIds.contains(id)).toList();
+                .filter(id -> !similarityOrderByBoardIds.contains(id))
+                .collect(Collectors.toCollection(ArrayList::new));
 
             Collections.shuffle(popularBoardIds);
 
