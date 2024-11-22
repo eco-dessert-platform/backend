@@ -5,7 +5,6 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOT_VALID_CONTENT_T
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOT_VALID_FILE_SIZE;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NULL_FILE_URL;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NULL_INPUT_STREAM;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.UPLOAD_STREAM_CLOSE_ERROR;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
