@@ -2,7 +2,6 @@ package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import lombok.Getter;
 
 @Getter
 public class BoardInfo {
+
     private Long boardId;
     private Long storeId;
     private String thumbnail;
@@ -22,7 +22,6 @@ public class BoardInfo {
     private BigDecimal reviewRate;
     private Long reviewCount;
     private Boolean isWished;
-    private SimilarityTypeEnum similarityType;
 
     private List<TagsDao> tags;
     private Set<Category> categories;
@@ -39,7 +38,6 @@ public class BoardInfo {
         this.reviewRate = dto.getReviewRate();
         this.reviewCount = dto.getReviewCount();
         this.isWished = dto.getIsWished();
-        this.similarityType = dto.getSimilarityType();
 
         this.tags = new ArrayList<>();
         this.categories = new HashSet<>();
