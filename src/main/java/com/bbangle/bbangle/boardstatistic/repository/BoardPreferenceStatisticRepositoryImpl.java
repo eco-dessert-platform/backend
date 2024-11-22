@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class BoardPreferenceStatisticRepositoryImpl implements BoardPreferenceStatisticQueryDSLRepository{
+public class BoardPreferenceStatisticRepositoryImpl implements
+    BoardPreferenceStatisticQueryDSLRepository {
 
     private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
@@ -26,5 +27,4 @@ public class BoardPreferenceStatisticRepositoryImpl implements BoardPreferenceSt
             .where(boardStatistic.basicScore.ne(preferenceStatistic.basicScore))
             .fetch();
     }
-
 }

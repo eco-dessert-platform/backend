@@ -44,12 +44,26 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
     }
 
     @Override
-    public List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId, Long boardId) {
+    public List<Long> findSimilarityBoardIdsByNotSoldOut(Long boardId, int limit) {
+        return queryFactory.select(similarBoard.recommendationItem)
+            .from(similarBoard)
+            .join(product).on(similarBoard.recommendationItem.eq(product.board.id))
+            .where(similarBoard.queryItem.eq(boardId).and(product.soldout.eq(false)))
+            .orderBy(similarBoard.rank.asc())
+            .fetch()
+            .stream()
+            .distinct()
+            .limit(limit)
+            .toList();
+    }
+
+    @Override
+    public List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId,
+        List<Long> boardIds) {
         BooleanExpression isWished =
             Objects.isNull(memberId) ? Expressions.asBoolean(false) : wishListBoard.id.isNotNull();
 
         return buildWishList(
-            boardId,
             memberId,
             queryFactory.select(
                     new QSimilarityBoardDto(
@@ -69,29 +83,22 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
                         product.ketogenicTag,
                         product.soldout,
                         product.category,
-                        similarBoard.recommendationTheme,
                         isWished
                     )
-                ).from(similarBoard)
-                .join(board)
-                .on(similarBoard.recommendationItem.eq(board.id))
-                .join(store)
-                .on(board.store.id.eq(store.id))
-                .join(boardStatistic)
-                .on(board.id.eq(boardStatistic.boardId))
-                .join(product)
-                .on(board.id.eq(product.board.id))
-                .where(similarBoard.queryItem.eq(boardId))
-                .orderBy(similarBoard.rank.asc())
+                ).from(board)
+                .join(product).on(board.id.eq(product.board.id))
+                .join(store).on(board.store.id.eq(store.id))
+                .join(boardStatistic).on(board.id.eq(boardStatistic.boardId))
+                .where(board.id.in(boardIds))
         ).fetch();
     }
 
-    private <T> JPAQuery<T> buildWishList(Long boardId, Long memberId, JPAQuery<T> query) {
+    private <T> JPAQuery<T> buildWishList(Long memberId, JPAQuery<T> query) {
         if (Objects.isNull(memberId)) {
             return query;
         }
 
         return query.join(wishListBoard)
-            .on(wishListBoard.boardId.eq(boardId).and(wishListBoard.memberId.eq(memberId)));
+            .on(wishListBoard.boardId.eq(board.id).and(wishListBoard.memberId.eq(memberId)));
     }
 }
