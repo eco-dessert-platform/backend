@@ -98,7 +98,7 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
             return query;
         }
 
-        return query.join(wishListBoard)
+        return query.leftJoin(wishListBoard)
             .on(wishListBoard.boardId.eq(board.id).and(wishListBoard.memberId.eq(memberId)));
     }
 }
