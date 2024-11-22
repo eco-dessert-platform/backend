@@ -5,26 +5,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
-import com.bbangle.bbangle.common.service.FileStorageService;
-import com.bbangle.bbangle.common.service.FileStorageServiceImpl;
-import com.bbangle.bbangle.common.service.FileStorageServiceTest;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.units.qual.A;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 
 class RecommendBoardCsvEntityServiceTest {
-
-    @Mock
-    private RecommendBoardRepository recommendBoardRepository;
 
     @Mock
     private RecommendBoardFileStorageService fileStorageService;
