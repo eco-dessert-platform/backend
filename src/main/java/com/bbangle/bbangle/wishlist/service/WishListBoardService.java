@@ -15,6 +15,7 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +40,12 @@ public class WishListBoardService {
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        validateIsWishAvailable(board.getId(), member.getId());
+        try {
+            makeNewWish(board, wishlistFolder, member);
+        } catch (DataIntegrityViolationException e){
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
+        }
 
-        makeNewWish(board, wishlistFolder, member);
         boardStatisticService.updateWishCount(boardId);
     }
 
