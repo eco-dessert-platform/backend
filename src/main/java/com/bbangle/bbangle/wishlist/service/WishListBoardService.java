@@ -33,15 +33,13 @@ public class WishListBoardService {
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
-        Member member = memberRepository.findMemberById(memberId);
-
-        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, member);
+        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, memberId);
 
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         try {
-            makeNewWish(board, wishlistFolder, member);
+            makeNewWish(board, wishlistFolder, memberId);
         } catch (DataIntegrityViolationException e){
             throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
@@ -69,35 +67,29 @@ public class WishListBoardService {
         wishlistProducts.ifPresent(wishlistBoardRepository::deleteAll);
     }
 
-    private void validateIsWishAvailable(Long boardId, Long memberId) {
-        if(wishlistBoardRepository.existsByBoardIdAndMemberId(boardId, memberId)){
-            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
-        }
-    }
-
     private WishListFolder getWishlistFolder(
         WishListBoardRequest wishRequest,
-        Member member
+        Long memberId
     ) {
         if (wishRequest.folderId().equals(0L)) {
-            return wishListFolderRepository.findByMemberAndFolderName(member, DEFAULT_FOLDER_NAME)
+            return wishListFolderRepository.findByMemberAndFolderName(memberId, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
         }
 
-        return wishListFolderRepository.findByMemberAndId(member, wishRequest.folderId())
+        return wishListFolderRepository.findByMemberAndId(memberId, wishRequest.folderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
     }
 
     private void makeNewWish(
         Board board,
         WishListFolder wishlistFolder,
-        Member member
+        Long memberId
     ) {
 
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
             .boardId(board.getId())
-            .memberId(member.getId())
+            .memberId(memberId)
             .build();
 
         wishlistBoardRepository.save(wishlistBoard);
