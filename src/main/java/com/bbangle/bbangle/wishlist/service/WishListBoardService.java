@@ -38,11 +38,7 @@ public class WishListBoardService {
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        try {
-            makeNewWish(board, wishlistFolder, memberId);
-        } catch (DataIntegrityViolationException e){
-            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
-        }
+        makeNewWish(board, wishlistFolder, memberId);
 
         boardStatisticService.updateWishCount(boardId);
     }
@@ -52,7 +48,8 @@ public class WishListBoardService {
     public void cancel(Long memberId, Long boardId) {
         Member member = memberRepository.findMemberById(memberId);
 
-        WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId, member.getId())
+        WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId,
+                member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
@@ -71,7 +68,8 @@ public class WishListBoardService {
         WishListBoardRequest wishRequest,
         Long memberId
     ) {
-        if (wishRequest.folderId().equals(0L)) {
+        if (wishRequest.folderId()
+            .equals(0L)) {
             return wishListFolderRepository.findByMemberAndFolderName(memberId, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
         }
@@ -85,14 +83,16 @@ public class WishListBoardService {
         WishListFolder wishlistFolder,
         Long memberId
     ) {
-
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
             .boardId(board.getId())
             .memberId(memberId)
             .build();
-
-        wishlistBoardRepository.save(wishlistBoard);
+        try {
+            wishlistBoardRepository.save(wishlistBoard);
+        } catch (DataIntegrityViolationException e) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
+        }
     }
 
 }
