@@ -184,7 +184,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("동시에 한 게시글에 대해 wish를 할 경우 두 번째 요청은 실패해야 한다")
+    @DisplayName("동시에 한 게시글에 대해 wish를 할 경우 한번만 요청에 성공해 데이터를 저장한다")
     void concurrentWish() {
         //given
         WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
