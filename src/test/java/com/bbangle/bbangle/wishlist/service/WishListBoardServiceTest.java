@@ -19,6 +19,10 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.math.BigDecimal;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -177,5 +181,32 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
                 .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
         }
 
+    }
+
+    @Test
+    @DisplayName("동시에 한 게시글에 대해 wish를 할 경우 두 번째 요청은 실패해야 한다")
+    void concurrentWish() {
+        //given
+        WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
+        WishListFolder folder = wishListFolderRepository.save(wishListFolder);
+
+        final int threadCount = 2;
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        //when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    wishListBoardService.wish(member.getId(), board.getId(), new WishListBoardRequest(folder.getId()));
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        //then
+        Assertions.assertThatCode(() -> wishListBoardRepository.findByBoardIdAndMemberId(board.getId(), member.getId()).get())
+            .doesNotThrowAnyException();
     }
 }
