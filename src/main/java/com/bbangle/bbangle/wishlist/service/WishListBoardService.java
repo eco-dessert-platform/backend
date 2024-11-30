@@ -15,6 +15,7 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,16 +33,13 @@ public class WishListBoardService {
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
-        Member member = memberRepository.findMemberById(memberId);
-
-        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, member);
+        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, memberId);
 
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        validateIsWishAvailable(board.getId(), member.getId());
+        makeNewWish(board, wishlistFolder, memberId);
 
-        makeNewWish(board, wishlistFolder, member);
         boardStatisticService.updateWishCount(boardId);
     }
 
@@ -50,7 +48,8 @@ public class WishListBoardService {
     public void cancel(Long memberId, Long boardId) {
         Member member = memberRepository.findMemberById(memberId);
 
-        WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId, member.getId())
+        WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId,
+                member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         wishlistBoardRepository.delete(wishedBoard);
@@ -65,38 +64,35 @@ public class WishListBoardService {
         wishlistProducts.ifPresent(wishlistBoardRepository::deleteAll);
     }
 
-    private void validateIsWishAvailable(Long boardId, Long memberId) {
-        if(wishlistBoardRepository.existsByBoardIdAndMemberId(boardId, memberId)){
-            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
-        }
-    }
-
     private WishListFolder getWishlistFolder(
         WishListBoardRequest wishRequest,
-        Member member
+        Long memberId
     ) {
-        if (wishRequest.folderId().equals(0L)) {
-            return wishListFolderRepository.findByMemberAndFolderName(member, DEFAULT_FOLDER_NAME)
+        if (wishRequest.folderId()
+            .equals(0L)) {
+            return wishListFolderRepository.findByMemberAndFolderName(memberId, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
         }
 
-        return wishListFolderRepository.findByMemberAndId(member, wishRequest.folderId())
+        return wishListFolderRepository.findByMemberAndId(memberId, wishRequest.folderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
     }
 
     private void makeNewWish(
         Board board,
         WishListFolder wishlistFolder,
-        Member member
+        Long memberId
     ) {
-
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
             .boardId(board.getId())
-            .memberId(member.getId())
+            .memberId(memberId)
             .build();
-
-        wishlistBoardRepository.save(wishlistBoard);
+        try {
+            wishlistBoardRepository.save(wishlistBoard);
+        } catch (DataIntegrityViolationException e) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
+        }
     }
 
 }
