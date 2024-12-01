@@ -1,22 +1,22 @@
 package com.bbangle.bbangle.member.domain;
 
+import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
-import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.OneToMany;
-
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,13 +70,13 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<Withdrawal> withdrawals = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<WishListFolder> wishListFolders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<WishListStore> wishListStores = new ArrayList<>();
 
     @Builder
@@ -161,7 +161,7 @@ public class Member extends BaseEntity implements UserDetails {
         }
     }
 
-    public void delete(){
+    public void delete() {
         this.isDeleted = true;
         this.email = "-";
         this.phone = "-";
@@ -172,3 +172,4 @@ public class Member extends BaseEntity implements UserDetails {
     }
 
 }
+
