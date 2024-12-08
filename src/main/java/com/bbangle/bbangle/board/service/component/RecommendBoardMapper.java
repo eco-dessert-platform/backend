@@ -17,7 +17,7 @@ public class RecommendBoardMapper {
     private static final String RECOMMENDATION_THEME = "recommendation_theme";
     private static final String MODEL_VERSION = "model_version";
 
-    public List<RecommendBoardCsvDto> mapToCsvEntity(Map<String, Integer> header, List<List<String>> csvData) {
+    public List<RecommendBoardCsvDto> mapToCsvDto(Map<String, Integer> header, List<List<String>> csvData) {
         return csvData.stream().map(row -> RecommendBoardCsvDto.builder()
             .queryItem(Long.parseLong(row.get(header.get(QUERY_ITEM))))
             .recommendationItem(Long.parseLong(row.get(header.get(RECOMMENDATION_ITEM))))

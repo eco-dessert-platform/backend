@@ -72,7 +72,7 @@ public class RecommendBoardService {
 
         Map<String, Integer> header = CsvFileUtil.getHeader(recommendationData);
         List<List<String>> contents = CsvFileUtil.setContents(recommendationData);
-        List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities = recommendBoardMapper.mapToCsvEntity(header, contents);
+        List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities = recommendBoardMapper.mapToCsvDto(header, contents);
         return recommendBoardMapper.mapToEntity(recommendBoardCsvDtoEntities);
     }
 }
