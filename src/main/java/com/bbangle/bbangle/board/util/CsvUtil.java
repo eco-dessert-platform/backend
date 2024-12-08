@@ -67,7 +67,7 @@ public class CsvUtil {
         return records;
     }
 
-    public static int getCsvRowCount(InputStream inputStream) throws IOException {
+    public static int getCsvRowCount(InputStream inputStream) {
         int rowCount = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             Iterable<CSVRecord> csvRecords = CSVFormat.DEFAULT.parse(reader);
