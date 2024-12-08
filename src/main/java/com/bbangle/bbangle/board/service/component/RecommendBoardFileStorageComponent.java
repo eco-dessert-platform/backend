@@ -29,11 +29,7 @@ public class RecommendBoardFileStorageComponent {
     public int readRowCount() {
         InputStream file = fileStorageRepository.getFile(recommendDataFileUrl);
 
-        try {
-            return CsvUtil.getCsvRowCount(file);
-        } catch (IOException e) {
-            throw new BbangleException(BbangleErrorCode.INPUT_STREAM_NOT_CLOSE);
-        }
+        return CsvUtil.getCsvRowCount(file);
     }
 
 }
