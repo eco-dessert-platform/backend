@@ -63,6 +63,7 @@ public enum BbangleErrorCode {
     CSV_NOT_READ_ERROR(-47, "CSV 파일을 읽는 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     CSV_NOT_CONVERT_ERROR(-48, "CSV 파일을 리스트로 변환 도중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_VALID_INDEX(-49, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INPUT_STREAM_NOT_CLOSE(-50, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -70,6 +71,7 @@ public enum BbangleErrorCode {
     AWS_ACL_BLOCK(-602, "S3에 버킷의 ACL권한을 설정해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_ENVIRONMENT(-603, "AWS 환경에서 진행해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),

@@ -1,9 +1,11 @@
-package com.bbangle.bbangle.common.service;
+package com.bbangle.bbangle.board.repository;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.AmazonServiceException;
+import com.bbangle.bbangle.board.repository.FileStorageRepository;
+import com.bbangle.bbangle.board.repository.util.FileStorageRepositoryImpl;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
@@ -23,35 +25,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class FileStorageServiceTest {
+class FileStorageRepositoryTest {
     @Mock
     private AmazonS3 amazonS3;
 
     @InjectMocks
-    private FileStorageServiceImpl fileStorageService;
+    private FileStorageRepositoryImpl fileStorageRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(fileStorageService, "bucketName", "test-bucket");
-    }
-
-    @Test
-    @DisplayName("파일 업로드 시 유효성을 검증할 수 있다")
-    void validFileUploading() {
-        // Arrange
-        InputStream file = new ByteArrayInputStream("test-data".getBytes());
-        String savedUrl = "test/path/file.txt";
-        String contentType = "text/plain";
-        long contentLength = 1024L;
-
-        when(amazonS3.doesObjectExist("test-bucket", savedUrl)).thenReturn(false);
-        when(amazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
-        // Act & Assert
-        assertThatCode(() -> fileStorageService.uploadStreamFile(file, savedUrl, contentType, contentLength))
-            .doesNotThrowAnyException();
-
-        verify(amazonS3, times(1)).doesObjectExist("test-bucket", savedUrl);
+        ReflectionTestUtils.setField(fileStorageRepository, "bucketName", "test-bucket");
     }
 
     @Test
@@ -60,7 +44,7 @@ class FileStorageServiceTest {
         String savedUrl = "nonexistent/file.txt";
         Mockito.when(amazonS3.doesObjectExist(Mockito.anyString(), Mockito.eq(savedUrl))).thenReturn(false);
 
-        Assertions.assertThrows(BbangleException.class, () -> fileStorageService.getFile(savedUrl));
+        Assertions.assertThrows(BbangleException.class, () -> fileStorageRepository.getFile(savedUrl));
     }
 
     @Test
@@ -70,7 +54,7 @@ class FileStorageServiceTest {
         Mockito.when(amazonS3.getObject(Mockito.anyString(), Mockito.eq(savedUrl)))
             .thenThrow(AmazonServiceException.class);
 
-        Assertions.assertThrows(BbangleException.class, () -> fileStorageService.getFile(savedUrl));
+        Assertions.assertThrows(BbangleException.class, () -> fileStorageRepository.getFile(savedUrl));
     }
 
     @Test
@@ -85,34 +69,8 @@ class FileStorageServiceTest {
         Mockito.doAnswer(invocation -> null).when(amazonS3)
             .putObject(Mockito.anyString(), Mockito.eq(savedUrl), Mockito.eq(file), Mockito.any());
 
-        fileStorageService.uploadStreamFile(file, savedUrl, contentType, contentLength);
+        fileStorageRepository.uploadFile(file, savedUrl, contentType, contentLength);
         Mockito.verify(amazonS3, Mockito.times(1)).putObject(Mockito.anyString(), Mockito.eq(savedUrl), Mockito.any(), Mockito.any());
-    }
-
-    @Test
-    @DisplayName("파일이 null이면 예외를 발생시킬 수 있다")
-    void uploadStreamFile_NullFile() {
-        Assertions.assertThrows(BbangleException.class, () -> {
-            fileStorageService.uploadStreamFile(null, "test/file.txt", "text/plain", 10);
-        });
-    }
-
-    @Test
-    @DisplayName("contentType이 비어있으면 예외를 발생시킬 수 있다")
-    void uploadStreamFile_EmptyContentType() {
-        InputStream file = new ByteArrayInputStream("Test content".getBytes());
-        Assertions.assertThrows(BbangleException.class, () -> {
-            fileStorageService.uploadStreamFile(file, "test/file.txt", "", 10);
-        });
-    }
-
-    @Test
-    @DisplayName("파일 크기가 유효하지 않으면 예외를 발생시킬 수 있다")
-    void uploadStreamFile_InvalidContentLength() {
-        InputStream file = new ByteArrayInputStream("Test content".getBytes());
-        Assertions.assertThrows(BbangleException.class, () -> {
-            fileStorageService.uploadStreamFile(file, "test/file.txt", "text/plain", 0);
-        });
     }
 
     @Test
@@ -127,7 +85,7 @@ class FileStorageServiceTest {
             .putObject(Mockito.anyString(), Mockito.eq(savedUrl), Mockito.eq(file), Mockito.any());
 
         Assertions.assertThrows(BbangleException.class, () -> {
-            fileStorageService.uploadStreamFile(file, savedUrl, contentType, contentLength);
+            fileStorageRepository.uploadFile(file, savedUrl, contentType, contentLength);
         });
     }
 
@@ -137,7 +95,7 @@ class FileStorageServiceTest {
         String savedUrl = "nonexistent/file.txt";
         Mockito.when(amazonS3.doesObjectExist(Mockito.anyString(), Mockito.eq(savedUrl))).thenReturn(false);
 
-        Assertions.assertThrows(BbangleException.class, () -> fileStorageService.getFile(savedUrl));
+        Assertions.assertThrows(BbangleException.class, () -> fileStorageRepository.getFile(savedUrl));
     }
 
     @Test
@@ -153,7 +111,7 @@ class FileStorageServiceTest {
             .putObject(Mockito.anyString(), Mockito.eq(savedUrl), Mockito.eq(file), Mockito.any());
 
         Assertions.assertThrows(BbangleException.class, () -> {
-            fileStorageService.uploadStreamFile(file, savedUrl, contentType, contentLength);
+            fileStorageRepository.uploadFile(file, savedUrl, contentType, contentLength);
         });
 
         try {

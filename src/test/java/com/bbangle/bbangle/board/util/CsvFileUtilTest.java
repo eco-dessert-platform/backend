@@ -1,9 +1,7 @@
-package com.bbangle.bbangle.common.service.csv;
+package com.bbangle.bbangle.board.util;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.common.service.CsvService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,15 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class CsvServiceTest {
-
-    private CsvService csvService = new CsvService();
+class CsvFileUtilTest {
 
     @Test
     @DisplayName("CSV 파일 전체를 읽어올 수 있다.")
@@ -33,7 +28,7 @@ class CsvServiceTest {
             csvContent.getBytes(StandardCharsets.UTF_8));
 
         // Act
-        List<List<String>> records = csvService.readCsvWithRow(inputStream);
+        List<List<String>> records = CsvUtil.readCsvWithRow(inputStream);
 
         // Assert
         assertThat(records)
@@ -56,7 +51,7 @@ class CsvServiceTest {
         int endRow = 2;
 
         // Act
-        List<List<String>> records = csvService.readCsvWithRowRange(inputStream, startRow, endRow);
+        List<List<String>> records = CsvUtil.readCsvWithRowRange(inputStream, startRow, endRow);
 
         // Assert
         assertThat(records)
@@ -79,62 +74,12 @@ class CsvServiceTest {
         int endRow = 10;
 
         // Act
-        List<List<String>> records = csvService.readCsvWithRowRange(inputStream, startRow, endRow);
+        List<List<String>> records = CsvUtil.readCsvWithRowRange(inputStream, startRow, endRow);
 
         // Assert
         assertThat(records)
             .isNotNull()
             .hasSize(1) // Only header row should be included
             .containsExactly(List.of("header1", "header2", "header3"));
-    }
-
-    @Test
-    @DisplayName("리스트 데이터를 CSV 형식의 InputStream으로 변환할 수 있다.")
-    void convertListToInputStream() throws IOException {
-        // Arrange
-        List<List<Object>> data = List.of(
-            List.of("header1", "header2", "header3"),
-            List.of("value1", "value2", "value3"),
-            List.of("value4", "value5", "value6")
-        );
-
-        // Act
-        InputStream inputStream = csvService.convertListToInputStream(data);
-
-        // Assert
-        assertThat(inputStream).isNotNull();
-
-        // Read the InputStream to validate its content
-        String resultCsv = new BufferedReader(new InputStreamReader(inputStream))
-            .lines()
-            .collect(Collectors.joining(System.lineSeparator()));
-
-        String expectedCsv = String.join(System.lineSeparator(),
-            "header1,header2,header3",
-            "value1,value2,value3",
-            "value4,value5,value6"
-        );
-
-        assertThat(resultCsv).isEqualTo(expectedCsv);
-    }
-
-    @Test
-    @DisplayName("빈 리스트 데이터를 CSV 형식의 InputStream으로 변환할 수 있다.")
-    void convertListToInputStream_EmptyList() throws IOException {
-        // Arrange
-        List<List<Object>> data = List.of(); // Empty data
-
-        // Act
-        InputStream inputStream = csvService.convertListToInputStream(data);
-
-        // Assert
-        assertThat(inputStream).isNotNull();
-
-        // Read the InputStream to validate its content
-        String resultCsv = new BufferedReader(new InputStreamReader(inputStream))
-            .lines()
-            .collect(Collectors.joining(System.lineSeparator()));
-
-        assertThat(resultCsv).isEmpty();
     }
 }

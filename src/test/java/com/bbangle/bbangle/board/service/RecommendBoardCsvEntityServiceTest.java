@@ -1,47 +1,47 @@
 package com.bbangle.bbangle.board.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
+import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
-import java.util.ArrayList;
-import java.util.List;
+import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 
-class RecommendBoardCsvEntityServiceTest {
+class RecommendBoardCsvEntityServiceTest extends AbstractIntegrationTest {
 
-    @Mock
-    private RecommendBoardFileStorageService fileStorageService;
-
-    @InjectMocks
+    @Autowired
     private RecommendBoardService recommendBoardService;
 
-    public RecommendBoardCsvEntityServiceTest() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @Autowired
+    private RecommendBoardRepository recommendBoardRepository;
 
+    @Autowired
+    private RecommendationSimilarBoardMemoryRepository memoryRepository;
+
+    @BeforeEach
+    void before () {
+        memoryRepository.delete(RecommendBoardConfig.create(0,0));
+    }
 
     @Test
     void saveRecommendBoardFile() {
+        recommendBoardService.saveRecommendBoardEntity();
+        recommendBoardService.saveRecommendBoardEntity();
 
-        List<List<String>> configData = new ArrayList<>();
-        configData.add(List.of("MAX_PRODUCT_COUNT", "NEXT_CURSOR"));
-        configData.add(List.of("10", "10"));
+        var result = recommendBoardRepository.findAll();
+        var result2 = memoryRepository.findById(RedisKeyEnum.RECOMMENDATION_CONFIG)
+            .orElse(null);
 
-        List<List<String>> recommendData = new ArrayList<>();
-        recommendData.add(new ArrayList<>(List.of("query_item", "recommendation_item", "score", "rank", "recommendation_theme", "model_version")));
-        recommendData.add(new ArrayList<>(List.of("10", "10", "0.11111", "3", "DEFAULT", "DEFAULT")));
+        assertThat(result).isNotNull()
+            .isNotEmpty()
+            .hasSize(100);
 
-        when(fileStorageService.readRecommendationConfigCsvFile()).thenReturn(configData);
-        when(fileStorageService.readRecommendationCsvFile(1, 2)).thenReturn(recommendData);
-        doNothing().when(fileStorageService).uploadRecommendationConfigCsvFile(any());
-
-        boolean result = recommendBoardService.saveRecommendBoardEntity();
-        assertThat(result).isTrue();
+        assertThat(result2).isNotNull();
+        assertThat(result2.getMaxProductCount()).isEqualTo(2110);
+        assertThat(result2.getNextCursor()).isEqualTo(100);
     }
 }

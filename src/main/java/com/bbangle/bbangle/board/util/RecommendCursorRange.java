@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public class RecommendCursorRange {
+
     private static final int TAKE_ROWS_COUNT = 50;
     private Integer maxProductCount;
     private Integer nextCursor;
@@ -14,10 +15,19 @@ public class RecommendCursorRange {
     }
 
     public int getStartCursor() {
-        return nextCursor == 0 ? nextCursor + 1 : nextCursor;
+        return nextCursor + 1;
     }
 
     public int getEndCursor() {
-        return nextCursor + TAKE_ROWS_COUNT >= maxProductCount ? maxProductCount : nextCursor;
+        if (maxProductCount >= 0) {
+            int calculatedCursor = nextCursor + TAKE_ROWS_COUNT;
+            return calculatedCursor >= maxProductCount ? maxProductCount : calculatedCursor;
+        }
+
+        return TAKE_ROWS_COUNT;
+    }
+
+    public boolean isEnd() {
+        return nextCursor == maxProductCount;
     }
 }
