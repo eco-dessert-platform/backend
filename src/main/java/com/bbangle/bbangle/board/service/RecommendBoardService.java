@@ -1,16 +1,21 @@
 package com.bbangle.bbangle.board.service;
 
+import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
+import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
-import com.bbangle.bbangle.board.service.csv.RecommendBoardConfigCsvEntity;
-import com.bbangle.bbangle.board.service.csv.RecommendBoardConfigPipeLine;
-import com.bbangle.bbangle.board.service.csv.RecommendBoardCsvEntity;
-import com.bbangle.bbangle.board.service.csv.RecommendBoardPipeLine;
+import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
+import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
+import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
+import com.bbangle.bbangle.board.util.CsvFileUtil;
 import com.bbangle.bbangle.board.util.RecommendCursorRange;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -19,50 +24,55 @@ public class RecommendBoardService {
 
     private static final boolean SCHEDULING_CONTINUE = true;
     private static final boolean SCHEDULING_STOP = false;
+    private static final int MAX_PRODUCT_COUNT_NULL = -1;
+    private final RecommendBoardMapper recommendBoardMapper;
+    private final RecommendationSimilarBoardMemoryRepository memoryRepository;
     private final RecommendBoardRepository recommendBoardRepository;
-    private final RecommendBoardFileStorageService fileStorageService;
+    private final RecommendBoardFileStorageComponent fileStorageService;
 
+    @Transactional
     public boolean saveRecommendBoardEntity() {
-        List<List<String>> configFile = fileStorageService.readRecommendationConfigCsvFile();
-        RecommendBoardConfigPipeLine configPipeLine = new RecommendBoardConfigPipeLine(configFile);
-        RecommendBoardConfigCsvEntity configCsvEntity = configPipeLine.mapToCsvEntity();
+        RecommendBoardConfig recommendBoardConfig = memoryRepository.findById(RedisKeyEnum.RECOMMENDATION_CONFIG)
+            .orElse(RecommendBoardConfig.empty());
 
         RecommendCursorRange cursorRange = RecommendCursorRange.builder()
-            .maxProductCount(configCsvEntity.getMaxProductCount())
-            .nextCursor(configCsvEntity.getNextCursor())
+            .maxProductCount(recommendBoardConfig.getMaxProductCount())
+            .nextCursor(recommendBoardConfig.getNextCursor())
             .build();
 
-        if (cursorRange.getStartCursor() == cursorRange.getEndCursor()) {
-            return SCHEDULING_CONTINUE;
+        if (!recommendBoardConfig.getMaxProductCount().equals(MAX_PRODUCT_COUNT_NULL) && cursorRange.isEnd()) {
+            return SCHEDULING_STOP;
         }
 
-        List<RecommendationSimilarBoard> recommendationSimilarBoards = loadRecommendationCsvFile(
-            cursorRange.getStartCursor(), cursorRange.getEndCursor());
+        List<RecommendationSimilarBoard> recommendationSimilarBoards = loadRecommendationCsvFileWithinRange(
+            cursorRange);
 
         recommendBoardRepository.saveAll(recommendationSimilarBoards);
 
-        uploadConfigFile(configCsvEntity, configPipeLine, cursorRange);
+        initializeOrUpdateBoardConfig(recommendBoardConfig, cursorRange);
 
-        return SCHEDULING_STOP;
+        return SCHEDULING_CONTINUE;
     }
 
-    private List<RecommendationSimilarBoard> loadRecommendationCsvFile(int startCursor,
-        int endCursor) {
+    private void initializeOrUpdateBoardConfig(RecommendBoardConfig recommendBoardConfig,
+        RecommendCursorRange cursorRange) {
+        if (recommendBoardConfig.getMaxProductCount().equals(MAX_PRODUCT_COUNT_NULL)) {
+            memoryRepository.save(RecommendBoardConfig.create(fileStorageService.readRowCount(), cursorRange.getEndCursor()));
+            return;
+        }
+
+        recommendBoardConfig.updateNextCursor(cursorRange.getEndCursor());
+        memoryRepository.save(recommendBoardConfig);
+    }
+
+    private List<RecommendationSimilarBoard> loadRecommendationCsvFileWithinRange(
+        RecommendCursorRange cursorRange) {
         List<List<String>> recommendationData = fileStorageService.readRecommendationCsvFile(
-            startCursor, endCursor);
-        RecommendBoardPipeLine pipeLine = new RecommendBoardPipeLine(recommendationData);
-        List<RecommendBoardCsvEntity> recommendBoardCsvEntities = pipeLine.mapToCsvEntity();
-        return pipeLine.mapToEntity(
-            recommendBoardCsvEntities);
-    }
+            cursorRange.getStartCursor(), cursorRange.getEndCursor());
 
-    private void uploadConfigFile(
-        RecommendBoardConfigCsvEntity configCsvEntity,
-        RecommendBoardConfigPipeLine configPipeLine,
-        RecommendCursorRange cursorRange
-    ) {
-        configCsvEntity.updateNextCursor(cursorRange.getEndCursor());
-        List<List<Object>> configCsvData = configPipeLine.mapToList(configCsvEntity);
-        fileStorageService.uploadRecommendationConfigCsvFile(configCsvData);
+        Map<String, Integer> header = CsvFileUtil.getHeader(recommendationData);
+        List<List<String>> contents = CsvFileUtil.setContents(recommendationData);
+        List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities = recommendBoardMapper.mapToCsvEntity(header, contents);
+        return recommendBoardMapper.mapToEntity(recommendBoardCsvDtoEntities);
     }
 }

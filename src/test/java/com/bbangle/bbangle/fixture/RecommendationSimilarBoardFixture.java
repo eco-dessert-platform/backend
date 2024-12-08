@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
-import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
-import com.bbangle.bbangle.board.domain.SimilarityModelVerEnum;
 import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,36 +10,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Logger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RecommendationSimilarBoardFixture {
-    private static final Logger log = LoggerFactory.getLogger(RecommendationSimilarBoardFixture.class);
+
     private static final int LIMIT_SIMILAR_BOARD_COUNT = 3;
-
-    public static RecommendationSimilarBoard getRandomSingleEntity(
-        Board targetBoard,
-        Board recommandationBoard,
-        int rank
-    ) {
-        Random random = new Random();
-        BigDecimal randomScore = BigDecimal.valueOf(random.nextDouble(0, 1));
-        List<RecommendationSimilarBoard> recommendationSimilarBoards = new ArrayList<>(3);
-
-        return RecommendationSimilarBoard.builder()
-            .queryItem(targetBoard.getId())
-            .recommendationItem(recommandationBoard.getId())
-            .score(randomScore)
-            .rank(rank)
-            .recommendationTheme(random.nextInt() % 2 == 0 ? SimilarityTypeEnum.SIMILARITY
-                : SimilarityTypeEnum.DEFAULT)
-            .modelVersion(random.nextInt() % 2 == 0 ? SimilarityModelVerEnum.V1
-                : SimilarityModelVerEnum.DEFAULT)
-            .build();
-    }
 
     public static List<RecommendationSimilarBoard> getRandom(
         Long boardId,
@@ -63,10 +41,8 @@ public class RecommendationSimilarBoardFixture {
                 .recommendationItem(recommandationItems.get(i))
                 .score(randomScores[i])
                 .rank(rank)
-                .recommendationTheme(random.nextInt() % 2 == 0 ? SimilarityTypeEnum.SIMILARITY
-                    : SimilarityTypeEnum.DEFAULT) // TODO - Enum이 3개 이상일 때 random으로 값을 가져올 수 있는 방법 고민
-                .modelVersion(random.nextInt() % 2 == 0 ? SimilarityModelVerEnum.V1
-                    : SimilarityModelVerEnum.DEFAULT)
+                .recommendationTheme(SimilarityTypeEnum.word2vec) // TODO - Enum이 3개 이상일 때 random으로 값을 가져올 수 있는 방법 고민
+                .modelVersion("0.0.1")
                 .build();
             recommendationSimilarBoards.add(recommendationSimilarBoard);
             logging(recommendationSimilarBoard);
@@ -90,6 +66,6 @@ public class RecommendationSimilarBoardFixture {
     }
 
     private static void logging(RecommendationSimilarBoard recommendationSimilarBoard) {
-        log.info(() -> recommendationSimilarBoard.toString());
+        log.info(recommendationSimilarBoard.toString());
     }
 }

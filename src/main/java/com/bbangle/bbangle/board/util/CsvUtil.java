@@ -1,29 +1,27 @@
-package com.bbangle.bbangle.common.service;
+package com.bbangle.bbangle.board.util;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_CONVERT_ERROR;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_READ_ERROR;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
-public class CsvService {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class CsvUtil {
 
-    public List<List<String>> readCsvWithRow(InputStream inputStream) {
+    private static final int HEADER_ROW_COUNT = 1;
+
+    public static List<List<String>> readCsvWithRow(InputStream inputStream) {
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             Iterable<CSVRecord> csvRecords = CSVFormat.DEFAULT.parse(reader);
@@ -34,13 +32,14 @@ public class CsvService {
                 records.add(row);
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new BbangleException(CSV_NOT_READ_ERROR);
+        } finally {
+            closeInputStream(inputStream);
         }
         return records;
     }
 
-    public List<List<String>> readCsvWithRowRange(InputStream inputStream, int startRow,
+    public static List<List<String>> readCsvWithRowRange(InputStream inputStream, int startRow,
         int endRow) {
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -58,31 +57,41 @@ public class CsvService {
                 }
                 currentRow++;
             }
+
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new BbangleException(CSV_NOT_READ_ERROR);
+        } finally {
+            closeInputStream(inputStream);
         }
+
         return records;
     }
 
-    public InputStream convertListToInputStream(List<List<Object>> data) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    public static int getCsvRowCount(InputStream inputStream) throws IOException {
+        int rowCount = 0;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            Iterable<CSVRecord> csvRecords = CSVFormat.DEFAULT.parse(reader);
 
-        try (CSVPrinter csvPrinter = new CSVPrinter(
-            new OutputStreamWriter(byteArrayOutputStream),
-            CSVFormat.Builder.create(CSVFormat.DEFAULT)
-                .setRecordSeparator(System.lineSeparator())
-                .build())) {
-            for (List<Object> row : data) {
-                csvPrinter.printRecord(row);
+            for (CSVRecord ignored : csvRecords) {
+                rowCount++;
             }
 
-            csvPrinter.flush();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new BbangleException(CSV_NOT_CONVERT_ERROR);
+            inputStream.close();
+        } catch (Exception e) {
+            throw new BbangleException(CSV_NOT_READ_ERROR);
+        }
+        finally {
+            closeInputStream(inputStream);
         }
 
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        return rowCount - HEADER_ROW_COUNT;
+    }
+
+    private static void closeInputStream(InputStream inputStream) {
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
