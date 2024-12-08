@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.util;
+package com.bbangle.bbangle.board.domain;
 
 import lombok.Builder;
 
@@ -28,6 +28,6 @@ public class RecommendCursorRange {
     }
 
     public boolean isEnd() {
-        return nextCursor == maxProductCount;
+        return nextCursor.equals(maxProductCount);
     }
 }
