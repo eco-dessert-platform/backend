@@ -9,7 +9,7 @@ import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
 import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
 import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
 import com.bbangle.bbangle.board.util.CsvFileUtil;
-import com.bbangle.bbangle.board.util.RecommendCursorRange;
+import com.bbangle.bbangle.board.domain.RecommendCursorRange;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
