@@ -5,6 +5,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.domain.TokenType;
 import com.bbangle.bbangle.search.service.utils.Tokenizer;
 import java.util.List;
+import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
@@ -17,11 +18,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KomoranTokenizer implements Tokenizer {
 
-    private final Komoran komoran;
-
     @Override
     public List<String> getAllTokenizer(String title) {
-        return komoran.analyze(title)
+        return new Komoran(DEFAULT_MODEL.FULL).analyze(title)
             .getTokenList()
             .stream()
             .map(Token::getMorph)
@@ -38,7 +37,7 @@ public class KomoranTokenizer implements Tokenizer {
     }
 
     private KomoranResult getTokenizer(String title) {
-        return komoran.analyze(title);
+        return new Komoran(DEFAULT_MODEL.FULL).analyze(title);
     }
 
 }
