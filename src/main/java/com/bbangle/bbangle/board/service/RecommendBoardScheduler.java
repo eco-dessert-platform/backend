@@ -26,4 +26,8 @@ public class RecommendBoardScheduler {
             throw e;
         }
     }
+
+    public void executeUploadTask() {
+
+    }
 }
