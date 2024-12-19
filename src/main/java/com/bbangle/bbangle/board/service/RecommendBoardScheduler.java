@@ -2,6 +2,8 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,6 +16,7 @@ public class RecommendBoardScheduler {
 
     private final RecommendationSimilarBoardMemoryRepository memoryRepository;
     private final RecommendBoardService recommendBoardService;
+    private final ScheduledExecutorService scheduler;
 
     @Scheduled(cron = "0 0/3 3 * * ?")
     public void scheduleRecommendBoardUpdate() {
@@ -27,7 +30,16 @@ public class RecommendBoardScheduler {
         }
     }
 
-    public void executeUploadTask() {
-
+    public void startUploadTask() {
+        scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                boolean isScheduleContinue = recommendBoardService.uploadAiLearningCsv();
+                if (!isScheduleContinue) {
+                    scheduler.shutdown();
+                }
+            } catch (Exception e) {
+                scheduler.shutdown();
+            }
+        }, 0, 5, TimeUnit.MINUTES);
     }
 }
