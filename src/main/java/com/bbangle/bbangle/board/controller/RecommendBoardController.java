@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.service.RecommendBoardScheduler;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecommendBoardController {
 
     private final ResponseService responseService;
+    private final RecommendBoardScheduler recommendBoardScheduler;
 
     @GetMapping
-    public CommonResult get() {
-
-
+    public CommonResult startUploadTask() {
+        recommendBoardScheduler.startUploadTask();
         return responseService.getSuccessResult();
     }
 }
