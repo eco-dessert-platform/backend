@@ -4,6 +4,8 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.board.dto.AiLearningProductDto;
+import com.bbangle.bbangle.board.dto.QAiLearningProductDto;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
@@ -144,6 +146,18 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
                     .and(push.isActive.eq(true)))
             .where(product.board.id.eq(boardId))
             .orderBy(product.id.desc())
+            .fetch();
+    }
+
+    @Override
+    public List<AiLearningProductDto> findAiLearningData() {
+        return queryFactory.select(
+                new QAiLearningProductDto(
+                    product.board.id,
+                    product.id,
+                    product.title
+                )
+            ).from(product)
             .fetch();
     }
 }

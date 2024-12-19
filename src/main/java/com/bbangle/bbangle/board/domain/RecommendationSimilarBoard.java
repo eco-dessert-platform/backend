@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.domain;
 
-import com.bbangle.bbangle.board.domain.composityKey.RecommendationSimilarBoardComposityKey;
 import com.bbangle.bbangle.common.domain.CreatedAtBaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,7 +44,6 @@ public class RecommendationSimilarBoard extends CreatedAtBaseEntity {
     @Enumerated(value = EnumType.STRING)
     private SimilarityTypeEnum recommendationTheme;
 
-    @Column(name = "model_version", length = 30, columnDefinition = "varchar")
-    @Enumerated(EnumType.STRING)
-    private SimilarityModelVerEnum modelVersion;
+    @Column(name = "model_version")
+    private String modelVersion;
 }
