@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ public class RecommendBoardScheduler {
 
     private final RecommendationSimilarBoardMemoryRepository memoryRepository;
     private final RecommendBoardService recommendBoardService;
-    private final ScheduledExecutorService scheduler;
 
     @Scheduled(cron = "0 0/3 3 * * ?")
     public void scheduleRecommendBoardUpdate() {
@@ -31,15 +31,19 @@ public class RecommendBoardScheduler {
     }
 
     public void startUploadTask() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleWithFixedDelay(() -> {
             try {
+                log.info("AI 학습 데이터셋 업로드 시작");
                 boolean isScheduleContinue = recommendBoardService.uploadAiLearningCsv();
                 if (!isScheduleContinue) {
+                    log.info("AI 학습 데이터셋 업로드 종료");
                     scheduler.shutdown();
                 }
             } catch (Exception e) {
+                log.info("AI 학습 데이터셋 업로드 에러");
                 scheduler.shutdown();
             }
-        }, 0, 5, TimeUnit.MINUTES);
+        }, 0, 10, TimeUnit.SECONDS);
     }
 }

@@ -32,12 +32,12 @@ public class RecommendLearningConfig {
         this.currentCursor = 0;
     }
 
-    public void updateIsStoreUploadComplete(boolean isBoardUploadComplete) {
-        this.isBoardUploadComplete = isBoardUploadComplete;
+    public void updateIsStoreUploadComplete(boolean isStoreUploadComplete) {
+        this.isStoreUploadComplete = isStoreUploadComplete;
     }
 
-    public void updateIsProductUploadComplete(boolean isProductUploadComplete) {
-        this.isReviewUploadComplete = isProductUploadComplete;
+    public void updateIsBoardUploadComplete(boolean isProductUploadComplete) {
+        this.isBoardUploadComplete = isProductUploadComplete;
     }
 
     public void updateIsReviewUploadComplete(int reviewDataSize) {
@@ -53,11 +53,11 @@ public class RecommendLearningConfig {
     }
 
     public Integer getOffSet() {
-        return START_CURSOR_POINT * currentCursor;
+        return LIMIT_REVIEW_DATA * currentCursor;
     }
 
     public Integer getLimit() {
-        return START_CURSOR_POINT;
+        return LIMIT_REVIEW_DATA;
     }
 }
 

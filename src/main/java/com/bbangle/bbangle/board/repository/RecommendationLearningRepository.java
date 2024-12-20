@@ -2,10 +2,8 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.RecommendLearningConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.CrudRepository;
 
-@Repository
-public interface RecommendationLearningRepository extends JpaRepository<RecommendLearningConfig, RedisKeyEnum> {
+public interface RecommendationLearningRepository extends CrudRepository<RecommendLearningConfig, RedisKeyEnum> {
 
 }

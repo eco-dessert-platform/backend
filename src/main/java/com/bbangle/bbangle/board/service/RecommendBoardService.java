@@ -21,12 +21,11 @@ import com.bbangle.bbangle.board.util.CsvFileUtil;
 import com.bbangle.bbangle.board.domain.RecommendCursorRange;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,6 @@ public class RecommendBoardService {
     private static final boolean SCHEDULING_CONTINUE = true;
     private static final boolean SCHEDULING_STOP = false;
     private static final int MAX_PRODUCT_COUNT_NULL = -1;
-    private final ThreadPoolTaskScheduler taskScheduler;
     private final RecommendBoardMapper recommendBoardMapper;
     private final RecommendationSimilarBoardMemoryRepository recommendationSimilarBoardMemoryRepository;
     private final RecommendationLearningRepository recommendationLearningRepository;
@@ -100,34 +98,48 @@ public class RecommendBoardService {
         RecommendLearningConfig config = recommendationLearningRepository.findById(RECOMMENDATION_LEARNING_CONFIG)
             .orElse(new RecommendLearningConfig());
 
-        if (config.getIsStoreUploadComplete()) {
+        if (!config.getIsStoreUploadComplete()) {
             List<AiLearningStoreDto> storeDtos = storeRepository.findAiLearningData();
-            InputStream storeCsvFile = fileStorageService.convertStoreDtosToInputStream(storeDtos);
-            fileStorageService.uploadCsvFile(storeCsvFile);
 
-            config.updateIsStoreUploadComplete(true);
+          try {
+            File file = createCsvFileFromDtos1(storeDtos, "testData");
+            fileStorageService.uploadCsvFile(file, "store/1.csv");
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+
+          config.updateIsStoreUploadComplete(true);
             recommendationLearningRepository.save(config);
             return SCHEDULING_CONTINUE;
         }
 
-        if (config.getIsBoardUploadComplete()) {
+        if (!config.getIsBoardUploadComplete()) {
             List<AiLearningProductDto> productDtos = productRepository.findAiLearningData();
-            InputStream productCsvFile = fileStorageService.convertProductDtosToInputStream(productDtos);
-            fileStorageService.uploadCsvFile(productCsvFile);
 
-            config.updateIsProductUploadComplete(true);
+            try {
+                File file = createCsvFileFromDtos2(productDtos, "testData");
+                fileStorageService.uploadCsvFile(file, "board/1.csv");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            config.updateIsBoardUploadComplete(true);
             recommendationLearningRepository.save(config);
             return SCHEDULING_CONTINUE;
         }
 
 
-        if (config.getIsReviewUploadComplete()) {
+        if (!config.getIsReviewUploadComplete()) {
             List<AiLearningReviewDto> reviewDtos = reviewRepository.findAiLearningData(
                 config.getOffSet(),
                 config.getLimit());
 
-            InputStream reviewCsvFile = fileStorageService.convertReviewDtosToInputStream(reviewDtos);
-            fileStorageService.uploadCsvFile(reviewCsvFile);
+            try {
+                File file = createCsvFileFromDtos3(reviewDtos, "testData");
+                fileStorageService.uploadCsvFile(file, String.format("review/%d.csv", config.getCurrentCursor()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             int dtoSize = reviewDtos.size();
 
@@ -138,6 +150,61 @@ public class RecommendBoardService {
             return config.continueSchedule(dtoSize);
         }
 
+        recommendationLearningRepository.delete(config);
         return SCHEDULING_STOP;
+    }
+
+    private File createCsvFileFromDtos1(List<AiLearningStoreDto> storeDtos, String fileName) throws IOException {
+        File tempFile = File.createTempFile(fileName, ".csv");
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            // CSV 헤더 작성
+            writer.write("product_board_id,store_id,title");
+            writer.newLine();
+
+            // 데이터 작성
+            for (AiLearningStoreDto dto : storeDtos) {
+                writer.write(dto.getProductBoardId() + "," + dto.getStoreId() + "," + dto.getTitle());
+                writer.newLine();
+            }
+        }
+
+        return tempFile;
+    }
+
+    private File createCsvFileFromDtos2(List<AiLearningProductDto> storeDtos, String fileName) throws IOException {
+        File tempFile = File.createTempFile(fileName, ".csv");
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            // CSV 헤더 작성
+            writer.write("product_board_id,product_id,title");
+            writer.newLine();
+
+            // 데이터 작성
+            for (AiLearningProductDto dto : storeDtos) {
+                writer.write(dto.getProductBoardId() + "," + dto.getProductId() + "," + dto.getTitle());
+                writer.newLine();
+            }
+        }
+
+        return tempFile;
+    }
+
+    private File createCsvFileFromDtos3(List<AiLearningReviewDto> storeDtos, String fileName) throws IOException {
+        File tempFile = File.createTempFile(fileName, ".csv");
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            // CSV 헤더 작성
+            writer.write("product_board_id, title");
+            writer.newLine();
+
+            // 데이터 작성
+            for (AiLearningReviewDto dto : storeDtos) {
+                writer.write(dto.getProductBoardId() + "," + dto.getContent());
+                writer.newLine();
+            }
+        }
+
+        return tempFile;
     }
 }

@@ -8,8 +8,9 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.bbangle.bbangle.board.repository.FileStorageRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,11 @@ public class FileStorageRepositoryImpl implements FileStorageRepository {
                 throw new BbangleException(BbangleErrorCode.STREAM_CLOSING_ERROR, e);
             }
         }
+    }
+
+    @Override
+    public void uploadFile(String path, File file) throws AmazonServiceException {
+        amazonS3.putObject(bucketName, path, file);
     }
 
     @Override
