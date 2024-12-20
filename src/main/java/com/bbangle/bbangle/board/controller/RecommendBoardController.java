@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/board/recommendation")
-@Tag(name = "Boards-Random", description = "실험에서 사용하기 위한 random data set을 내려주는 Controller")
+@RequestMapping("/api/v1/boards/recommendation")
+@Tag(name = "RecommendBoard", description = "실험에서 사용하기 위한 random data set을 내려주는 Controller")
 @RequiredArgsConstructor
 public class RecommendBoardController {
 

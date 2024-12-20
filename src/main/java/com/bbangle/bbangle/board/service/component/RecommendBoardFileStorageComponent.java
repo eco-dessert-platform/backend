@@ -7,10 +7,8 @@ import com.bbangle.bbangle.board.repository.FileStorageRepository;
 import com.bbangle.bbangle.board.util.CsvFileUtil;
 import com.bbangle.bbangle.board.util.CsvUtil;
 import com.bbangle.bbangle.exception.BbangleException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -98,5 +96,9 @@ public class RecommendBoardFileStorageComponent {
             recommendSourceDataFileUrl,
             "text/csv",
             fileByteSize);
+    }
+
+    public void uploadCsvFile(File file, String fileName) {
+        fileStorageRepository.uploadFile(recommendSourceDataFileUrl + fileName, file);
     }
 }
