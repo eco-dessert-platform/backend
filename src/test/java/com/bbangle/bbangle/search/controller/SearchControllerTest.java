@@ -14,8 +14,6 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.page.SearchCustomPage;
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;
 
 import java.lang.reflect.Field;
@@ -67,12 +65,6 @@ class SearchControllerTest extends AbstractIntegrationTest {
             .isBundled(true)
             .tags(List.of("glutenFree"))
             .build());
-
-        SearchResponse searchResponse = SearchResponse.of(boardResponseDtos, 0L);
-        SearchCustomPage searchCustomPage = SearchCustomPage.from(searchResponse, 1L, true);
-
-        given(searchService.getBoardList(any(), any(), any(), any(), any())).willReturn(
-            searchCustomPage);
 
         // When & Then
         mockMvc.perform(get("/api/v1/search/boards")

@@ -2,11 +2,12 @@ package com.bbangle.bbangle.search.controller;
 
 import static com.bbangle.bbangle.board.sort.SortType.RECOMMEND;
 
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.page.ProcessedDataCursorResponse;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;
@@ -46,7 +47,7 @@ public class SearchController {
         Long memberId
     ) {
         sort = settingDefaultSortTypeIfNull(sort);
-        SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
+        ProcessedDataCursorResponse<BoardResponseDto, SearchResponse> searchCustomPage = searchService.getBoardList(
             filterRequest,
             sort,
             keyword,
