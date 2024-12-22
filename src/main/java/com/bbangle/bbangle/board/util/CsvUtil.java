@@ -4,6 +4,9 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_READ_ERROR;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,6 +23,7 @@ import org.apache.commons.csv.CSVRecord;
 public class CsvUtil {
 
     private static final int HEADER_ROW_COUNT = 1;
+    private static final String CSV_EXTENSION = ".csv";
 
     public static List<List<String>> readCsvWithRow(InputStream inputStream) {
         List<List<String>> records = new ArrayList<>();
@@ -93,5 +97,17 @@ public class CsvUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static File createCsvFile(String fileName, String header, String body) throws IOException {
+        File tempFile = File.createTempFile(fileName, CSV_EXTENSION);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            writer.write(header);
+            writer.newLine();
+            writer.write(body);
+        }
+
+        return tempFile;
     }
 }
