@@ -2,13 +2,17 @@ package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.board.service.ProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.review.service.ReviewService;
+import com.bbangle.bbangle.store.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,6 +38,10 @@ public class BoardController {
 
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final ProductService productService;
+    private final StoreService storeService;
+    private final ReviewService reviewService;
+    private final RecommendBoardService recommendBoardService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -55,6 +63,14 @@ public class BoardController {
         Long memberId
     ) {
         sort = settingDefaultSortTypeIfNull(sort);
+        if(memberId != null && sort == SortType.RECOMMEND){
+            BoardCustomPage<List<BoardResponseDto>> boardResponseList = recommendBoardService.getBoardList(
+                filterRequest,
+                cursorId,
+                memberId);
+
+            return responseService.getSingleResult(boardResponseList);
+        }
         BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
             filterRequest,
             sort,

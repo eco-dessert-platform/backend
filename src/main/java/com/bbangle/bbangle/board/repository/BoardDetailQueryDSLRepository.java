@@ -9,5 +9,7 @@ public interface BoardDetailQueryDSLRepository {
 
     List<String> findByBoardId(Long boardId);
 
-    List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId, Long boardId);
+    List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId, List<Long> boardIds);
+
+    List<Long> findSimilarityBoardIdsByNotSoldOut(Long boardId, int limit);
 }

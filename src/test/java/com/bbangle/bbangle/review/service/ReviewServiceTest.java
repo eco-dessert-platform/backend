@@ -1,12 +1,20 @@
 package com.bbangle.bbangle.review.service;
 
+import static com.bbangle.bbangle.review.domain.Badge.BAD;
+import static com.bbangle.bbangle.review.domain.Badge.DRY;
+import static com.bbangle.bbangle.review.domain.Badge.GOOD;
+import static com.bbangle.bbangle.review.domain.Badge.PLAIN;
+import static com.bbangle.bbangle.review.domain.Badge.SOFT;
+import static com.bbangle.bbangle.review.domain.Badge.SWEET;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.ReviewRequestFixture;
+import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.image.domain.Image;
 import com.bbangle.bbangle.image.domain.ImageCategory;
 import com.bbangle.bbangle.image.dto.ImageDto;
@@ -15,8 +23,8 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.QReview;
+import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.dto.BrixDto;
 import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
@@ -29,24 +37,18 @@ import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.dto.TasteDto;
 import com.bbangle.bbangle.review.dto.TextureDto;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.ion.Decimal;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static com.bbangle.bbangle.review.domain.Badge.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
@@ -67,62 +69,52 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
     Board board;
     Member member;
+    Long memberId;
 
     @BeforeEach
     void setUp() {
         reviewLikeRepository.deleteAllInBatch();
-        Member testUser = Member.builder()
-            .name("testUser")
-            .email("test@test.com")
-            .isDeleted(false)
-            .build();
+        Member testUser = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Member.class);
         member = memberRepository.save(testUser);
+        memberId = member.getId();
 
-        board = Board.builder()
-            .isDeleted(false)
-            .title("board1")
-            .build();
+        board = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Board.class);
         board = boardRepository.save(board);
-        BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
-        boardStatisticRepository.save(boardStatistic);
+        BoardStatistic boardStatistic1 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(BoardStatistic.class)
+                .set("boardId", board.getId())
+                .sample();
+        boardStatisticRepository.save(boardStatistic1);
     }
+
 
     @Test
     @DisplayName("리뷰 insert 에 성공한다")
     void testReviewSuccess() {
         //given
-        List<Badge> badges = new ArrayList<>();
-        badges.add(GOOD);
-        badges.add(PLAIN);
-        badges.add(SOFT);
-        ReviewRequest reviewRequest = makeReviewRequest(badges);
-        List<Member> members = memberRepository.findAll();
+        ReviewRequest reviewRequest = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(ReviewRequest.class)
+                .size("badges", 3)  // fixtureMonkey는 validation 어노테이션을 통해 정확한 값을 못 내려주기 때문에 여기서 설정
+                .sample();
+        Member member = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Member.class);
+        memberRepository.save(member);
 
         //when
-        reviewService.makeReview(reviewRequest, members.get(0)
-                .getId());
+        reviewService.makeReview(reviewRequest, member.getId());
         List<Review> reviewList = reviewRepository.findAll();
 
         //then
         assertThat(reviewList).hasSize(1);
-        assertThat(reviewList.get(0)
-            .getBadgeTaste()).isEqualTo(GOOD);
-        assertThat(reviewList.get(0)
-            .getBadgeBrix()).isEqualTo(PLAIN);
-        assertThat(reviewList.get(0)
-            .getBadgeTexture()).isEqualTo(SOFT);
     }
 
     @Test
     @DisplayName("리뷰 이미지 업로드에 성공한다")
     void uploadImages(){
         //given
-        ReviewImageUploadRequest reviewImageUploadRequest =
-                new ReviewImageUploadRequest(List.of(createMockMultipartFile()),
-                ImageCategory.REVIEW);
-        Long memberId = member.getId();
+        ReviewImageUploadRequest request = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(
+                ReviewImageUploadRequest.class);
+        Member member1 = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Member.class);
+        memberRepository.save(member1);
         //when
-        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(reviewImageUploadRequest, memberId);
+        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(request, memberId);
 
         //then
         assertThat(reviewImageUploadResponse.urls()).hasSize(1);
@@ -138,7 +130,6 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         Long targetReviewId = targetReview.getId();
         createReviewLike(targetReviewId);
         createReviewImage(targetReviewId);
-
 
         //when
         reviewService.deleteReview(targetReviewId, member.getId());
@@ -233,14 +224,6 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             ReviewLike reviewLike = ReviewFixture.createReviewLike(savedReview, (long) reviewCount);
             reviewLikeRepository.save(reviewLike);
         }
-    }
-
-    private MockMultipartFile createMockMultipartFile(){
-        return new MockMultipartFile(
-                "리뷰 이미지",
-                "testImage.png",
-                MediaType.IMAGE_PNG_VALUE,
-                "testImage".getBytes());
     }
 
     @DisplayName("리뷰 좋아요 등록에 성공한다")

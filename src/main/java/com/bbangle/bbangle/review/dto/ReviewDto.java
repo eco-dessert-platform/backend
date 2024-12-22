@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.review.dto;
 
 import com.bbangle.bbangle.review.domain.Badge;
+import com.querydsl.core.annotations.QueryProjection;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class ReviewDto {
     private BigDecimal rate;
     private String content;
 
+    @QueryProjection
     public ReviewDto(Badge badgeTaste, Badge badgeBrix, Badge badgeTexture, BigDecimal rate) {
         this.badgeTaste = badgeTaste;
         this.badgeBrix = badgeBrix;

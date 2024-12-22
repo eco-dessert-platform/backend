@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.Builder;
@@ -23,5 +22,4 @@ public class SimilarityBoardResponse {
     Boolean isWished;
     Boolean isBundled;
     Boolean isSoldOut;
-    SimilarityTypeEnum similarityType;
 }
