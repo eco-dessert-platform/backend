@@ -31,6 +31,7 @@ public class RecommendBoardScheduler {
     }
 
     public void startUploadTask() {
+
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleWithFixedDelay(() -> {
             try {

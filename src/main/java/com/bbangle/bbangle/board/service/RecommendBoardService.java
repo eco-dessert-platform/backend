@@ -2,26 +2,26 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.board.domain.RedisKeyEnum.RECOMMENDATION_LEARNING_CONFIG;
 
+import com.bbangle.bbangle.board.domain.CsvFile;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
+import com.bbangle.bbangle.board.domain.RecommendCursorRange;
 import com.bbangle.bbangle.board.domain.RecommendLearningConfig;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.dto.AiLearningProductDto;
 import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
+import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
 import com.bbangle.bbangle.board.repository.FileStorageRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
 import com.bbangle.bbangle.board.repository.RecommendationLearningRepository;
 import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
-import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
 import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
 import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
 import com.bbangle.bbangle.board.util.CsvFileUtil;
-import com.bbangle.bbangle.board.domain.RecommendCursorRange;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import java.io.*;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +37,12 @@ public class RecommendBoardService {
     private static final boolean SCHEDULING_CONTINUE = true;
     private static final boolean SCHEDULING_STOP = false;
     private static final int MAX_PRODUCT_COUNT_NULL = -1;
+    private static final String STORE_CSV_FILE_NAME = "store/1.csv";
+    private static final String BOARD_CSV_FILE_NAME = "board/1.csv";
+    private static final String REVIEW_CSV_FILE_NAME = "review/%d.csv";
+    private static final String STORE_CSV_HEADER = "product_board_id,store_id,title";
+    private static final String BOARD_CSV_HEADER = "product_board_id,product_id,title";
+    private static final String REVIEW_CSV_HEADER = "product_board_id,store_id,title";
     private final RecommendBoardMapper recommendBoardMapper;
     private final RecommendationSimilarBoardMemoryRepository recommendationSimilarBoardMemoryRepository;
     private final RecommendationLearningRepository recommendationLearningRepository;
@@ -49,7 +55,8 @@ public class RecommendBoardService {
 
     @Transactional
     public boolean saveRecommendBoardEntity() {
-        RecommendBoardConfig recommendBoardConfig = recommendationSimilarBoardMemoryRepository.findById(RedisKeyEnum.RECOMMENDATION_CONFIG)
+        RecommendBoardConfig recommendBoardConfig = recommendationSimilarBoardMemoryRepository.findById(
+                RedisKeyEnum.RECOMMENDATION_CONFIG)
             .orElse(RecommendBoardConfig.empty());
 
         RecommendCursorRange cursorRange = RecommendCursorRange.builder()
@@ -57,7 +64,8 @@ public class RecommendBoardService {
             .nextCursor(recommendBoardConfig.getNextCursor())
             .build();
 
-        if (!recommendBoardConfig.getMaxProductCount().equals(MAX_PRODUCT_COUNT_NULL) && cursorRange.isEnd()) {
+        if (!recommendBoardConfig.getMaxProductCount().equals(MAX_PRODUCT_COUNT_NULL)
+            && cursorRange.isEnd()) {
             return SCHEDULING_STOP;
         }
 
@@ -74,7 +82,9 @@ public class RecommendBoardService {
     private void initializeOrUpdateBoardConfig(RecommendBoardConfig recommendBoardConfig,
         RecommendCursorRange cursorRange) {
         if (recommendBoardConfig.getMaxProductCount().equals(MAX_PRODUCT_COUNT_NULL)) {
-            recommendationSimilarBoardMemoryRepository.save(RecommendBoardConfig.create(fileStorageService.readRowCount(), cursorRange.getEndCursor()));
+            recommendationSimilarBoardMemoryRepository.save(
+                RecommendBoardConfig.create(fileStorageService.readRowCount(),
+                    cursorRange.getEndCursor()));
             return;
         }
 
@@ -89,7 +99,8 @@ public class RecommendBoardService {
 
         Map<String, Integer> header = CsvFileUtil.getHeader(recommendationData);
         List<List<String>> contents = CsvFileUtil.setContents(recommendationData);
-        List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities = recommendBoardMapper.mapToCsvDto(header, contents);
+        List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities = recommendBoardMapper.mapToCsvDto(
+            header, contents);
         return recommendBoardMapper.mapToEntity(recommendBoardCsvDtoEntities);
     }
 
@@ -98,113 +109,76 @@ public class RecommendBoardService {
         RecommendLearningConfig config = recommendationLearningRepository.findById(RECOMMENDATION_LEARNING_CONFIG)
             .orElse(new RecommendLearningConfig());
 
-        if (!config.getIsStoreUploadComplete()) {
-            List<AiLearningStoreDto> storeDtos = storeRepository.findAiLearningData();
-
-          try {
-            File file = createCsvFileFromDtos1(storeDtos, "testData");
-            fileStorageService.uploadCsvFile(file, "store/1.csv");
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-
-          config.updateIsStoreUploadComplete(true);
-            recommendationLearningRepository.save(config);
+        if (config.isNotStoreUploadComplete()) {
+            uploadStoreCsv();
+            saveStoreConfig(config);
             return SCHEDULING_CONTINUE;
-        }
-
-        if (!config.getIsBoardUploadComplete()) {
-            List<AiLearningProductDto> productDtos = productRepository.findAiLearningData();
-
-            try {
-                File file = createCsvFileFromDtos2(productDtos, "testData");
-                fileStorageService.uploadCsvFile(file, "board/1.csv");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            config.updateIsBoardUploadComplete(true);
-            recommendationLearningRepository.save(config);
+        } else if (config.isNotBoardUploadComplete()) {
+            uploadBoardCsv();
+            saveBoardConfig(config);
             return SCHEDULING_CONTINUE;
-        }
-
-
-        if (!config.getIsReviewUploadComplete()) {
+        } else if (config.isNotReviewUploadComplete()) {
             List<AiLearningReviewDto> reviewDtos = reviewRepository.findAiLearningData(
                 config.getOffSet(),
                 config.getLimit());
 
-            try {
-                File file = createCsvFileFromDtos3(reviewDtos, "testData");
-                fileStorageService.uploadCsvFile(file, String.format("review/%d.csv", config.getCurrentCursor()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
             int dtoSize = reviewDtos.size();
 
-            config.updateIsReviewUploadComplete(dtoSize);
-            config.incrementCursor();
-            recommendationLearningRepository.save(config);
-
-            return config.continueSchedule(dtoSize);
+            uploadReviewCsv(config, reviewDtos);
+            saveReviewConfig(config, dtoSize);
+            return SCHEDULING_CONTINUE;
         }
 
         recommendationLearningRepository.delete(config);
         return SCHEDULING_STOP;
     }
+    private void uploadStoreCsv() {
+        List<AiLearningStoreDto> storeDtos = storeRepository.findAiLearningData();
 
-    private File createCsvFileFromDtos1(List<AiLearningStoreDto> storeDtos, String fileName) throws IOException {
-        File tempFile = File.createTempFile(fileName, ".csv");
+        CsvFile csvFile = new CsvFile(STORE_CSV_FILE_NAME, STORE_CSV_HEADER);
+        storeDtos.forEach(dto -> csvFile.appendToBody(dto.getProductBoardId())
+            .appendToBody(dto.getStoreId())
+            .appendToBody(dto.getTitle())
+            .endAppendBody());
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-            // CSV 헤더 작성
-            writer.write("product_board_id,store_id,title");
-            writer.newLine();
-
-            // 데이터 작성
-            for (AiLearningStoreDto dto : storeDtos) {
-                writer.write(dto.getProductBoardId() + "," + dto.getStoreId() + "," + dto.getTitle());
-                writer.newLine();
-            }
-        }
-
-        return tempFile;
+        fileStorageService.uploadCsvFile(csvFile);
     }
 
-    private File createCsvFileFromDtos2(List<AiLearningProductDto> storeDtos, String fileName) throws IOException {
-        File tempFile = File.createTempFile(fileName, ".csv");
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-            // CSV 헤더 작성
-            writer.write("product_board_id,product_id,title");
-            writer.newLine();
-
-            // 데이터 작성
-            for (AiLearningProductDto dto : storeDtos) {
-                writer.write(dto.getProductBoardId() + "," + dto.getProductId() + "," + dto.getTitle());
-                writer.newLine();
-            }
-        }
-
-        return tempFile;
+    private void saveStoreConfig(RecommendLearningConfig config) {
+        config.updateIsStoreUploadComplete();
+        recommendationLearningRepository.save(config);
     }
 
-    private File createCsvFileFromDtos3(List<AiLearningReviewDto> storeDtos, String fileName) throws IOException {
-        File tempFile = File.createTempFile(fileName, ".csv");
+    private void uploadBoardCsv() {
+        List<AiLearningProductDto> productDtos = productRepository.findAiLearningData();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-            // CSV 헤더 작성
-            writer.write("product_board_id, title");
-            writer.newLine();
+        CsvFile csvFile = new CsvFile(BOARD_CSV_FILE_NAME, BOARD_CSV_HEADER);
+        productDtos.forEach(dto -> csvFile.appendToBody(dto.getProductBoardId())
+            .appendToBody(dto.getProductId())
+            .appendToBody(dto.getTitle())
+            .endAppendBody());
 
-            // 데이터 작성
-            for (AiLearningReviewDto dto : storeDtos) {
-                writer.write(dto.getProductBoardId() + "," + dto.getContent());
-                writer.newLine();
-            }
-        }
+        fileStorageService.uploadCsvFile(csvFile);
+    }
 
-        return tempFile;
+    private void saveBoardConfig(RecommendLearningConfig config) {
+        config.updateIsBoardUploadComplete();
+        recommendationLearningRepository.save(config);
+    }
+
+    private void uploadReviewCsv(RecommendLearningConfig config, List<AiLearningReviewDto> reviewDtos) {
+        String fileName = String.format(REVIEW_CSV_FILE_NAME, config.getCurrentCursor());
+        CsvFile csvFile = new CsvFile(fileName, REVIEW_CSV_HEADER);
+        reviewDtos.forEach(dto -> csvFile.appendToBody(dto.getProductBoardId())
+            .appendToBody(dto.getContent())
+            .endAppendBody());
+
+        fileStorageService.uploadCsvFile(csvFile);
+    }
+
+    private void saveReviewConfig(RecommendLearningConfig config, Integer dtoSize) {
+        config.updateIsReviewUploadComplete(dtoSize);
+        config.incrementCursor();
+        recommendationLearningRepository.save(config);
     }
 }

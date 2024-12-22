@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.redis.core.RedisHash;
 
-@RedisHash(timeToLive = 12 * 60 * 60) // 12시간
+@RedisHash(timeToLive = 12 * 60 * 60)
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -32,20 +32,28 @@ public class RecommendLearningConfig {
         this.currentCursor = 0;
     }
 
-    public void updateIsStoreUploadComplete(boolean isStoreUploadComplete) {
-        this.isStoreUploadComplete = isStoreUploadComplete;
+    public void updateIsStoreUploadComplete() {
+        this.isStoreUploadComplete = true;
     }
 
-    public void updateIsBoardUploadComplete(boolean isProductUploadComplete) {
-        this.isBoardUploadComplete = isProductUploadComplete;
+    public void updateIsBoardUploadComplete() {
+        this.isBoardUploadComplete = true;
     }
 
     public void updateIsReviewUploadComplete(int reviewDataSize) {
         this.isReviewUploadComplete = reviewDataSize < LIMIT_REVIEW_DATA;
     }
 
-    public Boolean continueSchedule(int reviewDataSize) {
-        return reviewDataSize >= LIMIT_REVIEW_DATA;
+    public Boolean isNotStoreUploadComplete() {
+        return !isStoreUploadComplete;
+    }
+
+    public Boolean isNotBoardUploadComplete() {
+        return !isBoardUploadComplete;
+    }
+
+    public Boolean isNotReviewUploadComplete() {
+        return !isReviewUploadComplete;
     }
 
     public void incrementCursor() {
