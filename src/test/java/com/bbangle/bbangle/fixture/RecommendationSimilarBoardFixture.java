@@ -14,12 +14,12 @@ import java.util.Map;
 import java.util.Random;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RecommendationSimilarBoardFixture {
-
+    private static final Logger log = LoggerFactory.getLogger(RecommendationSimilarBoardFixture.class);
     private static final int LIMIT_SIMILAR_BOARD_COUNT = 3;
 
     public static RecommendationSimilarBoard getRandomSingleEntity(
@@ -90,6 +90,6 @@ public class RecommendationSimilarBoardFixture {
     }
 
     private static void logging(RecommendationSimilarBoard recommendationSimilarBoard) {
-        log.info(recommendationSimilarBoard.toString());
+        log.info(() -> recommendationSimilarBoard.toString());
     }
 }
