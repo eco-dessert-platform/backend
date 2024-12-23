@@ -40,9 +40,9 @@ public class RecommendBoardService {
     private static final String STORE_CSV_FILE_NAME = "store/1.csv";
     private static final String BOARD_CSV_FILE_NAME = "board/1.csv";
     private static final String REVIEW_CSV_FILE_NAME = "review/%d.csv";
-    private static final String STORE_CSV_HEADER = "product_board_id,store_id,title";
+    private static final String STORE_CSV_HEADER = "store_id,product_board_id,title";
     private static final String BOARD_CSV_HEADER = "product_board_id,product_id,title";
-    private static final String REVIEW_CSV_HEADER = "product_board_id,store_id,title";
+    private static final String REVIEW_CSV_HEADER = "product_board_id,title";
     private final RecommendBoardMapper recommendBoardMapper;
     private final RecommendationSimilarBoardMemoryRepository recommendationSimilarBoardMemoryRepository;
     private final RecommendationLearningRepository recommendationLearningRepository;
@@ -51,7 +51,6 @@ public class RecommendBoardService {
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
-    private final FileStorageRepository fileStorageRepository;
 
     @Transactional
     public boolean saveRecommendBoardEntity() {
@@ -136,8 +135,8 @@ public class RecommendBoardService {
         List<AiLearningStoreDto> storeDtos = storeRepository.findAiLearningData();
 
         CsvFile csvFile = new CsvFile(STORE_CSV_FILE_NAME, STORE_CSV_HEADER);
-        storeDtos.forEach(dto -> csvFile.appendToBody(dto.getProductBoardId())
-            .appendToBody(dto.getStoreId())
+        storeDtos.forEach(dto -> csvFile.appendToBody(dto.getStoreId())
+            .appendToBody(dto.getProductBoardId())
             .appendToBody(dto.getTitle())
             .endAppendBody());
 

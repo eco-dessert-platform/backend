@@ -158,6 +158,7 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
                     product.title
                 )
             ).from(product)
+            .orderBy(product.board.id.asc())
             .fetch();
     }
 }

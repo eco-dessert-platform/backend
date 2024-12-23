@@ -406,6 +406,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
             .from(review)
             .offset(offset)
             .limit(limit)
+            .orderBy(review.boardId.asc())
             .fetch();
     }
 }
