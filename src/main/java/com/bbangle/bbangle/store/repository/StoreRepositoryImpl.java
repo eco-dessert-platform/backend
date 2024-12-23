@@ -68,6 +68,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 )
             ).from(board)
             .join(board.store, store)
+            .orderBy(store.id.asc())
             .fetch();
     }
 }
