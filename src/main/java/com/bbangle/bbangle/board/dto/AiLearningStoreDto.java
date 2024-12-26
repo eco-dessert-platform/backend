@@ -5,14 +5,14 @@ import lombok.Getter;
 
 @Getter
 public class AiLearningStoreDto {
-    private Long productBoardId;
     private Long storeId;
+    private Long productBoardId;
     private String title;
 
     @QueryProjection
-    public AiLearningStoreDto(Long productBoardId, Long storeId, String title) {
-        this.productBoardId = productBoardId;
+    public AiLearningStoreDto(Long storeId, Long productBoardId, String title) {
         this.storeId = storeId;
+        this.productBoardId = productBoardId;
         this.title = title;
     }
 }
