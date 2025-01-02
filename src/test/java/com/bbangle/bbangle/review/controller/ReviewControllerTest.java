@@ -110,6 +110,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @DisplayName("도움돼요를 추가한다")
     @WithCustomMockUser
     void insertLike() throws Exception {
+        reviewLikeRepository.deleteAll();
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
         mockMvc.perform(post("/api/v1/review/like/"+reviewId))
                 .andExpect(status().isOk())
