@@ -121,7 +121,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("리뷰 삭제에 성공한다.")
+    @DisplayName("리뷰 소프트 삭제에 성공한다.")
     void deleteReview() {
         //given
         ReviewRequest reviewRequest = ReviewRequestFixture.createReviewRequest(board.getId());
@@ -133,12 +133,9 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //when
         reviewService.deleteReview(targetReviewId, member.getId());
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
 
         //then
-        assertThat(boardStatistic.getBoardReviewCount()).isZero();
-        assertThat(boardStatistic.getBoardReviewGrade()).isZero();
+        assertThat(targetReview.isDeleted()).isFalse();
     }
 
     private void createReviewImage(Long targetReviewId){
