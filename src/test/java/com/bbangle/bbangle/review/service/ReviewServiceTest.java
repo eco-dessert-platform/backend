@@ -38,7 +38,6 @@ import com.bbangle.bbangle.review.dto.TasteDto;
 import com.bbangle.bbangle.review.dto.TextureDto;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import software.amazon.ion.Decimal;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
@@ -473,27 +471,34 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("총 리뷰의 평균 값을 소수점 2자리까지 출력한다")
         void getAvarageRatingScore() {
-            float[] score = new float[]{5f, 3.5f};
+            //given
+            Review review1 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", targetBoard.getId())
+                    .set("rate", BigDecimal.valueOf(5f))
+                    .set("isDeleted", false)
+                    .sample();
+            Review review2 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", targetBoard.getId())
+                    .set("rate", BigDecimal.valueOf(3.5f))
+                    .set("isDeleted", false)
+                    .sample();
+            reviewRepository.save(review1);
+            reviewRepository.save(review2);
 
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "rate", BigDecimal.valueOf(score[0])
-            ));
+            BoardStatistic boardStatistic = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(BoardStatistic.class)
+                    .set("boardId", targetBoard.getId())
+                    .set("boardReviewCount", 2L)
+                    .set("boardReviewGrade", BigDecimal.valueOf(4.25f))
+                    .sample();
+            boardStatisticRepository.save(boardStatistic);
 
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "rate", BigDecimal.valueOf(score[1])
-            ));
-
+            //when
             SummarizedReviewResponse response = reviewService.getSummarizedReview(
                 targetBoard.getId());
 
+            //then
             assertThat(response.getCount()).isEqualTo(2);
-
-            assertThat(response.getRating()).isEqualTo(
-                Decimal.valueOf((score[0] + score[1]))
-                    .divide(
-                        BigDecimal.valueOf(score.length), 2, RoundingMode.DOWN));
+            assertThat(response.getRating()).isEqualTo(BigDecimal.valueOf(4.25));
         }
     }
 }
