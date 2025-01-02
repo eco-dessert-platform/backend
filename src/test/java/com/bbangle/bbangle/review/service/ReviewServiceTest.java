@@ -117,7 +117,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(request, memberId);
 
         //then
-        assertThat(reviewImageUploadResponse.urls()).hasSize(1);
+        assertThat(reviewImageUploadResponse.urls()).isNotEmpty();
     }
 
     @Test

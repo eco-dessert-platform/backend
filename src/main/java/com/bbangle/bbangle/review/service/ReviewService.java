@@ -1,5 +1,11 @@
 package com.bbangle.bbangle.review.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_MEMBER_NOT_PROPER;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
+import static com.bbangle.bbangle.image.domain.ImageCategory.REVIEW;
+import static java.util.Locale.ROOT;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
@@ -13,24 +19,35 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
-import com.bbangle.bbangle.review.domain.*;
-import com.bbangle.bbangle.review.dto.*;
+import com.bbangle.bbangle.review.domain.Badge;
+import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.review.domain.ReviewCursor;
+import com.bbangle.bbangle.review.domain.ReviewLike;
+import com.bbangle.bbangle.review.domain.ReviewManager;
+import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
+import com.bbangle.bbangle.review.dto.ReviewDto;
+import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
+import com.bbangle.bbangle.review.dto.ReviewImageUploadResponse;
+import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
+import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
+import com.bbangle.bbangle.review.dto.ReviewRateResponse;
+import com.bbangle.bbangle.review.dto.ReviewRequest;
+import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_MEMBER_NOT_PROPER;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.REVIEW_NOT_FOUND;
-import static com.bbangle.bbangle.image.domain.ImageCategory.REVIEW;
-import static java.util.Locale.ROOT;
 
 @Service
 @RequiredArgsConstructor
