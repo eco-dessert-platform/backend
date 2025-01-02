@@ -158,6 +158,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
                 .set("badgeTaste", GOOD)
                 .set("badgeTexture", SOFT)
                 .set("boardId", boardId)
+                .set("isDeleted", false)
                 .sample();
         reviewRepository.save(review);
 
