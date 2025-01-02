@@ -229,7 +229,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
             assertThatThrownBy(
                 () -> wishListFolderService.update(-1L, beforeFolderId, folderUpdateDto))
                 .isInstanceOf(BbangleException.class)
-                .hasMessage(BbangleErrorCode.NOTFOUND_MEMBER.getMessage());
+                .hasMessage(BbangleErrorCode.FOLDER_NOT_FOUND.getMessage());
         }
 
         @Test
