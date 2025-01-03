@@ -581,7 +581,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("유효한 boardId로 게시판, 게시판 이미지, 게시판 상세 정보 이미지 조회할 수 있다")
         void getProductResponseTest() {
             String viewKey = "viewKey";
-            BoardImageDetailResponse boardDtos = boardService.getBoardDtos(memberId,
+            BoardImageDetailResponse boardDtos = boardDetailService.getBoardDtos(memberId,
                 targetBoard.getId(), viewKey);
 
             assertThat(boardDtos.getBoardImages()).hasSize(2);

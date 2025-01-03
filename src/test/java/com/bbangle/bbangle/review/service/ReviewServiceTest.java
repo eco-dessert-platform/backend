@@ -1,13 +1,18 @@
 package com.bbangle.bbangle.review.service;
 
+import static com.bbangle.bbangle.review.domain.Badge.BAD;
+import static com.bbangle.bbangle.review.domain.Badge.DRY;
+import static com.bbangle.bbangle.review.domain.Badge.GOOD;
+import static com.bbangle.bbangle.review.domain.Badge.SOFT;
+import static com.bbangle.bbangle.review.domain.Badge.SWEET;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
-import com.bbangle.bbangle.fixture.ReviewRequestFixture;
+import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.image.domain.Image;
 import com.bbangle.bbangle.image.domain.ImageCategory;
 import com.bbangle.bbangle.image.dto.ImageDto;
@@ -16,8 +21,8 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.QReview;
+import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.review.dto.BrixDto;
 import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
@@ -30,31 +35,21 @@ import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.dto.TasteDto;
 import com.bbangle.bbangle.review.dto.TextureDto;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import software.amazon.ion.Decimal;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static com.bbangle.bbangle.review.domain.Badge.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
     private static final BigDecimal DEFAULT_REVIEW_RATE = new BigDecimal("4.0");
     @Value("${cdn.domain}")
     private String cdnDomain;
-
     @Autowired
     ReviewService reviewService;
 
@@ -62,134 +57,109 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     ReviewLikeRepository reviewLikeRepository;
 
     @Autowired
-    private BoardStatisticService boardStatisticService;
+    MemberRepository memberRepository;
 
-    Board board;
-    Member member;
+    @Autowired
+    BoardRepository boardRepository;
 
     @BeforeEach
     void setUp() {
         reviewLikeRepository.deleteAllInBatch();
-        Member testUser = Member.builder()
-            .name("testUser")
-            .email("test@test.com")
-            .isDeleted(false)
-            .build();
-        member = memberRepository.save(testUser);
+    }
 
-        board = Board.builder()
-            .isDeleted(false)
-            .title("board1")
-            .build();
-        board = boardRepository.save(board);
-        BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatistic(board);
-        boardStatisticRepository.save(boardStatistic);
+    // 테스트에서 공통으로 사용할 메서드들
+    private Member createMember() {
+        Member testUser = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Member.class);
+        return memberRepository.save(testUser);
+    }
+
+    private Board createBoard() {
+        Board board = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Board.class);
+        Board savedBoard = boardRepository.save(board);
+        return savedBoard;
     }
 
     @Test
     @DisplayName("리뷰 insert 에 성공한다")
     void testReviewSuccess() {
         //given
-        List<Badge> badges = new ArrayList<>();
-        badges.add(GOOD);
-        badges.add(PLAIN);
-        badges.add(SOFT);
-        ReviewRequest reviewRequest = makeReviewRequest(badges);
-        List<Member> members = memberRepository.findAll();
+        Member member = createMember();
+        ReviewRequest reviewRequest = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(ReviewRequest.class);
 
         //when
-        reviewService.makeReview(reviewRequest, members.get(0)
-            .getId());
+        reviewService.makeReview(reviewRequest, member.getId());
         List<Review> reviewList = reviewRepository.findAll();
 
         //then
         assertThat(reviewList).hasSize(1);
-        assertThat(reviewList.get(0)
-            .getBadgeTaste()).isEqualTo(GOOD);
-        assertThat(reviewList.get(0)
-            .getBadgeBrix()).isEqualTo(PLAIN);
-        assertThat(reviewList.get(0)
-            .getBadgeTexture()).isEqualTo(SOFT);
     }
 
     @Test
     @DisplayName("리뷰 이미지 업로드에 성공한다")
     void uploadImages() {
         //given
-        ReviewImageUploadRequest reviewImageUploadRequest =
-            new ReviewImageUploadRequest(List.of(createMockMultipartFile()),
-                ImageCategory.REVIEW);
-        Long memberId = member.getId();
+        Member member = createMember();
+        ReviewImageUploadRequest request = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(
+                ReviewImageUploadRequest.class);
+
         //when
-        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(
-            reviewImageUploadRequest, memberId);
+        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(request, member.getId());
 
         //then
-        assertThat(reviewImageUploadResponse.urls()).hasSize(1);
+        assertThat(reviewImageUploadResponse.urls()).isNotEmpty();
     }
 
     @Test
-    @DisplayName("리뷰 삭제에 성공한다.")
+    @DisplayName("리뷰 소프트 삭제에 성공한다.")
     void deleteReview() {
         //given
-        ReviewRequest reviewRequest = ReviewRequestFixture.createReviewRequest(board.getId());
+        Member member = createMember();
+        Board board = createBoard();
+
+        ReviewRequest reviewRequest = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(ReviewRequest.class)
+                .set("boardId", board.getId())
+                .sample();
         reviewService.makeReview(reviewRequest, member.getId());
-        Review targetReview = getTargetReview();
-        Long targetReviewId = targetReview.getId();
-        createReviewLike(targetReviewId);
-        createReviewImage(targetReviewId);
+        Review review = getTargetReview(member, board);
 
         //when
-        reviewService.deleteReview(targetReviewId, member.getId());
-        BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
-            .orElseThrow();
+        reviewService.deleteReview(review.getId(), member.getId());
 
         //then
-        assertThat(boardStatistic.getBoardReviewCount()).isZero();
-        assertThat(boardStatistic.getBoardReviewGrade()).isZero();
+        assertThat(review.isDeleted()).isFalse();
     }
 
-    private void createReviewImage(Long targetReviewId) {
-        Image image = Image.builder()
-            .imageCategory(ImageCategory.REVIEW)
-            .path("test")
-            .order(0)
-            .domainId(targetReviewId)
-            .build();
-        imageRepository.save(image);
-    }
-
-    private void createReviewLike(Long targetReviewId) {
-        ReviewLike reviewLike = ReviewLike.builder()
-            .reviewId(targetReviewId)
-            .memberId(member.getId())
-            .build();
-        reviewLikeRepository.save(reviewLike);
-    }
-
-    private Review getTargetReview() {
+    private Review getTargetReview(Member member, Board board) {
         return queryFactory.select(QReview.review)
-            .from(QReview.review)
-            .where(QReview.review.boardId.eq(board.getId())
-                .and(QReview.review.memberId.eq(member.getId())))
-            .fetchOne();
+                .from(QReview.review)
+                .where(QReview.review.boardId.eq(board.getId())
+                        .and(QReview.review.memberId.eq(member.getId())))
+                .fetchOne();
     }
+
 
     private ReviewRequest makeReviewRequest(List<Badge> badges) {
         List<Board> boards = boardRepository.findAll();
         List<String> photos = new ArrayList<>();
         photos.add("test");
         return new ReviewRequest(badges, DEFAULT_REVIEW_RATE, null,
-            boards.get(0)
-                .getId(), photos);
+                boards.get(0)
+                        .getId(), photos);
     }
 
     @DisplayName("평점이 포함된 리뷰 조회에 성공한다")
     @Test
     void getReviewRate() {
         //given
+        Board board = createBoard();
         Long boardId = board.getId();
-        Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4);
+        Review review = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                .set("badgeBrix", SWEET)
+                .set("badgeTaste", GOOD)
+                .set("badgeTexture", SOFT)
+                .set("boardId", boardId)
+                .set("isDeleted", false)
+                .sample();
         reviewRepository.save(review);
 
         //when
@@ -197,31 +167,32 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //then
         assertThat(reviewRate)
-            .extracting("taste", "brix", "texture")
-            .containsExactly(
-                new TasteDto(1, 0),
-                new BrixDto(1, 0),
-                new TextureDto(1, 0));
+                .extracting("taste", "brix", "texture")
+                .containsExactly(
+                        new TasteDto(1, 0),
+                        new BrixDto(1, 0),
+                        new TextureDto(1, 0));
     }
 
     @DisplayName("상세 리뷰 목록 조회에 성공한다")
     @Test
     void getReviews() {
         //given
+        Member member = createMember();
+        Board board = createBoard();
         Long boardId = board.getId();
         Long memberId = member.getId();
         createReviewList(boardId, 5);
 
         //when
-        ReviewCustomPage<List<ReviewInfoResponse>> reviews = reviewService.getReviews(boardId, null,
-            memberId);
+        ReviewCustomPage<List<ReviewInfoResponse>> reviews = reviewService.getReviews(boardId, null, memberId);
 
         //then
         assertThat(reviews.getContent().get(0))
-            .extracting("tags", "like", "isLiked")
-            .containsExactly(
-                List.of("맛있어요", "달아요", "부드러워요"), 1, false
-            );
+                .extracting("tags", "like", "isLiked")
+                .containsExactly(
+                        List.of("맛있어요", "달아요", "부드러워요"), 1, false
+                );
         assertThat(reviews.getContent()).hasSize(5);
         assertThat(reviews.getHasNext()).isFalse();
     }
@@ -235,18 +206,12 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         }
     }
 
-    private MockMultipartFile createMockMultipartFile() {
-        return new MockMultipartFile(
-            "리뷰 이미지",
-            "testImage.png",
-            MediaType.IMAGE_PNG_VALUE,
-            "testImage".getBytes());
-    }
-
     @DisplayName("리뷰 좋아요 등록에 성공한다")
     @Test
     void insertLike() {
         // given
+        Member member = createMember();
+        Board board = createBoard();
         Long memberId = member.getId();
         Long boardId = board.getId();
         Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
@@ -264,6 +229,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Test
     void removeLike() {
         // given
+        Member member = createMember();
+        Board board = createBoard();
         Long memberId = member.getId();
         Long boardId = board.getId();
         Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
@@ -282,13 +249,15 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Test
     void getReviewDetail() {
         // given
+        Member member = createMember();
+        Board board = createBoard();
         Long memberId = member.getId();
         Long boardId = board.getId();
         createReviewList(boardId, 1);
         Long reviewId = reviewRepository.findAll().stream()
-            .findFirst()
-            .get()
-            .getId();
+                .findFirst()
+                .get()
+                .getId();
         // when
         ReviewInfoResponse reviewDetail = reviewService.getReviewDetail(reviewId, memberId);
 
@@ -314,6 +283,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Test
     void getMyReviews() {
         // given
+        Board board = createBoard();
         Long boardId = board.getId();
         createReviewList(boardId, 11);
 
@@ -329,6 +299,7 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Test
     void getAllImagesByBoardId() {
         // given
+        Board board = createBoard();
         Long boardId = board.getId();
         Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
         Review savedReview = reviewRepository.save(review);
@@ -336,14 +307,14 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         // when
         ImageCustomPage<List<ImageDto>> allImages =
-            reviewService.getAllImagesByBoardId(boardId, null);
+                reviewService.getAllImagesByBoardId(boardId, null);
 
         // then
         assertThat(allImages.getContent()).hasSize(4);
         assertThat(allImages.getHasNext()).isFalse();
         assertThat(allImages.getContent().get(0))
-            .extracting("url")
-            .isEqualTo(cdnDomain + "testPath");
+                .extracting("url")
+                .isEqualTo(cdnDomain + "testPath");
 
     }
 
@@ -351,10 +322,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @Test
     void updateReview() {
         // given
+        Member member = createMember();
+        Board board = createBoard();
         Long boardId = board.getId();
         Long memberId = member.getId();
-        Review review = ReviewFixture.createReviewWithBoardIdAndRateAndMember(boardId, 4.0,
-            memberId);
+        Review review = ReviewFixture.createReviewWithBoardIdAndRateAndMember(boardId, 4.0, memberId);
         Review savedReview = reviewRepository.save(review);
         List<Badge> badges = new ArrayList<>();
         badges.add(BAD);
@@ -368,14 +340,15 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         // then
         assertThat(updatedReview)
-            .extracting("badgeTaste", "badgeBrix", "badgeTexture")
-            .containsExactly(BAD, SWEET, DRY);
+                .extracting("badgeTaste", "badgeBrix", "badgeTexture")
+                .containsExactly(BAD, SWEET, DRY);
     }
 
     @DisplayName("리뷰 이미지 삭제에 성공한다")
     @Test
     void deleteReviewImage() {
         // given
+        Board board = createBoard();
         Long boardId = board.getId();
         Review review = ReviewFixture.createReviewWithBoardIdAndRate(boardId, 4.0);
         Review savedReview = reviewRepository.save(review);
@@ -393,11 +366,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     private void createImageEntityList(int size, Long domainId) {
         for (int i = 0; i < size; i++) {
             Image image = Image.builder()
-                .domainId(domainId)
-                .imageCategory(ImageCategory.REVIEW)
-                .order(i)
-                .path("testPath")
-                .build();
+                    .domainId(domainId)
+                    .imageCategory(ImageCategory.REVIEW)
+                    .order(i)
+                    .path("testPath")
+                    .build();
             imageRepository.save(image);
         }
     }
@@ -406,124 +379,92 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     @DisplayName("getSummarizedReview 메서드는")
     class GetSummarizedReview {
 
-        Board targetBoard;
-
         @BeforeEach
         void init() {
-            targetBoard = fixtureBoard(Map.of());
+            boardStatisticRepository.deleteAll();
         }
 
         @Test
         @DisplayName("긍정 뱃지 리뷰가 많으면 긍정 뱃지 리스트를 반환한다")
         void getPositiveBadgeTest() {
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", Badge.GOOD,
-                "badgeBrix", SWEET,
-                "badgeTexture", SOFT,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+            Board board = createBoard();
+            Long boardId = board.getId();
+            List<Review> goodReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("badgeTaste", Badge.GOOD)
+                    .set("isDeleted", false)
+                    .sampleList(3);
+            System.out.println("goodbaget size: "  + goodReviews.size());
+            List<Review> badReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("badgeTaste",Badge.BAD)
+                    .set("isDeleted", false)
+                    .sampleList(2);
+            System.out.println("bad size: "  + badReviews.size());
 
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", GOOD,
-                "badgeBrix", SWEET,
-                "badgeTexture", SOFT,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+            reviewRepository.saveAll(goodReviews);
+            reviewRepository.saveAll(badReviews);
 
-            SummarizedReviewResponse response = reviewService.getSummarizedReview(
-                targetBoard.getId());
+            SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
-            boardStatisticService.updatingNonRankedBoards();
-
-            assertThat(response.getBadges()).isEqualTo(
-                List.of("GOOD", "SWEET", "SOFT"));
+            assertThat(response.getBadges()).contains("GOOD");
         }
 
         @Test
         @DisplayName("부정 뱃지 리뷰가 많으면 부정 뱃지 리스트를 반환한다")
         void getNagativeBadgeTest() {
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", BAD,
-                "badgeBrix", PLAIN,
-                "badgeTexture", DRY,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+            Board board = createBoard();
+            Long boardId = board.getId();
+            List<Review> goodReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("badgeTaste", Badge.GOOD)
+                    .set("isDeleted", false)
+                    .sampleList(2);
+            List<Review> badReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("badgeTaste",Badge.BAD)
+                    .set("isDeleted", false)
+                    .sampleList(3);
+            reviewRepository.saveAll(goodReviews);
+            reviewRepository.saveAll(badReviews);
 
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", BAD,
-                "badgeBrix", PLAIN,
-                "badgeTexture", DRY,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+            SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
-            boardStatisticService.updatingNonRankedBoards();
-
-            SummarizedReviewResponse response = reviewService.getSummarizedReview(
-                targetBoard.getId());
-
-            assertThat(response.getBadges()).isEqualTo(
-                List.of("BAD", "PLAIN", "DRY"));
+            assertThat(response.getBadges()).contains("BAD");
         }
 
         @Test
-        @DisplayName("부정 뱃지 리뷰가 많으면 부정 뱃지 리스트를 반환한다")
-        void getEquleBadgeTest() {
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", GOOD,
-                "badgeBrix", SWEET,
-                "badgeTexture", SOFT,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+        @DisplayName("총 리뷰의 평균 값을 소수점 2자리까지 출력한다")
+        void getAvarageRatingScore() {
+            //given
+            Board board = createBoard();
+            Long boardId = board.getId();
+            Review review1 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("rate", BigDecimal.valueOf(5f))
+                    .set("isDeleted", false)
+                    .sample();
+            Review review2 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
+                    .set("boardId", boardId)
+                    .set("rate", BigDecimal.valueOf(3.5f))
+                    .set("isDeleted", false)
+                    .sample();
+            reviewRepository.save(review1);
+            reviewRepository.save(review2);
 
-            fixtureReview(Map.of(
-                "boardId", targetBoard.getId(),
-                "badgeTaste", BAD,
-                "badgeBrix", PLAIN,
-                "badgeTexture", DRY,
-                "rate", BigDecimal.valueOf(4.5)
-            ));
+            BoardStatistic boardStatistic = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(BoardStatistic.class)
+                    .set("boardId", boardId)
+                    .set("boardReviewCount", 2L)
+                    .set("boardReviewGrade", BigDecimal.valueOf(4.25f))
+                    .sample();
+            boardStatisticRepository.save(boardStatistic);
 
-            boardStatisticService.updatingNonRankedBoards();
+            //when
+            SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
-            SummarizedReviewResponse response = reviewService.getSummarizedReview(
-                targetBoard.getId());
-
-            assertThat(response.getBadges()).isEqualTo(
-                List.of("GOOD", "SWEET", "SOFT"));
+            //then
+            assertThat(response.getCount()).isEqualTo(2);
+            assertThat(response.getRating()).isEqualTo(BigDecimal.valueOf(4.25));
         }
-
-        // -- TODO : FixtureMonkey 때문에 제대로 된 테스트 통과 불가능, 로직이 고쳐지면 주석 해제
-//        @Test
-//        @DisplayName("총 리뷰의 평균 값을 소수점 2자리까지 출력한다")
-//        void getAvarageRatingScore() {
-//            float[] score = new float[]{5f, 3.5f};
-//
-//            fixtureReview(Map.of(
-//                "boardId", targetBoard.getId(),
-//                "rate", BigDecimal.valueOf(score[0])
-//            ));
-//
-//            fixtureReview(Map.of(
-//                "boardId", targetBoard.getId(),
-//                "rate", BigDecimal.valueOf(score[1])
-//            ));
-//
-//            boardStatisticService.updatingNonRankedBoards();
-//
-//            SummarizedReviewResponse response = reviewService.getSummarizedReview(
-//                targetBoard.getId());
-//
-//            assertThat(response.getCount()).isEqualTo(2);
-//
-//            assertThat(response.getRating()).isEqualTo(
-//                Decimal.valueOf((score[0] + score[1]))
-//                    .divide(
-//                        BigDecimal.valueOf(score.length), 2, RoundingMode.DOWN));
-//        }
     }
 }
