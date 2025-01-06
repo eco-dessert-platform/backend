@@ -38,6 +38,11 @@ import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -223,6 +228,39 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         // then
         assertThat(reviewLikes).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("동시에 한 리뷰에 대해 좋아요를 할 경우 한번만 요청에 성공해 데이터를 저장한다")
+    void concurrentLike() {
+        //given
+        Member member = memberRepository.save(FixtureMonkeyConfig.fixtureMonkey
+                .giveMeOne(Member.class));
+
+        Review review = reviewRepository.save(FixtureMonkeyConfig.fixtureMonkey
+                .giveMeBuilder(Review.class)
+                .set("memberId", member.getId())
+                .sample());
+
+        final int threadCount = 2;
+        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        //when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    reviewService.insertLike(review.getId(), member.getId());
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        //then
+        Assertions.assertThatCode(() ->
+                        reviewLikeRepository.findByMemberIdAndReviewId(member.getId(), review.getId()))
+                 .doesNotThrowAnyException();
     }
 
     @DisplayName("리뷰 좋아요 해제에 성공한다")

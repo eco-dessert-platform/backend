@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -134,15 +135,15 @@ public class ReviewService {
 
     @Transactional
     public void insertLike(Long reviewId, Long memberId) {
-        reviewLikeRepository.findByMemberIdAndReviewId(memberId, reviewId)
-                .ifPresent(reviewLike -> {
-                    throw new BbangleException(BbangleErrorCode.REVIEW_ALREADY_LIKED);
-                });
-
-        reviewLikeRepository.save(ReviewLike.builder()
+        ReviewLike reviewLike = ReviewLike.builder()
                 .memberId(memberId)
                 .reviewId(reviewId)
-                .build());
+                .build();
+        try {
+            reviewLikeRepository.save(reviewLike);
+        } catch (DataIntegrityViolationException e) {
+            throw new BbangleException(BbangleErrorCode.AlREADY_ON_REVIEWLIKE);
+        }
     }
 
     @Transactional
