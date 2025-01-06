@@ -34,8 +34,8 @@ public class ListContainerPropertyGenerator implements ContainerPropertyGenerato
         // List의 요소 타입
         AnnotatedType elementType = elementTypes.get(0);
 
-        // 1에서 3 사이의 랜덤한 크기 결정
-        ArbitraryContainerInfo containerInfo = new ArbitraryContainerInfo(1, 3);
+        // 사이즈 3으로 결정
+        ArbitraryContainerInfo containerInfo = new ArbitraryContainerInfo(3, 3);
         int size = containerInfo.getRandomSize();
 
         // 결정된 크기만큼 요소 프로퍼티 생성

@@ -5,6 +5,7 @@ import static org.hibernate.sql.ast.SqlTreeCreationLogger.LOGGER;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.review.domain.Review;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.ArbitraryIntrospectorResult;
 import com.navercorp.fixturemonkey.api.introspector.BuilderArbitraryIntrospector;
@@ -55,7 +56,7 @@ public class FixtureMonkeyConfig {
                 .defaultNotNull(true)                   // null 값 허용 안 하도록
                 .pushAssignableTypeContainerPropertyGenerator(
                         List.class,
-                        new ListContainerPropertyGenerator()
+                        new ListContainerPropertyGenerator() // 리스트 사이즈 3 가지도록
                 )
                 // id 값 0이상이도록
                 .pushAssignableTypeArbitraryIntrospector(
@@ -72,12 +73,12 @@ public class FixtureMonkeyConfig {
                 .register(Board.class, fixtureMonkey ->
                         fixtureMonkey.giveMeBuilder(Board.class)
                                 .set("isDeleted", false))
+                .register(Review.class, fixtureMonkey ->
+                        fixtureMonkey.giveMeBuilder(Review.class)
+                                .set("isDeleted", false))
                 .register(MemberInfoRequest.class, fixtureMonkey ->
                         fixtureMonkey.giveMeBuilder(MemberInfoRequest.class)
                                 .set("birthDate", "2000-11-13"))
-//                .register(Object.class, fixtureMonkey ->
-//                        fixtureMonkey.giveMeBuilder(Object.class)
-//                                .setPostCondition(entity -> new BidirectionalRelationshipHandler().handle(entity)))
                 .register(Object.class, fixtureMonkey ->
                         fixtureMonkey.giveMeBuilder(Object.class)
                                 .setPostCondition(entity -> {
