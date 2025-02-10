@@ -13,9 +13,9 @@ public interface BoardStatisticRepository extends JpaRepository<BoardStatistic, 
 
     Optional<BoardStatistic> findByBoardId(Long boardId);
 
-    @Query(value = "select bs from BoardStatistic bs where bs.boardId in :boardIds")
+    @Query(value = "select bs from Board b join BoardStatistic bs on bs = b.boardStatistic where b.id in :boardIds")
     List<BoardStatistic> findAllByBoardIds(@Param("boardIds") List<Long> boardIds);
 
-    @Query(value = "select boardReviewGrade from BoardStatistic where boardId = :boardId")
+    @Query(value = "select bs.boardReviewGrade from Board b join BoardStatistic bs on bs = b.boardStatistic where b.id = :boardId")
     BigDecimal findBoardReviewGradeByBoardId(@Param("boardId") Long boardId);
 }

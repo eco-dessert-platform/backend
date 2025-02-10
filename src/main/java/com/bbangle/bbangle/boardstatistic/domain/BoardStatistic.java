@@ -1,13 +1,11 @@
 package com.bbangle.bbangle.boardstatistic.domain;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
 import com.bbangle.bbangle.boardstatistic.update.UpdateType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.AccessLevel;
@@ -28,8 +26,9 @@ public class BoardStatistic {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "board_id")
-    private Long boardId;
+    @JsonIgnore
+    @OneToOne(mappedBy = "boardStatistic")
+    private Board board;
 
     @Column(name = "basic_score")
     private Double basicScore;

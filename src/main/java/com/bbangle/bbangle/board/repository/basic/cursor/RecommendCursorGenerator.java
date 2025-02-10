@@ -30,7 +30,7 @@ public class RecommendCursorGenerator implements BoardCursorGenerator {
 
         Double targetScore = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.basicScore)
                 .from(boardStatistic)
-                .where(boardStatistic.boardId.eq(cursorId))
+                .where(boardStatistic.board.id.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(
                 BbangleErrorCode.RANKING_NOT_FOUND));

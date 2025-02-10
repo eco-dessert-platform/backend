@@ -323,7 +323,7 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
             List<BoardStatistic> ranking = queryFactory.select(QBoardStatistic.boardStatistic)
                 .from(QBoardStatistic.boardStatistic)
                 .join(QBoard.board)
-                .on(QBoardStatistic.boardStatistic.boardId.eq(QBoard.board.id))
+                .on(QBoardStatistic.boardStatistic.board.id.eq(QBoard.board.id))
                 .fetchJoin()
                 .fetch();
 
@@ -335,7 +335,7 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                 }
                 Long boardId = actualBoards.get(i).boardId();
                 Double boardScore = ranking.stream()
-                    .filter(boardStatistic -> boardStatistic.getBoardId()
+                    .filter(boardStatistic -> boardStatistic.getBoard().getId()
                         .equals(boardId))
                     .map(BoardStatistic::getBasicScore)
                     .findFirst()

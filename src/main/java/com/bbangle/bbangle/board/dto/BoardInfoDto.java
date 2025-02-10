@@ -5,9 +5,12 @@ import com.bbangle.bbangle.board.dao.TagsDao;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class BoardInfoDto {
 
     private Long boardId;

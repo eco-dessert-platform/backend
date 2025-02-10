@@ -289,7 +289,7 @@ public class ReviewService {
             reviewLikeRepository.deleteAllByReviewId(reviewId);
         }
         review.delete();
-        boardStatisticService.updateReview(review.getBoardId());
+        boardStatisticService.updateReview(review.getBoard().getId());
     }
 
     @Transactional

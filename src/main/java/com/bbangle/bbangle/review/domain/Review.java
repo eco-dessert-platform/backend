@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.review.domain;
 
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -31,9 +33,10 @@ public class Review extends BaseEntity {
     @NotNull
     private Long memberId;
 
-    @Column(name = "board_id")
-    @NotNull
-    private Long boardId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Board board;
 
     @Column(name = "badge_taste", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
@@ -91,7 +94,7 @@ public class Review extends BaseEntity {
                 .content(reviewRequest.content())
                 .rate(reviewRequest.rate())
                 .memberId(memberId)
-                .boardId(reviewRequest.boardId())
+                .board(new Board(reviewRequest.boardId()))
                 .isBest(false)
                 .build();
     }

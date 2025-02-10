@@ -166,7 +166,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             WishListBoard wishListBoard = WishListBoard.builder()
                 .id((long) i + 1)
                 .memberId(members.get(i).getId())
-                .boardId(board.getId())
+                .board(board)
                 .build();
             wishListBoardRepository.save(wishListBoard);
         }
@@ -226,7 +226,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
         for (int i = 1; i <= members.size(); i++) {
             Review review = Review.builder()
                 .memberId(members.get(i - 1).getId())
-                .boardId((long) i)
+                .board(new Board((long)i))
                 .badgeBrix(Badge.SWEET)
                 .badgeTaste(Badge.GOOD)
                 .badgeTexture(Badge.DRY)
@@ -249,7 +249,7 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
             for (int i = 1; i <= 10; i++) {
                 Review review = Review.builder()
                     .memberId(members.get(i - 1).getId())
-                    .boardId((long) i + 20)
+                    .board(new Board((long) i + 20))
                     .badgeBrix(Badge.SWEET)
                     .badgeTaste(Badge.GOOD)
                     .badgeTexture(Badge.DRY)

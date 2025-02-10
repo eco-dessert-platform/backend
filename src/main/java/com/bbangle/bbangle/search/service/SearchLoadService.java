@@ -66,8 +66,8 @@ public class SearchLoadService {
             LocalDateTime.now().toString());
     }
 
-    @PostConstruct
-    @Scheduled(cron = "0 0 0 * * *")
+//    @PostConstruct
+//    @Scheduled(cron = "0 0 0 * * *")
     public void cacheAutoComplete() {
         List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
         List<TitleDto> productTitleDtos = productRepository.findAllTitle();

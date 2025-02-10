@@ -121,7 +121,7 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
             //then
             for(BoardPreferenceStatistic ps : afterUpdatingScore) {
                 for(BoardStatistic bs : basicStatisticList){
-                    if(ps.getBoardId().equals(bs.getBoardId())){
+                    if(ps.getBoardId().equals(bs.getBoard().getId())){
                         Assertions.assertThat(ps.getBasicScore()).isEqualTo(bs.getBasicScore());
                         Assertions.assertThat(ps.getPreferenceScore()).isEqualTo(ps.getBasicScore() * ps.getPreferenceWeight());
                     }

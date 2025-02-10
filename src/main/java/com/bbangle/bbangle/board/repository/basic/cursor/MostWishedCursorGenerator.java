@@ -30,7 +30,7 @@ public class MostWishedCursorGenerator implements BoardCursorGenerator {
         Long targetWishCount = Optional.ofNullable(jpaQueryFactory
                 .select(boardStatistic.boardWishCount)
                 .from(boardStatistic)
-                .where(boardStatistic.boardId.eq(cursorId))
+                .where(boardStatistic.board.id.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 

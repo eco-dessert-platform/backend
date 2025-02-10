@@ -161,7 +161,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         void createWishListStore() {
             member = memberRepository.save(Member.builder().build());
             wishListBoardRepository.save(WishListBoard.builder()
-                .boardId(firstBoard.getId())
+                .board(firstBoard)
                 .memberId(member.getId())
                 .build());
         }

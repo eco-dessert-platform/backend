@@ -38,7 +38,7 @@ public class MostReviewedBoardQueryProviderResolver  implements BoardQueryProvid
             .join(board)
             .on(product.board.id.eq(board.id))
             .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .on(boardStatistic.board.id.eq(board.id))
             .where(cursorInfo.and(filter))
             .orderBy(orderCondition)
             .limit(BOARD_PAGE_SIZE + 1)
@@ -70,7 +70,7 @@ public class MostReviewedBoardQueryProviderResolver  implements BoardQueryProvid
             .join(store)
             .on(board.store.id.eq(store.id))
             .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .on(boardStatistic.board.id.eq(board.id))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();

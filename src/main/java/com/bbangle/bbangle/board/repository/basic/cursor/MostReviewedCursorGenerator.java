@@ -29,7 +29,7 @@ public class MostReviewedCursorGenerator implements BoardCursorGenerator {
 
         Long boardReviewCount = Optional.ofNullable(jpaQueryFactory.select(boardStatistic.boardReviewCount)
                 .from(boardStatistic)
-                .where(boardStatistic.boardId.eq(cursorId))
+                .where(boardStatistic.board.id.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(
                 BbangleErrorCode.RANKING_NOT_FOUND));

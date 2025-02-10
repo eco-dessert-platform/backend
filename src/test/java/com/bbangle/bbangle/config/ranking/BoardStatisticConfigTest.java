@@ -59,13 +59,13 @@ class BoardStatisticConfigTest extends AbstractIntegrationTest {
 
     private List<WishListBoard> getWishListBoardList(Board board) {
         return List.of(WishListBoard.builder()
-                .boardId(board.getId())
+                .board(board)
                 .build(),
             WishListBoard.builder()
-                .boardId(board.getId())
+                .board(board)
                 .build(),
             WishListBoard.builder()
-                .boardId(board.getId())
+                .board(board)
                 .build());
     }
 

@@ -85,7 +85,7 @@ public class WishListBoardService {
     ) {
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
-            .boardId(board.getId())
+            .board(board)
             .memberId(memberId)
             .build();
         try {

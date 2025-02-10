@@ -28,7 +28,7 @@ public class PopularBoardInFolderCursorGenerator implements BoardInFolderCursorG
 
         Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
                 .from(wishListBoard)
-                .where(wishListBoard.boardId.eq(cursorId)
+                .where(wishListBoard.board.id.eq(cursorId)
                     .and(wishListBoard.wishlistFolderId.eq(folderId)))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
@@ -36,7 +36,7 @@ public class PopularBoardInFolderCursorGenerator implements BoardInFolderCursorG
         Double score = queryFactory
             .select(boardStatistic.basicScore)
             .from(boardStatistic)
-            .where(boardStatistic.boardId.eq(cursorId))
+            .where(boardStatistic.board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(boardStatistic.basicScore.loe(score)
             .and(wishListBoard.id.loe(wishListBoardId)));

@@ -29,7 +29,7 @@ public class WishListBoardFilter {
     }
 
     public BooleanExpression equalBoard(QBoard board) {
-        return wishListBoard.boardId.eq(board.id);
+        return wishListBoard.board.id.eq(board.id);
     }
 
 }

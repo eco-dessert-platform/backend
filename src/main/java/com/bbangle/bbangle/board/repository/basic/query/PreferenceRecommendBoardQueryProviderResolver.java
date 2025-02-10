@@ -79,7 +79,7 @@ public class PreferenceRecommendBoardQueryProviderResolver{
             .join(store)
             .on(board.store.id.eq(store.id))
             .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .on(boardStatistic.board.id.eq(board.id))
             .join(preferenceBoardStatistic)
             .on(board.id.eq(preferenceBoardStatistic.boardId))
             .where(board.id.in(boardIds))

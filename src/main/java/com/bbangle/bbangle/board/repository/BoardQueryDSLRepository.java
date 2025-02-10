@@ -8,7 +8,10 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface BoardQueryDSLRepository {
@@ -28,6 +31,10 @@ public interface BoardQueryDSLRepository {
         WishListFolder folder,
         Long memberId
     );
+
+    List<Board> findBoardsByStore(Long memberId, Long storeId, Long cursorId);
+
+    List<WishListBoard> findWishListBoards(Long memberId, List<Long> boardIds);
 
     List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
 

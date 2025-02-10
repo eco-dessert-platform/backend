@@ -238,7 +238,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
 
             Double expectedScore = queryFactory.select(QBoardStatistic.boardStatistic.basicScore)
                 .from(QBoardStatistic.boardStatistic)
-                .where(QBoardStatistic.boardStatistic.boardId.eq(firstSavedBoardId))
+                .where(QBoardStatistic.boardStatistic.board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder()

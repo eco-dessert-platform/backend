@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -15,12 +16,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import static com.bbangle.bbangle.board.domain.TagEnum.*;
+import static com.bbangle.bbangle.board.domain.TagEnum.GLUTEN_FREE;
 
 @Table(name = "product")
 @Entity
@@ -34,6 +41,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @Setter // board 에 product 세팅해서 저장해도 product 는 저장안되서 수기로 product 에서 board 세팅해줘야함...
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -112,4 +120,24 @@ public class Product {
     @NotNull
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
+
+    //==조회메서드==//
+    public List<String> getStringTag() {
+        List<String> tags = new ArrayList<>(5);
+
+        addTag(tags, glutenFreeTag, GLUTEN_FREE.label());
+        addTag(tags, highProteinTag, HIGH_PROTEIN.label());
+        addTag(tags, sugarFreeTag, SUGAR_FREE.label());
+        addTag(tags, veganTag, VEGAN.label());
+        addTag(tags, ketogenicTag, KETOGENIC.label());
+
+        return tags;
+    }
+
+    private void addTag(List<String> tags, boolean condition, String label) {
+        if (condition) {
+            tags.add(label);
+        }
+    }
+
 }

@@ -1,18 +1,16 @@
 package com.bbangle.bbangle.wishlist.domain;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.Objects;
 
 @Table(name = "wishlist_product",
     uniqueConstraints = {
@@ -32,10 +30,14 @@ public class WishListBoard extends BaseEntity {
     @Column(name = "wishlist_folder_id")
     private Long wishlistFolderId;
 
-    @Column(name = "product_board_id")
-    private Long boardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Board board;
 
     @Column(name = "member_id")
     private Long memberId;
 
+    public boolean getWished() {
+        return Objects.nonNull(id);
+    }
 }

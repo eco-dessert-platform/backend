@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ public class ReviewFixture {
 
     public static Review createReviewWithBoardId(Long boardId) {
         return Review.builder()
-            .boardId(boardId)
+            .board(new Board(boardId))
             .badgeBrix(Badge.BAD)
             .content("content")
             .rate(BigDecimal.valueOf(4.00))
@@ -22,7 +23,7 @@ public class ReviewFixture {
 
     public static Review createReviewWithBoardIdAndRate(Long boardId, double rate) {
         return Review.builder()
-            .boardId(boardId)
+            .board(new Board(boardId))
             .memberId(1L)
             .badgeBrix(Badge.SWEET)
             .badgeTaste(Badge.GOOD)
@@ -34,7 +35,7 @@ public class ReviewFixture {
 
     public static Review createReviewWithBoardIdAndRateAndMember(Long boardId, double rate, Long memberId) {
         return Review.builder()
-                .boardId(boardId)
+                .board(new Board(boardId))
                 .memberId(memberId)
                 .badgeBrix(Badge.SWEET)
                 .badgeTaste(Badge.GOOD)

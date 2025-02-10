@@ -1,12 +1,5 @@
 package com.bbangle.bbangle.review.service;
 
-import static com.bbangle.bbangle.review.domain.Badge.BAD;
-import static com.bbangle.bbangle.review.domain.Badge.DRY;
-import static com.bbangle.bbangle.review.domain.Badge.GOOD;
-import static com.bbangle.bbangle.review.domain.Badge.SOFT;
-import static com.bbangle.bbangle.review.domain.Badge.SWEET;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -21,27 +14,10 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.ImageCustomPage;
 import com.bbangle.bbangle.page.ReviewCustomPage;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.domain.QReview;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewLike;
-import com.bbangle.bbangle.review.dto.BrixDto;
-import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
-import com.bbangle.bbangle.review.dto.ReviewImageUploadResponse;
-import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
-import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
-import com.bbangle.bbangle.review.dto.ReviewRateResponse;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
-import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
-import com.bbangle.bbangle.review.dto.TasteDto;
-import com.bbangle.bbangle.review.dto.TextureDto;
+import com.bbangle.bbangle.review.dto.*;
 import com.bbangle.bbangle.review.repository.ReviewLikeRepository;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +25,18 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.review.domain.Badge.*;
+import static com.bbangle.bbangle.review.domain.QReview.review;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ReviewServiceTest extends AbstractIntegrationTest {
 
@@ -134,11 +122,13 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         assertThat(review.isDeleted()).isFalse();
     }
 
-    private Review getTargetReview(Member member, Board board) {
-        return queryFactory.select(QReview.review)
-                .from(QReview.review)
-                .where(QReview.review.boardId.eq(board.getId())
-                        .and(QReview.review.memberId.eq(member.getId())))
+    private Review getTargetReview(Member member, Board board1) {
+        return queryFactory.select(review)
+                .from(review)
+                .join(board)
+                    .on(review.board.eq(board1))
+                .where(board.id.eq(board1.getId())
+                        .and(review.memberId.eq(member.getId())))
                 .fetchOne();
     }
 

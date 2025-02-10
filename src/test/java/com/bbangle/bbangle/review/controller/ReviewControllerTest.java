@@ -51,7 +51,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
         Long memberId = savedMember.getId();
 
         Review review = Review.builder()
-                .boardId(boardId)
+                .board(new Board(boardId))
                 .badgeBrix(Badge.SWEET)
                 .badgeTaste(Badge.GOOD)
                 .badgeTexture(Badge.DRY)

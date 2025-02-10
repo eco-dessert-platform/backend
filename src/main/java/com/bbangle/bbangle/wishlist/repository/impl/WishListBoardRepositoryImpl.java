@@ -43,15 +43,15 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
 
     @Override
     public List<BoardWishCount> groupByBoardIdAndGetWishCount() {
-        return queryFactory.select(wishListBoard.boardId,
+        return queryFactory.select(wishListBoard.board.id,
                 wishListBoard.id.count())
             .from(wishListBoard)
-            .groupBy(wishListBoard.boardId)
-            .orderBy(wishListBoard.boardId.asc())
+            .groupBy(wishListBoard.board.id)
+            .orderBy(wishListBoard.board.id.asc())
             .fetch()
             .stream()
             .map(tuple -> BoardWishCount.builder()
-                .boardId(tuple.get(wishListBoard.boardId))
+                .boardId(tuple.get(wishListBoard.board.id))
                 .count(tuple.get(wishListBoard.id.count()).intValue())
                 .build())
             .toList();
@@ -60,11 +60,11 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
     @Override
     public List<WishListStatisticDao> findWishStatisticByBoardIds(List<Long> boardWishUpdateId) {
         return queryFactory.select(new QWishListStatisticDao(
-            wishListBoard.boardId,
+            wishListBoard.board.id,
             wishListBoard.count()
         )).from(wishListBoard)
-            .where(wishListBoard.boardId.in(boardWishUpdateId))
-            .groupBy(wishListBoard.boardId)
+            .where(wishListBoard.board.id.in(boardWishUpdateId))
+            .groupBy(wishListBoard.board.id)
             .fetch();
     }
 

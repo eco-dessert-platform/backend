@@ -23,7 +23,7 @@ public class BoardPreferenceStatisticRepositoryImpl implements
         return queryFactory.select(preferenceStatistic)
             .from(preferenceStatistic)
             .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(preferenceStatistic.boardId))
+            .on(boardStatistic.board.id.eq(preferenceStatistic.boardId))
             .where(boardStatistic.basicScore.ne(preferenceStatistic.basicScore))
             .fetch();
     }

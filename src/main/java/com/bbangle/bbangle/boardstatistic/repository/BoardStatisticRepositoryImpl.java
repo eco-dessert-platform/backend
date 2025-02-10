@@ -18,18 +18,18 @@ public class BoardStatisticRepositoryImpl implements BoardStatisticQueryDSLRepos
 
     @Override
     public List<Long> findPopularBoardIds(int limit) {
-        List<Long> boardIds = queryFactory.select(boardStatistic.boardId)
+        List<Long> boardIds = queryFactory.select(boardStatistic.board.id)
             .from(boardStatistic)
             .orderBy(boardStatistic.basicScore.desc())
             .limit(limit)
             .fetch();
 
         return queryFactory.select(
-                boardStatistic.boardId
+                boardStatistic.board.id
             )
             .from(boardStatistic)
-            .join(product).on(boardStatistic.boardId.eq(product.board.id))
-            .where(boardStatistic.boardId.in(boardIds).and(product.soldout.eq(false)))
+            .join(product).on(boardStatistic.board.id.eq(product.board.id))
+            .where(boardStatistic.board.id.in(boardIds).and(product.soldout.eq(false)))
             .orderBy(boardStatistic.basicScore.asc())
             .fetch()
             .stream()

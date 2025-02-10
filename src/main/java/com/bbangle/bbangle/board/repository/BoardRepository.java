@@ -28,8 +28,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         "CASE WHEN w.wishlistFolderId IS NOT NULL THEN true ELSE false END) " +
         "FROM Product p " +
         "JOIN Board b ON b.store.id = :storeId AND p.board.id = b.id " +
-        "JOIN BoardStatistic s ON s.boardId = b.id " +
-        "LEFT JOIN WishListBoard w ON b.id = w.boardId AND w.memberId = :memberId " +
+        "JOIN BoardStatistic s ON s.board.id = b.id " +
+        "LEFT JOIN WishListBoard w ON b.id = w.board.id AND w.memberId = :memberId " +
         "GROUP BY b.id " +
         "ORDER BY b.id desc " +
         "LIMIT 11")
@@ -55,8 +55,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         "CASE WHEN w.wishlistFolderId IS NOT NULL THEN true ELSE false END) " +
         "FROM Product p " +
         "JOIN Board b ON b.store.id = :storeId AND p.board.id = b.id " +
-        "JOIN BoardStatistic s ON s.boardId = b.id " +
-        "LEFT JOIN WishListBoard w ON b.id = w.boardId AND w.memberId = :memberId " +
+        "JOIN BoardStatistic s ON s.board.id = b.id " +
+        "LEFT JOIN WishListBoard w ON b.id = w.board.id AND w.memberId = :memberId " +
         "WHERE b.id <= :cursorId " +
         "GROUP BY b.id " +
         "ORDER BY b.id desc " +
@@ -83,8 +83,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         "CASE WHEN w.wishlistFolderId IS NOT NULL THEN true ELSE false END) " +
         "FROM Product p " +
         "JOIN Board b ON p.board.id = b.id AND b.store.id = :storeId " +
-        "JOIN BoardStatistic s ON s.boardId = b.id " +
-        "LEFT JOIN WishListBoard w ON b.id = w.boardId AND w.memberId = :memberId " +
+        "JOIN BoardStatistic s ON s.board.id = b.id " +
+        "LEFT JOIN WishListBoard w ON b.id = w.board.id AND w.memberId = :memberId " +
         "GROUP BY s.basicScore, b.id " +
         "ORDER BY s.basicScore desc " +
         "LIMIT 3")

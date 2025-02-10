@@ -28,7 +28,7 @@ public class WishListRecentBoardInFolderCursorGenerator implements BoardInFolder
         Long wishListBoardId = Optional.ofNullable(queryFactory.select(wishListBoard.id)
                 .from(wishListBoard)
                 .where(wishListBoard.wishlistFolderId.eq(folderId)
-                    .and(wishListBoard.boardId.eq(cursorId)))
+                    .and(wishListBoard.board.id.eq(cursorId)))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 

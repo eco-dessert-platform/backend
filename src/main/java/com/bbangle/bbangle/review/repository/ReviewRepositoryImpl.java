@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static java.util.stream.Collectors.toMap;
 
 @Repository
@@ -74,10 +75,11 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                     review.content,
                     review.createdAt,
                     review.isBest,
-                    review.boardId
+                    board.id
                 )
             )
             .from(review)
+            .join(review.board, board)
             .leftJoin(member)
             .on(review.memberId.eq(member.id));
     }
@@ -170,12 +172,13 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
         return queryFactory
             .select(
                 new QReviewCountPerBoardIdDto(
-                    review.boardId,
+                    board.id,
                     review.id.count()
                 )
             )
             .from(review)
-            .groupBy(review.boardId)
+            .join(review.board, board)
+            .groupBy(board.id)
             .fetch();
     }
 
@@ -201,15 +204,16 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     public Map<Long, List<Long>> getBestReview(List<Long> reviewIds) {
         List<Tuple> fetch = queryFactory
             .select(
-                review.boardId,
+                board.id,
                 review.id
             )
             .from(review)
+            .join(review.board, board)
             .where(review.id.in(reviewIds))
             .fetch();
         return fetch.stream()
             .collect(toMap(
-                tuple -> tuple.get(review.boardId),
+                tuple -> tuple.get(board.id),
                 tuple -> {
                     List<Long> reviewIdList = new ArrayList<>();
                     reviewIdList.add(tuple.get(review.id));
@@ -274,14 +278,15 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
 
     @Override
     public List<BoardGrade> groupByBoardIdAndGetReviewCountAndReviewRate() {
-        return queryFactory.select(review.boardId, review.id.count(), review.rate.avg())
+        return queryFactory.select(board.id, review.id.count(), review.rate.avg())
             .from(review)
-            .groupBy(review.boardId)
-            .orderBy(review.boardId.asc())
+            .join(review.board, board)
+            .groupBy(board.id)
+            .orderBy(board.id.asc())
             .fetch()
             .stream()
             .map(tuple -> BoardGrade.builder()
-                .boardId(tuple.get(review.boardId))
+                .boardId(tuple.get(board.id))
                 .count(tuple.get(review.id.count())
                     .intValue())
                 .grade(BigDecimal.valueOf(tuple.get(review.rate.avg())))
@@ -342,7 +347,7 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     }
 
     private BooleanExpression eqBoardId(Long boardId) {
-        return review.boardId.eq(boardId);
+        return board.id.eq(boardId);
     }
 
     private DateTemplate<Date> getDateCreatedAt() {
@@ -360,7 +365,8 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                 )
             )
             .from(review)
-            .where(review.boardId.eq(boardId).and(notDeleted()))
+            .join(review.board, board)
+            .where(board.id.eq(boardId).and(notDeleted()))
             .fetch();
     }
 
@@ -375,7 +381,8 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
                 )
             )
             .from(review)
-            .where(review.boardId.eq(boardId).and(notDeleted()))
+            .join(review.board, board)
+            .where(board.id.eq(boardId).and(notDeleted()))
             .fetch();
     }
 
@@ -384,12 +391,13 @@ public class ReviewRepositoryImpl implements ReviewQueryDSLRepository {
     public List<ReviewStatisticDao> getReviewStatisticByBoardIds(List<Long> boardReviewUpdateId) {
         return queryFactory
             .select(new QReviewStatisticDao(
-                review.boardId,
+                board.id,
                 review.rate.avg(),
                 review.count()))
             .from(review)
-            .where(review.boardId.in(boardReviewUpdateId))
-            .groupBy(review.boardId)
+            .join(review.board, board)
+            .where(board.id.in(boardReviewUpdateId))
+            .groupBy(board.id)
             .fetch();
     }
 
