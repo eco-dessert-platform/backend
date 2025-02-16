@@ -69,8 +69,7 @@ public class LowPriceBoardQueryProvider implements QueryGenerator{
             .on(board.store.id.eq(store.id))
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
-            .join(boardStatistic)
-            .on(board.id.eq(boardStatistic.boardId))
+            .join(board.boardStatistic, boardStatistic)
             .where(board.id.in(fetch))
             .orderBy(order, wishListBoard.id.desc())
             .fetch();
