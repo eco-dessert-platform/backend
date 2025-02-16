@@ -1,33 +1,30 @@
 package com.bbangle.bbangle.board.repository.basic.query;
 
-import static org.assertj.core.api.Assertions.*;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
-import com.bbangle.bbangle.fixture.BoardFixture;
-import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
-import com.bbangle.bbangle.fixture.StoreFixture;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.fixture.*;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BoardQueryProviderTest extends AbstractIntegrationTest {
 
@@ -320,10 +317,9 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                 .findFirst()
                 .map(BoardResponseDao::boardId)
                 .orElseThrow();
-            List<BoardStatistic> ranking = queryFactory.select(QBoardStatistic.boardStatistic)
-                .from(QBoardStatistic.boardStatistic)
-                .join(QBoard.board)
-                .on(QBoardStatistic.boardStatistic.boardId.eq(QBoard.board.id))
+            List<BoardStatistic> ranking = queryFactory.select(boardStatistic)
+                .from(boardStatistic)
+                .join(boardStatistic.board, board)
                 .fetchJoin()
                 .fetch();
 
@@ -335,7 +331,7 @@ class BoardQueryProviderTest extends AbstractIntegrationTest {
                 }
                 Long boardId = actualBoards.get(i).boardId();
                 Double boardScore = ranking.stream()
-                    .filter(boardStatistic -> boardStatistic.getBoardId()
+                    .filter(boardStatistic -> boardStatistic.getBoard().getId()
                         .equals(boardId))
                     .map(BoardStatistic::getBasicScore)
                     .findFirst()

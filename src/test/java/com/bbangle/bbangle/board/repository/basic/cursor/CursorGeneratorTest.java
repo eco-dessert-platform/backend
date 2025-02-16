@@ -1,23 +1,14 @@
 package com.bbangle.bbangle.board.repository.basic.cursor;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.BoardFixture;
-import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
-import com.bbangle.bbangle.fixture.StoreFixture;
+import com.bbangle.bbangle.fixture.*;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.querydsl.core.BooleanBuilder;
@@ -26,6 +17,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CursorGeneratorTest extends AbstractIntegrationTest {
 
@@ -94,13 +90,13 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .mappingCursorGenerator(SortType.HIGH_PRICE)
                 .getCursor(firstSavedBoardId);
 
-            Integer price = queryFactory.select(QBoard.board.price)
-                .from(QBoard.board)
-                .where(QBoard.board.id.eq(firstSavedBoardId))
+            Integer price = queryFactory.select(board.price)
+                .from(board)
+                .where(board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.lt(price))
-                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
+            String expectedBuilder = new BooleanBuilder().and(board.price.lt(price))
+                .or(board.price.eq(price).and(board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -143,13 +139,13 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .mappingCursorGenerator(SortType.LOW_PRICE)
                 .getCursor(firstSavedBoardId);
 
-            Integer price = queryFactory.select(QBoard.board.price)
-                .from(QBoard.board)
-                .where(QBoard.board.id.eq(firstSavedBoardId))
+            Integer price = queryFactory.select(board.price)
+                .from(board)
+                .where(board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
-            String expectedBuilder = new BooleanBuilder().and(QBoard.board.price.gt(price))
-                .or(QBoard.board.price.eq(price).and(QBoard.board.id.loe(firstSavedBoardId)))
+            String expectedBuilder = new BooleanBuilder().and(board.price.gt(price))
+                .or(board.price.eq(price).and(board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
@@ -193,7 +189,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .getCursor(firstSavedBoardId);
 
             String expectedBuilder = new BooleanBuilder()
-                .and(QBoard.board.id.loe(firstSavedBoardId))
+                .and(board.id.loe(firstSavedBoardId))
                 .toString();
 
             //then
@@ -225,7 +221,7 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .getCursor(NULL_CURSOR);
 
             //then
-            assertThat(recommendCursor.getValue()).isEqualTo(QBoard.board.isDeleted.eq(false));
+            assertThat(recommendCursor.getValue()).isEqualTo(board.isDeleted.eq(false));
         }
 
         @Test
@@ -236,16 +232,17 @@ class CursorGeneratorTest extends AbstractIntegrationTest {
                 .mappingCursorGenerator(SortType.RECOMMEND)
                 .getCursor(firstSavedBoardId);
 
-            Double expectedScore = queryFactory.select(QBoardStatistic.boardStatistic.basicScore)
-                .from(QBoardStatistic.boardStatistic)
-                .where(QBoardStatistic.boardStatistic.boardId.eq(firstSavedBoardId))
+            Double expectedScore = queryFactory.select(boardStatistic.basicScore)
+                .from(boardStatistic)
+                .join(boardStatistic.board, board)
+                .where(board.id.eq(firstSavedBoardId))
                 .fetchOne();
 
             String expectedBuilder = new BooleanBuilder()
-                .and(QBoard.board.isDeleted.eq(false))
-                .and(QBoardStatistic.boardStatistic.basicScore.lt(expectedScore))
-                .or(QBoardStatistic.boardStatistic.basicScore.eq(expectedScore)
-                    .and(QBoard.board.id.loe(firstSavedBoardId)))
+                .and(board.isDeleted.eq(false))
+                .and(boardStatistic.basicScore.lt(expectedScore))
+                .or(boardStatistic.basicScore.eq(expectedScore)
+                    .and(board.id.loe(firstSavedBoardId)))
                 .toString();
 
             //then
