@@ -47,8 +47,7 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .join(segmentIntolerance)
             .on(product.id.eq(segmentIntolerance.productId))
             .where(
@@ -85,8 +84,7 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(board.id.in(boardIds))
             .orderBy(boardStatistic.boardWishCount.desc())
             .fetch();
@@ -134,7 +132,8 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
         Long targetWishCount = Optional.ofNullable(queryFactory
                 .select(boardStatistic.boardWishCount)
                 .from(boardStatistic)
-                .where(boardStatistic.boardId.eq(cursorId))
+                .join(boardStatistic.board, board)
+                .where(board.id.eq(cursorId))
                 .fetchOne())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 

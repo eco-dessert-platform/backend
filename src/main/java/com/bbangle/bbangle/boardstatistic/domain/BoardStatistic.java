@@ -1,20 +1,10 @@
 package com.bbangle.bbangle.boardstatistic.domain;
 
-import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
-import com.bbangle.bbangle.boardstatistic.update.UpdateType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.bbangle.bbangle.board.domain.Board;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "board_statistic")
@@ -28,8 +18,9 @@ public class BoardStatistic {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "board_id")
-    private Long boardId;
+    @OneToOne(fetch = FetchType.LAZY) // 연관관계 주인을 board로 변경하는 게 좋아보임
+    @JoinColumn(name = "board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Board board;
 
     @Column(name = "basic_score")
     private Double basicScore;
