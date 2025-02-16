@@ -67,8 +67,7 @@ public class RecentBoardQueryProviderResolver  implements BoardQueryProvider{
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();

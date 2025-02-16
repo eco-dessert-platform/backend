@@ -8,7 +8,7 @@ public class BoardStatisticFixture {
 
     public static BoardStatistic newBoardStatistic(Board board) {
         return BoardStatistic.builder()
-            .boardId(board.getId())
+            .board(board)
             .basicScore(0.0)
             .boardViewCount(0L)
             .boardWishCount(0L)
@@ -19,7 +19,7 @@ public class BoardStatisticFixture {
 
     public static BoardStatistic newBoardStatisticWithBasicScore(Board board, Double basicScore) {
         return BoardStatistic.builder()
-            .boardId(board.getId())
+            .board(board)
             .basicScore(basicScore)
             .boardViewCount(0L)
             .boardWishCount(0L)
