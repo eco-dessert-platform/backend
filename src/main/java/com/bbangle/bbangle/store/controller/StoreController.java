@@ -2,19 +2,16 @@ package com.bbangle.bbangle.store.controller;
 
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,13 +49,12 @@ public class StoreController {
     public CommonResult getStoreAllBoard(
         @PathVariable("storeId")
         Long storeId,
-        @RequestParam(value = "cursorId", required = false)
+        @RequestParam(value = "cursorId", required = false, defaultValue = "0")
         Long boardIdAsCursorId,
         @AuthenticationPrincipal
         Long memberId
     ) {
-        CursorPageResponse<BoardInfoDto> boardListResponse = storeService.getBoardsInStore(
-            memberId, storeId, boardIdAsCursorId);
+        CursorPageResponse<BoardInfoDto> boardListResponse = storeService.getBoardsInStore(memberId, storeId, boardIdAsCursorId);
         return responseService.getSingleResult(boardListResponse);
     }
 }
