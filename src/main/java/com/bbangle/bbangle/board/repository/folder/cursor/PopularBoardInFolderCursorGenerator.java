@@ -10,6 +10,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+
 @Component
 @RequiredArgsConstructor
 public class PopularBoardInFolderCursorGenerator implements BoardInFolderCursorGenerator {
@@ -36,7 +38,8 @@ public class PopularBoardInFolderCursorGenerator implements BoardInFolderCursorG
         Double score = queryFactory
             .select(boardStatistic.basicScore)
             .from(boardStatistic)
-            .where(boardStatistic.boardId.eq(cursorId))
+            .join(boardStatistic.board, board)
+            .where(board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(boardStatistic.basicScore.loe(score)
             .and(wishListBoard.id.loe(wishListBoardId)));

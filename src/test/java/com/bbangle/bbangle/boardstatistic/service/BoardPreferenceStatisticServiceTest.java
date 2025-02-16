@@ -6,21 +6,21 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.store.domain.Store;
-import java.util.ArrayList;
-import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
 
@@ -121,7 +121,7 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
             //then
             for(BoardPreferenceStatistic ps : afterUpdatingScore) {
                 for(BoardStatistic bs : basicStatisticList){
-                    if(ps.getBoardId().equals(bs.getBoardId())){
+                    if(ps.getBoardId().equals(bs.getBoard().getId())){
                         Assertions.assertThat(ps.getBasicScore()).isEqualTo(bs.getBasicScore());
                         Assertions.assertThat(ps.getPreferenceScore()).isEqualTo(ps.getBasicScore() * ps.getPreferenceWeight());
                     }
