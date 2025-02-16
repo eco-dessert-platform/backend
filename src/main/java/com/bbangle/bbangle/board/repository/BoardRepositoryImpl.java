@@ -9,10 +9,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.QRandomBoard;
-import com.bbangle.bbangle.board.dto.QTitleDto;
-import com.bbangle.bbangle.board.dto.TitleDto;
-import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.repository.basic.cursor.PreferenceRecommendCursorGenerator;
@@ -154,8 +151,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public List<Board> checkingNullRanking() {
         return queryFactory.select(board)
             .from(board)
-            .leftJoin(boardStatistic)
-            .on(board.id.eq(boardStatistic.boardId))
+            .leftJoin(board.boardStatistic, boardStatistic)
             .where(boardStatistic.id.isNull())
             .fetch();
     }
@@ -244,8 +240,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .on(board.store.id.eq(store.id))
             .join(randomBoard)
             .on(randomBoard.randomBoardId.eq(board.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(board.id.in(boardIds))
             .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
             .orderBy(randomBoard.id.asc())
@@ -260,4 +255,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(memberPreference.memberId.eq(memberId))
             .fetchOne();
     }
+
+    @Override
+    public List<Board> findBoardsByStore(Long storeId, Long boardIdAsCursorId) {
+        return queryFactory.selectFrom(board)
+            .join(board.store, store).fetchJoin()
+            .join(board.boardStatistic, boardStatistic).fetchJoin()
+            .where(
+                board.id.loe(boardIdAsCursorId),
+                store.id.eq(storeId))
+            .orderBy(board.id.desc())
+            .fetch();
+    }
+
 }
