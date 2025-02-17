@@ -59,13 +59,20 @@ public enum BbangleErrorCode {
     REVIEW_ALREADY_LIKED(-40, "이미 도움돼요를 누른 게시글입니다.", BAD_REQUEST),
     INVALID_TOKEN_TYPE(-41, "유효하지 않은 형태소 타입입니다.", NOT_FOUND),
     AlREADY_ON_REVIEWLIKE(-42, "이미 좋아요를 누른 리뷰 댓글입니다.", NOT_FOUND),
+    NOTFOUND_DELIVERYCOMPANY(-43, "존재하지 않는 택배회사입니다.", NOT_FOUND),
+    INVALID_BOARD_PRICE(-44, "가격은 음수가 될 수 없습니다.", BAD_REQUEST),
+    INVALID_BOARD_DISCOUNT(-45, "할인율은 0~100 사이여야 합니다.", BAD_REQUEST),
+    INVALID_DELIVERY_FEE(-46, "배송비는 음수가 될 수 없습니다.", BAD_REQUEST),
+    INVALID_PRODUCT_DELIVERY_DAY(-47, "가능한 발송 요일이 하나라도 있어야 합니다. ", BAD_REQUEST),
+    INVALID_PRODUCT_NAME(-48, "상품 이름은 3글자 이상 50글자 이하여야 합니다.", BAD_REQUEST),
+    INVALID_PRODUCT_INFO_NOTICE_NAME(-49, "상품 정보 제공 이름은 3글자 이상 50글자 이하여야 합니다.", BAD_REQUEST),
+
+    INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_INITIALIZATION_ERROR(-997, "Firebase 초기화 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR),
-    ;
+    FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;

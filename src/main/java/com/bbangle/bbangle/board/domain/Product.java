@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,7 +20,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,7 +27,6 @@ import lombok.Setter;
 @Table(name = "product")
 @Entity
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
@@ -112,4 +113,49 @@ public class Product {
     @NotNull
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
+
+    private int stock;
+
+    @Embedded
+    private Nutrition nutrition;
+
+    public Product(Board board, String title, int price, Category category, int stock,
+                   boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,
+                   boolean ketogenicTag, boolean monday, boolean tuesday, boolean wednesday,
+                   boolean thursday, boolean friday, boolean saturday, boolean sunday,
+                   Nutrition nutrition) {
+
+        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
+
+        this.board = board;
+        this.title = title;
+        this.price = price;
+        this.category = category;
+        this.stock = stock;
+        this.glutenFreeTag = glutenFreeTag;
+        this.highProteinTag = highProteinTag;
+        this.sugarFreeTag = sugarFreeTag;
+        this.veganTag = veganTag;
+        this.ketogenicTag = ketogenicTag;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
+        this.nutrition = nutrition;
+        this.soldout = false;
+    }
+
+    private void validate(String title,
+                          boolean monday, boolean tuesday, boolean wednesday,
+                          boolean thursday, boolean friday, boolean saturday, boolean sunday) {
+        if(title.length() < 3 || title.length() > 50) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_NAME);
+        }
+        if (!monday && !tuesday && !wednesday && !thursday && !friday && !saturday && !sunday) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_DELIVERY_DAY);
+        }
+    }
 }
