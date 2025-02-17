@@ -64,7 +64,7 @@ public enum BbangleErrorCode {
     CSV_NOT_CONVERT_ERROR(-57, "CSV 파일을 리스트로 변환 도중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_VALID_INDEX(-58, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   INPUT_STREAM_NOT_CLOSE(-59, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  
+
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_CLIENT_ERROR(-601, "AWS SDK 클라이언트 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
