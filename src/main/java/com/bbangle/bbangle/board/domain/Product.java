@@ -20,6 +20,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,7 @@ import lombok.Setter;
 @Table(name = "product")
 @Entity
 @Getter
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
@@ -64,24 +66,6 @@ public class Product {
 
     @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
-
-    @Column(name = "sugars")
-    private Integer sugars;
-
-    @Column(name = "protein")
-    private Integer protein;
-
-    @Column(name = "carbohydrates")
-    private Integer carbohydrates;
-
-    @Column(name = "fat")
-    private Integer fat;
-
-    @Column(name = "weight")
-    private Integer weight;
-
-    @Column(name = "calories")
-    private Integer calories;
 
     @Column(name = "monday", columnDefinition = "tinyint")
     private boolean monday;
