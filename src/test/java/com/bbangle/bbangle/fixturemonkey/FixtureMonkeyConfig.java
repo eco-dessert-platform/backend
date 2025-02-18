@@ -51,7 +51,9 @@ public class FixtureMonkeyConfig {
                                 ConstructorPropertiesArbitraryIntrospector.INSTANCE
                         ), false
                 ))
-                .plugin(new SimpleValueJqwikPlugin())   // 극단적인 값 안나오도록
+                .plugin(new SimpleValueJqwikPlugin()
+                        .minContainerSize(1)
+                        .minNumberValue(1))   // 극단적인 값 안나오도록
                 .plugin(new JakartaValidationPlugin())  // validation 어노테이션에 따라 객체 생성하도록
                 .defaultNotNull(true)                   // null 값 허용 안 하도록
                 .pushAssignableTypeContainerPropertyGenerator(
