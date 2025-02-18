@@ -7,7 +7,6 @@ import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -69,9 +68,6 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    @Embedded
-    ProductInfoNotice productInfoNotice;
-
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
@@ -86,7 +82,7 @@ public class Board extends BaseEntity {
     }
 
     public Board(Store store, String title, int price, int discountRate,
-                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
+                 int deliveryFee, Integer freeShippingConditions) {
         validate(price, discountRate, deliveryFee);
 
         this.store = store;
@@ -95,7 +91,6 @@ public class Board extends BaseEntity {
         this.discountRate = discountRate;
         this.deliveryFee = deliveryFee;
         this.freeShippingConditions = freeShippingConditions;
-        this.productInfoNotice = productInfoNotice;
         this.isDeleted = false;
     }
 

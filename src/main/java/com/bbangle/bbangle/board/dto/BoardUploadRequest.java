@@ -30,8 +30,7 @@ public class BoardUploadRequest {
                 price,
                 discountRate,
                 deliveryFee,
-                freeShippingConditions,
-                productInfoNotice.toEntity()
+                freeShippingConditions
         );
 
         List<Product> products = productRequests.stream()
