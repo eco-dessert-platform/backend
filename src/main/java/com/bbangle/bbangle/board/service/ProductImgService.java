@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProductImgUploadService {
+public class ProductImgService {
 
     private final ProductImgRepository productImgRepository;
     private final S3Service s3Service;
