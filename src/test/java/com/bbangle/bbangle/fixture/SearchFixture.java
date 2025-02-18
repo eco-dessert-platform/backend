@@ -10,11 +10,8 @@ public class SearchFixture {
     public SearchFixture(SearchRepository searchRepository) {
         this.searchRepository = searchRepository;
     }
-
     public Search create(Long memberId) {
-        return searchRepository.save(Search.builder()
-            .keyword(CommonFaker.faker.dessert().flavor())
-            .memberId(memberId)
-            .build());
+        String keyword = CommonFaker.faker.dessert().flavor();
+        return searchRepository.save(Search.save(memberId, keyword));
     }
 }

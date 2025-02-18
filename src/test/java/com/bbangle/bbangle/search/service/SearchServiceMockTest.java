@@ -198,10 +198,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             String keyword = "testKeyword";
             searchService.saveKeyword(ANONYMOUS_MEMBER_ID, keyword);
 
-            Search search = Search.builder()
-                .memberId(1L)
-                .keyword(keyword)
-                .build();
+            Search search = Search.save(1L, keyword);
 
             when(searchRepository.save(any(Search.class))).thenReturn(search);
 
@@ -214,10 +211,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             String keyword = "testKeyword";
             searchService.saveKeyword(MEMBER_ID, keyword);
 
-            Search search = Search.builder()
-                .memberId(MEMBER_ID)
-                .keyword(keyword)
-                .build();
+            Search search = Search.save(MEMBER_ID, keyword);
 
             when(searchRepository.save(any(Search.class))).thenReturn(search);
 
