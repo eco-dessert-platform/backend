@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Nutrition {
 
-    private Integer totalWeight; // 총 중량 (g)
+    private Integer weight; // 총 중량 (g)
 
     private Integer servingSize; // 1회 제공량 (g)
 

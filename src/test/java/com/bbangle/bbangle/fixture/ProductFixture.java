@@ -2,6 +2,7 @@ package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ public class ProductFixture {
     public Product veganCookie(Board board) {
         int randomPrice = random.nextInt(100000) + 1; // 1부터 10000 사이의 랜덤 값
         int randomNutrient = random.nextInt(500) + 1; // 1부터 500 사이의 랜덤 값
+        Nutrition nutrition = new Nutrition(randomNutrient, randomNutrient, randomNutrient,
+                randomNutrient, randomNutrient, randomNutrient, randomNutrient);
         LocalDateTime now = LocalDateTime.now();
 
         return productRepository.save(Product.builder()
@@ -34,12 +37,7 @@ public class ProductFixture {
             .sugarFreeTag(random.nextBoolean())
             .veganTag(true)
             .ketogenicTag(random.nextBoolean())
-            .sugars(randomNutrient)
-            .protein(randomNutrient)
-            .carbohydrates(randomNutrient)
-            .fat(randomNutrient)
-            .weight(randomNutrient)
-            .calories(randomNutrient)
+                        .nutrition(nutrition)
             .monday(random.nextBoolean())
             .tuesday(random.nextBoolean())
             .wednesday(random.nextBoolean())
