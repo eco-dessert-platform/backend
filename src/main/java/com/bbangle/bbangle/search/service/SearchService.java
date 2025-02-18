@@ -44,12 +44,7 @@ public class SearchService {
         checkNullOrEmptyKeyword(keyword);
 
         memberId = checkAnonymousId(memberId);
-        Search search = Search.builder()
-            .memberId(memberId)
-            .keyword(keyword)
-            .build();
-
-        // 캐싱하여 특정 시간에 저장하는게 좋을까?
+        Search search = Search.save(memberId, keyword);
         searchRepository.save(search);
     }
 
