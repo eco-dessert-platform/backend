@@ -2,15 +2,26 @@ package com.bbangle.bbangle.board.domain;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Embeddable
+@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductInfoNotice {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String productName;              // 제품명
     private String foodType;                 // 식품 유형
     private String manufacturer;             // 제조사 / 생산자
@@ -25,10 +36,14 @@ public class ProductInfoNotice {
     private String customerWarning;          // 소비자 안전 정보 및 주의사항
     private String importFood;               // 수입 식품 관련 정보
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
+    private Board board;
+
     public ProductInfoNotice(String productName, String foodType, String manufacturer, String originLocation,
                              String manufactureDate, String expirationDate, String storageGuide,
                              String packagingQuantityUnit, String rawMaterialName, String nutritionInfo,
-                             String transgenic, String customerWarning, String importFood) {
+                             String transgenic, String customerWarning, String importFood, Board board) {
         validate(productName);
         this.productName = productName;
         this.foodType = foodType;
@@ -43,6 +58,7 @@ public class ProductInfoNotice {
         this.transgenic = transgenic;
         this.customerWarning = customerWarning;
         this.importFood = importFood;
+        this.board = board;
     }
 
     private void validate(String productName) {
