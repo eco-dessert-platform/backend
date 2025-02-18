@@ -1,5 +1,7 @@
 package com.bbangle.bbangle;
 
+import static java.util.Collections.emptyMap;
+
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
@@ -40,6 +42,8 @@ import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,14 +53,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyMap;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -151,8 +147,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
-        .objectIntrospector(FieldReflectionArbitraryIntrospector.INSTANCE)
-        .build();
+            .objectIntrospector(FieldReflectionArbitraryIntrospector.INSTANCE)
+            .build();
 
     /**
      * NOTE: param 에 변경하고자 하는 필드명 : 값 형식으로 주입하면 변경되어 insert 됨
@@ -160,7 +156,7 @@ public abstract class AbstractIntegrationTest {
 
     protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
         ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
-            WishListFolder.class);
+                WishListFolder.class);
         setBuilderParams(params, builder);
 
         if (!params.containsKey("member")) {
@@ -227,7 +223,7 @@ public abstract class AbstractIntegrationTest {
 
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
-            BoardStatistic.class);
+                BoardStatistic.class);
         setBuilderParams(params, builder);
 
         if (!params.containsKey("board")) {
@@ -247,25 +243,21 @@ public abstract class AbstractIntegrationTest {
             builder = builder.set("store", store);
         }
 
-        List<Product> products;
-        if (!params.containsKey("productList")) {
-            products = Collections.singletonList(fixtureProduct(emptyMap()));
-            builder = builder.set("productList", products);
+        Board board = builder.sample();
+
+        Board savedBoard;
+        if (params.containsKey("productList")) {
+            board.getProducts().stream()
+                    .forEach(product -> product.setBoard(board));
+            savedBoard = boardRepository.save(board);
+            productRepository.saveAll(board.getProducts());
         } else {
-            products = (List<Product>) params.get("productList");
+            savedBoard = boardRepository.save(board);
         }
 
-        Board board = boardRepository.save(builder.sample());
-
-        // product 에 다시 board 를 세팅해줘야 조인이 됨
-        productRepository.saveAll(
-            products.stream()
-                .peek(it -> it.setBoard(board))
-                .collect(Collectors.toList())
-        );
-
-        return board;
+        return savedBoard;
     }
+
 
     protected Review fixtureReview(Map<String, Object> params) {
         ArbitraryBuilder<Review> builder = fixtureMonkey.giveMeBuilder(Review.class);
