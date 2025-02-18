@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class BoardUploadRequest {
-    private Long storeId;
     private String boardTitle;
     private int price;
     private int discountRate;
@@ -21,6 +20,8 @@ public class BoardUploadRequest {
     private List<ProductRequest> productRequests;
     private ProductInfoNoticeRequest productInfoNotice;
     private BoardDetailRequest boardDetail;
+
+    private List<Long> productImgIds;
 
     public Board toEntity(Store store) {
         Board board = new Board(

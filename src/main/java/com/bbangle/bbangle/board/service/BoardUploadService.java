@@ -20,15 +20,23 @@ public class BoardUploadService {
     private final BoardRepository boardRepository;
     private final StoreRepository storeRepository;
     private final BoardDetailRepository boardDetailRepository;
+    private final ProductImgService productImgService;
 
+    /**
+     * productImg - board 연결도 이 때 진행
+     */
     @Transactional
-    public void uploadBoard(BoardUploadRequest request) {
-        Store store = storeRepository.findById(request.getStoreId())
+    public void upload(Long storeId, BoardUploadRequest request) {
+        Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
         Board board = request.toEntity(store);
         BoardDetail boardDetail = request.getBoardDetail().toEntity(board);
 
-        boardRepository.save(board);
+        Board savedBoard = boardRepository.save(board);
         boardDetailRepository.save(boardDetail);
+
+        productImgService.connectImagesToBoard(
+                request.getProductImgIds(),
+                savedBoard);
     }
 }
