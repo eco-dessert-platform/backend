@@ -1,37 +1,23 @@
 package com.bbangle.bbangle.board.service;
 
-
-import static com.bbangle.bbangle.board.validator.BoardValidator.*;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_URL_NULL;
-
-import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
-import com.bbangle.bbangle.board.dto.BoardDto;
-import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,17 +27,9 @@ public class BoardService {
 
     private static final Boolean DEFAULT_BOARD = false;
     private static final Boolean BOARD_IN_FOLDER = true;
-    private static final String HTTP = "http";
     private final BoardRepository boardRepository;
-    private final BoardDetailRepository boardDetailRepository;
     private final MemberRepository memberRepository;
-    private final BoardStatisticService boardStatisticService;
     private final WishListFolderRepository folderRepository;
-    private final WishListBoardRepository wishListBoardRepository;
-    @Qualifier("defaultRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
-    @Value("${cdn.domain}")
-    private String cdn;
 
     @Cacheable(
         value = "recommendContents",
@@ -91,73 +69,6 @@ public class BoardService {
             memberId);
 
         return BoardPageGenerator.getBoardPage(allByFolder, BOARD_IN_FOLDER);
-    }
-
-
-    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
-        return boardAndImageDtos.stream()
-            .filter(imageDto -> Objects.nonNull(imageDto.url()))
-            .map(imageDto -> buildFullUrl(imageDto.url()))
-            .toList();
-    }
-
-    private BoardAndImageDto getFirstBoardInfo(List<BoardAndImageDto> boardAndImageTuples) {
-        return boardAndImageTuples.stream()
-            .findFirst()
-            .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
-    }
-
-    @Transactional
-    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String viewCountKey) {
-        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
-            boardId);
-
-        validateListNotEmpty(boardAndImageDtos, BOARD_NOT_FOUND);
-
-        BoardDto boardDto = BoardDto.from(
-            getFirstBoardInfo(boardAndImageDtos));
-
-        boolean isWished = Objects.nonNull(memberId)
-            && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
-
-        List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
-
-        if (Objects.isNull(boardDto.getProfile())) {
-            throw new BbangleException(IMAGE_URL_NULL);
-        }
-
-        String boardProfileUrl = buildFullUrl(boardDto.getProfile());
-
-        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
-            .stream()
-            .filter(Objects::nonNull)
-            .map(this::buildFullUrl)
-            .toList();
-
-        boardStatisticService.updateViewCount(boardId);
-        if (viewCountKey != null) {
-            redisTemplate.opsForValue()
-                .set(viewCountKey, "true");
-        }
-
-        return BoardImageDetailResponse.from(
-            boardDto,
-            isWished,
-            boardProfileUrl,
-            boardImageUrls,
-            boardDetailUrls);
-    }
-
-    private String buildFullUrl(String url) {
-        if (Objects.isNull(url)) {
-            throw new BbangleException(IMAGE_URL_NULL);
-        }
-
-        if (url.contains(HTTP)) {
-            return url;
-        }
-
-        return cdn + url;
     }
 
     private void updateLikeStatus(

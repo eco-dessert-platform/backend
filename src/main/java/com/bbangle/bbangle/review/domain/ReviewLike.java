@@ -4,9 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+@Table(
+        name = "review_like",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "review_id"})
+        }
+)
 @Entity
 @Getter
-@Table(name = "review_like")
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

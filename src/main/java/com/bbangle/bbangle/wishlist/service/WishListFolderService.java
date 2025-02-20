@@ -51,9 +51,7 @@ public class WishListFolderService {
 
     @Transactional
     public void delete(Long folderId, Long memberId) {
-        Member member = memberRepository.findMemberById(memberId);
-
-        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
+       WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
         validateIsDeleteAvailable(wishlistFolder);
@@ -63,9 +61,7 @@ public class WishListFolderService {
 
     @Transactional
     public void update(Long memberId, Long folderId, FolderUpdateDto updateDto) {
-        Member member = memberRepository.findMemberById(memberId);
-
-        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
+        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
         validateWishListFolder(wishlistFolder);

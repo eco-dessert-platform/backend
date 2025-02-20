@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface BoardStatisticRepository extends JpaRepository<BoardStatistic, Long> {
+public interface BoardStatisticRepository extends JpaRepository<BoardStatistic, Long>,
+    BoardStatisticQueryDSLRepository {
 
     Optional<BoardStatistic> findByBoardId(Long boardId);
 
