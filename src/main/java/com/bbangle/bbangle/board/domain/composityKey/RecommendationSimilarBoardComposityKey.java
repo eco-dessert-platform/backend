@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.domain;
+package com.bbangle.bbangle.board.domain.composityKey;
 
 import java.io.Serializable;
 import java.util.Objects;

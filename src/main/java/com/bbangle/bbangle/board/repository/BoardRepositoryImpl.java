@@ -260,4 +260,5 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(memberPreference.memberId.eq(memberId))
             .fetchOne();
     }
+
 }
