@@ -1,29 +1,24 @@
 package com.bbangle.bbangle.fixture;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
 import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.logging.Logger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.logging.Log;
 
-@Slf4j
+import java.math.BigDecimal;
+import java.util.*;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RecommendationSimilarBoardFixture {
 
     private static final int LIMIT_SIMILAR_BOARD_COUNT = 3;
+    private static Log log;
 
     public static List<RecommendationSimilarBoard> getRandom(
         Long boardId,
-        List<Long> recommandationItems
+        List<Long> recommendationItems
     ) {
         Random random = new Random();
         BigDecimal[] randomScores = new BigDecimal[LIMIT_SIMILAR_BOARD_COUNT];
@@ -36,14 +31,15 @@ public class RecommendationSimilarBoardFixture {
         for (int i = 0; i < LIMIT_SIMILAR_BOARD_COUNT; i++) {
             int rank = findRank(randomScores, randomScores[i]);
 
-            RecommendationSimilarBoard recommendationSimilarBoard = RecommendationSimilarBoard.builder()
-                .queryItem(boardId)
-                .recommendationItem(recommandationItems.get(i))
-                .score(randomScores[i])
-                .rank(rank)
-                .recommendationTheme(SimilarityTypeEnum.word2vec) // TODO - Enum이 3개 이상일 때 random으로 값을 가져올 수 있는 방법 고민
-                .modelVersion("0.0.1")
-                .build();
+            RecommendationSimilarBoard recommendationSimilarBoard = RecommendationSimilarBoard.create(
+                boardId,
+                rank,
+                recommendationItems.get(i),
+                randomScores[i],
+                SimilarityTypeEnum.word2vec,
+                "0.0.1"
+            );
+
             recommendationSimilarBoards.add(recommendationSimilarBoard);
             logging(recommendationSimilarBoard);
         }
@@ -63,6 +59,23 @@ public class RecommendationSimilarBoardFixture {
 
         // 대상 점수의 순위 반환
         return rankMap.get(targetScore);
+    }
+
+    public static RecommendationSimilarBoard getRandomSingleEntity(
+        Board targetBoard,
+        Board recommandationBoard,
+        int rank
+    ) {
+        Random random = new Random();
+        BigDecimal randomScore = BigDecimal.valueOf(random.nextDouble(0, 1));
+
+        return RecommendationSimilarBoard.create(
+            targetBoard.getId(),
+            rank,
+            recommandationBoard.getId(),
+            randomScore,
+            SimilarityTypeEnum.word2vec,
+            "0.0.1");
     }
 
     private static void logging(RecommendationSimilarBoard recommendationSimilarBoard) {
