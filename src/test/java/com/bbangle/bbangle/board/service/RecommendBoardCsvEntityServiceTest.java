@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
-import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
+import com.bbangle.bbangle.board.repository.RecommendAiBoardRepository;
 import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 class RecommendBoardCsvEntityServiceTest extends AbstractIntegrationTest {
 
     @Autowired
-    private RecommendBoardService recommendBoardService;
+    private RecommendAiBoardService recommendAiBoardService;
 
     @Autowired
-    private RecommendBoardRepository recommendBoardRepository;
+    private RecommendAiBoardRepository recommendAiBoardRepository;
 
     @Autowired
     private RecommendationSimilarBoardMemoryRepository memoryRepository;
@@ -29,10 +29,10 @@ class RecommendBoardCsvEntityServiceTest extends AbstractIntegrationTest {
 
     @Test
     void saveRecommendBoardFile() {
-        recommendBoardService.saveRecommendBoardEntity();
-        recommendBoardService.saveRecommendBoardEntity();
+        recommendAiBoardService.saveRecommendBoardEntity();
+        recommendAiBoardService.saveRecommendBoardEntity();
 
-        var result = recommendBoardRepository.findAll();
+        var result = recommendAiBoardRepository.findAll();
         var result2 = memoryRepository.findById(RedisKeyEnum.RECOMMENDATION_CONFIG)
             .orElse(null);
 

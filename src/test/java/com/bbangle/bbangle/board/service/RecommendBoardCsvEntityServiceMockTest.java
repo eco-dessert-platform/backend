@@ -25,7 +25,7 @@ class RecommendBoardCsvEntityServiceMockTest extends AbstractIntegrationTest {
     private RecommendBoardFileStorageComponent fileStorageService;
 
     @Autowired
-    private RecommendBoardService recommendBoardService;
+    private RecommendAiBoardService recommendAiBoardService;
 
     @Autowired
     private RecommendBoardScheduler recommendBoardScheduler;
@@ -47,7 +47,7 @@ class RecommendBoardCsvEntityServiceMockTest extends AbstractIntegrationTest {
         when(memoryRepository.findById(RedisKeyEnum.RECOMMENDATION_CONFIG))
             .thenReturn(java.util.Optional.of(mockConfig));
 
-        var result = recommendBoardService.saveRecommendBoardEntity();
+        var result = recommendAiBoardService.saveRecommendBoardEntity();
 
         assertThat(result).isEqualTo(false);
     }
