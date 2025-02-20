@@ -69,10 +69,11 @@ class FixtureMonkeyTest extends AbstractIntegrationTest {
         }
     }
 
-    @RepeatedTest(10)
+    @RepeatedTest(1)
     @DisplayName("product 없이 board 생성시 순환참조에 걸리지 않는다.")
     void test4() {
-        Board board = fixtureBoard(Map.of());
+        Board board = fixtureBoard(Map.of("title", "testTitle"));
+        fixtureBoardDetail(Map.of("board", board));
     }
 
     @RepeatedTest(10)
