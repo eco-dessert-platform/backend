@@ -31,14 +31,14 @@ public class RecommendBoardMapper {
 
     public List<RecommendationSimilarBoard> mapToEntity(List<RecommendBoardCsvDto> recommendBoardCsvDtoEntities) {
         return recommendBoardCsvDtoEntities.stream()
-            .map(entity -> RecommendationSimilarBoard.builder()
-                .queryItem(entity.getQueryItem())
-                .recommendationTheme(entity.getRecommendationTheme())
-                .score(entity.getScore())
-                .rank(entity.getRank())
-                .recommendationItem(entity.getRecommendationItem())
-                .modelVersion(entity.getModelVersion())
-                .build())
+            .map(entity ->
+                    RecommendationSimilarBoard.create(
+                        entity.getQueryItem(),
+                        entity.getRank(),
+                        entity.getRecommendationItem(),
+                        entity.getScore(),
+                        entity.getRecommendationTheme(),
+                        entity.getModelVersion()))
             .toList();
     }
 }
