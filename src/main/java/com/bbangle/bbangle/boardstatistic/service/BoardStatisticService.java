@@ -43,7 +43,7 @@ public class BoardStatisticService {
         List<BoardStatistic> boardStatistics = new ArrayList<>();
         unRankedBoards.stream()
             .map(board -> BoardStatistic.builder()
-                .boardId(board.getId())
+                .board(board)
                 .basicScore(0.0)
                 .boardReviewCount(0L)
                 .boardWishCount(0L)
@@ -73,7 +73,7 @@ public class BoardStatisticService {
         for (BoardGrade boardGrade : reviewGradeList) {
             for (BoardStatistic statistic : allStatistics) {
                 if (boardGrade.boardId()
-                    .equals(statistic.getBoardId())) {
+                    .equals(statistic.getBoard().getId())) {
                     statistic.setBoardReviewCountWhenInit((long) boardGrade.count());
                     statistic.setBoardReviewRateWhenInit(boardGrade.grade());
                 }
@@ -88,7 +88,7 @@ public class BoardStatisticService {
         for (BoardWishCount wishCount : wishCountList) {
             for (BoardStatistic statistic : allStatistics) {
                 if (wishCount.boardId()
-                    .equals(statistic.getBoardId())) {
+                    .equals(statistic.getBoard().getId())) {
                     statistic.setBoardWishCountWhenInit((long) wishCount.count());
                 }
             }
@@ -133,7 +133,7 @@ public class BoardStatisticService {
         boardViewCountUpdate.keySet()
             .forEach(key -> {
                 for (BoardStatistic update : updateList) {
-                    if (update.getBoardId()
+                    if (update.getBoard().getId()
                         .equals(key)) {
                         update.updateViewCount(boardViewCountUpdate.get(key));
                     }
@@ -146,7 +146,7 @@ public class BoardStatisticService {
 
         for (BoardStatistic statistic : updateList) {
             for (ReviewStatisticDao reviewStatisticDao : reviewStatisticByBoardIds) {
-                if (statistic.getBoardId()
+                if (statistic.getBoard().getId()
                     .equals(reviewStatisticDao.boardId())) {
                     statistic.updateReviewGrade(
                         BigDecimal.valueOf(reviewStatisticDao.averageRate()));
@@ -155,7 +155,7 @@ public class BoardStatisticService {
             }
 
             for (WishListStatisticDao dao : wishStatisticByBoardIds) {
-                if(statistic.getBoardId().equals(dao.boardId())) {
+                if(statistic.getBoard().getId().equals(dao.boardId())) {
                     statistic.updateWishCount(dao.wishListCount());
                 }
             }
@@ -164,7 +164,7 @@ public class BoardStatisticService {
 
         for(BoardStatistic statistic : updateList){
             for(Long id : allUpdateBoard){
-                if(statistic.getBoardId().equals(id)){
+                if(statistic.getBoard().getId().equals(id)){
                     statistic.updateBasicScoreWhenInit();
                 }
             }
@@ -173,7 +173,7 @@ public class BoardStatisticService {
             allUpdateBoard);
         for(BoardPreferenceStatistic preference : preferenceUpdate){
             for(BoardStatistic statistic : updateList){
-                if(preference.getBoardId().equals(statistic.getBoardId())){
+                if(preference.getBoardId().equals(statistic.getBoard().getId())){
                     preference.updateToBasicBoardScore(statistic.getBasicScore());
                     preference.updatePreferenceScore();
                 }

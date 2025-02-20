@@ -39,8 +39,7 @@ public class SearchHighRatedBoardQueryProviderResolver implements SearchQueryPro
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(cursorInfo.and(filter).and(board.id.in(searchedIds)))
             .orderBy(orderCondition)
             .limit(BOARD_PAGE_SIZE_PLUS_ONE)
@@ -71,8 +70,8 @@ public class SearchHighRatedBoardQueryProviderResolver implements SearchQueryPro
             .on(product.board.id.eq(board.id))
             .join(store)
             .on(board.store.id.eq(store.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
+            .on(boardStatistic.board.eq(board))
             .where(board.id.in(boardIds))
             .orderBy(orderCondition)
             .fetch();
@@ -88,8 +87,7 @@ public class SearchHighRatedBoardQueryProviderResolver implements SearchQueryPro
             .from(product)
             .join(board)
             .on(product.board.id.eq(board.id))
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(filter.and(board.id.in(searchedIds)))
             .fetch().stream().count();
     }
