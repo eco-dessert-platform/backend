@@ -45,10 +45,9 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
 
     @Override
     public List<Long> findSimilarityBoardIdsByNotSoldOut(Long boardId, int limit) {
-        return queryFactory.select(board.id)
+        return queryFactory.select(similarBoard.recommendationItem)
             .from(similarBoard)
-            .join(similarBoard.board, board)
-            .join(product).on(board.id.eq(product.board.id))
+            .join(product).on(similarBoard.recommendationItem.eq(product.board.id))
             .where(similarBoard.queryItem.eq(boardId).and(product.soldout.eq(false)))
             .orderBy(similarBoard.rank.asc())
             .fetch()

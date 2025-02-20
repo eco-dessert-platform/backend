@@ -20,6 +20,10 @@ public enum BbangleErrorCode {
 
     NOTFOUND_MEMBER(-4, "해당 user가 존재하지 않습니다.", NOT_FOUND),
     NOTFOUND_WISH_INFO(-5, "일치하는 스토어 찜을 찾지못했습니다.", NOT_FOUND),
+
+    AWS_ACL_BLOCK(-6, "S3에 버킷의 ACL권한을 설정해주세요", HttpStatus.INTERNAL_SERVER_ERROR),
+    AWS_ENVIRONMENT(-7, "AWS 환경에서 진행해주세요", HttpStatus.INTERNAL_SERVER_ERROR),
+
     PRICE_NOT_OVER_ZERO(-8, "0원 이상의 가격을 입력해주세요", BAD_REQUEST),
     INVALID_CATEGORY(-9, "존재하지 않는 카테고리입니다.", BAD_REQUEST),
     BOARD_NOT_FOUND(-10, "존재하지 않는 게시글입니다.", BAD_REQUEST),
@@ -55,25 +59,6 @@ public enum BbangleErrorCode {
     REVIEW_ALREADY_LIKED(-40, "이미 도움돼요를 누른 게시글입니다.", BAD_REQUEST),
     INVALID_TOKEN_TYPE(-41, "유효하지 않은 형태소 타입입니다.", NOT_FOUND),
     AlREADY_ON_REVIEWLIKE(-42, "이미 좋아요를 누른 리뷰 댓글입니다.", NOT_FOUND),
-  
-    //File Error (50)
-    UPLOAD_STREAM_CLOSE_ERROR(-50, "파일 업로드 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NULL_INPUT_STREAM(-51, "파일이 유효하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NOT_VALID_CONTENT_TYPE(-52, "컨텐츠 타입이 유효하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NOT_VALID_FILE_SIZE(-53, "파일의 크기를 다시 설정해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NULL_FILE_URL(-54, "파일 URL 주소를 확인해주세요.", BAD_REQUEST),
-    CSV_NOT_READ_ERROR(-55, "CSV 파일을 읽는 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    CSV_NOT_CONVERT_ERROR(-56, "CSV 파일을 리스트로 변환 도중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NOT_VALID_INDEX(-57, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INPUT_STREAM_NOT_CLOSE(-58, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    //AWS Error (600)
-    AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    AWS_CLIENT_ERROR(-601, "AWS SDK 클라이언트 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    AWS_ACL_BLOCK(-602, "S3에 버킷의 ACL권한을 설정해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
-    AWS_ENVIRONMENT(-603, "AWS 환경에서 진행해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
-    AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

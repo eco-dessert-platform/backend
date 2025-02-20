@@ -3,7 +3,6 @@ package com.bbangle.bbangle.review.repository;
 
 import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
@@ -40,7 +39,5 @@ public interface ReviewQueryDSLRepository {
     List<ReviewBadgeDto> findReviewBadgeByBoardId(Long boardId);
 
     List<ReviewStatisticDao> getReviewStatisticByBoardIds(List<Long> boardReviewUpdateId);
-
-    List<AiLearningReviewDto> findAiLearningData(Integer offset, Integer limit);
 
 }

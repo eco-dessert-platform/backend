@@ -2,6 +2,7 @@ package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
+import com.bbangle.bbangle.board.domain.SimilarityModelVerEnum;
 import com.bbangle.bbangle.board.domain.SimilarityTypeEnum;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Random;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 
@@ -63,8 +63,10 @@ public class RecommendationSimilarBoardFixture {
                 .recommendationItem(recommandationItems.get(i))
                 .score(randomScores[i])
                 .rank(rank)
-                .recommendationTheme(SimilarityTypeEnum.word2vec) // TODO - Enum이 3개 이상일 때 random으로 값을 가져올 수 있는 방법 고민
-                .modelVersion("0.0.1")
+                .recommendationTheme(random.nextInt() % 2 == 0 ? SimilarityTypeEnum.SIMILARITY
+                    : SimilarityTypeEnum.DEFAULT) // TODO - Enum이 3개 이상일 때 random으로 값을 가져올 수 있는 방법 고민
+                .modelVersion(random.nextInt() % 2 == 0 ? SimilarityModelVerEnum.V1
+                    : SimilarityModelVerEnum.DEFAULT)
                 .build();
             recommendationSimilarBoards.add(recommendationSimilarBoard);
             logging(recommendationSimilarBoard);

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
-public enum SimilarityTypeEnum {
+public enum SimilarityModelVerEnum {
     DEFAULT,
-    SIMILARITY
+    V1
 }
