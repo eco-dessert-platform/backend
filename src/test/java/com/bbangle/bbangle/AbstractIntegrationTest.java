@@ -42,6 +42,8 @@ import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.junit.jupiter.api.BeforeEach;
@@ -188,13 +190,13 @@ public abstract class AbstractIntegrationTest {
     protected Product fixtureProduct(Map<String, Object> params) {
         ArbitraryBuilder<Product> builder = fixtureMonkey.giveMeBuilder(Product.class);
         setBuilderParams(params, builder);
+        builder = builder.set("id", null);
 
         if (!params.containsKey("board")) {
-            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
+            builder = builder.set("board", null); // 양방향 참조 관계이므로 board 가 있으면 에러나서 추가
         }
 
-        Product sample = builder.sample();
-        return productRepository.save(sample);
+        return builder.sample();
     }
 
     protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
@@ -237,25 +239,23 @@ public abstract class AbstractIntegrationTest {
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
         setBuilderParams(params, builder);
+        builder = builder.set("id", null);
 
         if (!params.containsKey("store")) {
             Store store = fixtureStore(emptyMap());
             builder = builder.set("store", store);
         }
 
-        Board board = builder.sample();
-
-        Board savedBoard;
-        if (params.containsKey("productList")) {
-            board.getProducts().stream()
-                    .forEach(product -> product.setBoard(board));
-            savedBoard = boardRepository.save(board);
-            productRepository.saveAll(board.getProducts());
-        } else {
-            savedBoard = boardRepository.save(board);
+        if (!params.containsKey("productList")) {
+            List<Product> products = Collections.singletonList(fixtureProduct(emptyMap()));
+            builder = builder.set("products", products);
         }
 
-        return savedBoard;
+        Board sample = builder.sample();
+        sample.getProducts().forEach(product -> product.setBoard(sample));
+        Board board = boardRepository.save(sample);
+
+        return board;
     }
 
 
