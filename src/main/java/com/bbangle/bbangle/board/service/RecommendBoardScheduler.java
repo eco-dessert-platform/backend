@@ -16,13 +16,13 @@ import org.springframework.stereotype.Service;
 public class RecommendBoardScheduler {
 
     private final RecommendationSimilarBoardMemoryRepository memoryRepository;
-    private final RecommendBoardService recommendBoardService;
+    private final RecommendAiBoardService recommendAiBoardService;
 
     @Scheduled(cron = "0 0/3 3 * * ?")
     public void scheduleRecommendBoardUpdate() {
         try {
             log.info("추천 데이터 업데이트 시작");
-            recommendBoardService.saveRecommendBoardEntity();
+            recommendAiBoardService.saveRecommendBoardEntity();
         } catch (Exception e) {
             log.error("스케줄링 중 에러 발생: {}", e.getMessage(), e);
             memoryRepository.save(RecommendBoardConfig.schedulingOff());
@@ -36,7 +36,7 @@ public class RecommendBoardScheduler {
         scheduler.scheduleWithFixedDelay(() -> {
             try {
                 log.info("AI 학습 데이터셋 업로드 시작");
-                boolean isScheduleContinue = recommendBoardService.uploadAiLearningCsv();
+                boolean isScheduleContinue = recommendAiBoardService.uploadAiLearningCsv();
                 if (!isScheduleContinue) {
                     log.info("AI 학습 데이터셋 업로드 종료");
                     scheduler.shutdown();

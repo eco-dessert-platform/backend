@@ -1,20 +1,12 @@
 package com.bbangle.bbangle.board.service;
 
-import static com.bbangle.bbangle.board.domain.RedisKeyEnum.RECOMMENDATION_LEARNING_CONFIG;
-
-import com.bbangle.bbangle.board.domain.CsvFile;
-import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
-import com.bbangle.bbangle.board.domain.RecommendCursorRange;
-import com.bbangle.bbangle.board.domain.RecommendLearningConfig;
-import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
-import com.bbangle.bbangle.board.domain.RedisKeyEnum;
+import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.AiLearningProductDto;
 import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
-import com.bbangle.bbangle.board.repository.FileStorageRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.board.repository.RecommendBoardRepository;
+import com.bbangle.bbangle.board.repository.RecommendAiBoardRepository;
 import com.bbangle.bbangle.board.repository.RecommendationLearningRepository;
 import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
 import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
@@ -22,17 +14,20 @@ import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
 import com.bbangle.bbangle.board.util.CsvFileUtil;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+
+import static com.bbangle.bbangle.board.domain.RedisKeyEnum.RECOMMENDATION_LEARNING_CONFIG;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RecommendBoardService {
+public class RecommendAiBoardService {
 
     private static final boolean SCHEDULING_CONTINUE = true;
     private static final boolean SCHEDULING_STOP = false;
@@ -46,7 +41,7 @@ public class RecommendBoardService {
     private final RecommendBoardMapper recommendBoardMapper;
     private final RecommendationSimilarBoardMemoryRepository recommendationSimilarBoardMemoryRepository;
     private final RecommendationLearningRepository recommendationLearningRepository;
-    private final RecommendBoardRepository recommendBoardRepository;
+    private final RecommendAiBoardRepository recommendAiBoardRepository;
     private final RecommendBoardFileStorageComponent fileStorageService;
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
@@ -71,7 +66,7 @@ public class RecommendBoardService {
         List<RecommendationSimilarBoard> recommendationSimilarBoards = loadRecommendationCsvFileWithinRange(
             cursorRange);
 
-        recommendBoardRepository.saveAll(recommendationSimilarBoards);
+        recommendAiBoardRepository.saveAll(recommendationSimilarBoards);
 
         initializeOrUpdateBoardConfig(recommendBoardConfig, cursorRange);
 
