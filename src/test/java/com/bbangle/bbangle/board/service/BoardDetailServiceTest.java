@@ -40,7 +40,7 @@ class BoardDetailServiceTest extends AbstractIntegrationTest {
         boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board1));
         boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board2));
         boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board3));
-        List<RecommendationSimilarBoard> similarBoards = similarBoardRepository.saveAll(
+        List<RecommendationSimilarBoard> similarBoards = (List<RecommendationSimilarBoard>) similarBoardRepository.saveAll(
             RecommendationSimilarBoardFixture.getRandom(
                 board1.getId(),
                 List.of(board1.getId(), board2.getId(), board3.getId())
@@ -53,11 +53,11 @@ class BoardDetailServiceTest extends AbstractIntegrationTest {
 
         assertThat(boardResponses).hasSize(3);
         assertThat(boardResponses.get(0).getBoardId()).isEqualTo(
-            similarBoards.get(0).getRecommendationItem());
+            similarBoards.get(0).getBoard().getId());
         assertThat(boardResponses.get(1).getBoardId()).isEqualTo(
-            similarBoards.get(1).getRecommendationItem());
+            similarBoards.get(1).getBoard().getId());
         assertThat(boardResponses.get(2).getBoardId()).isEqualTo(
-            similarBoards.get(2).getRecommendationItem());
+            similarBoards.get(2).getBoard().getId());
     }
 
     @Test
@@ -88,9 +88,9 @@ class BoardDetailServiceTest extends AbstractIntegrationTest {
 
         assertThat(boardResponses).hasSize(3);
         assertThat(boardResponses.get(0).getBoardId()).isEqualTo(
-            similarBoard1.getRecommendationItem());
+            similarBoard1.getBoard().getId());
         assertThat(boardResponses.get(1).getBoardId()).isEqualTo(
-            similarBoard2.getRecommendationItem());
+            similarBoard2.getBoard().getId());
     }
 
     @Test
@@ -127,9 +127,9 @@ class BoardDetailServiceTest extends AbstractIntegrationTest {
 
         assertThat(boardResponses).hasSize(3);
         assertThat(boardResponses.get(0).getBoardId()).isEqualTo(
-            similarBoard1.getRecommendationItem());
+            similarBoard1.getBoard().getId());
         assertThat(boardResponses.get(1).getBoardId()).isEqualTo(
-            similarBoard2.getRecommendationItem());
+            similarBoard2.getBoard().getId());
         assertThat(boardResponses.get(2).getBoardId()).isEqualTo(board4.getId());
     }
 }
