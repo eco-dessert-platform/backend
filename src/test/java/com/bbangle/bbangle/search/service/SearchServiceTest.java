@@ -39,7 +39,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
 
 @Import(FixtureConfig.class)
 class SearchServiceTest extends AbstractIntegrationTest {
@@ -168,7 +167,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
                     "title", "비건베이커리",
                     "price", 2000,
                     "isDeleted", false,
-                    "productList", List.of()
+                    "products", List.of()
                 ));
 
                 productFixture.veganCookie(board);
@@ -186,7 +185,7 @@ class SearchServiceTest extends AbstractIntegrationTest {
                     "title", "비건베이커리",
                     "price", 2000,
                     "isDeleted", true,
-                    "productList", List.of()
+                    "products", List.of()
                 ));
 
                 productFixture.veganCookie(board);

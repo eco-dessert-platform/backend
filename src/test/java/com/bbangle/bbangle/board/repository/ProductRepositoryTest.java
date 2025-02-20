@@ -43,7 +43,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
                     fixtureProduct(Map.of("category", Category.BREAD)),
                     fixtureProduct(Map.of("category", Category.SNACK)));
 
-            board = fixtureBoard(Map.of("store", store, "productList", products));
+            board = fixtureBoard(Map.of("store", store, "products", products));
         }
 
         @Test
