@@ -89,7 +89,7 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
                 ).from(board)
                 .join(product).on(board.id.eq(product.board.id))
                 .join(store).on(board.store.id.eq(store.id))
-                .join(boardStatistic).on(board.id.eq(boardStatistic.boardId))
+                .join(board.boardStatistic, boardStatistic)
                 .where(board.id.in(boardIds))
         ).fetch();
     }
