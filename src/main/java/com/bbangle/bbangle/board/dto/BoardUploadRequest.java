@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.delivery.DeliveryCompany;
 import com.bbangle.bbangle.store.domain.Store;
@@ -18,26 +19,38 @@ public class BoardUploadRequest {
     private int freeShippingConditions;
     private DeliveryCompany deliveryCompany;
     private List<ProductRequest> productRequests;
-    private ProductInfoNoticeRequest productInfoNotice;
-    private BoardDetailRequest boardDetail;
+    private ProductInfoNoticeRequest productInfoNoticeRequest;
+    private BoardDetailRequest boardDetailRequest;
 
     private List<Long> productImgIds;
 
-    public Board toEntity(Store store) {
+    public Board toBoard(Store store) {
         Board board = new Board(
                 store,
                 boardTitle,
                 price,
                 discountRate,
                 deliveryFee,
-                freeShippingConditions
+                freeShippingConditions,
+                productInfoNoticeRequest.toEntity()
         );
-
-        List<Product> products = productRequests.stream()
-                .map(productRequest -> productRequest.toEntity(board))
-                .toList();
-        board.addProducts(products);
-
+        toProducts(board);
+        toBoardDetail(board);
         return board;
     }
+
+    private void toProducts(Board board) {
+        List<Product> products = this.productRequests
+                .stream()
+                .map(productRequest -> productRequest.toEntity(board))
+                .toList();
+
+        board.addProducts(products);
+    }
+
+    private void toBoardDetail(Board board) {
+        BoardDetail boardDetail = boardDetailRequest.toEntity(board);
+        board.addBoardDetails(List.of(boardDetail));
+    }
+
 }

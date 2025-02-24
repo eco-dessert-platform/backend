@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,8 +69,15 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<BoardDetail> boardDetails = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "productInfoNotice_id")
+    private ProductInfoNotice productInfoNotice;
 
     public Board updateProfile(String profile) {
         this.profile = profile;
@@ -81,8 +89,13 @@ public class Board extends BaseEntity {
         products.forEach(product -> product.setBoard(this));  // 양방향 관계 설정
     }
 
+    public void addBoardDetails(List<BoardDetail> boardDetails) {
+        this.boardDetails.addAll(boardDetails);
+        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this));  // 양방향 관계 설정
+    }
+
     public Board(Store store, String title, int price, int discountRate,
-                 int deliveryFee, Integer freeShippingConditions) {
+                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
         validate(price, discountRate, deliveryFee);
 
         this.store = store;
@@ -92,6 +105,7 @@ public class Board extends BaseEntity {
         this.deliveryFee = deliveryFee;
         this.freeShippingConditions = freeShippingConditions;
         this.isDeleted = false;
+        this.productInfoNotice = productInfoNotice;
     }
 
     private void validate(int price, int discountRate, int deliveryFee) {

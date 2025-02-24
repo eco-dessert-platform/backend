@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.BoardDetail;
-import com.bbangle.bbangle.board.domain.ProductInfoNotice;
 import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -29,27 +27,22 @@ public class BoardUploadService {
      * productImg - board 연결도 이 때 진행
      */
     @Transactional
-    public void upload(Long storeId, BoardUploadRequest request) {
+    public long upload(Long storeId, BoardUploadRequest request) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
 
-        Board board = saveBoardWithDetails(store, request);
+        Board board = saveBoardWithchildren(store, request);
 
         productImgService.connectImagesToBoard(
                 request.getProductImgIds(),
                 board);
+
+        return board.getId();
     }
 
-    private Board saveBoardWithDetails(Store store, BoardUploadRequest request) {
-        Board board = request.toEntity(store);
-        BoardDetail boardDetail = request.getBoardDetail()
-                .toEntity(board);
-        ProductInfoNotice productInfoNotice = request.getProductInfoNotice()
-                .toEntity(board);
-
+    private Board saveBoardWithchildren(Store store, BoardUploadRequest request) {
+        Board board = request.toBoard(store);
         Board savedBoard = boardRepository.save(board);
-        boardDetailRepository.save(boardDetail);
-        productInfoNoticeRepository.save(productInfoNotice);
         return savedBoard;
     }
 }

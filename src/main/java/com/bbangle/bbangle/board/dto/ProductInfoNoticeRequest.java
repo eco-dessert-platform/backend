@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.ProductInfoNotice;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,7 @@ public class ProductInfoNoticeRequest {
     private String customerWaring; // 소비자 안전을 위한 주의사항
     private String importFood;    // 수입 식품의 경우
 
-    public ProductInfoNotice toEntity(Board board) {
+    public ProductInfoNotice toEntity() {
         return new ProductInfoNotice(
                 productName,
                 foodType,
@@ -36,8 +35,7 @@ public class ProductInfoNoticeRequest {
                 nutritionInfo,
                 transgenic,
                 customerWaring,
-                importFood,
-                board
+                importFood
         );
     }
 }
