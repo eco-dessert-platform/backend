@@ -1,26 +1,12 @@
 package com.bbangle.bbangle.board.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.ConstraintMode;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 @Table(name = "product")
 @Entity
@@ -112,4 +98,18 @@ public class Product {
     @NotNull
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
+
+    // True인 태그 스트링 리스트로 만들어 반환
+    public List<String> getTags() {
+        return Stream.of(
+                Map.entry(glutenFreeTag, TagEnum.GLUTEN_FREE.label()),
+                Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN.label()),
+                Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE.label()),
+                Map.entry(veganTag, TagEnum.VEGAN.label()),
+                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label())
+            )
+            .filter(Map.Entry::getKey)
+            .map(Map.Entry::getValue)
+            .toList();
+    }
 }
