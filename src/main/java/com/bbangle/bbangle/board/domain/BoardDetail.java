@@ -42,4 +42,8 @@ public class BoardDetail {
 
     @Lob
     private String content;
+
+    public void updateBoard(Board board) {
+        this.board = board;
+    }
 }

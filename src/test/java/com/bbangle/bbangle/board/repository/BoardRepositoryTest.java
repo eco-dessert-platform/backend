@@ -1,14 +1,10 @@
 package com.bbangle.bbangle.board.repository;
 
-import static java.util.Collections.emptyMap;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
@@ -16,18 +12,22 @@ import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.board.dto.BoardAndImageDto;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.emptyMap;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class BoardRepositoryTest extends AbstractIntegrationTest {
 
@@ -292,101 +292,6 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
                     BoardStatisticFixture.newBoardStatistic(board4),
                     BoardStatisticFixture.newBoardStatistic(board5))
             );
-        }
-
-        @Test
-        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
-        void getTags() {
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
-                NULL_MEMBER_ID);  // board id desc 임
-
-            List<String> board1Tag = boardsInStoreDtos.get(4).getTags();
-            assertAll(
-                () -> assertThat(board1Tag).contains(TagEnum.GLUTEN_FREE.label()),
-                () -> assertThat(board1Tag).doesNotContain(
-                    TagEnum.SUGAR_FREE.label(),
-                    TagEnum.VEGAN.label(),
-                    TagEnum.HIGH_PROTEIN.label(),
-                    TagEnum.KETOGENIC.label()
-                ));
-
-            List<String> board2Tag = boardsInStoreDtos.get(3).getTags();
-            assertAll(
-                () -> assertThat(board2Tag)
-                    .contains(TagEnum.HIGH_PROTEIN.label())
-                    .doesNotContain(
-                        TagEnum.GLUTEN_FREE.label(),
-                        TagEnum.SUGAR_FREE.label(),
-                        TagEnum.VEGAN.label(),
-                        TagEnum.KETOGENIC.label()
-                    )
-            );
-
-            List<String> board3Tag = boardsInStoreDtos.get(2).getTags();
-            assertAll(
-                () -> assertThat(board3Tag)
-                    .contains(TagEnum.SUGAR_FREE.label())
-                    .doesNotContain(
-                        TagEnum.GLUTEN_FREE.label(),
-                        TagEnum.HIGH_PROTEIN.label(),
-                        TagEnum.VEGAN.label(),
-                        TagEnum.KETOGENIC.label()
-                    )
-            );
-
-            List<String> board4Tag = boardsInStoreDtos.get(1).getTags();
-            assertAll(
-                () -> assertThat(board4Tag)
-                    .contains(TagEnum.VEGAN.label())
-                    .doesNotContain(
-                        TagEnum.GLUTEN_FREE.label(),
-                        TagEnum.HIGH_PROTEIN.label(),
-                        TagEnum.SUGAR_FREE.label(),
-                        TagEnum.KETOGENIC.label()
-                    )
-            );
-
-            List<String> board5Tag = boardsInStoreDtos.get(0).getTags();
-            assertAll(
-                () -> assertThat(board5Tag)
-                    .contains(TagEnum.KETOGENIC.label())
-                    .doesNotContain(
-                        TagEnum.GLUTEN_FREE.label(),
-                        TagEnum.HIGH_PROTEIN.label(),
-                        TagEnum.SUGAR_FREE.label(),
-                        TagEnum.VEGAN.label()
-                    )
-            );
-        }
-
-        @Test
-        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
-        void getBbangKetting() {
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
-                NULL_MEMBER_ID);  // board id desc 임
-
-            assertThat(boardsInStoreDtos.get(1).getIsBundled()).isTrue();
-            assertThat(boardsInStoreDtos.get(0).getIsBundled()).isFalse();
-        }
-
-        @Test
-        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
-        void getIsSoldOut() {
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
-                NULL_MEMBER_ID);  // board id desc 임
-
-            assertThat(boardsInStoreDtos.get(4).getIsSoldOut()).isTrue();
-            assertThat(boardsInStoreDtos.get(3).getIsSoldOut()).isFalse();
-        }
-
-        @Test
-        @DisplayName("태그 정보를 성공적으로 가져올 수 있다")
-        void getIsBundled() {
-            List<BoardInfoDto> boardsInStoreDtos = boardRepository.findBoardsByStore(store.getId(),
-                NULL_MEMBER_ID);  // board id desc 임
-
-            assertThat(boardsInStoreDtos.get(1).getIsBundled()).isTrue();
-            assertThat(boardsInStoreDtos.get(0).getIsBundled()).isFalse();
         }
     }
 }

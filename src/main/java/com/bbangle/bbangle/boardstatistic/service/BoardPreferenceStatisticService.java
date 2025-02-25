@@ -69,7 +69,7 @@ public class BoardPreferenceStatisticService {
             unmatchedIdList);
         for(BoardPreferenceStatistic preferenceStatistic : unmatchedBasicScore) {
             for(BoardStatistic basicStatistic : boardStatisticList){
-                if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoardId())){
+                if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoard().getId())){
                     preferenceStatistic.updateToBasicBoardScore(basicStatistic.getBasicScore());
                     preferenceStatistic.updatePreferenceScore();
                 }
