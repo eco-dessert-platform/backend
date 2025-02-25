@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.domain;
 
-import com.bbangle.bbangle.board.domain.Board;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -15,11 +14,13 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(name = "product_img")
 @Entity
 @Builder
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductImg {
@@ -35,4 +36,7 @@ public class ProductImg {
     @Column(name = "url")
     private String url;
 
+    public void updateBoard(Board board) {
+        this.board = board;
+    }
 }
