@@ -42,7 +42,6 @@ public class BoardUploadService {
 
     private Board saveBoardWithchildren(Store store, BoardUploadRequest request) {
         Board board = request.toBoard(store);
-        Board savedBoard = boardRepository.save(board);
-        return savedBoard;
+        return boardRepository.save(board);
     }
 }
