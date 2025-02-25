@@ -16,14 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
 
 @Table(name = "product")
 @Entity
@@ -141,5 +134,18 @@ public class Product {
         if (!monday && !tuesday && !wednesday && !thursday && !friday && !saturday && !sunday) {
             throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_DELIVERY_DAY);
         }
+    }  
+    // True인 태그 스트링 리스트로 만들어 반환
+    public List<String> getTags() {
+        return Stream.of(
+                Map.entry(glutenFreeTag, TagEnum.GLUTEN_FREE.label()),
+                Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN.label()),
+                Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE.label()),
+                Map.entry(veganTag, TagEnum.VEGAN.label()),
+                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label())
+            )
+            .filter(Map.Entry::getKey)
+            .map(Map.Entry::getValue)
+            .toList();
     }
 }

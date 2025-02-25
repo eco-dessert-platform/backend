@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -79,6 +80,10 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "productInfoNotice_id")
     private ProductInfoNotice productInfoNotice;
 
+    @OneToOne(mappedBy = "board", fetch = FetchType.LAZY) // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
+    private BoardStatistic boardStatistic;
+
+
     public Board updateProfile(String profile) {
         this.profile = profile;
         return this;
@@ -86,12 +91,12 @@ public class Board extends BaseEntity {
 
     public void addProducts(List<Product> products) {
         this.products.addAll(products);
-        products.forEach(product -> product.setBoard(this));  // 양방향 관계 설정
+        products.forEach(product -> product.setBoard(this)); 
     }
 
     public void addBoardDetails(List<BoardDetail> boardDetails) {
         this.boardDetails.addAll(boardDetails);
-        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this));  // 양방향 관계 설정
+        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this)); 
     }
 
     public Board(Store store, String title, int price, int discountRate,
@@ -118,5 +123,26 @@ public class Board extends BaseEntity {
         if (deliveryFee < 0) {
             throw new BbangleException(BbangleErrorCode.INVALID_DELIVERY_FEE);
         }
+    }
+    public List<String> getTags() {
+        return products.stream()
+            .map(Product::getTags)
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
+    }
+
+    public boolean isSoldOut() {
+        return products.stream().allMatch(Product::isSoldout);
+    }
+
+    public boolean isBbangketing() {
+        return products.stream().allMatch(product -> Objects.nonNull(product.getOrderStartDate()));
+    }
+
+    public boolean isBundled() {
+        return products.stream().map(Product::getCategory)
+            .distinct()
+            .count() > 1;
     }
 }

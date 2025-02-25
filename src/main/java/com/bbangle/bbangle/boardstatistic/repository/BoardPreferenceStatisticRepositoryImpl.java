@@ -8,6 +8,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+
 @Repository
 @RequiredArgsConstructor
 public class BoardPreferenceStatisticRepositoryImpl implements
@@ -22,8 +24,8 @@ public class BoardPreferenceStatisticRepositoryImpl implements
     public List<BoardPreferenceStatistic> findUnmatchedBasicScore() {
         return queryFactory.select(preferenceStatistic)
             .from(preferenceStatistic)
-            .join(boardStatistic)
-            .on(boardStatistic.boardId.eq(preferenceStatistic.boardId))
+            .join(board).on(preferenceStatistic.boardId.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
             .where(boardStatistic.basicScore.ne(preferenceStatistic.basicScore))
             .fetch();
     }

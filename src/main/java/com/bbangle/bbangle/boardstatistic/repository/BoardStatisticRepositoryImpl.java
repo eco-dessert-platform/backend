@@ -7,6 +7,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+
 @Repository
 @RequiredArgsConstructor
 public class BoardStatisticRepositoryImpl implements BoardStatisticQueryDSLRepository {
@@ -18,18 +20,22 @@ public class BoardStatisticRepositoryImpl implements BoardStatisticQueryDSLRepos
 
     @Override
     public List<Long> findPopularBoardIds(int limit) {
-        List<Long> boardIds = queryFactory.select(boardStatistic.boardId)
+        List<Long> boardIds = queryFactory.select(board.id)
             .from(boardStatistic)
+            .join(boardStatistic.board, board)
             .orderBy(boardStatistic.basicScore.desc())
             .limit(limit)
             .fetch();
 
         return queryFactory.select(
-                boardStatistic.boardId
+                board.id
             )
             .from(boardStatistic)
-            .join(product).on(boardStatistic.boardId.eq(product.board.id))
-            .where(boardStatistic.boardId.in(boardIds).and(product.soldout.eq(false)))
+            .join(boardStatistic.board, board)
+            .join(board.products, product)
+            .where(
+                board.id.in(boardIds),
+                product.soldout.eq(false))
             .orderBy(boardStatistic.basicScore.asc())
             .fetch()
             .stream()

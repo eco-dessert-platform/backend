@@ -5,6 +5,7 @@ import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
 import com.bbangle.bbangle.wishlist.dao.QWishListStatisticDao;
 import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardQueryDSLRepository;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -65,6 +66,15 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
         )).from(wishListBoard)
             .where(wishListBoard.boardId.in(boardWishUpdateId))
             .groupBy(wishListBoard.boardId)
+            .fetch();
+    }
+
+    @Override
+    public List<WishListBoard> findByMemberIdAndBoardIds(Long memberId, List<Long> boards) {
+        return queryFactory.selectFrom(wishListBoard)
+            .where(
+                wishListBoard.memberId.eq(memberId),
+                wishListBoard.boardId.in(boards))
             .fetch();
     }
 
