@@ -18,12 +18,12 @@ public class Nutrient {
 
     public static Nutrient from(Product product) {
         return Nutrient.builder()
-            .sugars(product.getSugars())
-            .protein(product.getProtein())
-            .carbohydrates(product.getCarbohydrates())
-            .fat(product.getFat())
-            .weight(product.getWeight())
-            .calories(product.getCalories())
+            .sugars(product.getNutrition().getSugars())
+            .protein(product.getNutrition().getProtein())
+            .carbohydrates(product.getNutrition().getCarbohydrates())
+            .fat(product.getNutrition().getFat())
+            .weight(product.getNutrition().getWeight())
+            .calories(product.getNutrition().getCalories())
             .build();
     }
 

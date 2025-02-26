@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.board.service.BoardUploadService;
 import com.bbangle.bbangle.board.service.ProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -25,6 +27,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +46,15 @@ public class BoardController {
     private final StoreService storeService;
     private final ReviewService reviewService;
     private final RecommendBoardService recommendBoardService;
+    private final BoardUploadService boardUploadService;
+
+    @PostMapping("/board/{storeId}")
+    public CommonResult upload(@PathVariable Long storeId,
+                               @RequestBody BoardUploadRequest request) {
+        boardUploadService.upload(storeId, request);
+        return responseService.getSuccessResult();
+    }
+
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(

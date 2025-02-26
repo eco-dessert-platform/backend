@@ -27,5 +27,4 @@ public enum Category {
             .anyMatch(e -> e.name()
                 .equals(category));
     }
-
 }

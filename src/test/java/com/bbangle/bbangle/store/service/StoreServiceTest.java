@@ -124,24 +124,24 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
             board1 = fixtureBoard(Map.of(
                 "store", store, "title", TEST_TITLE,
-                "productList", List.of(glutenFreeTagProduct)
+                "products", List.of(glutenFreeTagProduct)
             ));
             board2 = fixtureBoard(Map.of(
                 "store", store, "title", TEST_TITLE,
-                "productList", List.of(highProteinTagProduct)
+                "products", List.of(highProteinTagProduct)
             ));
             board3 = fixtureBoard(Map.of(
                 "store", store, "title", TEST_TITLE,
-                "productList", List.of(sugarFreeTagProduct)
+                "products", List.of(sugarFreeTagProduct)
             ));
             board4 = fixtureBoard(Map.of(
                 "store", store, "title", TEST_TITLE,
-                "productList", List.of(veganTagProduct, veganTagProduct2)
+                "products", List.of(veganTagProduct, veganTagProduct2)
             ));
 
             board5 = fixtureBoard(Map.of(
                 "store", store, "title", TEST_TITLE,
-                "productList", List.of(ketogenicTagProduct, ketogenicTagProduct2)
+                "products", List.of(ketogenicTagProduct, ketogenicTagProduct2)
             ));
 
             boardStatisticRepository.saveAll(
