@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -62,7 +61,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         List<Long> boardIds = new ArrayList<>();
         for (int i = 0; 3 > i; i++) {
             Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
             boardIds.add(board.getId());
             boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         }
@@ -87,7 +86,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
             double score = i;
 
             Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
             BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
             boardStatisticRepository.save(boardStatistic);
             boardIds.add(board.getId());
@@ -111,7 +110,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         for (int i = 0; 3 > i; i++) {
             Product product = fixtureProduct(Map.of("glutenFreeTag", true));
             boardIds.add(
-                fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false)).getId());
+                fixtureBoard(Map.of("products", List.of(product), "isDeleted", false)).getId());
         }
 
         FilterRequest filterRequest = FilterRequest.builder()
@@ -133,7 +132,7 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
             double score = i;
 
             Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("productList", List.of(product), "isDeleted", false));
+            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
             BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
             boardStatisticRepository.save(boardStatistic);
             boardIds.add(board.getId());

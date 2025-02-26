@@ -1,12 +1,32 @@
 package com.bbangle.bbangle.board.domain;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.google.firebase.database.annotations.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "product")
 @Entity
@@ -50,24 +70,6 @@ public class Product {
     @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
 
-    @Column(name = "sugars")
-    private Integer sugars;
-
-    @Column(name = "protein")
-    private Integer protein;
-
-    @Column(name = "carbohydrates")
-    private Integer carbohydrates;
-
-    @Column(name = "fat")
-    private Integer fat;
-
-    @Column(name = "weight")
-    private Integer weight;
-
-    @Column(name = "calories")
-    private Integer calories;
-
     @Column(name = "monday", columnDefinition = "tinyint")
     private boolean monday;
 
@@ -99,6 +101,50 @@ public class Product {
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
 
+    private int stock;
+
+    @Embedded
+    private Nutrition nutrition;
+
+    public Product(Board board, String title, int price, Category category, int stock,
+                   boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,
+                   boolean ketogenicTag, boolean monday, boolean tuesday, boolean wednesday,
+                   boolean thursday, boolean friday, boolean saturday, boolean sunday,
+                   Nutrition nutrition) {
+
+        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
+
+        this.board = board;
+        this.title = title;
+        this.price = price;
+        this.category = category;
+        this.stock = stock;
+        this.glutenFreeTag = glutenFreeTag;
+        this.highProteinTag = highProteinTag;
+        this.sugarFreeTag = sugarFreeTag;
+        this.veganTag = veganTag;
+        this.ketogenicTag = ketogenicTag;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
+        this.nutrition = nutrition;
+        this.soldout = false;
+    }
+
+    private void validate(String title,
+                          boolean monday, boolean tuesday, boolean wednesday,
+                          boolean thursday, boolean friday, boolean saturday, boolean sunday) {
+        if(title.length() < 3 || title.length() > 50) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_NAME);
+        }
+        if (!monday && !tuesday && !wednesday && !thursday && !friday && !saturday && !sunday) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_DELIVERY_DAY);
+        }
+    }  
     // True인 태그 스트링 리스트로 만들어 반환
     public List<String> getTags() {
         return Stream.of(

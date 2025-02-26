@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
-class S3Service {
+public class S3Service {
 
   private final AmazonS3 amazonS3;
 
