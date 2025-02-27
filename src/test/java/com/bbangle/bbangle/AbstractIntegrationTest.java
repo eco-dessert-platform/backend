@@ -163,7 +163,7 @@ public abstract class AbstractIntegrationTest {
     protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
         ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
                 WishListFolder.class);
-        setBuilderParams(params, builder);
+        setBuilderParams(params, builder, WishListFolder.class);
 
         if (!params.containsKey("member")) {
             Member member = fixtureMember(emptyMap());
@@ -175,14 +175,14 @@ public abstract class AbstractIntegrationTest {
 
     protected Member fixtureMember(Map<String, Object> params) {
         ArbitraryBuilder<Member> builder = fixtureMonkey.giveMeBuilder(Member.class);
-        setBuilderParams(params, builder);
+        setBuilderParams(params, builder, Member.class);
 
         return memberRepository.save(builder.sample());
     }
 
     protected Store fixtureStore(Map<String, Object> params) {
         ArbitraryBuilder<Store> builder = fixtureMonkey.giveMeBuilder(Store.class);
-        setBuilderParams(params, builder);
+        setBuilderParams(params, builder, Store.class);
 
         if (!params.containsKey("wishListStoreList")) {
             builder = builder.set("wishListStores", null); // store wishlist가 없으면 에러나서 추가
@@ -193,35 +193,20 @@ public abstract class AbstractIntegrationTest {
 
     protected Product fixtureProduct(Map<String, Object> params) {
         ArbitraryBuilder<Product> builder = fixtureMonkey.giveMeBuilder(Product.class);
-        setBuilderParams(params, builder);
-        builder = builder.set("id", null);
-
-        if (!params.containsKey("board")) {
-            builder = builder.set("board", null); // 양방향 참조 관계이므로 board 가 있으면 에러나서 추가
-        }
+        setBuilderParams(params, builder, Product.class);
 
         return builder.sample();
     }
 
     protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
         ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
-        setBuilderParams(params, builder);
-
-        if (!params.containsKey("board")) {
-            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
-        }
-
-        BoardDetail sample = builder.sample();
-        return boardDetailRepository.save(sample);
+        setBuilderParams(params, builder, BoardDetail.class);
+        return builder.sample();
     }
 
     protected ProductImg fixtureBoardImage(Map<String, Object> params) {
         ArbitraryBuilder<ProductImg> builder = fixtureMonkey.giveMeBuilder(ProductImg.class);
-        setBuilderParams(params, builder);
-
-        if (!params.containsKey("board")) {
-            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
-        }
+        setBuilderParams(params, builder, ProductImg.class);
 
         ProductImg sample = builder.sample();
         return boardImgRepository.save(sample);
@@ -230,7 +215,7 @@ public abstract class AbstractIntegrationTest {
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
                 BoardStatistic.class);
-        setBuilderParams(params, builder);
+        setBuilderParams(params, builder, BoardStatistic.class);
 
         if (!params.containsKey("board")) {
             Board board = fixtureBoard(emptyMap());
@@ -242,38 +227,107 @@ public abstract class AbstractIntegrationTest {
 
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
-        setBuilderParams(params, builder);
-        builder = builder.set("id", null);
-
-        if (!params.containsKey("store")) {
-            Store store = fixtureStore(emptyMap());
-            builder = builder.set("store", store);
-        }
-
-        if (!params.containsKey("productList")) {
-            List<Product> products = Collections.singletonList(fixtureProduct(emptyMap()));
-            builder = builder.set("products", products);
-        }
-
-        Board sample = builder.sample();
-        sample.getProducts().forEach(product -> product.setBoard(sample));
-        Board board = boardRepository.save(sample);
-
-        return board;
+        builder.set("isDeleted", false);
+        setBuilderParams(params, builder, Board.class);
+        return builder.sample();
     }
 
+    private ProductInfoNotice fixtureProductInfoNotice(Map<String, Object> params) {
+        ArbitraryBuilder<ProductInfoNotice> builder = fixtureMonkey.giveMeBuilder(
+                ProductInfoNotice.class);
+        setBuilderParams(params, builder, ProductInfoNotice.class);
+
+        return builder.sample();
+    }
 
     protected Review fixtureReview(Map<String, Object> params) {
         ArbitraryBuilder<Review> builder = fixtureMonkey.giveMeBuilder(Review.class);
-        setBuilderParams(params, builder);
+        setBuilderParams(params, builder, Review.class);
 
         return reviewRepository.save(builder.sample());
     }
 
-    private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder) {
+    private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder, Class<?> targetClass) {
         for (Entry<String, Object> entry : params.entrySet()) {
-            builder = builder.set(entry.getKey(), entry.getValue());
+            if (isBidirectional(entry.getValue(), targetClass)) {
+                // 양방향 관계일 때 Vaues.just로 넘겨줘야 순환참조가 걸리지 않습니다.
+                builder = builder.set(entry.getKey(), Values.just(entry.getValue()));
+            } else {
+                builder = builder.set(entry.getKey(), entry.getValue());
+            }
         }
     }
 
+    private boolean isBidirectional(Object entity, Class<?> builderClass) {
+        if (entity == null || builderClass == null) {
+            return false;
+        }
+
+        // 실제 엔티티 클래스가 아닌 경우 즉시 반환(기본 타입, 래퍼 클래스 등)
+        Class<?> entityClass = entity.getClass();
+        if (entityClass.isPrimitive() || entityClass.isEnum() ||
+                (entityClass.getPackageName() != null &&
+                        (entityClass.getPackageName().equals("java.lang") ||
+                                entityClass.getPackageName().equals("java.math")))) {
+            return false;
+        }
+
+        try {
+            for (Field field : entityClass.getDeclaredFields()) {
+                // 필드 타입 확인
+                Class<?> fieldType = field.getType();
+
+                // final, static, transient 필드 제외
+                if (Modifier.isFinal(field.getModifiers()) ||
+                        Modifier.isStatic(field.getModifiers()) ||
+                        Modifier.isTransient(field.getModifiers())) {
+                    continue;
+                }
+
+                // JPA 어노테이션 확인
+                boolean hasOneToMany = field.isAnnotationPresent(OneToMany.class);
+                boolean hasManyToOne = field.isAnnotationPresent(ManyToOne.class);
+                boolean hasOneToOne = field.isAnnotationPresent(OneToOne.class);
+
+                // 어노테이션이 없으면 계속 진행
+                if (!hasOneToMany && !hasManyToOne && !hasOneToOne) {
+                    continue;
+                }
+
+                // 이제 안전하게 필드에 접근
+                field.setAccessible(true);
+
+                // OneToMany 관계 확인 - List 필드 처리
+                if (hasOneToMany) {
+                    try {
+                        Object fieldValue = field.get(entity);
+                        if (fieldValue instanceof List<?> list) {
+                            for (Object child : list) {
+                                if (child != null && builderClass.isInstance(child)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println(
+                                "Error accessing OneToMany field " + field.getName() + ": " + e.getMessage());
+                    }
+                }
+
+                // ManyToOne 관계 확인
+                if (hasManyToOne && builderClass.isAssignableFrom(fieldType)) {
+                    return true;
+                }
+
+                // OneToOne 관계 확인
+                if (hasOneToOne && builderClass.isAssignableFrom(fieldType)) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error checking bidirectional relationship: " + e.getMessage());
+        }
+
+        return false;
+    }
 }
