@@ -44,11 +44,16 @@ import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.customizer.Values;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -163,7 +168,7 @@ public abstract class AbstractIntegrationTest {
     protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
         ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
                 WishListFolder.class);
-        setBuilderParams(params, builder, WishListFolder.class);
+        setBuilderParams(params, builder);
 
         if (!params.containsKey("member")) {
             Member member = fixtureMember(emptyMap());
@@ -175,14 +180,14 @@ public abstract class AbstractIntegrationTest {
 
     protected Member fixtureMember(Map<String, Object> params) {
         ArbitraryBuilder<Member> builder = fixtureMonkey.giveMeBuilder(Member.class);
-        setBuilderParams(params, builder, Member.class);
+        setBuilderParams(params, builder);
 
         return memberRepository.save(builder.sample());
     }
 
     protected Store fixtureStore(Map<String, Object> params) {
         ArbitraryBuilder<Store> builder = fixtureMonkey.giveMeBuilder(Store.class);
-        setBuilderParams(params, builder, Store.class);
+        setBuilderParams(params, builder);
 
         if (!params.containsKey("wishListStoreList")) {
             builder = builder.set("wishListStores", null); // store wishlist가 없으면 에러나서 추가
@@ -193,20 +198,20 @@ public abstract class AbstractIntegrationTest {
 
     protected Product fixtureProduct(Map<String, Object> params) {
         ArbitraryBuilder<Product> builder = fixtureMonkey.giveMeBuilder(Product.class);
-        setBuilderParams(params, builder, Product.class);
+        setBuilderParams(params, builder);
 
         return builder.sample();
     }
 
     protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
         ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
-        setBuilderParams(params, builder, BoardDetail.class);
+        setBuilderParams(params, builder);
         return builder.sample();
     }
 
     protected ProductImg fixtureBoardImage(Map<String, Object> params) {
         ArbitraryBuilder<ProductImg> builder = fixtureMonkey.giveMeBuilder(ProductImg.class);
-        setBuilderParams(params, builder, ProductImg.class);
+        setBuilderParams(params, builder);
 
         ProductImg sample = builder.sample();
         return boardImgRepository.save(sample);
@@ -215,7 +220,7 @@ public abstract class AbstractIntegrationTest {
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
                 BoardStatistic.class);
-        setBuilderParams(params, builder, BoardStatistic.class);
+        setBuilderParams(params, builder);
 
         if (!params.containsKey("board")) {
             Board board = fixtureBoard(emptyMap());
@@ -228,28 +233,28 @@ public abstract class AbstractIntegrationTest {
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
         builder.set("isDeleted", false);
-        setBuilderParams(params, builder, Board.class);
+        setBuilderParams(params, builder);
         return builder.sample();
     }
 
     private ProductInfoNotice fixtureProductInfoNotice(Map<String, Object> params) {
         ArbitraryBuilder<ProductInfoNotice> builder = fixtureMonkey.giveMeBuilder(
                 ProductInfoNotice.class);
-        setBuilderParams(params, builder, ProductInfoNotice.class);
+        setBuilderParams(params, builder);
 
         return builder.sample();
     }
 
     protected Review fixtureReview(Map<String, Object> params) {
         ArbitraryBuilder<Review> builder = fixtureMonkey.giveMeBuilder(Review.class);
-        setBuilderParams(params, builder, Review.class);
+        setBuilderParams(params, builder);
 
         return reviewRepository.save(builder.sample());
     }
 
-    private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder, Class<?> targetClass) {
+    private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder) {
         for (Entry<String, Object> entry : params.entrySet()) {
-            if (isBidirectional(entry.getValue(), targetClass)) {
+            if (isBidirectional(entry.getValue())) {
                 // 양방향 관계일 때 Vaues.just로 넘겨줘야 순환참조가 걸리지 않습니다.
                 builder = builder.set(entry.getKey(), Values.just(entry.getValue()));
             } else {
@@ -258,52 +263,52 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    private boolean isBidirectional(Object entity, Class<?> builderClass) {
-        if (entity == null || builderClass == null) {
+    private boolean isBidirectional(Object obj) {
+        if (obj == null) {
             return false;
         }
 
-        // 실제 엔티티 클래스가 아닌 경우 즉시 반환(기본 타입, 래퍼 클래스 등)
-        Class<?> entityClass = entity.getClass();
-        if (entityClass.isPrimitive() || entityClass.isEnum() ||
-                (entityClass.getPackageName() != null &&
-                        (entityClass.getPackageName().equals("java.lang") ||
-                                entityClass.getPackageName().equals("java.math")))) {
+        if (obj instanceof List<?> list) {
+            for (Object item : list) {
+                if (isBidirectional(item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        Class<?> objClass = obj.getClass();
+        if (!isEntityClass(objClass)) {
             return false;
         }
 
         try {
-            for (Field field : entityClass.getDeclaredFields()) {
-                // 필드 타입 확인
-                Class<?> fieldType = field.getType();
-
-                // final, static, transient 필드 제외
+            for (Field field : objClass.getDeclaredFields()) {
+                // Skip final, static, and transient fields
                 if (Modifier.isFinal(field.getModifiers()) ||
                         Modifier.isStatic(field.getModifiers()) ||
                         Modifier.isTransient(field.getModifiers())) {
                     continue;
                 }
 
-                // JPA 어노테이션 확인
                 boolean hasOneToMany = field.isAnnotationPresent(OneToMany.class);
                 boolean hasManyToOne = field.isAnnotationPresent(ManyToOne.class);
                 boolean hasOneToOne = field.isAnnotationPresent(OneToOne.class);
+                boolean hasManyToMany = field.isAnnotationPresent(ManyToMany.class);
 
-                // 어노테이션이 없으면 계속 진행
-                if (!hasOneToMany && !hasManyToOne && !hasOneToOne) {
+                if (!hasOneToMany && !hasManyToOne && !hasOneToOne && !hasManyToMany) {
                     continue;
                 }
 
-                // 이제 안전하게 필드에 접근
                 field.setAccessible(true);
 
-                // OneToMany 관계 확인 - List 필드 처리
                 if (hasOneToMany) {
                     try {
-                        Object fieldValue = field.get(entity);
-                        if (fieldValue instanceof List<?> list) {
-                            for (Object child : list) {
-                                if (child != null && builderClass.isInstance(child)) {
+                        Object fieldValue = field.get(obj);
+                        if (fieldValue instanceof Collection<?> collection) {
+                            for (Object child : collection) {
+                                if (child != null && isEntityClass(child.getClass()) &&
+                                        hasBidirectionalReference(child.getClass(), objClass)) {
                                     return true;
                                 }
                             }
@@ -314,20 +319,83 @@ public abstract class AbstractIntegrationTest {
                     }
                 }
 
-                // ManyToOne 관계 확인
-                if (hasManyToOne && builderClass.isAssignableFrom(fieldType)) {
-                    return true;
+                // Check ManyToOne relationship
+                if (hasManyToOne) {
+                    try {
+                        Class<?> fieldType = field.getType();
+                        if (isEntityClass(fieldType) &&
+                                hasBidirectionalReference(fieldType, objClass)) {
+                            return true;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error checking ManyToOne field " + field.getName() + ": " + e.getMessage());
+                    }
                 }
 
-                // OneToOne 관계 확인
-                if (hasOneToOne && builderClass.isAssignableFrom(fieldType)) {
-                    return true;
+                // Check OneToOne relationship
+                if (hasOneToOne) {
+                    try {
+                        Class<?> fieldType = field.getType();
+                        if (isEntityClass(fieldType) &&
+                                hasBidirectionalReference(fieldType, objClass)) {
+                            return true;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error checking OneToOne field " + field.getName() + ": " + e.getMessage());
+                    }
+                }
+
+                // Check ManyToMany relationship
+                if (hasManyToMany) {
+                    try {
+                        Object fieldValue = field.get(obj);
+                        if (fieldValue instanceof Collection<?> collection) {
+                            for (Object child : collection) {
+                                if (child != null && isEntityClass(child.getClass()) &&
+                                        hasBidirectionalReference(child.getClass(), objClass)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println(
+                                "Error accessing ManyToMany field " + field.getName() + ": " + e.getMessage());
+                    }
                 }
             }
         } catch (Exception e) {
             System.err.println("Error checking bidirectional relationship: " + e.getMessage());
         }
 
+        return false;
+    }
+
+    private boolean isEntityClass(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Entity.class);
+    }
+
+    private boolean hasBidirectionalReference(Class<?> targetClass, Class<?> sourceClass) {
+        for (Field field : targetClass.getDeclaredFields()) {
+            Class<?> fieldType = field.getType();
+
+            if (fieldType.equals(sourceClass)) {
+                return true;
+            }
+
+            if (Collection.class.isAssignableFrom(fieldType)) {
+                try {
+                    ParameterizedType paramType = (ParameterizedType) field.getGenericType();
+                    Type[] typeArgs = paramType.getActualTypeArguments();
+                    if (typeArgs.length > 0 && typeArgs[0] instanceof Class<?>) {
+                        Class<?> collectionType = (Class<?>) typeArgs[0];
+                        if (collectionType.equals(sourceClass)) {
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
         return false;
     }
 }
