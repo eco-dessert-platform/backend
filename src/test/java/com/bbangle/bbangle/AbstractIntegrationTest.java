@@ -7,6 +7,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.domain.ProductInfoNotice;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -19,6 +20,7 @@ import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -40,9 +42,13 @@ import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
-import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
+import com.navercorp.fixturemonkey.customizer.Values;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Collections;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -148,9 +154,7 @@ public abstract class AbstractIntegrationTest {
         updateTemplate.delete(STATISTIC_UPDATE_LIST);
     }
 
-    protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
-            .objectIntrospector(FieldReflectionArbitraryIntrospector.INSTANCE)
-            .build();
+    protected FixtureMonkey fixtureMonkey = FixtureMonkeyConfig.fixtureMonkey;
 
     /**
      * NOTE: param 에 변경하고자 하는 필드명 : 값 형식으로 주입하면 변경되어 insert 됨
