@@ -81,7 +81,7 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "productInfoNotice_id")
     private ProductInfoNotice productInfoNotice;
 
-    @OneToOne(mappedBy = "board", fetch = FetchType.LAZY) // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
+    @OneToOne(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL ) // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
     private BoardStatistic boardStatistic;
 
 
