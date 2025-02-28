@@ -21,6 +21,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,16 @@ public class FixtureMonkeyConfig {
                         context -> new ArbitraryIntrospectorResult(
                                 ArbitraryUtils.toCombinableArbitrary(
                                         Arbitraries.longs().greaterOrEqual(0L)  // 항상 양수 생성
+                                )
+                        )
+                )
+                .pushAssignableTypeArbitraryIntrospector(
+                        BigDecimal.class,
+                        context -> new ArbitraryIntrospectorResult(
+                                ArbitraryUtils.toCombinableArbitrary(
+                                        Arbitraries.bigDecimals()
+                                                .between(BigDecimal.valueOf(0), BigDecimal.valueOf(200))
+                                                .map(bd -> bd.setScale(2, RoundingMode.HALF_UP))
                                 )
                         )
                 )
@@ -146,16 +158,6 @@ public class FixtureMonkeyConfig {
                                 )
                         )
                 )
-                // 나중 참고자료를 위해 남겨놓음
-//                // 연관관계 필드 Null 아니도록
-//                .pushNullInjectGenerator(
-//                        new MatcherOperator<>(
-//                                p -> p.getAnnotation(OneToMany.class) != null
-//                                        || p.getAnnotation(ManyToOne.class) != null
-//                                        || p.getAnnotation(OneToOne.class) != null,
-//                                objectPropertyGeneratorContext -> NOT_NULL_INJECT
-//                        )
-//                )
                 .build();
     }
 
