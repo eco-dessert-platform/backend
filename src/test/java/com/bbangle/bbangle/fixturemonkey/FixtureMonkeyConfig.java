@@ -97,6 +97,15 @@ public class FixtureMonkeyConfig {
                         fixtureMonkey.giveMeBuilder(Object.class)
                                 .setPostCondition(entity -> {
                                     try {
+                                        if (!isEntityClass(entity.getClass())) {
+                                            return true; // 엔티티가 아니면 그냥 통과
+                                        }
+                                        // id 필드 널 설정 (해당 클래스에 id 필드가 있을 경우에만)
+                                        try {
+                                            setIdNull(entity);
+                                        } catch (Exception idEx) {
+                                            System.out.println(idEx.getMessage());
+                                        }
                                         // 현재 엔티티의 모든 필드를 가져옵니다 - TypeCache를 활용하여 성능 개선
                                         Map<String, Field> fields = TypeCache.getFieldsByName(entity.getClass());
 
