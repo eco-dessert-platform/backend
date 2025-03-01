@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixturemonkey;
 import static org.hibernate.sql.ast.SqlTreeCreationLogger.LOGGER;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.review.domain.Review;
@@ -16,6 +17,7 @@ import com.navercorp.fixturemonkey.api.jqwik.ArbitraryUtils;
 import com.navercorp.fixturemonkey.api.plugin.SimpleValueJqwikPlugin;
 import com.navercorp.fixturemonkey.api.type.TypeCache;
 import com.navercorp.fixturemonkey.jakarta.validation.plugin.JakartaValidationPlugin;
+import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -117,7 +119,6 @@ public class FixtureMonkeyConfig {
                                                     Modifier.isTransient(field.getModifiers())) {
                                                 continue;
                                             }
-
                                             field.setAccessible(true);
                                             Object fieldValue = field.get(entity);
 
@@ -126,7 +127,6 @@ public class FixtureMonkeyConfig {
                                                 for (Object child : list) {
                                                     // 자식 엔티티에서 부모를 참조하는 필드를 찾습니다
                                                     setParentReference(child, entity);
-                                                    setIdNull(child);
                                                 }
                                             }
 
@@ -143,6 +143,24 @@ public class FixtureMonkeyConfig {
                                                 if (fieldValue != null) {
                                                     setOneToOneReference(fieldValue, entity);
                                                 }
+                                            }
+
+                                            if (entity instanceof Member) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Product) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("soldout");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Board) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
                                             }
                                         }
                                         return true;
@@ -190,7 +208,7 @@ public class FixtureMonkeyConfig {
 
         for (Field parentField : parentFields.values()) {
             if (parentField.isAnnotationPresent(OneToMany.class) &&
-                    parentField.getType().equals(List.class)) {
+                    List.class.isAssignableFrom(parentField.getType())) {
                 parentField.setAccessible(true);
                 List<Object> children = (List<Object>) parentField.get(parent);
                 if (children != null && !children.contains(child)) {
@@ -219,5 +237,8 @@ public class FixtureMonkeyConfig {
         Field idField = entity.getClass().getDeclaredField("id");
         idField.setAccessible(true);
         idField.set(entity, null);
+    }
+    private static boolean isEntityClass(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Entity.class);
     }
 }
