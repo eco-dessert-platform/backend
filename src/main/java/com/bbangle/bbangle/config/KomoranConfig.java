@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class KomoranConfig {
+    private static final Komoran KOMORAN_INSTANCE = new Komoran(DEFAULT_MODEL.FULL);
+
     @Bean
     public Komoran komoran() {
-        return new Komoran(DEFAULT_MODEL.FULL);
+        return KOMORAN_INSTANCE;
     }
 }
 

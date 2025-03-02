@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.util;
 
+import com.bbangle.bbangle.config.KomoranConfig;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.domain.TokenType;
