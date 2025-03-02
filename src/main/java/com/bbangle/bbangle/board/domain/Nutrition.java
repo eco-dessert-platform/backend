@@ -14,7 +14,7 @@ public class Nutrition {
 
     private Integer weight; // 총 중량 (g)
 
-    private Integer servingSize; // 1회 제공량 (g)
+    private Integer servingWeight; // 1회 제공량 (g)
 
     private Integer carbohydrates; // 탄수화물 (g)
 

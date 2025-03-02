@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, ProductQueryDSLRepository {
-    @Query("SELECT p FROM Product p WHERE p.board.id = :boardId")
+
+    @Query("SELECT p FROM Board b JOIN b.products p WHERE b.id = :boardId")
     List<Product> findByBoardId(@Param("boardId") Long boardId);
 }
-
