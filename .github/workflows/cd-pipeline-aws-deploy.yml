@@ -83,5 +83,5 @@ jobs:
           key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
           port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
           script: |
-            chmod +x deploy-docker.sh
-            ./deploy-docker.sh
+            chmod +x main-docker.sh
+            ./main-docker.sh

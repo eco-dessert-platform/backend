@@ -1,4 +1,4 @@
-name: Dev 서버 CD 파이프라인 (메인 서버)
+name: Dev 서버 CD 파이프라인 (개발 서버)
 
 on:
   workflow_dispatch:
@@ -53,35 +53,35 @@ jobs:
 
       - name: 실행 jar 파일 복사
         run: |
-          cp build/libs/Bbangle-0.0.1-SNAPSHOT.jar ./
+          cp build/libs/Bbangle-0.0.1-SNAPSHOT.jar ./Bbangle-0.0.1-SNAPSHOT-DEV.jar
 
       - name: 기존 서버 내 jar 파일 삭제
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
           script: |
-            rm -f ~/docker/server/Bbangle-0.0.1-SNAPSHOT.jar
+            rm -f ~/docker/server/Bbangle-0.0.1-SNAPSHOT-DEV.jar
 
       - name: jar 파일 운영 서버 전송
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
-          source: "Bbangle-0.0.1-SNAPSHOT.jar"
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          source: "Bbangle-0.0.1-SNAPSHOT-DEV.jar"
           target: "~/docker/server"
 
       - name: 이미지 새로 build 및 docker 서버 재실행
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEV_AWS_SSH_HOST }}
-          username: ${{ secrets.DEV_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEV_AWS_SSH_KEY }}
-          port: ${{ secrets.DEV_AWS_SSH_PORT }}
+          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
           script: |
             chmod +x deploy-docker.sh
             ./deploy-docker.sh
