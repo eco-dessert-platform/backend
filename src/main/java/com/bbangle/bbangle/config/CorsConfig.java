@@ -18,16 +18,9 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://localhost:5000",
                         "http://localhost:3000",
                         "http://localhost:63342",
-                        "http://115.85.181.105:8000",
-                        "http://landing.bbangle.store",
-                        "http://api.bbangle.store",
-                        "http://www.bbangle.store",
                         "https://www.bbanggree.com",
                         "https://api.bbanggree.com",
-                        "https://api.bbangle.store",
-                        "https://www.bbangle.store",
-                        "http://115.85.181.105:3001",
-                            "https://main.d3uov82w7b8w2n.amplifyapp.com"
+                        "https://master.d2xvuesi0d3ssg.amplifyapp.com"
                     )
                     .allowedHeaders("*")
                     .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
