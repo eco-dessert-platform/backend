@@ -33,14 +33,9 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
         "http://localhost:3000",
-        "http://www.bbangle.store",
-        "http://api.bbangle.store",
-        "http://115.85.181.105:8000",
-        "https://www.bbangle.store",
-        "https://api.bbangle.store",
-        "http://115.85.181.105:3001",
         "https://www.bbanggree.com",
         "https://api.bbanggree.com",
+        "https://master.d2xvuesi0d3ssg.amplifyapp.com"
     };
     private final TokenProvider tokenProvider;
 
