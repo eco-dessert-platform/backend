@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.fixture.MemberFixture;
@@ -39,10 +40,10 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
             Store store = fixtureStore(Map.of());
 
             List<Product> products = List.of(
-                fixtureProduct(Map.of("category", Category.BREAD)),
-                fixtureProduct(Map.of("category", Category.SNACK)));
+                    fixtureProduct(Map.of("category", Category.BREAD)),
+                    fixtureProduct(Map.of("category", Category.SNACK)));
 
-            board = fixtureBoard(Map.of("store", store, "productList", products));
+            board = fixtureBoard(Map.of("store", store, "products", products));
         }
 
         @Test
@@ -50,7 +51,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         void getPopularBoard() {
             List<Long> boardIds = List.of(board.getId());
             Map<Long, Set<Category>> products = productRepository.getCategoryInfoByBoardId(
-                boardIds);
+                    boardIds);
 
             Set<Category> actualCategories = products.get(board.getId());
             Category[] expectCatetegories = new Category[]{Category.BREAD, Category.SNACK};
@@ -76,42 +77,39 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
             testBoard = fixtureBoard(Collections.emptyMap());
 
             testProduct = Product.builder()
-                .title("Sample Product")
-                .price(1000)
-                .category(Category.COOKIE) // 실제 Category 설정
-                .glutenFreeTag(true)
-                .highProteinTag(true)
-                .sugarFreeTag(true)
-                .veganTag(true)
-                .ketogenicTag(true)
-                .sugars(10)
-                .protein(5)
-                .carbohydrates(15)
-                .fat(3)
-                .weight(200)
-                .calories(500)
-                .monday(true)
-                .tuesday(true)
-                .wednesday(true)
-                .thursday(true)
-                .friday(true)
-                .saturday(true)
-                .sunday(true)
-                .orderStartDate(LocalDateTime.of(2024, 1, 1, 0, 0))
-                .orderEndDate(LocalDateTime.of(2024, 1, 7, 23, 59))
-                .soldout(false)
-                .board(testBoard)
-                .build();
+                    .title("Sample Product")
+                    .price(1000)
+                    .category(Category.COOKIE) // 실제 Category 설정
+                    .glutenFreeTag(true)
+                    .highProteinTag(true)
+                    .sugarFreeTag(true)
+                    .veganTag(true)
+                    .ketogenicTag(true)
+                    .nutrition(new Nutrition(
+                            200, 200, 15,
+                            10, 5, 3, 500))
+                    .monday(true)
+                    .tuesday(true)
+                    .wednesday(true)
+                    .thursday(true)
+                    .friday(true)
+                    .saturday(true)
+                    .sunday(true)
+                    .orderStartDate(LocalDateTime.of(2024, 1, 1, 0, 0))
+                    .orderEndDate(LocalDateTime.of(2024, 1, 7, 23, 59))
+                    .soldout(false)
+                    .board(testBoard)
+                    .build();
 
             productRepository.save(testProduct);
 
             testPush = Push.builder()
-                .productId(testProduct.getId())
-                .memberId(testMember.getId())
-                .pushType(PushType.DATE) // 실제 PushType 설정
-                .days("Monday,Friday")
-                .isActive(true)
-                .build();
+                    .productId(testProduct.getId())
+                    .memberId(testMember.getId())
+                    .pushType(PushType.DATE) // 실제 PushType 설정
+                    .days("Monday,Friday")
+                    .isActive(true)
+                    .build();
 
             pushRepository.save(testPush);
         }
@@ -120,7 +118,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         void testFindProductDtoById() {
             // When: 실제 서비스 메서드를 호출합니다.
             List<ProductDtoAtBoardDetail> result = productRepository.findProductDtoById(testMember.getId(),
-                testBoard.getId());
+                    testBoard.getId());
 
             // Then: 결과를 검증합니다.
             assertThat(result).isNotNull();
