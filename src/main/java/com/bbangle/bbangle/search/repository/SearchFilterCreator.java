@@ -1,4 +1,7 @@
-package com.bbangle.bbangle.search.repository.basic;
+package com.bbangle.bbangle.search.repository;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -14,19 +17,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchFilterCreator {
 
-    private static final QBoard board = QBoard.board;
-    private static final QProduct product = QProduct.product;
+    private final String keyword;
 
     private final FilterRequest filterRequest;
     private final BooleanBuilder builder = new BooleanBuilder();
 
     public BooleanBuilder create() {
+        addKeyword();
         addTagCondition();
         addPriceCondition();
         addCategoryCondition();
         addIsDeletedCondition();
 
         return builder;
+    }
+
+    private void addKeyword() {
+        if (Objects.nonNull(keyword)) {
+            builder.and(board.title.like("%" + keyword + "%"));
+        }
     }
 
     private void addCategoryCondition() {

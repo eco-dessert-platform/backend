@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.search.dto.response;
 
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.search.dto.SearchBoardResponseDto;
 import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
@@ -13,10 +13,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SearchResponse {
 
-    private List<BoardResponseDto> boards;
+    private List<SearchBoardResponseDto> boards;
     private Long itemAllCount;
 
-    public static SearchResponse of(List<BoardResponseDto> boardResponseDtos,
+    public static SearchResponse of(List<SearchBoardResponseDto> boardResponseDtos,
         Long itemAllCount) {
         return SearchResponse.builder()
             .boards(boardResponseDtos)
@@ -25,7 +25,7 @@ public class SearchResponse {
     }
 
     public static SearchResponse empty() {
-        List<BoardResponseDto> emptyBoardResponses = Collections.emptyList();
+        List<SearchBoardResponseDto> emptyBoardResponses = Collections.emptyList();
 
         return SearchResponse.builder()
             .boards(emptyBoardResponses)

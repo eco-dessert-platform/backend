@@ -2,19 +2,14 @@ package com.bbangle.bbangle.search.service;
 
 import com.bbangle.bbangle.board.dto.TitleDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.common.redis.domain.RedisEnum;
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
-import com.bbangle.bbangle.search.service.utils.TitleUtil;
 import jakarta.annotation.PostConstruct;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,77 +19,35 @@ import org.springframework.stereotype.Service;
 public class SearchLoadService {
 
     private static final int ONE_HOUR = 3_600_000;
-    private static final String BOARD_MIGRATION = "board";
     private static final int ONEDAY = 24;
-    private final BoardRepository boardRepository;
-    private final ProductRepository productRepository;
+    private static final String WORD_SPACING = " ";
+
     private final SearchRepository searchRepository;
-    private final RedisRepository redisRepository;
     private final KeywordUtil keywordUtil;
+    private final BoardRepository boardRepository;
+    private final BoardRepository productRepository;
     private final AutoCompleteUtil autoCompleteUtil;
-    private final TitleUtil titleUtil;
 
-//    @PostConstruct
-//    @Scheduled(cron = "0 0 0 * * *")
-    public void cacheKeywords() {
-        boolean isTodayMigrationCompleted = checkTodayMigration();
 
-        if (isTodayMigrationCompleted) { // 일에 한번만 업데이트
-            return;
-        }
-
-        List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
-        List<TitleDto> productTitleDtos = productRepository.findAllTitle();
-
-        List<TitleDto> boardTokenizedTitles = titleUtil.toTokenizer(boardTitleDtos);
-        List<TitleDto> productTokenizedTitles = titleUtil.toTokenizer(productTitleDtos);
-        boardTokenizedTitles.addAll(productTokenizedTitles);
-
-        Map<String, List<String>> mappingTitles = titleUtil.getTitleBoardIdsMapping(
-            boardTokenizedTitles);
-
-        cacheKeyword(mappingTitles);
-        setKeywordMigration();
-    }
-
-    private void cacheKeyword(Map<String, List<String>> mappingTitles) {
-        redisRepository.setStringList(RedisEnum.BOARD.name(), mappingTitles);
-    }
-
-    private void setKeywordMigration() {
-        redisRepository.setFromString(RedisEnum.MIGRATION.name(), BOARD_MIGRATION,
-            LocalDateTime.now().toString());
-    }
-
-//    @PostConstruct
-//    @Scheduled(cron = "0 0 0 * * *")
+    @PostConstruct
+    @Scheduled(cron = "0 0 0 * * *")
     public void cacheAutoComplete() {
         List<TitleDto> boardTitleDtos = boardRepository.findAllTitle();
         List<TitleDto> productTitleDtos = productRepository.findAllTitle();
 
-        List<TitleDto> boardTokenizedTitles = titleUtil.toTokenizer(boardTitleDtos);
-        List<TitleDto> productTokenizedTitles = titleUtil.toTokenizer(productTitleDtos);
-        boardTokenizedTitles.addAll(productTokenizedTitles);
+        List<TitleDto> tokenizedTitles = new ArrayList<>();
+        tokenizedTitles.addAll(tokenizeTitles(boardTitleDtos));
+        tokenizedTitles.addAll(tokenizeTitles(productTitleDtos));
 
-        List<String> titles = titleUtil.getTitles(boardTokenizedTitles);
+        List<String> titles = tokenizedTitles.stream().map(TitleDto::getTitle).toList();
+
         autoCompleteUtil.insertAll(titles);
     }
 
-    private boolean checkTodayMigration() {
-        String migrationDateTime = redisRepository.getString(RedisEnum.MIGRATION.name(),
-            BOARD_MIGRATION);
-
-        if (!migrationDateTime.isEmpty()) {
-            LocalDateTime migrationDate = LocalDateTime.parse(migrationDateTime,
-                DateTimeFormatter.ISO_DATE_TIME);
-            LocalDate today = LocalDate.now();
-
-            if (migrationDate.toLocalDate().isEqual(today)) {
-                return true;
-            }
-        }
-
-        return false;
+    private List<TitleDto> tokenizeTitles(List<TitleDto> titleDtos) {
+        return titleDtos.stream().filter(dto -> dto.getTitle() != null).flatMap(
+            dto -> Arrays.stream(dto.getTitle().split(WORD_SPACING))
+                .map(word -> new TitleDto(dto.getBoardId(), word))).toList();
     }
 
     @Scheduled(fixedRate = ONE_HOUR)
@@ -105,7 +58,6 @@ public class SearchLoadService {
     }
 
     private LocalDateTime getOneDayAgo() {
-        return LocalDateTime.now()
-            .minusHours(ONEDAY);
+        return LocalDateTime.now().minusHours(ONEDAY);
     }
 }
