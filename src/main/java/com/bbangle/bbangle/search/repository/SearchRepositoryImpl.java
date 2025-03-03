@@ -1,14 +1,18 @@
 package com.bbangle.bbangle.search.repository;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.search.domain.QSearch.search;
+import static com.bbangle.bbangle.store.domain.QStore.store;
+
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.search.domain.QSearch;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.QKeywordDto;
-import com.bbangle.bbangle.search.repository.basic.SearchFilterCreator;
-import com.bbangle.bbangle.search.repository.basic.query.SearchQueryProviderResolver;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,41 +25,51 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
-    private static final QSearch search = QSearch.search;
+    private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
 
     private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
-
-    private final SearchQueryProviderResolver searchQueryProviderResolver;
-
     private final JPAQueryFactory queryFactory;
 
+
     @Override
-    public List<BoardResponseDao> getBoardResponseList(
-        List<Long> boardIds,
+    public List<Board> getBoardResponseList(
+        String keyword,
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId
     ) {
-        BooleanBuilder filter = new SearchFilterCreator(filterRequest).create();
-        BooleanBuilder cursorInfo = boardCursorGeneratorMapping
-            .mappingCursorGenerator(sort)
+        BooleanBuilder filter = new SearchFilterCreator(keyword, filterRequest).create();
+        BooleanBuilder cursorInfo = boardCursorGeneratorMapping.mappingCursorGenerator(sort)
             .getCursor(cursorId);
         OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
 
-        return searchQueryProviderResolver.resolve(sort)
-            .findBoards(boardIds, filter, cursorInfo, orderExpression);
+        return queryFactory.selectFrom(board)
+            .join(board.store, store).fetchJoin()
+            .leftJoin(board.products, product).fetchJoin()
+            .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+            .where(
+                cursorInfo,
+                filter)
+            .orderBy(orderExpression)
+            .limit(BOARD_PAGE_SIZE_PLUS_ONE)
+            .fetch();
     }
 
     @Override
     public Long getAllCount(
-        List<Long> boardIds,
-        FilterRequest filterRequest,
-        SortType sort
+        String keyword,
+        FilterRequest filterRequest
     ) {
-        BooleanBuilder filter = new SearchFilterCreator(filterRequest).create();
+        BooleanBuilder filter = new SearchFilterCreator(keyword, filterRequest).create();
 
-        return searchQueryProviderResolver.resolve(sort)
-            .getCount(boardIds, filter);
+        return queryFactory.select(board.id)
+            .distinct()
+            .from(product)
+            .join(board)
+            .on(product.board.id.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
+            .where(filter)
+            .fetch().stream().count();
     }
 
     @Override
@@ -97,4 +111,5 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             )
             .execute();
     }
+
 }

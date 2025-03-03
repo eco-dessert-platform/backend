@@ -142,9 +142,6 @@ dependencies {
     // Redis 의존성 추가
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // 자연어 처리 - 형태소 분석기
-    implementation 'com.github.shin285:KOMORAN:3.3.4'
-
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 

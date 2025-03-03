@@ -63,4 +63,5 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         "LIMIT 3")
     List<BoardInfoDto> findBestBoards(@Param("memberId") Long memberId,
         @Param("storeId") Long storeId);
+
 }
