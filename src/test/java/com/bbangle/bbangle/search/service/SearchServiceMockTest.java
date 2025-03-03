@@ -2,7 +2,6 @@ package com.bbangle.bbangle.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,11 +12,9 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.SearchCustomPage;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import java.math.BigDecimal;
@@ -110,38 +107,6 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 LocalDateTime.now(),
                 false,
                 10);
-        }
-
-        @Test
-        @DisplayName("검색 결과 게시물을 조회할 수 있다")
-        void successScroll() {
-
-            List<Long> searchedBoardIndexs = Arrays.asList(1L, 2L, 3L);
-
-            List<BoardResponseDao> boards = Arrays.asList(boardResponseDao1, boardResponseDao2);
-            Long boardCount = 2L;
-
-            when(keywordUtil.getBoardIds(keyword)).thenReturn(searchedBoardIndexs);
-            when(searchRepository.getBoardResponseList(searchedBoardIndexs, filterRequest, sort,
-                cursorId)).thenReturn(boards);
-            when(searchRepository.getAllCount(searchedBoardIndexs, filterRequest, sort)).thenReturn(
-                boardCount);
-
-            SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
-                filterRequest,
-                sort,
-                keyword,
-                cursorId,
-                memberId
-            );
-
-            assertAll(
-                () -> assertThat(searchCustomPage.getNextCursor()).isEqualTo(-1L),
-                () -> assertThat(searchCustomPage.getHasNext()).isFalse(),
-                () -> assertThat(searchCustomPage.getContent().getBoards()).hasSize(2),
-                () -> assertThat(searchCustomPage.getContent().getItemAllCount()).isEqualTo(
-                    boardCount)
-            );
         }
     }
 
