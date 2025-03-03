@@ -1,25 +1,28 @@
 package com.bbangle.bbangle.store.service;
 
+import static com.bbangle.bbangle.board.validator.BoardValidator.validateNotNull;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.CursorPageResponse;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static com.bbangle.bbangle.board.validator.BoardValidator.validateNotNull;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -47,13 +50,22 @@ public class StoreService {
     }
 
     public StoreDetailStoreDto getStoreResponse(Long memberId, Long storeId) {
-        return storeRepository.getStoreResponse(memberId, storeId);
+        Store store = storeRepository.findById(storeId)
+            .orElseThrow(() -> new BbangleException(STORE_NOT_FOUND));
+
+        if (Objects.isNull(memberId)) {
+            return StoreDetailStoreDto.create(store, WishListStore.createEmptyWishList());
+        }
+
+        WishListStore wishListStore = wishListStoreRepository.findWishListStore(memberId, storeId)
+            .orElse(WishListStore.createEmptyWishList());
+
+        return StoreDetailStoreDto.create(store, wishListStore);
     }
 
-
     public CursorPageResponse<BoardInfoDto> getBoardsInStore(Long memberId,
-                                                             Long storeId,
-                                                             Long boardIdAsCursorId) {
+        Long storeId,
+        Long boardIdAsCursorId) {
 
         List<Board> boards = boardRepository.findBoardsByStore(storeId, boardIdAsCursorId);
         List<BoardInfoDto> boardInfos = boards.stream().map(BoardInfoDto::create).toList();
@@ -66,8 +78,10 @@ public class StoreService {
         return CursorPageResponse.of(boardInfos, PAGE_SIZE, BoardInfoDto::getBoardId);
     }
 
-    private void updateWishListBoard(Long memberId, List<Long> boardIds, List<BoardInfoDto> boardInfos) {
-        Map<Long, Boolean> wishListBoardIds = wishListBoardRepository.findByMemberIdAndBoardIds(memberId, boardIds)
+    private void updateWishListBoard(Long memberId, List<Long> boardIds,
+        List<BoardInfoDto> boardInfos) {
+        Map<Long, Boolean> wishListBoardIds = wishListBoardRepository.findByMemberIdAndBoardIds(
+                memberId, boardIds)
             .stream()
             .collect(Collectors.toMap(
                 WishListBoard::getBoardId,

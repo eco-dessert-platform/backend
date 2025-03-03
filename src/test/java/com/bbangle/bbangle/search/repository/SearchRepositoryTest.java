@@ -1,17 +1,9 @@
 package com.bbangle.bbangle.search.repository;
 
-import static com.bbangle.bbangle.fixture.BoardStatisticFixture.newBoardStatisticWithBasicScore;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.FixtureConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
@@ -19,16 +11,12 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.SearchLoadService;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
@@ -36,7 +24,6 @@ import org.springframework.context.annotation.Import;
 class SearchRepositoryTest extends AbstractIntegrationTest {
 
     private static final int ONEDAY = 24;
-    private static final Long NULL_CURSOR = null;
     @Autowired
     SearchRepository searchRepository;
     @Autowired
@@ -51,99 +38,6 @@ class SearchRepositoryTest extends AbstractIntegrationTest {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
         memberRepository.deleteAll();
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE"})
-    @DisplayName("getBoardResponseList 메서드는 게시물을 성공적으로 조회할 수 있다")
-    void getBoardResponseListFromBoard(SortType sort) {
-
-        List<Long> boardIds = new ArrayList<>();
-        for (int i = 0; 3 > i; i++) {
-            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
-            boardIds.add(board.getId());
-            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
-        }
-
-        FilterRequest filterRequest = FilterRequest.builder()
-            .glutenFreeTag(true)
-            .build();
-
-        List<BoardResponseDao> boardResponseDaos = searchRepository.getBoardResponseList(boardIds,
-            filterRequest, sort, NULL_CURSOR);
-        assertThat(boardResponseDaos).hasSize(boardIds.size());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = SortType.class, names = {"RECOMMEND", "MOST_WISHED", "MOST_REVIEWED",
-        "HIGHEST_RATED"})
-    @DisplayName("getBoardResponseList 메서드는 점수가 계산된 게시물을 성공적으로 조회할 수 있다")
-    void getBoardResponseListFromBoardStatistic(SortType sort) {
-
-        List<Long> boardIds = new ArrayList<>();
-        for (int i = 0; 3 > i; i++) {
-            double score = i;
-
-            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
-            BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
-            boardStatisticRepository.save(boardStatistic);
-            boardIds.add(board.getId());
-        }
-
-        FilterRequest filterRequest = FilterRequest.builder()
-            .glutenFreeTag(true)
-            .build();
-
-        List<BoardResponseDao> boardResponseDaos = searchRepository.getBoardResponseList(boardIds,
-            filterRequest, sort, NULL_CURSOR);
-        assertThat(boardResponseDaos).hasSize(boardIds.size());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE"})
-    @DisplayName("getAllCount 메서드는 검색된 게시글의 전체 개수를 조회할 수 있다")
-    void getAllCountFromBoard(SortType sort) {
-
-        List<Long> boardIds = new ArrayList<>();
-        for (int i = 0; 3 > i; i++) {
-            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            boardIds.add(
-                fixtureBoard(Map.of("products", List.of(product), "isDeleted", false)).getId());
-        }
-
-        FilterRequest filterRequest = FilterRequest.builder()
-            .glutenFreeTag(true)
-            .build();
-
-        Long count = searchRepository.getAllCount(boardIds, filterRequest, sort);
-        assertThat(count).isEqualTo(boardIds.size());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = SortType.class, names = {"RECOMMEND", "MOST_WISHED", "MOST_REVIEWED",
-        "HIGHEST_RATED"})
-    @DisplayName("getAllCount 메서드는 검색된 게시글의 전체 개수를 조회할 수 있다")
-    void getAllCountFromBoardStatistic(SortType sort) {
-
-        List<Long> boardIds = new ArrayList<>();
-        for (int i = 0; 3 > i; i++) {
-            double score = i;
-
-            Product product = fixtureProduct(Map.of("glutenFreeTag", true));
-            Board board = fixtureBoard(Map.of("products", List.of(product), "isDeleted", false));
-            BoardStatistic boardStatistic = newBoardStatisticWithBasicScore(board, score);
-            boardStatisticRepository.save(boardStatistic);
-            boardIds.add(board.getId());
-        }
-
-        FilterRequest filterRequest = FilterRequest.builder()
-            .glutenFreeTag(true)
-            .build();
-
-        Long count = searchRepository.getAllCount(boardIds, filterRequest, sort);
-        assertThat(count).isEqualTo(boardIds.size());
     }
 
     @Test

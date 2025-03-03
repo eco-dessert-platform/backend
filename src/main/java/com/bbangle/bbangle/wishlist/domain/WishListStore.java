@@ -50,4 +50,8 @@ public class WishListStore extends BaseEntity {
     public void changeDeletedFalse(){
         this.isDeleted = false;
     }
+
+    public static WishListStore createEmptyWishList() {
+        return new WishListStore();
+    }
 }

@@ -29,6 +29,8 @@ public interface BoardQueryDSLRepository {
         Long memberId
     );
 
+
+
     List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId);
 
     List<Board> checkingNullRanking();
