@@ -99,15 +99,10 @@ public class FixtureMonkeyConfig {
                         fixtureMonkey.giveMeBuilder(Object.class)
                                 .setPostCondition(entity -> {
                                     try {
-                                        if (!isEntityClass(entity.getClass())) {
-                                            return true; // 엔티티가 아니면 그냥 통과
+                                        if (entity == null) { // entity가 null인지 확인
+                                            return true;
                                         }
-                                        // id 필드 널 설정 (해당 클래스에 id 필드가 있을 경우에만)
-                                        try {
-                                            setIdNull(entity);
-                                        } catch (Exception idEx) {
-                                            System.out.println(idEx.getMessage());
-                                        }
+
                                         // 현재 엔티티의 모든 필드를 가져옵니다 - TypeCache를 활용하여 성능 개선
                                         Map<String, Field> fields = TypeCache.getFieldsByName(entity.getClass());
 
@@ -127,6 +122,7 @@ public class FixtureMonkeyConfig {
                                                 for (Object child : list) {
                                                     // 자식 엔티티에서 부모를 참조하는 필드를 찾습니다
                                                     setParentReference(child, entity);
+                                                    setIdNull(child);
                                                 }
                                             }
 
@@ -142,6 +138,7 @@ public class FixtureMonkeyConfig {
                                             if (field.isAnnotationPresent(OneToOne.class)) {
                                                 if (fieldValue != null) {
                                                     setOneToOneReference(fieldValue, entity);
+                                                    setIdNull(fieldValue);
                                                 }
                                             }
 
@@ -158,6 +155,12 @@ public class FixtureMonkeyConfig {
                                             }
 
                                             if (entity instanceof Board) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Review) {
                                                 Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
                                                 isDeletedField.setAccessible(true);
                                                 isDeletedField.set(entity, false);
