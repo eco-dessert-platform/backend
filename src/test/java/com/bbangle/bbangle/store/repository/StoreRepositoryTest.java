@@ -12,13 +12,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class StoreRepositoryTest extends AbstractIntegrationTest {
 
     private static final String TEST_TITLE = "TestTitle";
-    private static final Long NULL_MEMBER_ID = null;
 
     @Nested
     @DisplayName("getStoreResponse 메서드는")
@@ -29,8 +29,12 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(Map.of("name", TEST_TITLE));
-            createWishListStore();
+            store = storeRepository.save(fixtureStore(emptyMap()));
+            member = memberRepository.save(Member.builder().build());
+            wishListStoreRepository.save(WishListStore.builder()
+                    .store(store)
+                    .member(member)
+                    .build());
         }
 
         @Test
@@ -40,7 +44,6 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
                 store.getId());
 
             assertThat(storeResponse.getIsWished(), is(true));
-            ;
         }
 
         @Test
@@ -51,14 +54,6 @@ class StoreRepositoryTest extends AbstractIntegrationTest {
                 store.getId());
 
             assertThat(storeResponse.getIsWished(), is(false));
-        }
-
-        void createWishListStore() {
-            member = memberRepository.save(Member.builder().build());
-            wishListStoreRepository.save(WishListStore.builder()
-                .store(store)
-                .member(member)
-                .build());
         }
     }
 }

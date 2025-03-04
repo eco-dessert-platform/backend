@@ -23,7 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 class StoreServiceTest extends AbstractIntegrationTest {
 
     private final String TEST_TITLE = "TestTitle";
@@ -56,7 +58,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(emptyMap());
+            store = storeRepository.save(fixtureStore(emptyMap()));
 
             Product glutenFreeTagProduct = fixtureProduct(Map.of(
                 "glutenFreeTag", true,
@@ -143,14 +145,14 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 "store", store, "title", TEST_TITLE,
                 "products", List.of(ketogenicTagProduct, ketogenicTagProduct2)
             ));
-
-            boardStatisticRepository.saveAll(
-                List.of(BoardStatisticFixture.newBoardStatistic(board1),
-                    BoardStatisticFixture.newBoardStatistic(board2),
-                    BoardStatisticFixture.newBoardStatistic(board3),
-                    BoardStatisticFixture.newBoardStatistic(board4),
-                    BoardStatisticFixture.newBoardStatistic(board5))
-            );
+            boardRepository.saveAll(List.of(board1, board2, board3, board4, board5));
+//            boardStatisticRepository.saveAll(
+//                List.of(BoardStatisticFixture.newBoardStatistic(board1),
+//                    BoardStatisticFixture.newBoardStatistic(board2),
+//                    BoardStatisticFixture.newBoardStatistic(board3),
+//                    BoardStatisticFixture.newBoardStatistic(board4),
+//                    BoardStatisticFixture.newBoardStatistic(board5))
+//            );
         }
 
         @Test

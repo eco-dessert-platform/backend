@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -31,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
 @Import(FixtureConfig.class)
 class SearchServiceTest extends AbstractIntegrationTest {
@@ -86,9 +89,8 @@ class SearchServiceTest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("getBoardList 메서드는")
+    @Transactional
     class GetSearchBoard {
-
-        private List<Long> boardIds;
 
         @ParameterizedTest
         @EnumSource(value = SortType.class, names = {"RECENT", "LOW_PRICE", "HIGH_PRICE",
@@ -96,7 +98,18 @@ class SearchServiceTest extends AbstractIntegrationTest {
         @DisplayName("성공적으로 스크롤을 사용할 수 있다")
         void successScroll(SortType sort) {
 
-            saveData();
+            List<Long> boardIds = new ArrayList<>();
+
+            for (int i = 0; i < 15; i++) {
+                Product product = fixtureProduct(Map.of("veganTag", true, "category", Category.COOKIE));
+                Board board = fixtureBoard(Map.of(
+                        "title", "비건베이커리",
+                        "price", 2000,
+                        "products", List.of(product)
+                ));
+                boardRepository.save(board);
+                boardIds.add(board.getId());
+            }
 
             FilterRequest filterRequest = FilterRequest.builder()
                 .category(Category.COOKIE)
@@ -158,45 +171,6 @@ class SearchServiceTest extends AbstractIntegrationTest {
             }
         }
 
-        void saveData() {
-            boardIds = new ArrayList<>();
-            for (long i = 0L; 15 > i; i++) {
-
-                Board board = fixtureBoard(Map.of(
-                    "id", i + 1,
-                    "title", "비건베이커리",
-                    "price", 2000,
-                    "isDeleted", false,
-                    "products", List.of()
-                ));
-
-                productFixture.veganCookie(board);
-
-                double score = i + 1;
-                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(
-                    board, score);
-                boardStatisticRepository.save(boardStatistic);
-                boardIds.add(board.getId());
-            }
-
-            for (long i = 15L; 30 > i; i++) {
-                Board board = fixtureBoard(Map.of(
-                    "id", i + 1,
-                    "title", "비건베이커리",
-                    "price", 2000,
-                    "isDeleted", true,
-                    "products", List.of()
-                ));
-
-                productFixture.veganCookie(board);
-
-                double score = i + 1;
-                BoardStatistic boardStatistic = BoardStatisticFixture.newBoardStatisticWithBasicScore(
-                    board, score);
-                boardStatisticRepository.save(boardStatistic);
-                boardIds.add(board.getId());
-            }
-        }
     }
 
     @Test

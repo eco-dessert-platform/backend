@@ -34,7 +34,7 @@ class BestBoardServiceTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(emptyMap());
+            store = storeRepository.save(fixtureStore(emptyMap()));
 
             firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
             secondBoard = boardRepository.save(BoardFixture.randomBoard(store));

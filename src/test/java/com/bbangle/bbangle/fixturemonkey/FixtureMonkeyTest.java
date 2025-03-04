@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.fixturemonkey;
 
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -108,7 +109,7 @@ class FixtureMonkeyTest extends AbstractIntegrationTest {
     @RepeatedTest(3)
     @DisplayName("fixtureBoard 파라미터로 store을 넘겨도 된다.")
     void test7() {
-        Store store = fixtureStore(Map.of());
+        Store store = storeRepository.save(fixtureStore(emptyMap()));
         boardRepository.save(fixtureBoard(Map.of("store", store)));
     }
 

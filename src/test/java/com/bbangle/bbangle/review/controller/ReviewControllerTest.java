@@ -10,9 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.image.domain.Image;
 import com.bbangle.bbangle.image.domain.ImageCategory;
 import com.bbangle.bbangle.member.domain.Member;
@@ -43,8 +41,6 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @BeforeEach
     public void setUp() {
         Board board = boardRepository.save(fixtureBoard(emptyMap()));
-        productRepository.save(ProductFixture.randomProduct(board));
-        boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
         Long boardId = board.getId();
         Member kakaoMember = MemberFixture.createKakaoMember();
         Member savedMember = memberRepository.save(kakaoMember);
@@ -81,16 +77,16 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @WithCustomMockUser
     void deleteReview() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(delete(BASE_PATH+reviewId))
+        mockMvc.perform(delete(BASE_PATH + reviewId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
     @Test
     @DisplayName("게시물에 있는 리뷰의 평점과 개수를 조회한다")
-    void getReviewRate() throws Exception{
+    void getReviewRate() throws Exception {
         Long boardId = boardRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(get("/api/v1/review/rate/"+boardId))
+        mockMvc.perform(get("/api/v1/review/rate/" + boardId))
                 .andExpect(jsonPath("$.result.rating").value("4.5"))
                 .andExpect(jsonPath("$.result.count").value(1))
                 .andExpect(status().isOk())
@@ -101,7 +97,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @DisplayName("게시물에 있는 리뷰 목록을 조회한다")
     void getReviews() throws Exception {
         Long boardId = boardRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(get("/api/v1/review/list/"+boardId))
+        mockMvc.perform(get("/api/v1/review/list/" + boardId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -112,7 +108,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     void insertLike() throws Exception {
         reviewLikeRepository.deleteAll();
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(post("/api/v1/review/like/"+reviewId))
+        mockMvc.perform(post("/api/v1/review/like/" + reviewId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -122,7 +118,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @WithCustomMockUser
     void removeLike() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(delete("/api/v1/review/like/"+reviewId))
+        mockMvc.perform(delete("/api/v1/review/like/" + reviewId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -139,9 +135,9 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("리뷰 대표 이미지를 조회한다")
-    void getReviewImages() throws Exception{
+    void getReviewImages() throws Exception {
         Long reviewId = reviewRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(get(BASE_PATH+"/image/"+reviewId))
+        mockMvc.perform(get(BASE_PATH + "/image/" + reviewId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -150,7 +146,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @DisplayName("내가 작성한 리뷰를 조회한다")
     @WithCustomMockUser
     void getMyReviews() throws Exception {
-        mockMvc.perform(get(BASE_PATH+"/myreview"))
+        mockMvc.perform(get(BASE_PATH + "/myreview"))
                 .andExpect(status().isOk())
                 .andDo(print());
 
@@ -160,16 +156,16 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @DisplayName("리뷰의 전체 사진을 조회한다")
     void getAllImagesByBoardId() throws Exception {
         Long boardId = boardRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(get(BASE_PATH+boardId+"/images"))
+        mockMvc.perform(get(BASE_PATH + boardId + "/images"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
     @Test
     @DisplayName("리뷰의 사진을 크게 본다")
-    void getImage() throws Exception{
+    void getImage() throws Exception {
         Long reviewImgId = imageRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(get(BASE_PATH+"/images/"+reviewImgId))
+        mockMvc.perform(get(BASE_PATH + "/images/" + reviewImgId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -177,9 +173,9 @@ class ReviewControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("리뷰의 사진을 삭제한다")
     @WithCustomMockUser
-    void deleteImage() throws Exception{
+    void deleteImage() throws Exception {
         Long reviewImgId = imageRepository.findAll().stream().findFirst().get().getId();
-        mockMvc.perform(delete(BASE_PATH+"/image/"+reviewImgId))
+        mockMvc.perform(delete(BASE_PATH + "/image/" + reviewImgId))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
