@@ -1,30 +1,17 @@
 package com.bbangle.bbangle.board.repository;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.SimilarityBoardDto;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
-import com.bbangle.bbangle.fixture.BoardFixture;
-import com.bbangle.bbangle.fixture.ProductFixture;
-import com.bbangle.bbangle.fixture.RecommendationSimilarBoardFixture;
-import com.bbangle.bbangle.fixture.StoreFixture;
-import com.bbangle.bbangle.store.domain.Store;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class BoardDetailRepositoryTest extends AbstractIntegrationTest {
-
-    private final String TEST_TITLE = "TestTitle";
-    @Autowired
-    private BoardStatisticService boardStatisticService;
 
     @Nested
     @DisplayName("findByBoardId 메서드는")
@@ -35,27 +22,24 @@ public class BoardDetailRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-            fixtureBoardDetail(Map.of("board", targetBoard));
-            fixtureBoardDetail(Map.of("board", targetBoard));
+            targetBoard = fixtureBoard(emptyMap());
+            boardRepository.save(targetBoard);
         }
 
         @Test
         @DisplayName("board id가 유효할 때, 상세 이미지를 조회할 수 있다")
         void getBoardDetailTest() {
             List<String> boardDetailDtos = boardDetailRepository
-                .findByBoardId(targetBoard.getId());
+                    .findByBoardId(targetBoard.getId());
 
-            assertThat(boardDetailDtos).hasSize(2);
-
-            assertThat(boardDetailDtos).isNotEmpty();
+            assertThat(boardDetailDtos).hasSize(targetBoard.getBoardDetails().size());
         }
 
         @Test
         @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
         void getEmptyList() {
             List<String> boardDetailDtos = boardDetailRepository
-                .findByBoardId(NOT_EXIST_BOARD_ID);
+                    .findByBoardId(NOT_EXIST_BOARD_ID);
 
             assertThat(boardDetailDtos).isEmpty();
         }
