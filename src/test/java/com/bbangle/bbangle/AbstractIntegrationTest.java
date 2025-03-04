@@ -1,16 +1,15 @@
 package com.bbangle.bbangle;
 
-import static java.util.Collections.emptyMap;
-
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.domain.ProductInfoNotice;
+import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
-import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardRepository;
 import com.bbangle.bbangle.board.service.BoardDetailService;
@@ -113,7 +112,7 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected ReviewRepository reviewRepository;
     @Autowired
-    protected BoardImgRepository boardImgRepository;
+    protected ProductImgRepository productImgRepository;
     @Autowired
     protected WishListFolderRepository wishListFolderRepository;
     @Autowired
@@ -147,7 +146,7 @@ public abstract class AbstractIntegrationTest {
         boardRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
-        boardImgRepository.deleteAllInBatch();
+        productImgRepository.deleteAllInBatch();
         wishListFolderRepository.deleteAllInBatch();
         wishListBoardRepository.deleteAllInBatch();
         wishListStoreRepository.deleteAllInBatch();
@@ -162,82 +161,93 @@ public abstract class AbstractIntegrationTest {
     protected FixtureMonkey fixtureMonkey = FixtureMonkeyConfig.fixtureMonkey;
 
     /**
-     * NOTE: param 에 변경하고자 하는 필드명 : 값 형식으로 주입하면 변경되어 insert 됨
+     * NOTE: param 에 [변경하고자 하는 필드명 : 값 형식]으로 주입하면 변경되어 insert 됨
+     * fixutre 함수 쓰면 연관된 속성들 모두 자동 생성(엔티티도 포함)
      */
 
+    /**
+     * 위시리스트 폴더 값 제어가 안 필요하면
+     * Member member = fixtureMember(emptyMap());
+     * member.getWishListFolder()로 사용하기
+     */
     protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
         ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
                 WishListFolder.class);
         setBuilderParams(params, builder);
 
-        if (!params.containsKey("member")) {
-            Member member = fixtureMember(emptyMap());
-            builder = builder.set("member", member); // store wishlist가 없으면 에러나서 추가
-        }
-
-        return wishListFolderRepository.save(builder.sample());
+        return builder.sample();
     }
 
     protected Member fixtureMember(Map<String, Object> params) {
         ArbitraryBuilder<Member> builder = fixtureMonkey.giveMeBuilder(Member.class);
         setBuilderParams(params, builder);
-
-        return memberRepository.save(builder.sample());
+        return builder.sample();
     }
 
     protected Store fixtureStore(Map<String, Object> params) {
         ArbitraryBuilder<Store> builder = fixtureMonkey.giveMeBuilder(Store.class);
         setBuilderParams(params, builder);
-
-        if (!params.containsKey("wishListStoreList")) {
-            builder = builder.set("wishListStores", null); // store wishlist가 없으면 에러나서 추가
-        }
-
-        return storeRepository.save(builder.sample());
+        return builder.sample();
     }
 
     protected Product fixtureProduct(Map<String, Object> params) {
         ArbitraryBuilder<Product> builder = fixtureMonkey.giveMeBuilder(Product.class);
         setBuilderParams(params, builder);
-
+        builder.set("board", null); // fixtureBoard(Map.of("products", List.of(prodcut))) 쓰도록 강제
         return builder.sample();
     }
 
     protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
         ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
         setBuilderParams(params, builder);
+        builder.set("board", null); // fixtureBoard(Map.of("boardDetails", List.of(boardDetail))) 쓰도록 강제
         return builder.sample();
     }
 
+    /**
+     * 사용예시:
+     * ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url", TEST_URL)));
+     * BoardDetail boardDetail = fixtureBoardDetail(Map.of("imgIndex", productImg.getId().intValue(), "url", TEST_URL));
+     * targetBoard = boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
+     * productImg.updateBoard(targetBoard);   // <- 트랜잭션환경이어야 함
+     */
     protected ProductImg fixtureBoardImage(Map<String, Object> params) {
         ArbitraryBuilder<ProductImg> builder = fixtureMonkey.giveMeBuilder(ProductImg.class);
         setBuilderParams(params, builder);
-
-        ProductImg sample = builder.sample();
-        return boardImgRepository.save(sample);
+        builder.set("board", null); // 위 예시처럼 사용하게 강제
+        return builder.sample();
     }
 
+    /**
+     * BoardStatistic의 값 제어 커스텀해서 사용하려면 아래와 같은 방법으로 BoardStatistic을 저장해야합니다.
+     * BoardStatistic boardStatistic = fixtureRanking(Map.of("boardReviewCount", 2L));
+     * Board board = fixtureBoard(Map.of("boardStatistic", boardStatistic));
+     * boardRepository.save(board);
+     */
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
                 BoardStatistic.class);
+        builder.set("id", null);
         setBuilderParams(params, builder);
+        builder.set("board", null); // // 위 예시처럼 사용하게 강제
 
-        if (!params.containsKey("board")) {
-            Board board = fixtureBoard(emptyMap());
-            builder = builder.set("board", board);
-        }
-
-        return boardStatisticRepository.save(builder.sample());
+        return builder.sample();
     }
 
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
-        builder.set("isDeleted", false);
+        builder.set("price", 1000);
         setBuilderParams(params, builder);
-        return builder.sample();
+        Board sample = builder.sample();
+
+        if (!params.containsKey("store")) {
+            // store 선저장을 까먹은 분을 위해
+            storeRepository.save(sample.getStore());
+        }
+        return sample;
     }
 
-    private ProductInfoNotice fixtureProductInfoNotice(Map<String, Object> params) {
+    protected ProductInfoNotice fixtureProductInfoNotice(Map<String, Object> params) {
         ArbitraryBuilder<ProductInfoNotice> builder = fixtureMonkey.giveMeBuilder(
                 ProductInfoNotice.class);
         setBuilderParams(params, builder);
@@ -248,8 +258,15 @@ public abstract class AbstractIntegrationTest {
     protected Review fixtureReview(Map<String, Object> params) {
         ArbitraryBuilder<Review> builder = fixtureMonkey.giveMeBuilder(Review.class);
         setBuilderParams(params, builder);
+        return builder.sample();
+    }
 
-        return reviewRepository.save(builder.sample());
+    protected RecommendationSimilarBoard fixtureRecommendationSimilarBoard(Map<String, Object> params) {
+        ArbitraryBuilder<RecommendationSimilarBoard> builder = fixtureMonkey.giveMeBuilder(
+                RecommendationSimilarBoard.class);
+        setBuilderParams(params, builder);
+
+        return builder.sample();
     }
 
     private void setBuilderParams(Map<String, Object> params, ArbitraryBuilder builder) {
