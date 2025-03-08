@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixturemonkey;
 import static org.hibernate.sql.ast.SqlTreeCreationLogger.LOGGER;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.review.domain.Review;
@@ -16,11 +17,14 @@ import com.navercorp.fixturemonkey.api.jqwik.ArbitraryUtils;
 import com.navercorp.fixturemonkey.api.plugin.SimpleValueJqwikPlugin;
 import com.navercorp.fixturemonkey.api.type.TypeCache;
 import com.navercorp.fixturemonkey.jakarta.validation.plugin.JakartaValidationPlugin;
+import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +73,16 @@ public class FixtureMonkeyConfig {
                                 )
                         )
                 )
+                .pushAssignableTypeArbitraryIntrospector(
+                        BigDecimal.class,
+                        context -> new ArbitraryIntrospectorResult(
+                                ArbitraryUtils.toCombinableArbitrary(
+                                        Arbitraries.bigDecimals()
+                                                .between(BigDecimal.valueOf(0), BigDecimal.valueOf(200))
+                                                .map(bd -> bd.setScale(2, RoundingMode.HALF_UP))
+                                )
+                        )
+                )
                 .register(Member.class, fixtureMonkey ->
                         fixtureMonkey.giveMeBuilder(Member.class)
                                 .set("isDeleted", false))
@@ -85,6 +99,10 @@ public class FixtureMonkeyConfig {
                         fixtureMonkey.giveMeBuilder(Object.class)
                                 .setPostCondition(entity -> {
                                     try {
+                                        if (entity == null) { // entity가 null인지 확인
+                                            return true;
+                                        }
+
                                         // 현재 엔티티의 모든 필드를 가져옵니다 - TypeCache를 활용하여 성능 개선
                                         Map<String, Field> fields = TypeCache.getFieldsByName(entity.getClass());
 
@@ -96,7 +114,6 @@ public class FixtureMonkeyConfig {
                                                     Modifier.isTransient(field.getModifiers())) {
                                                 continue;
                                             }
-
                                             field.setAccessible(true);
                                             Object fieldValue = field.get(entity);
 
@@ -121,7 +138,32 @@ public class FixtureMonkeyConfig {
                                             if (field.isAnnotationPresent(OneToOne.class)) {
                                                 if (fieldValue != null) {
                                                     setOneToOneReference(fieldValue, entity);
+                                                    setIdNull(fieldValue);
                                                 }
+                                            }
+
+                                            if (entity instanceof Member) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Product) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("soldout");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Board) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
+                                            }
+
+                                            if (entity instanceof Review) {
+                                                Field isDeletedField = entity.getClass().getDeclaredField("isDeleted");
+                                                isDeletedField.setAccessible(true);
+                                                isDeletedField.set(entity, false);
                                             }
                                         }
                                         return true;
@@ -146,16 +188,6 @@ public class FixtureMonkeyConfig {
                                 )
                         )
                 )
-                // 나중 참고자료를 위해 남겨놓음
-//                // 연관관계 필드 Null 아니도록
-//                .pushNullInjectGenerator(
-//                        new MatcherOperator<>(
-//                                p -> p.getAnnotation(OneToMany.class) != null
-//                                        || p.getAnnotation(ManyToOne.class) != null
-//                                        || p.getAnnotation(OneToOne.class) != null,
-//                                objectPropertyGeneratorContext -> NOT_NULL_INJECT
-//                        )
-//                )
                 .build();
     }
 
@@ -179,7 +211,7 @@ public class FixtureMonkeyConfig {
 
         for (Field parentField : parentFields.values()) {
             if (parentField.isAnnotationPresent(OneToMany.class) &&
-                    parentField.getType().equals(List.class)) {
+                    List.class.isAssignableFrom(parentField.getType())) {
                 parentField.setAccessible(true);
                 List<Object> children = (List<Object>) parentField.get(parent);
                 if (children != null && !children.contains(child)) {
@@ -208,5 +240,8 @@ public class FixtureMonkeyConfig {
         Field idField = entity.getClass().getDeclaredField("id");
         idField.setAccessible(true);
         idField.set(entity, null);
+    }
+    private static boolean isEntityClass(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Entity.class);
     }
 }
