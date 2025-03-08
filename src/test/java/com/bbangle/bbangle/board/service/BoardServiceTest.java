@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
@@ -41,6 +43,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 class BoardServiceTest extends AbstractIntegrationTest {
 
@@ -557,6 +560,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("getBoardDtos 메서드는")
+    @Transactional
     class GetBoardDtos {
 
         Board targetBoard;
@@ -568,12 +572,10 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-            boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(targetBoard));
-            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
-            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
-            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
-            fixtureBoardDetail(Map.of("board", targetBoard, "url", TEST_URL));
+            ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url", TEST_URL)));
+            BoardDetail boardDetail = fixtureBoardDetail(Map.of("imgIndex", productImg.getId().intValue(), "url", TEST_URL));
+            targetBoard = boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
+            productImg.updateBoard(targetBoard);
         }
 
         @Test
@@ -583,8 +585,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
             BoardImageDetailResponse boardDtos = boardDetailService.getBoardDtos(memberId,
                     targetBoard.getId(), viewKey);
 
-            assertThat(boardDtos.getBoardImages()).hasSize(2);
-            assertThat(boardDtos.getBoardDetails()).hasSize(2);
+            assertThat(boardDtos.getBoardImages()).hasSize(1);
+            assertThat(boardDtos.getBoardDetails()).hasSize(targetBoard.getBoardDetails().size());
 
             String boardDetailUrl = boardDtos.getBoardDetails()
                     .stream()
