@@ -77,6 +77,7 @@ class BoardUploadServiceTest {
                 .set("boardTitle", "신제품 출시")
                 .set("price", 10000)
                 .set("discountRate", 50)
+                .set("discountPrice", 0)
                 .set("deliveryFee", 2500)
                 .set("productRequests", productRequests)
                 .set("boardDetailRequest", boardDetailRequest)

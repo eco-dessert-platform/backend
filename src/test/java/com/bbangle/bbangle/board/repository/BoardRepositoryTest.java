@@ -1,9 +1,15 @@
 package com.bbangle.bbangle.board.repository;
 
+import static java.util.Collections.emptyMap;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
@@ -15,19 +21,15 @@ import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Collections.emptyMap;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 class BoardRepositoryTest extends AbstractIntegrationTest {
 
@@ -36,6 +38,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     private static final Long NULL_MEMBER_ID = null;
 
     @Nested
+    @Transactional
     @DisplayName("findBoardAndBoardImageByBoardId 메서드는")
     class FindBoardAndBoardImageByBoardId {
 
@@ -45,27 +48,29 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
-            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
-            fixtureBoardImage(Map.of("board", targetBoard, "url", TEST_URL));
+            ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url", TEST_URL)));
+            BoardDetail boardDetail = fixtureBoardDetail(
+                    Map.of("imgIndex", productImg.getId().intValue(),
+                            "url", TEST_URL));
+            targetBoard = boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
+            productImg.updateBoard(targetBoard);
         }
 
         @Test
         @DisplayName("board id가 유효할 때 게시판 정보, 게시판 이미지를 조회할 수 있다.")
         void getBoardInfoAndImages() {
             List<BoardAndImageDto> boardAndImageDtos = boardRepository
-                .findBoardAndBoardImageByBoardId(targetBoard.getId());
+                    .findBoardAndBoardImageByBoardId(targetBoard.getId());
 
-            assertThat(boardAndImageDtos).hasSize(2);
+            assertThat(boardAndImageDtos).hasSize(1);
 
             BoardAndImageDto boardAndImageDto = boardAndImageDtos.stream()
-                .findFirst()
-                .get();
-
+                    .findFirst()
+                    .get();
             assertAll(
-                "BoardAndImageDto는 null이 없어야한다.",
-                () -> assertThat(boardAndImageDto.boardId()).isNotNull(),
-                () -> assertThat(boardAndImageDto.url()).isNotNull()
+                    "BoardAndImageDto는 null이 없어야한다.",
+                    () -> assertThat(boardAndImageDto.boardId()).isNotNull(),
+                    () -> assertThat(boardAndImageDto.url()).isNotNull()
             );
         }
 
@@ -73,7 +78,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
         void getEmptyList() {
             List<BoardAndImageDto> boardAndImageDtos = boardRepository
-                .findBoardAndBoardImageByBoardId(NOT_EXIST_BOARD_ID);
+                    .findBoardAndBoardImageByBoardId(NOT_EXIST_BOARD_ID);
 
             assertThat(boardAndImageDtos).isEmpty();
         }
@@ -82,8 +87,10 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("게시판 전체의 아이디와 게시글명을 가져올 수 있다.")
     void getAllBoardTitle() {
-        fixtureBoard(Map.of("title", TEST_TITLE));
-        fixtureBoard(Map.of("title", TEST_TITLE));
+        Board board1 = fixtureBoard(Map.of("title", TEST_TITLE));
+        Board board2 = fixtureBoard(Map.of("title", TEST_TITLE));
+        boardRepository.saveAll(List.of(board1, board2));
+
         List<TitleDto> boardAllTitleDtos = boardRepository.findAllTitle();
 
         assertThat(boardAllTitleDtos).hasSize(2);
@@ -125,7 +132,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(emptyMap());
+            store =  storeRepository.save(fixtureStore(emptyMap()));
 
             firstBoard = boardRepository.save(BoardFixture.randomBoard(store));
             secondBoard = boardRepository.save(BoardFixture.randomBoard(store));
@@ -136,11 +143,11 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             productRepository.save(ProductFixture.randomProduct(thirdBoard));
 
             boardStatisticRepository.save(
-                BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(firstBoard, 103d));
             boardStatisticRepository.save(
-                BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(secondBoard, 102d));
             boardStatisticRepository.save(
-                BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
+                    BoardStatisticFixture.newBoardStatisticWithBasicScore(thirdBoard, 101d));
 
             createWishListStore();
         }
@@ -150,7 +157,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         void getPopularBoard() {
             updateBoardStatistic.updateStatistic();
             List<BoardInfoDto> rankBoardIds = boardRepository.findBestBoards(NULL_MEMBER_ID,
-                store.getId());
+                    store.getId());
 
             assertThat(rankBoardIds).hasSize(3);
             assertThat(rankBoardIds.get(0).getBoardId()).isEqualTo(firstBoard.getId());
@@ -161,9 +168,9 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         void createWishListStore() {
             member = memberRepository.save(Member.builder().build());
             wishListBoardRepository.save(WishListBoard.builder()
-                .boardId(firstBoard.getId())
-                .memberId(member.getId())
-                .build());
+                    .boardId(firstBoard.getId())
+                    .memberId(member.getId())
+                    .build());
         }
     }
 
@@ -176,7 +183,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(emptyMap());
+            store =  storeRepository.save(fixtureStore(emptyMap()));
 
             for (int index = 0; 20 > index; index++) {
                 fixtureBoard(Map.of("store", store, "title", TEST_TITLE));
@@ -197,16 +204,16 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void init() {
-            store = fixtureStore(emptyMap());
+            store = storeRepository.save(fixtureStore(emptyMap()));
 
             Product glutenFreeTagProduct = fixtureProduct(Map.of(
-                "glutenFreeTag", true,
-                "highProteinTag", false,
-                "sugarFreeTag", false,
-                "veganTag", false,
-                "ketogenicTag", false,
-                "orderStartDate", LocalDateTime.now(),
-                "soldout", true
+                    "glutenFreeTag", true,
+                    "highProteinTag", false,
+                    "sugarFreeTag", false,
+                    "veganTag", false,
+                    "ketogenicTag", false,
+                    "orderStartDate", LocalDateTime.now(),
+                    "soldout", true
             ));
 
             Map<String, Object> params = new HashMap<>();
@@ -221,76 +228,77 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             Product highProteinTagProduct = fixtureProduct(params);
 
             Product sugarFreeTagProduct = fixtureProduct(Map.of(
-                "glutenFreeTag", false,
-                "highProteinTag", false,
-                "sugarFreeTag", true,
-                "veganTag", false,
-                "ketogenicTag", false
+                    "glutenFreeTag", false,
+                    "highProteinTag", false,
+                    "sugarFreeTag", true,
+                    "veganTag", false,
+                    "ketogenicTag", false
             ));
             Product veganTagProduct = fixtureProduct(Map.of(
-                "glutenFreeTag", false,
-                "highProteinTag", false,
-                "sugarFreeTag", false,
-                "veganTag", true,
-                "ketogenicTag", false,
-                "category", Category.COOKIE
+                    "glutenFreeTag", false,
+                    "highProteinTag", false,
+                    "sugarFreeTag", false,
+                    "veganTag", true,
+                    "ketogenicTag", false,
+                    "category", Category.COOKIE
             ));
 
             Product veganTagProduct2 = fixtureProduct(Map.of(
-                "glutenFreeTag", false,
-                "highProteinTag", false,
-                "sugarFreeTag", false,
-                "veganTag", true,
-                "ketogenicTag", false,
-                "category", Category.SNACK
+                    "glutenFreeTag", false,
+                    "highProteinTag", false,
+                    "sugarFreeTag", false,
+                    "veganTag", true,
+                    "ketogenicTag", false,
+                    "category", Category.SNACK
             ));
 
             Product ketogenicTagProduct = fixtureProduct(Map.of(
-                "glutenFreeTag", false,
-                "highProteinTag", false,
-                "sugarFreeTag", false,
-                "veganTag", false,
-                "ketogenicTag", true,
-                "category", Category.SNACK
+                    "glutenFreeTag", false,
+                    "highProteinTag", false,
+                    "sugarFreeTag", false,
+                    "veganTag", false,
+                    "ketogenicTag", true,
+                    "category", Category.SNACK
             ));
 
             Product ketogenicTagProduct2 = fixtureProduct(Map.of(
-                "glutenFreeTag", false,
-                "highProteinTag", false,
-                "sugarFreeTag", false,
-                "veganTag", false,
-                "ketogenicTag", true,
-                "category", Category.SNACK
+                    "glutenFreeTag", false,
+                    "highProteinTag", false,
+                    "sugarFreeTag", false,
+                    "veganTag", false,
+                    "ketogenicTag", true,
+                    "category", Category.SNACK
             ));
 
             board1 = fixtureBoard(Map.of(
-                "store", store, "title", TEST_TITLE,
-                "products", List.of(glutenFreeTagProduct)
+                    "store", store, "title", TEST_TITLE,
+                    "products", List.of(glutenFreeTagProduct)
             ));
             board2 = fixtureBoard(Map.of(
-                "store", store, "title", TEST_TITLE,
-                "products", List.of(highProteinTagProduct)
+                    "store", store, "title", TEST_TITLE,
+                    "products", List.of(highProteinTagProduct)
             ));
             board3 = fixtureBoard(Map.of(
-                "store", store, "title", TEST_TITLE,
-                "products", List.of(sugarFreeTagProduct)
+                    "store", store, "title", TEST_TITLE,
+                    "products", List.of(sugarFreeTagProduct)
             ));
             board4 = fixtureBoard(Map.of(
-                "store", store, "title", TEST_TITLE,
-                "products", List.of(veganTagProduct, veganTagProduct2)
+                    "store", store, "title", TEST_TITLE,
+                    "products", List.of(veganTagProduct, veganTagProduct2)
             ));
 
             board5 = fixtureBoard(Map.of(
-                "store", store, "title", TEST_TITLE,
-                "products", List.of(ketogenicTagProduct, ketogenicTagProduct2)
+                    "store", store, "title", TEST_TITLE,
+                    "products", List.of(ketogenicTagProduct, ketogenicTagProduct2)
             ));
 
+//            boardRepository.saveAll(List.of(board1, board2, board3, board4, board5));
             boardStatisticRepository.saveAll(
-                List.of(BoardStatisticFixture.newBoardStatistic(board1),
-                    BoardStatisticFixture.newBoardStatistic(board2),
-                    BoardStatisticFixture.newBoardStatistic(board3),
-                    BoardStatisticFixture.newBoardStatistic(board4),
-                    BoardStatisticFixture.newBoardStatistic(board5))
+                    List.of(BoardStatisticFixture.newBoardStatistic(board1),
+                            BoardStatisticFixture.newBoardStatistic(board2),
+                            BoardStatisticFixture.newBoardStatistic(board3),
+                            BoardStatisticFixture.newBoardStatistic(board4),
+                            BoardStatisticFixture.newBoardStatistic(board5))
             );
         }
     }

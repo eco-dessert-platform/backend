@@ -3,31 +3,40 @@ package com.bbangle.bbangle.search.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.fixture.FixtureConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.service.SearchLoadService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
 @Import(FixtureConfig.class)
+@Transactional
 class SearchRepositoryTest extends AbstractIntegrationTest {
 
     private static final int ONEDAY = 24;
+    private static final Long NULL_CURSOR = null;
     @Autowired
     SearchRepository searchRepository;
-    @Autowired
-    SearchLoadService searchLoadService;
     @Autowired
     RedisRepository redisRepository;
     @Autowired
