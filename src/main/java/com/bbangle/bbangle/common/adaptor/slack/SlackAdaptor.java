@@ -5,4 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface SlackAdaptor {
 
     void sendAlert(HttpServletRequest httpServletRequest, Throwable t);
+
+    void sendText(String title, String content);
 }

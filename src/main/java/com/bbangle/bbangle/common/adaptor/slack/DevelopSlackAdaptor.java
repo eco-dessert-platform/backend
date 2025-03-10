@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.common.adaptor.slack;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -10,13 +11,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 @Slf4j
-@Profile({"production"})
+@Profile({"dev"})
 @Component
-@RequiredArgsConstructor
-public class RealSlackAdaptor implements SlackAdaptor {
+public class DevelopSlackAdaptor implements SlackAdaptor {
 
     private final RestTemplate restTemplate = new RestTemplate();
     @Value("${slack.webhook-url}")
@@ -55,5 +53,4 @@ public class RealSlackAdaptor implements SlackAdaptor {
             log.error(title + content);
         }
     }
-
 }
