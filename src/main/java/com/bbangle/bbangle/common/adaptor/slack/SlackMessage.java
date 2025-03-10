@@ -16,8 +16,17 @@ public class SlackMessage {
 
     public static SlackMessage fromException(HttpServletRequest request, Throwable t) {
         return new SlackMessage(List.of(
-                SlackBlock.createBlock("header", "plain_text", SlackBlock.SlackText.createHeader(t.getMessage())),
-                SlackBlock.createBlock("section", "plain_text", SlackBlock.SlackText.createSection(request, t))
+            SlackBlock.createBlock("header", "plain_text",
+                SlackBlock.SlackText.createHeader(t.getMessage())),
+            SlackBlock.createBlock("section", "plain_text",
+                SlackBlock.SlackText.createSection(request, t))
+        ));
+    }
+
+    public static SlackMessage fromText(String header, String contents) {
+        return new SlackMessage(List.of(
+            SlackBlock.createBlock("header", "plain_text", header),
+            SlackBlock.createBlock("section", "plain_text", contents)
         ));
     }
 
@@ -25,6 +34,7 @@ public class SlackMessage {
     @Data
     @AllArgsConstructor
     public static class SlackBlock {
+
         private String type; // ex) header, section
         private SlackText text;
 
@@ -37,6 +47,7 @@ public class SlackMessage {
         @Data
         @AllArgsConstructor
         public static class SlackText {
+
             private String type; // ex) plain_text
             private String text;
 
@@ -46,10 +57,10 @@ public class SlackMessage {
 
             public static String createSection(HttpServletRequest request, Throwable t) {
                 return String.format(
-                        "- url: %s \n - 위치: %s \n - message: %s ",
-                        request.getRequestURI(),
-                        extractMethodPosition(t),
-                        truncateText(t.getMessage(), 3000)
+                    "- url: %s \n - 위치: %s \n - message: %s ",
+                    request.getRequestURI(),
+                    extractMethodPosition(t),
+                    truncateText(t.getMessage(), 3000)
                 );
             }
 
@@ -58,11 +69,12 @@ public class SlackMessage {
              */
             private static String extractMethodPosition(Throwable t) {
                 Optional<StackTraceElement> optional = Arrays.stream(t.getStackTrace())
-                        .filter(it -> it.getClassName().contains("bbangle"))
-                        .findFirst();
+                    .filter(it -> it.getClassName().contains("bbangle"))
+                    .findFirst();
 
                 StackTraceElement targetElement = optional.orElseGet(() -> t.getStackTrace()[0]);
-                return String.format("%s, %s", targetElement.getClassName(), targetElement.getMethodName());
+                return String.format("%s, %s", targetElement.getClassName(),
+                    targetElement.getMethodName());
             }
 
             /**
