@@ -21,7 +21,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
-@Profile({"!production"})
 public class SwaggerConfig {
 
     private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
