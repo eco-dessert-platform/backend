@@ -59,7 +59,7 @@ public class SwaggerConfig {
 
         Server devServerWithHttps = new Server();
         devServerWithHttps.setDescription("dev-server-https");
-        devServerWithHttps.setUrl("https://api.bbangle.store");
+        devServerWithHttps.setUrl("https://dev.bbanggree.com");
 
         return new OpenAPI()
                 .info(info)
