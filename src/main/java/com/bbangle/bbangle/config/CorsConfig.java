@@ -18,6 +18,7 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://localhost:5000",
                         "http://localhost:3000",
                         "http://localhost:63342",
+                        "http://localhost:8001",
                         "https://dev.bbanggree.com",
                         "https://www.bbanggree.com",
                         "https://api.bbanggree.com",
