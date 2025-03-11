@@ -30,24 +30,24 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()
-            .title("빵그리 API서버")
-            .description("본 문서는 외부에 유출하지 마세요.\n실제 서비스시에는 profile를 변경해 비활성시킵니다.")
-            .version("1.0.0");
+                .title("빵그리 API서버")
+                .description("본 문서는 외부에 유출하지 마세요.\n실제 서비스시에는 profile를 변경해 비활성시킵니다.")
+                .version("1.0.0");
 
         OAuthFlows oAuthFlows = new OAuthFlows()
-            .authorizationCode(new OAuthFlow()
-                .authorizationUrl(AUTHORIZATION_URL)
-                .tokenUrl(TOKEN_URL)
-                .refreshUrl("/oauth/refresh")
-                .scopes(new Scopes().addString("read", "읽기권한 부여")));
+                .authorizationCode(new OAuthFlow()
+                        .authorizationUrl(AUTHORIZATION_URL)
+                        .tokenUrl(TOKEN_URL)
+                        .refreshUrl("/oauth/refresh")
+                        .scopes(new Scopes().addString("read", "읽기권한 부여")));
 
         SecurityScheme jwtSchemes = new SecurityScheme()
-            .type(SecurityScheme.Type.HTTP)
-            .scheme("Bearer")
-            .bearerFormat("JWT");
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("Bearer")
+                .bearerFormat("JWT");
         SecurityScheme oauthSchemes = new SecurityScheme()
-            .type(SecurityScheme.Type.OAUTH2)
-            .flows(oAuthFlows);
+                .type(SecurityScheme.Type.OAUTH2)
+                .flows(oAuthFlows);
         SecurityRequirement tokenLogin = new SecurityRequirement().addList("토큰 로그인");
         Server localServer = new Server();
         localServer.setDescription("local-server");
@@ -55,22 +55,22 @@ public class SwaggerConfig {
 
         Server devServerWithHttp = new Server();
         devServerWithHttp.setDescription("dev-server-http");
-        devServerWithHttp.setUrl("http://dev.bbanggree.com");
+        devServerWithHttp.setUrl("http://52.79.47.179:8001");
 
         Server devServerWithHttps = new Server();
         devServerWithHttps.setDescription("dev-server-https");
-        devServerWithHttps.setUrl("https://dev.bbanggree.com");
+        devServerWithHttps.setUrl("https://api.bbangle.store");
 
         return new OpenAPI()
-            .info(info)
-            .servers(List.of(localServer, devServerWithHttp, devServerWithHttps))
-            .addSecurityItem(tokenLogin)
-            .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
-            .components(new Components()
-                .addSecuritySchemes("토큰 로그인", jwtSchemes)
-                .addSecuritySchemes("토큰 받아오기", oauthSchemes)
-            )
-            .security(Collections.singletonList(tokenLogin));
+                .info(info)
+                .servers(List.of(localServer, devServerWithHttp, devServerWithHttps))
+                .addSecurityItem(tokenLogin)
+                .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
+                .components(new Components()
+                        .addSecuritySchemes("토큰 로그인", jwtSchemes)
+                        .addSecuritySchemes("토큰 받아오기", oauthSchemes)
+                )
+                .security(Collections.singletonList(tokenLogin));
     }
 
     @Bean
@@ -84,9 +84,9 @@ public class SwaggerConfig {
             @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("swagger-ui.html")
-                    .addResourceLocations("classpath:/META-INF/resources/");
+                        .addResourceLocations("classpath:/META-INF/resources/");
                 registry.addResourceHandler("/webjars/**")
-                    .addResourceLocations("classpath:/META-INF/resources/webjars/");
+                        .addResourceLocations("classpath:/META-INF/resources/webjars/");
             }
         };
     }
