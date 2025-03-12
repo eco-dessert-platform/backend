@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 
     @Bean
-    @Profile({"dev", "local"})
+    @Profile({"dev", "default"})
     public WebMvcConfigurer devCorsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -21,6 +21,7 @@ public class CorsConfig implements WebMvcConfigurer {
                                 "http://localhost:3000",
                                 "http://localhost:63342",
                                 "http://localhost:8001",
+                                "http://localhost:8000",
                                 "http://dev.bbanggree.com",
                                 "https://dev.bbanggree.com",
                                 "https://master.d2xvuesi0d3ssg.amplifyapp.com"
