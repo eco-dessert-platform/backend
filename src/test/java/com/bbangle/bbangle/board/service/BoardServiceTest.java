@@ -586,12 +586,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     targetBoard.getId(), viewKey);
 
             assertThat(boardDtos.getBoardImages()).hasSize(1);
-            assertThat(boardDtos.getBoardDetails()).hasSize(targetBoard.getBoardDetails().size());
-
-            String boardDetailUrl = boardDtos.getBoardDetails()
-                    .stream()
-                    .findFirst()
-                    .get();
+            assertThat(boardDtos.getBoardDetail()).hasSize(1);
 
             String boardImageUrl = boardDtos.getBoardImages()
                     .stream()
@@ -599,7 +594,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     .get();
 
             String cdnWithFilePath = cdn + TEST_URL;
-            assertThat(boardDetailUrl).isEqualTo(cdnWithFilePath);
             assertThat(boardImageUrl).isEqualTo(cdnWithFilePath);
         }
     }
