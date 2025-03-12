@@ -28,11 +28,11 @@ class HtmlUtilsTest {
         // Expected 변환된 HTML (CloudFront URL이 추가된 절대경로)
         String expectedHtml = """
                 <html><body>
-                    <img src="https://d37g3q9mfan3cw.cloudfront.net/BoardDetail/1/4.png">
-                    <img src="https://d37g3q9mfan3cw.cloudfront.net/BoardDetail/1/5.png">
-                    <img src="https://d37g3q9mfan3cw.cloudfront.net/BoardDetail/1/6.png">
-                    <img src="https://d37g3q9mfan3cw.cloudfront.net/BoardDetail/1/7.png">
-                    <img src="https://d37g3q9mfan3cw.cloudfront.net/BoardDetail/1/8.png">
+                    <img src="https://d41zmgwrjn4bn.cloudfront.net/BoardDetail/1/4.png">
+                    <img src="https://d41zmgwrjn4bn.cloudfront.net/BoardDetail/1/5.png">
+                    <img src="https://d41zmgwrjn4bn.cloudfront.net/BoardDetail/1/6.png">
+                    <img src="https://d41zmgwrjn4bn.cloudfront.net/BoardDetail/1/7.png">
+                    <img src="https://d41zmgwrjn4bn.cloudfront.net/BoardDetail/1/8.png">
                 </body></html>
                 """;
 
@@ -40,7 +40,7 @@ class HtmlUtilsTest {
         String resultHtml = htmlUtils.convertHtmlWithFullImageUrls(rawHtml);
 
         // Then: 변환된 HTML이 기대한 값과 일치하는지 검증
-        assertThat(resultHtml).isEqualToIgnoringWhitespace(expectedHtml);
+        assertThat(resultHtml).isEqualTo(expectedHtml);
     }
 }
 
