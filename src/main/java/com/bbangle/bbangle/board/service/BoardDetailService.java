@@ -17,6 +17,7 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.service.component.ViewCountComponent;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.util.HtmlUtils;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import java.util.ArrayList;
@@ -48,19 +49,20 @@ public class BoardDetailService {
     private final BoardDetailRepository boardDetailRepository;
     private final BoardStatisticService boardStatisticService;
     private final BoardRepository boardRepository;
+    private final HtmlUtils htmlUtils;
 
     @Transactional
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String ipAddress) {
         List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
-            boardId);
+                boardId);
 
         validateListNotEmpty(boardAndImageDtos, BOARD_NOT_FOUND);
 
         BoardDto boardDto = BoardDto.from(
-            getFirstBoardInfo(boardAndImageDtos));
+                getFirstBoardInfo(boardAndImageDtos));
 
         boolean isWished = Objects.nonNull(memberId)
-            && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
+                && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
 
@@ -70,35 +72,31 @@ public class BoardDetailService {
 
         String boardProfileUrl = buildFullUrl(boardDto.getProfile());
 
-        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId)
-            .stream()
-            .filter(Objects::nonNull)
-            .map(this::buildFullUrl)
-            .toList();
-
+        String boardDetailHtml = boardDetailRepository.findByBoardId(boardId);
+        String boardDetailHtmlWithCdnUrl = htmlUtils.convertHtmlWithFullImageUrls(boardDetailHtml);
 
         String visitorInfo = ViewCount.builder()
-            .boardId(boardId)
-            .ipAddress(ipAddress)
-            .build()
-            .toString();
+                .boardId(boardId)
+                .ipAddress(ipAddress)
+                .build()
+                .toString();
 
         viewCountComponent.visit(visitorInfo);
         boardStatisticService.updateViewCount(boardId);
 
         return BoardImageDetailResponse.from(
-            boardDto,
-            isWished,
-            boardProfileUrl,
-            boardImageUrls,
-            boardDetailUrls);
+                boardDto,
+                isWished,
+                boardProfileUrl,
+                boardImageUrls,
+                boardDetailHtmlWithCdnUrl);
     }
 
     private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
         return boardAndImageDtos.stream()
-            .filter(imageDto -> Objects.nonNull(imageDto.url()))
-            .map(imageDto -> buildFullUrl(imageDto.url()))
-            .toList();
+                .filter(imageDto -> Objects.nonNull(imageDto.url()))
+                .map(imageDto -> buildFullUrl(imageDto.url()))
+                .toList();
     }
 
     private String buildFullUrl(String url) {
@@ -115,26 +113,26 @@ public class BoardDetailService {
 
     private BoardAndImageDto getFirstBoardInfo(List<BoardAndImageDto> boardAndImageTuples) {
         return boardAndImageTuples.stream()
-            .findFirst()
-            .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
+                .findFirst()
+                .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
     }
 
     public List<SimilarityBoardResponse> getSimilarityBoardResponses(Long memberId, Long boardId) {
         List<Long> similarityOrderByBoardIds = new ArrayList<>(
-            boardDetailRepository.findSimilarityBoardIdsByNotSoldOut(boardId,
-                RECOMMENDATION_ITEM_COUNT));
+                boardDetailRepository.findSimilarityBoardIdsByNotSoldOut(boardId,
+                        RECOMMENDATION_ITEM_COUNT));
 
         addRandomRecommandationBoard(similarityOrderByBoardIds);
 
         List<SimilarityBoardDto> similarityBoardDtos = boardDetailRepository.findSimilarityBoardByBoardId(
-            memberId, similarityOrderByBoardIds);
+                memberId, similarityOrderByBoardIds);
 
         Map<Long, BoardInfo> boardInfoMap = new HashMap<>();
         for (SimilarityBoardDto dto : similarityBoardDtos) {
             Long currentBoardId = dto.getBoardId();
 
             BoardInfo boardInfo = boardInfoMap.computeIfAbsent(currentBoardId,
-                id -> new BoardInfo(dto));
+                    id -> new BoardInfo(dto));
 
             boardInfo.addTag(dto.getTagsDao());
             boardInfo.addCategory(dto.getCategory());
@@ -142,30 +140,30 @@ public class BoardDetailService {
         }
 
         List<SimilarityBoardResponse> boardResponses = boardInfoMap.values().stream()
-            .map(boardInfo -> {
-                List<String> tags = TagUtils.convertToStrings(boardInfo.getTags());
-                Boolean isBundled = boardInfo.getCategories().size() > 1;
-                Boolean isSoldOut = !boardInfo.getIsSoldOut().contains(false);
+                .map(boardInfo -> {
+                    List<String> tags = TagUtils.convertToStrings(boardInfo.getTags());
+                    Boolean isBundled = boardInfo.getCategories().size() > 1;
+                    Boolean isSoldOut = !boardInfo.getIsSoldOut().contains(false);
 
-                return SimilarityBoardResponse.builder()
-                    .boardId(boardInfo.getBoardId())
-                    .storeId(boardInfo.getStoreId())
-                    .thumbnail(boardInfo.getThumbnail())
-                    .storeName(boardInfo.getStoreName())
-                    .title(boardInfo.getTitle())
-                    .discountRate(boardInfo.getDiscountRate())
-                    .price(boardInfo.getPrice())
-                    .reviewRate(boardInfo.getReviewRate())
-                    .reviewCount(boardInfo.getReviewCount())
-                    .tags(tags)
-                    .isWished(boardInfo.getIsWished())
-                    .isBundled(isBundled)
-                    .isSoldOut(isSoldOut)
-                    .build();
-            }).collect(Collectors.toCollection(ArrayList::new));
+                    return SimilarityBoardResponse.builder()
+                            .boardId(boardInfo.getBoardId())
+                            .storeId(boardInfo.getStoreId())
+                            .thumbnail(boardInfo.getThumbnail())
+                            .storeName(boardInfo.getStoreName())
+                            .title(boardInfo.getTitle())
+                            .discountRate(boardInfo.getDiscountRate())
+                            .price(boardInfo.getPrice())
+                            .reviewRate(boardInfo.getReviewRate())
+                            .reviewCount(boardInfo.getReviewCount())
+                            .tags(tags)
+                            .isWished(boardInfo.getIsWished())
+                            .isBundled(isBundled)
+                            .isSoldOut(isSoldOut)
+                            .build();
+                }).collect(Collectors.toCollection(ArrayList::new));
 
         boardResponses.sort(
-            Comparator.comparingInt(dto -> similarityOrderByBoardIds.indexOf(dto.getBoardId())));
+                Comparator.comparingInt(dto -> similarityOrderByBoardIds.indexOf(dto.getBoardId())));
 
         return boardResponses;
     }
@@ -174,8 +172,8 @@ public class BoardDetailService {
         int insufficientNumber = RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
         if (insufficientNumber > ZERO_INSUFFICIENT) {
             List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(30).stream()
-                .filter(id -> !similarityOrderByBoardIds.contains(id))
-                .collect(Collectors.toCollection(ArrayList::new));
+                    .filter(id -> !similarityOrderByBoardIds.contains(id))
+                    .collect(Collectors.toCollection(ArrayList::new));
 
             Collections.shuffle(popularBoardIds);
 

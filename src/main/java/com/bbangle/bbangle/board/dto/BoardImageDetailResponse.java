@@ -20,14 +20,14 @@ public class BoardImageDetailResponse {
     private int discountRate;
     private Boolean isWished;
     private List<String> boardImages;
-    private List<String> boardDetails;
+    private String boardDetail;
 
     public static BoardImageDetailResponse from(
         BoardDto boardDto,
         Boolean isWished,
         String boardProfileUrl,
-        List<String> boardImageDtoList,
-        List<String> boardDetailList
+        List<String> boardImageDtos,
+        String boardDetai
     ) {
         return BoardImageDetailResponse.builder()
             .boardId(boardDto.getBoardId())
@@ -41,8 +41,8 @@ public class BoardImageDetailResponse {
             .freeShippingConditions(boardDto.getFreeShippingConditions())
             .discountRate(boardDto.getDiscountRate())
             .isWished(isWished)
-            .boardImages(boardImageDtoList)
-            .boardDetails(boardDetailList)
+            .boardImages(boardImageDtos)
+            .boardDetail(boardDetai)
             .build();
     }
 }

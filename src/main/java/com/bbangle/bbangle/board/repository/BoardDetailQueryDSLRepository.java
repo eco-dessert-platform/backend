@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BoardDetailQueryDSLRepository {
 
-    List<String> findByBoardId(Long boardId);
+    String findByBoardId(Long boardId);
 
     List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId, List<Long> boardIds);
 

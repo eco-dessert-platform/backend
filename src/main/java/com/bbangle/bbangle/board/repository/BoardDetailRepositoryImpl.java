@@ -32,65 +32,63 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
     private static final QRecommendationSimilarBoard similarBoard = QRecommendationSimilarBoard.recommendationSimilarBoard;
 
     @Override
-    public List<String> findByBoardId(Long boardId) {
-        return queryFactory.select(
-                boardDetail.url
-            ).from(board)
-            .join(boardDetail)
-            .on(boardDetail.board.eq(board))
-            .where(board.id.eq(boardId))
-            .orderBy(boardDetail.imgIndex.asc())
-            .fetch();
+    public String findByBoardId(Long boardId) {
+        return queryFactory.select(boardDetail.content)
+                .from(board)
+                .join(boardDetail)
+                .on(boardDetail.board.eq(board))
+                .where(board.id.eq(boardId))
+                .fetchOne();
     }
 
     @Override
     public List<Long> findSimilarityBoardIdsByNotSoldOut(Long boardId, int limit) {
         return queryFactory.select(board.id)
-            .from(similarBoard)
-            .join(similarBoard.board, board)
-            .join(product).on(board.id.eq(product.board.id))
-            .where(similarBoard.queryItem.eq(boardId).and(product.soldout.eq(false)))
-            .orderBy(similarBoard.rank.asc())
-            .fetch()
-            .stream()
-            .distinct()
-            .limit(limit)
-            .toList();
+                .from(similarBoard)
+                .join(similarBoard.board, board)
+                .join(product).on(board.id.eq(product.board.id))
+                .where(similarBoard.queryItem.eq(boardId).and(product.soldout.eq(false)))
+                .orderBy(similarBoard.rank.asc())
+                .fetch()
+                .stream()
+                .distinct()
+                .limit(limit)
+                .toList();
     }
 
     @Override
     public List<SimilarityBoardDto> findSimilarityBoardByBoardId(Long memberId,
-        List<Long> boardIds) {
+                                                                 List<Long> boardIds) {
         BooleanExpression isWished =
-            Objects.isNull(memberId) ? Expressions.asBoolean(false) : wishListBoard.id.isNotNull();
+                Objects.isNull(memberId) ? Expressions.asBoolean(false) : wishListBoard.id.isNotNull();
 
         return buildWishList(
-            memberId,
-            queryFactory.select(
-                    new QSimilarityBoardDto(
-                        board.id,
-                        store.id,
-                        board.profile,
-                        store.name,
-                        board.title,
-                        board.discountRate,
-                        board.price,
-                        boardStatistic.boardReviewGrade,
-                        boardStatistic.boardReviewCount,
-                        product.glutenFreeTag,
-                        product.highProteinTag,
-                        product.sugarFreeTag,
-                        product.veganTag,
-                        product.ketogenicTag,
-                        product.soldout,
-                        product.category,
-                        isWished
-                    )
-                ).from(board)
-                .join(product).on(board.id.eq(product.board.id))
-                .join(store).on(board.store.id.eq(store.id))
-                .join(board.boardStatistic, boardStatistic)
-                .where(board.id.in(boardIds))
+                memberId,
+                queryFactory.select(
+                                new QSimilarityBoardDto(
+                                        board.id,
+                                        store.id,
+                                        board.profile,
+                                        store.name,
+                                        board.title,
+                                        board.discountRate,
+                                        board.price,
+                                        boardStatistic.boardReviewGrade,
+                                        boardStatistic.boardReviewCount,
+                                        product.glutenFreeTag,
+                                        product.highProteinTag,
+                                        product.sugarFreeTag,
+                                        product.veganTag,
+                                        product.ketogenicTag,
+                                        product.soldout,
+                                        product.category,
+                                        isWished
+                                )
+                        ).from(board)
+                        .join(product).on(board.id.eq(product.board.id))
+                        .join(store).on(board.store.id.eq(store.id))
+                        .join(board.boardStatistic, boardStatistic)
+                        .where(board.id.in(boardIds))
         ).fetch();
     }
 
@@ -100,6 +98,6 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
         }
 
         return query.leftJoin(wishListBoard)
-            .on(wishListBoard.boardId.eq(board.id).and(wishListBoard.memberId.eq(memberId)));
+                .on(wishListBoard.boardId.eq(board.id).and(wishListBoard.memberId.eq(memberId)));
     }
 }
