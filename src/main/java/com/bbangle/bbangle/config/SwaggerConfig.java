@@ -21,6 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
+@Profile({"dev", "local"}) // dev, local 환경에서만 Swagger 활성화
 public class SwaggerConfig {
 
     private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
@@ -62,7 +63,7 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(localServer, devServerWithHttp, devServerWithHttps))
+                .servers(List.of(devServerWithHttps, localServer, devServerWithHttp))
                 .addSecurityItem(tokenLogin)
                 .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
                 .components(new Components()
