@@ -22,27 +22,26 @@ public class BoardImageDetailResponse {
     private List<String> boardImages;
     private String boardDetail;
 
-    public static BoardImageDetailResponse from(
-        BoardDto boardDto,
-        Boolean isWished,
-        String boardProfileUrl,
-        List<String> boardImageDtos,
-        String boardDetai
+    public static BoardImageDetailResponse of(
+            BoardAndImageResponses boardResponses,
+            Boolean isWished,
+            String boardDetail
     ) {
+
         return BoardImageDetailResponse.builder()
-            .boardId(boardDto.getBoardId())
-            .storeId(boardDto.getStoreId())
-            .profile(boardProfileUrl)
-            .title(boardDto.getTitle())
-            .price(boardDto.getPrice())
-            .purchaseUrl(boardDto.getPurchaseUrl())
-            .status(boardDto.getStatus())
-            .deliveryFee(boardDto.getDeliveryFee())
-            .freeShippingConditions(boardDto.getFreeShippingConditions())
-            .discountRate(boardDto.getDiscountRate())
-            .isWished(isWished)
-            .boardImages(boardImageDtos)
-            .boardDetail(boardDetai)
-            .build();
+                .boardId(boardResponses.boardId())
+                .storeId(boardResponses.storeId())
+                .profile(boardResponses.profile())
+                .title(boardResponses.title())
+                .price(boardResponses.price())
+                .purchaseUrl(boardResponses.purchaseUrl())
+                .status(boardResponses.status())
+                .deliveryFee(boardResponses.deliveryFee())
+                .freeShippingConditions(boardResponses.freeShippingConditions())
+                .discountRate(boardResponses.discountRate())
+                .isWished(isWished)
+                .boardImages(boardResponses.boardImagesWithoutThumbnail())
+                .boardDetail(boardDetail)
+                .build();
     }
 }
