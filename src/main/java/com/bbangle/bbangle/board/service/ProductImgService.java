@@ -20,7 +20,6 @@ public class ProductImgService {
 
     private final ProductImgRepository productImgRepository;
     private final S3Service s3Service;
-    private final ImageService imageService;
 
     private static final String PRODUCT_IMAGE_FOLDER = "product-images";
 
@@ -29,7 +28,7 @@ public class ProductImgService {
      */
     @Transactional
     public ProductImgResponse uploadSingle(MultipartFile imageFile) {
-        String imageUrl = imageService.saveAndReturnWithCdn(PRODUCT_IMAGE_FOLDER, imageFile);
+        String imageUrl = s3Service.saveAndReturnWithCdn(PRODUCT_IMAGE_FOLDER, imageFile);
 
         ProductImg productImg = ProductImg.builder()
                 .url(imageUrl)
