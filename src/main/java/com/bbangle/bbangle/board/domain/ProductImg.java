@@ -36,9 +36,13 @@ public class ProductImg {
     @Column(name = "url")
     private String url;
 
-    private int imgIndex;
+    private int imgOrder;
 
     public void updateBoard(Board board) {
         this.board = board;
+    }
+
+    public boolean isThumbnail() {
+        return this.imgOrder==0;
     }
 }

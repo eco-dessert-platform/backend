@@ -140,4 +140,12 @@ public class Board extends BaseEntity {
             .distinct()
             .count() > 1;
     }
+
+    public String getThumbnail() {
+        return productImgs.stream()
+                .filter(ProductImg::isThumbnail)
+                .findFirst()
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_WITH_IMAGE_NOTFOUND))
+                .getUrl();
+    }
 }
