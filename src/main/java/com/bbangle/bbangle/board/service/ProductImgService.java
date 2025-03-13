@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.dto.ProductImgResponse;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
+import com.bbangle.bbangle.image.service.ImageService;
 import com.bbangle.bbangle.image.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class ProductImgService {
      */
     @Transactional
     public ProductImgResponse uploadSingle(MultipartFile imageFile) {
-        String imageUrl = s3Service.saveImage(imageFile, PRODUCT_IMAGE_FOLDER);
+        String imageUrl = s3Service.saveAndReturnWithCdn(PRODUCT_IMAGE_FOLDER, imageFile);
 
         ProductImg productImg = ProductImg.builder()
                 .url(imageUrl)
