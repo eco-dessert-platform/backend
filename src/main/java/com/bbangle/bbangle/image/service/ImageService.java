@@ -64,6 +64,13 @@ public class ImageService {
         return imagePath;
     }
 
+    public String saveAndReturnWithCdn(String folderName, MultipartFile image) {
+        String imagePath = s3Service.saveImage(image, folderName);
+        imagePath = removeBucketDomainInFolder(imagePath);
+        return addCdnDomain(imagePath);
+    }
+
+
     public List<String> saveAll(
         ImageCategory category,
         List<MultipartFile> imageList,
