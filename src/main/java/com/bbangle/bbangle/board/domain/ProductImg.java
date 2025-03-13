@@ -43,6 +43,10 @@ public class ProductImg {
         this.board = board;
     }
 
+    public void updateBoard(Board board, int imgOrder) {
+        this.board = board;
+    }
+
     public boolean isThumbnail() {
         return this.imgOrder == THUMBNAIL_ORDER;
     }
