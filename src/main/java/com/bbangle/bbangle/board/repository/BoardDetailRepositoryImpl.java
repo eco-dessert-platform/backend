@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -68,7 +70,7 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
                                 new QSimilarityBoardDto(
                                         board.id,
                                         store.id,
-                                        board.profile,
+                                        productImg.url,
                                         store.name,
                                         board.title,
                                         board.discountRate,
@@ -88,6 +90,8 @@ public class BoardDetailRepositoryImpl implements BoardDetailQueryDSLRepository 
                         .join(product).on(board.id.eq(product.board.id))
                         .join(store).on(board.store.id.eq(store.id))
                         .join(board.boardStatistic, boardStatistic)
+                        .join(productImg).on(productImg.board.id.eq(board.id))
+                        .where(productImg.imgOrder.eq(0))
                         .where(board.id.in(boardIds))
         ).fetch();
     }
