@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository.basic.query;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MostWishedBoardQueryProviderResolver  implements BoardQueryProvider{
+public class MostWishedBoardQueryProviderResolver implements BoardQueryProvider {
 
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
@@ -28,50 +30,51 @@ public class MostWishedBoardQueryProviderResolver  implements BoardQueryProvider
 
     @Override
     public List<BoardResponseDao> findBoards(
-        BooleanBuilder filter,
-        BooleanBuilder cursorInfo,
-        OrderSpecifier<?>[] orderCondition
+            BooleanBuilder filter,
+            BooleanBuilder cursorInfo,
+            OrderSpecifier<?>[] orderCondition
     ) {
         List<Long> boardIds = jpaQueryFactory.select(board.id)
-            .distinct()
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .join(board.boardStatistic, boardStatistic)
-            .where(cursorInfo.and(filter))
-            .orderBy(orderCondition)
-            .limit(BOARD_PAGE_SIZE + 1)
-            .fetch();
+                .distinct()
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .join(board.boardStatistic, boardStatistic)
+                .where(cursorInfo.and(filter))
+                .orderBy(orderCondition)
+                .limit(BOARD_PAGE_SIZE + 1)
+                .fetch();
 
         return jpaQueryFactory.select(
-                new QBoardResponseDao(
-                    board.id,
-                    store.id,
-                    store.name,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    product.category,
-                    product.glutenFreeTag,
-                    product.highProteinTag,
-                    product.sugarFreeTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    boardStatistic.boardReviewGrade,
-                    boardStatistic.boardReviewCount,
-                    product.orderEndDate,
-                    product.soldout,
-                    board.discountRate
-                ))
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .join(store)
-            .on(board.store.id.eq(store.id))
-            .join(board.boardStatistic, boardStatistic)
-            .where(board.id.in(boardIds))
-            .orderBy(orderCondition)
-            .fetch();
+                        new QBoardResponseDao(
+                                board.id,
+                                store.id,
+                                store.name,
+                                productImg.url,
+                                board.title,
+                                board.price,
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                boardStatistic.boardReviewGrade,
+                                boardStatistic.boardReviewCount,
+                                product.orderEndDate,
+                                product.soldout,
+                                board.discountRate
+                        ))
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .join(store)
+                .on(board.store.id.eq(store.id))
+                .join(board.boardStatistic, boardStatistic)
+                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .where(board.id.in(boardIds))
+                .orderBy(orderCondition)
+                .fetch();
     }
 
 }

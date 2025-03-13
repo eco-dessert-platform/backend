@@ -56,9 +56,6 @@ public class Board extends BaseEntity {
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private Boolean status;
 
-    @Column(name = "profile")
-    private String profile;
-
     @Column(name = "purchase_url")
     private String purchaseUrl;
 
@@ -75,6 +72,9 @@ public class Board extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<ProductImg> productImgs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<BoardDetail> boardDetails = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -83,12 +83,6 @@ public class Board extends BaseEntity {
 
     @OneToOne(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL ) // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
     private BoardStatistic boardStatistic;
-
-
-    public Board updateProfile(String profile) {
-        this.profile = profile;
-        return this;
-    }
 
     public void addProducts(List<Product> products) {
         this.products.addAll(products);
@@ -145,5 +139,13 @@ public class Board extends BaseEntity {
         return products.stream().map(Product::getCategory)
             .distinct()
             .count() > 1;
+    }
+
+    public String getThumbnail() {
+        return productImgs.stream()
+                .filter(ProductImg::isThumbnail)
+                .findFirst()
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_WITH_IMAGE_NOTFOUND))
+                .getUrl();
     }
 }
