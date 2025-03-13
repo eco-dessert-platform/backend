@@ -1,13 +1,9 @@
 package com.bbangle.bbangle.board.service;
 
-import static com.bbangle.bbangle.board.validator.BoardValidator.validateListNotEmpty;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.IMAGE_URL_NULL;
-
 import com.bbangle.bbangle.board.common.TagUtils;
 import com.bbangle.bbangle.board.domain.ViewCount;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.BoardDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageResponses;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardInfo;
 import com.bbangle.bbangle.board.dto.SimilarityBoardDto;
@@ -15,31 +11,25 @@ import com.bbangle.bbangle.board.dto.SimilarityBoardResponse;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.service.component.ViewCountComponent;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.util.HtmlUtils;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BoardDetailService {
-
-    @Value("${cdn.domain}")
-    private String cdn;
-    private static final String HTTP = "http";
 
     private final WishListBoardRepository wishListBoardRepository;
     private final ViewCountComponent viewCountComponent;
@@ -53,24 +43,11 @@ public class BoardDetailService {
 
     @Transactional
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String ipAddress) {
-        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
-                boardId);
-
-        validateListNotEmpty(boardAndImageDtos, BOARD_NOT_FOUND);
-
-        BoardDto boardDto = BoardDto.from(
-                getFirstBoardInfo(boardAndImageDtos));
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(boardId);
+        BoardAndImageResponses boardAndImageResponses = BoardAndImageResponses.createFromDtos(boardAndImageDtos);
 
         boolean isWished = Objects.nonNull(memberId)
                 && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
-
-        List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
-
-        if (Objects.isNull(boardDto.getProfile())) {
-            throw new BbangleException(IMAGE_URL_NULL);
-        }
-
-        String boardProfileUrl = buildFullUrl(boardDto.getProfile());
 
         String boardDetailHtml = boardDetailRepository.findByBoardId(boardId);
         String boardDetailHtmlWithCdnUrl = htmlUtils.convertHtmlWithFullImageUrls(boardDetailHtml);
@@ -84,37 +61,10 @@ public class BoardDetailService {
         viewCountComponent.visit(visitorInfo);
         boardStatisticService.updateViewCount(boardId);
 
-        return BoardImageDetailResponse.from(
-                boardDto,
+        return BoardImageDetailResponse.of(
+                boardAndImageResponses,
                 isWished,
-                boardProfileUrl,
-                boardImageUrls,
                 boardDetailHtmlWithCdnUrl);
-    }
-
-    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageDtos) {
-        return boardAndImageDtos.stream()
-                .filter(imageDto -> Objects.nonNull(imageDto.url()))
-                .map(imageDto -> buildFullUrl(imageDto.url()))
-                .toList();
-    }
-
-    private String buildFullUrl(String url) {
-        if (Objects.isNull(url)) {
-            throw new BbangleException(IMAGE_URL_NULL);
-        }
-
-        if (url.contains(HTTP)) {
-            return url;
-        }
-
-        return cdn + url;
-    }
-
-    private BoardAndImageDto getFirstBoardInfo(List<BoardAndImageDto> boardAndImageTuples) {
-        return boardAndImageTuples.stream()
-                .findFirst()
-                .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
     }
 
     public List<SimilarityBoardResponse> getSimilarityBoardResponses(Long memberId, Long boardId) {

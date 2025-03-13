@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.wishlist.repository.impl;
 
 
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
@@ -34,51 +36,53 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
     @Override
     public List<FolderResponseDto> findMemberFolderList(Member member) {
         List<Tuple> fetch = queryFactory.select(
-                wishListFolder.id,
-                wishListFolder.folderName,
-                board.profile)
-            .from(wishListFolder)
-            .leftJoin(wishedBoard)
-            .on(wishedBoard.wishlistFolderId.eq(wishListFolder.id))
-            .leftJoin(board)
-            .on(wishedBoard.boardId.eq(board.id))
-            .where(wishListFolder.member.eq(member)
-                .and(wishListFolder.isDeleted.eq(false)))
-            .fetch();
+                        wishListFolder.id,
+                        wishListFolder.folderName,
+                        productImg.url)
+                .from(wishListFolder)
+                .leftJoin(wishedBoard)
+                .on(wishedBoard.wishlistFolderId.eq(wishListFolder.id))
+                .leftJoin(board)
+                .on(wishedBoard.boardId.eq(board.id))
+                .innerJoin(productImg)
+                .on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .where(wishListFolder.member.eq(member)
+                        .and(wishListFolder.isDeleted.eq(false)))
+                .fetch();
 
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
-            .collect(Collectors.groupingBy(tuple -> tuple.get(wishListFolder.id)));
+                .collect(Collectors.groupingBy(tuple -> tuple.get(wishListFolder.id)));
 
         List<FolderResponseDto> response = groupedByFolderId.entrySet()
-            .stream()
-            .map(entry -> {
-                Long folderId = entry.getKey();
-                List<Tuple> tuples = entry.getValue();
+                .stream()
+                .map(entry -> {
+                    Long folderId = entry.getKey();
+                    List<Tuple> tuples = entry.getValue();
 
-                String title = tuples.get(0)
-                    .get(wishListFolder.folderName);
+                    String title = tuples.get(0)
+                            .get(wishListFolder.folderName);
 
-                List<String> productImages = tuples.stream()
-                    .map(tuple -> tuple.get(board.profile))
-                    .filter(Objects::nonNull)
-                    .limit(4)
-                    .toList();
+                    List<String> productImages = tuples.stream()
+                            .map(tuple -> tuple.get(productImg.url))
+                            .filter(Objects::nonNull)
+                            .limit(4)
+                            .toList();
 
-                int count = productImages.isEmpty() ? 0 : (int) tuples.stream()
-                    .map(tuple -> tuple.get(board.profile))
-                    .filter(Objects::nonNull)
-                    .count();
+                    int count = productImages.isEmpty() ? 0 : (int) tuples.stream()
+                            .map(tuple -> tuple.get(productImg.url))
+                            .filter(Objects::nonNull)
+                            .count();
 
-                return new FolderResponseDto(folderId, title, count, productImages);
-            })
-            .sorted(Comparator.comparing(FolderResponseDto::folderId)
-                .reversed())
-            .collect(Collectors.toList());
+                    return new FolderResponseDto(folderId, title, count, productImages);
+                })
+                .sorted(Comparator.comparing(FolderResponseDto::folderId)
+                        .reversed())
+                .collect(Collectors.toList());
 
         FolderResponseDto defaultFolder = response.stream()
-            .filter(folderResponse -> DEFAULT_FOLDER_NAME.equals(folderResponse.title()))
-            .findFirst()
-            .orElse(null);
+                .filter(folderResponse -> DEFAULT_FOLDER_NAME.equals(folderResponse.title()))
+                .findFirst()
+                .orElse(null);
 
         if (defaultFolder != null) {
             response.remove(defaultFolder);
@@ -92,9 +96,9 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
     public List<WishListFolder> findByMemberId(Long memberId) {
 
         return queryFactory.selectFrom(wishListFolder)
-            .where(wishListFolder.member.id.eq(memberId)
-                .and(wishListFolder.isDeleted.eq(false)))
-            .fetch();
+                .where(wishListFolder.member.id.eq(memberId)
+                        .and(wishListFolder.isDeleted.eq(false)))
+                .fetch();
     }
 
 }

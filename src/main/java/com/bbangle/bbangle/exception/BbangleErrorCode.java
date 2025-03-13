@@ -62,7 +62,7 @@ public enum BbangleErrorCode {
     INVALID_PRODUCT_DELIVERY_DAY(-47, "가능한 발송 요일이 하나라도 있어야 합니다. ", BAD_REQUEST),
     INVALID_PRODUCT_NAME(-48, "상품 이름은 3글자 이상 50글자 이하여야 합니다.", BAD_REQUEST),
     INVALID_PRODUCT_INFO_NOTICE_NAME(-49, "상품 정보 제공 이름은 3글자 이상 50글자 이하여야 합니다.", BAD_REQUEST),
-
+    BOARD_WITH_IMAGE_NOTFOUND(-50, "상품 이미지가 없는 게시글이 존재합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     UPLOAD_STREAM_CLOSE_ERROR(-51, "파일 업로드 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NULL_INPUT_STREAM(-52, "파일이 유효하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

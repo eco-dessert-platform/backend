@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.recommend.repository;
 
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQueryDSLRepository{
+public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQueryDSLRepository {
 
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private static final QBoard board = QBoard.board;
@@ -35,59 +36,60 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
 
     @Override
     public List<BoardResponseDao> getRecommendBoardList(
-        FilterRequest filterRequest,
-        Long cursorId,
-        MemberSegment memberSegment
+            FilterRequest filterRequest,
+            Long cursorId,
+            MemberSegment memberSegment
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
         BooleanBuilder cursorInfo = getCursor(cursorId);
         BooleanBuilder exclusionCondition = getExclusionCondition(memberSegment);
         List<Long> boardIds = queryFactory.select(board.id)
-            .distinct()
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .join(board.boardStatistic, boardStatistic)
-            .join(segmentIntolerance)
-            .on(product.id.eq(segmentIntolerance.productId))
-            .where(
-                cursorInfo.and(filter)
-                    .and(exclusionCondition)
-                    .and(segmentIntolerance.segment.eq(memberSegment.getSegment()))
-            )
-            .orderBy(boardStatistic.boardWishCount.desc())
-            .limit(BOARD_PAGE_SIZE + 1)
-            .fetch();
+                .distinct()
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .join(board.boardStatistic, boardStatistic)
+                .join(segmentIntolerance)
+                .on(product.id.eq(segmentIntolerance.productId))
+                .where(
+                        cursorInfo.and(filter)
+                                .and(exclusionCondition)
+                                .and(segmentIntolerance.segment.eq(memberSegment.getSegment()))
+                )
+                .orderBy(boardStatistic.boardWishCount.desc())
+                .limit(BOARD_PAGE_SIZE + 1)
+                .fetch();
 
         return queryFactory.select(
-                new QBoardResponseDao(
-                    board.id,
-                    store.id,
-                    store.name,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    product.category,
-                    product.glutenFreeTag,
-                    product.highProteinTag,
-                    product.sugarFreeTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    boardStatistic.boardReviewGrade,
-                    boardStatistic.boardReviewCount,
-                    product.orderEndDate,
-                    product.soldout,
-                    board.discountRate
-                ))
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .join(store)
-            .on(board.store.id.eq(store.id))
-            .join(board.boardStatistic, boardStatistic)
-            .where(board.id.in(boardIds))
-            .orderBy(boardStatistic.boardWishCount.desc())
-            .fetch();
+                        new QBoardResponseDao(
+                                board.id,
+                                store.id,
+                                store.name,
+                                productImg.url,
+                                board.title,
+                                board.price,
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                boardStatistic.boardReviewGrade,
+                                boardStatistic.boardReviewCount,
+                                product.orderEndDate,
+                                product.soldout,
+                                board.discountRate
+                        ))
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .join(store)
+                .on(board.store.id.eq(store.id))
+                .join(board.boardStatistic, boardStatistic)
+                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .where(board.id.in(boardIds))
+                .orderBy(boardStatistic.boardWishCount.desc())
+                .fetch();
     }
 
     private BooleanBuilder getExclusionCondition(MemberSegment memberSegment) {
@@ -123,22 +125,22 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
         return exclusionCondition;
     }
 
-    private BooleanBuilder getCursor(Long cursorId){
+    private BooleanBuilder getCursor(Long cursorId) {
 
         BooleanBuilder cursorBuilder = new BooleanBuilder();
         if (cursorId == null) {
             return cursorBuilder;
         }
         Long targetWishCount = Optional.ofNullable(queryFactory
-                .select(boardStatistic.boardWishCount)
-                .from(boardStatistic)
-                .join(boardStatistic.board, board)
-                .where(board.id.eq(cursorId))
-                .fetchOne())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+                        .select(boardStatistic.boardWishCount)
+                        .from(boardStatistic)
+                        .join(boardStatistic.board, board)
+                        .where(board.id.eq(cursorId))
+                        .fetchOne())
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         cursorBuilder.and(boardStatistic.boardWishCount.lt(targetWishCount))
-            .or(boardStatistic.boardWishCount.eq(targetWishCount).and(board.id.loe(cursorId)));
+                .or(boardStatistic.boardWishCount.eq(targetWishCount).and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }

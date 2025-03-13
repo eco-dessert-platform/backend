@@ -55,7 +55,7 @@ public class BoardInfoDto {
     public static BoardInfoDto create(Board board) {
         return new BoardInfoDto(
             board.getId(),
-            board.getProfile(),
+            board.getThumbnail(),
             board.getTitle(),
             board.getPrice(),
             board.getDiscountRate(),

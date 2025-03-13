@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
@@ -48,7 +50,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QPreference preference = QPreference.preference;
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
-    private static final QProductImg productImage = QProductImg.productImg;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
     private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
@@ -66,206 +67,210 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public List<TitleDto> findAllTitle() {
         return queryFactory.select(
-                new QTitleDto(
-                    board.id,
-                    board.title))
-            .from(board)
-            .orderBy(board.id.desc())
-            .fetch();
+                        new QTitleDto(
+                                board.id,
+                                board.title))
+                .from(board)
+                .orderBy(board.id.desc())
+                .fetch();
     }
 
     @Override
     public List<BoardResponseDao> getBoardResponseList(
-        Long memberId,
-        FilterRequest filterRequest,
-        SortType sort,
-        Long cursorId
+            Long memberId,
+            FilterRequest filterRequest,
+            SortType sort,
+            Long cursorId
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
         BooleanBuilder cursorInfo = boardCursorGeneratorMapping
-            .mappingCursorGenerator(sort)
-            .getCursor(cursorId);
+                .mappingCursorGenerator(sort)
+                .getCursor(cursorId);
         OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
-        if(sort == SortType.RECOMMEND && memberId != null){
+        if (sort == SortType.RECOMMEND && memberId != null) {
             PreferenceType selectedPreference = getMemberPreference(memberId).getPreferenceType();
-            if(selectedPreference == null){
+            if (selectedPreference == null) {
                 throw new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND);
             }
             cursorInfo = preferenceRecommendCursorGenerator.getCursor(cursorId, selectedPreference);
-            orderExpression = List.of(QBoardPreferenceStatistic.boardPreferenceStatistic.preferenceScore.desc()).toArray(new OrderSpecifier[0]);
-            return preferenceProviderResolver.findBoards(filter, cursorInfo, orderExpression, memberId, selectedPreference);
+            orderExpression = List.of(QBoardPreferenceStatistic.boardPreferenceStatistic.preferenceScore.desc())
+                    .toArray(new OrderSpecifier[0]);
+            return preferenceProviderResolver.findBoards(filter, cursorInfo, orderExpression, memberId,
+                    selectedPreference);
         }
 
         return boardQueryProviderResolver.resolve(sort)
-            .findBoards(filter, cursorInfo, orderExpression);
+                .findBoards(filter, cursorInfo, orderExpression);
     }
 
     @Override
     public List<BoardResponseDao> getAllByFolder(
-        FolderBoardSortType sort,
-        Long cursorId,
-        WishListFolder folder,
-        Long memberId
+            FolderBoardSortType sort,
+            Long cursorId,
+            WishListFolder folder,
+            Long memberId
     ) {
         BooleanBuilder cursorBuilder = boardInFolderCursorGeneratorMapping
-            .mappingCursorGenerator(sort)
-            .getCursor(cursorId, folder.getId());
+                .mappingCursorGenerator(sort)
+                .getCursor(cursorId, folder.getId());
         OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
 
         return BoardInFolderQueryGeneratorMapping.builder()
-            .order(sortBuilder)
-            .sortType(sort)
-            .wishListFolder(folder)
-            .jpaQueryFactory(queryFactory)
-            .cursorBuilder(cursorBuilder)
-            .build()
-            .mappingQueryGenerator()
-            .getBoards();
+                .order(sortBuilder)
+                .sortType(sort)
+                .wishListFolder(folder)
+                .jpaQueryFactory(queryFactory)
+                .cursorBuilder(cursorBuilder)
+                .build()
+                .mappingQueryGenerator()
+                .getBoards();
     }
 
     @Override
     public List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId) {
         return queryFactory.select(
-                Projections.constructor(
-                    BoardAndImageDto.class,
-                    board.id,
-                    board.store.id,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    board.purchaseUrl,
-                    board.status,
-                    board.deliveryFee,
-                    board.freeShippingConditions,
-                    board.discountRate,
-                    productImage.url)
-            )
-            .from(board)
-            .leftJoin(productImage)
-            .on(productImage.board.eq(board))
-            .where(board.id.eq(boardId))
-            .fetch();
+                        Projections.constructor(
+                                BoardAndImageDto.class,
+                                board.id,
+                                board.store.id,
+                                productImg.url,
+                                productImg.imgOrder,
+                                board.title,
+                                board.price,
+                                board.purchaseUrl,
+                                board.status,
+                                board.deliveryFee,
+                                board.freeShippingConditions,
+                                board.discountRate
+                                )
+                )
+                .from(board)
+                .leftJoin(productImg)
+                .on(productImg.board.eq(board))
+                .where(board.id.eq(boardId))
+                .fetch();
     }
 
     @Override
     public List<Board> checkingNullRanking() {
         return queryFactory.select(board)
-            .from(board)
-            .leftJoin(board.boardStatistic, boardStatistic)
-            .where(boardStatistic.id.isNull())
-            .fetch();
+                .from(board)
+                .leftJoin(board.boardStatistic, boardStatistic)
+                .where(boardStatistic.id.isNull())
+                .fetch();
     }
 
     @Override
     public List<BoardWithTagDao> checkingNullWithPreferenceRanking() {
         return queryFactory.select(new QBoardWithTagDao(
-                board.id,
-                product.glutenFreeTag,
-                product.highProteinTag,
-                product.sugarFreeTag,
-                product.veganTag,
-                product.ketogenicTag
-            ))
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .leftJoin(preferenceStatistic)
-            .on(board.id.eq(preferenceStatistic.boardId))
-            .where(preferenceStatistic.id.isNull())
-            .fetch();
+                        board.id,
+                        product.glutenFreeTag,
+                        product.highProteinTag,
+                        product.sugarFreeTag,
+                        product.veganTag,
+                        product.ketogenicTag
+                ))
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .leftJoin(preferenceStatistic)
+                .on(board.id.eq(preferenceStatistic.boardId))
+                .where(preferenceStatistic.id.isNull())
+                .fetch();
     }
 
     @Override
     public List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
-            .from(board)
-            .leftJoin(wishListBoard)
-            .on(board.id.eq(wishListBoard.boardId))
-            .where(board.id.in(responseList)
-                .and(wishListBoard.memberId.eq(memberId)))
-            .fetch();
+                .from(board)
+                .leftJoin(wishListBoard)
+                .on(board.id.eq(wishListBoard.boardId))
+                .where(board.id.in(responseList)
+                        .and(wishListBoard.memberId.eq(memberId)))
+                .fetch();
     }
 
     @Override
     public Long getBoardCount(FilterRequest filterRequest) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
         return queryFactory.select(board.countDistinct())
-            .from(board)
-            .leftJoin(product)
-            .on(board.id.eq(product.board.id))
-            .where(filter)
-            .fetchOne();
+                .from(board)
+                .leftJoin(product)
+                .on(board.id.eq(product.board.id))
+                .where(filter)
+                .fetchOne();
     }
 
     @Override
     public List<BoardResponseDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber) {
-        if(cursorId == null){
+        if (cursorId == null) {
             cursorId = 1L;
         }
         Long randomBoardId = queryFactory.select(randomBoard.id)
-            .from(randomBoard)
-            .where(randomBoard.randomBoardId.eq(cursorId).and(randomBoard.setNumber.eq(setNumber)))
-            .fetchOne();
+                .from(randomBoard)
+                .where(randomBoard.randomBoardId.eq(cursorId).and(randomBoard.setNumber.eq(setNumber)))
+                .fetchOne();
         List<Long> boardIds = queryFactory.select(randomBoard.randomBoardId)
-            .from(randomBoard)
-            .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
-            .orderBy(randomBoard.id.asc())
-            .limit(BOARD_PAGE_SIZE + 1)
-            .fetch();
+                .from(randomBoard)
+                .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
+                .orderBy(randomBoard.id.asc())
+                .limit(BOARD_PAGE_SIZE + 1)
+                .fetch();
 
         return queryFactory.select(
-                new QBoardResponseDao(
-                    board.id,
-                    store.id,
-                    store.name,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    product.category,
-                    product.glutenFreeTag,
-                    product.highProteinTag,
-                    product.sugarFreeTag,
-                    product.veganTag,
-                    product.ketogenicTag,
-                    boardStatistic.boardReviewGrade,
-                    boardStatistic.boardReviewCount,
-                    product.orderEndDate,
-                    product.soldout,
-                    board.discountRate
-                ))
-            .from(product)
-            .join(board)
-            .on(product.board.id.eq(board.id))
-            .join(store)
-            .on(board.store.id.eq(store.id))
-            .join(randomBoard)
-            .on(randomBoard.randomBoardId.eq(board.id))
-            .join(board.boardStatistic, boardStatistic)
-            .where(board.id.in(boardIds))
-            .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
-            .orderBy(randomBoard.id.asc())
-            .fetch();
+                        new QBoardResponseDao(
+                                board.id,
+                                store.id,
+                                store.name,
+                                productImg.url,
+                                board.title,
+                                board.price,
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                boardStatistic.boardReviewGrade,
+                                boardStatistic.boardReviewCount,
+                                product.orderEndDate,
+                                product.soldout,
+                                board.discountRate
+                        ))
+                .from(product)
+                .join(board)
+                .on(product.board.id.eq(board.id))
+                .join(store)
+                .on(board.store.id.eq(store.id))
+                .join(randomBoard)
+                .on(randomBoard.randomBoardId.eq(board.id))
+                .join(board.boardStatistic, boardStatistic)
+                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .where(board.id.in(boardIds))
+                .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
+                .orderBy(randomBoard.id.asc())
+                .fetch();
     }
 
-    private Preference getMemberPreference(Long memberId){
+    private Preference getMemberPreference(Long memberId) {
         return queryFactory.select(preference)
-            .from(preference)
-            .join(memberPreference)
-            .on(preference.id.eq(memberPreference.preferenceId))
-            .where(memberPreference.memberId.eq(memberId))
-            .fetchOne();
+                .from(preference)
+                .join(memberPreference)
+                .on(preference.id.eq(memberPreference.preferenceId))
+                .where(memberPreference.memberId.eq(memberId))
+                .fetchOne();
     }
 
     @Override
     public List<Board> findBoardsByStore(Long storeId, Long boardIdAsCursorId) {
         return queryFactory.selectFrom(board)
-            .join(board.store, store).fetchJoin()
-            .join(board.boardStatistic, boardStatistic).fetchJoin()
-            .where(
-                board.id.loe(boardIdAsCursorId),
-                store.id.eq(storeId))
-            .orderBy(board.id.desc())
-            .fetch();
+                .join(board.store, store).fetchJoin()
+                .join(board.boardStatistic, boardStatistic).fetchJoin()
+                .where(
+                        board.id.loe(boardIdAsCursorId),
+                        store.id.eq(storeId))
+                .orderBy(board.id.desc())
+                .fetch();
     }
 
 }
