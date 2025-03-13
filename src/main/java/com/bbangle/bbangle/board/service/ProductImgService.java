@@ -60,10 +60,12 @@ public class ProductImgService {
      */
     @Transactional
     public void connectImagesToBoard(List<Long> imageIds, Board board) {
-        List<ProductImg> productImgs = productImgRepository.findAllById(imageIds);
+        List<ProductImg> productImgs = productImgRepository.findAllByIdInOrderByIdAsc(imageIds);
 
+        int imgOrder = 0;
         for (ProductImg productImg : productImgs) {
-            productImg.updateBoard(board);
+            productImg.updateBoard(board, imgOrder);
+            imgOrder++;
         }
     }
 }

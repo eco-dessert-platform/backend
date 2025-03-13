@@ -2,11 +2,13 @@ package com.bbangle.bbangle.delivery;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
+@Schema(description = "배송사 Enum 목록", enumAsRef = true)
 public enum DeliveryCompany {
     CJ_LOGISTICS("CJ대한통운"),
     LOTTE("롯데택배"),
