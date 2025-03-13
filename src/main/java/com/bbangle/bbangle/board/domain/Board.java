@@ -72,6 +72,9 @@ public class Board extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<ProductImg> productImgs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<BoardDetail> boardDetails = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
