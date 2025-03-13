@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductImg {
 
+    private static final int THUMBNAIL_ORDER = 0;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,6 +44,6 @@ public class ProductImg {
     }
 
     public boolean isThumbnail() {
-        return this.imgOrder==0;
+        return this.imgOrder == THUMBNAIL_ORDER;
     }
 }
