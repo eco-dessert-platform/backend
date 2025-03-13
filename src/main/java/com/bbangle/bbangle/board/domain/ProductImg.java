@@ -36,7 +36,7 @@ public class ProductImg {
     @Column(name = "url")
     private String url;
 
-    private String imgIndex;
+    private int imgIndex;
 
     public void updateBoard(Board board) {
         this.board = board;
