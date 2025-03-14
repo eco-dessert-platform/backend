@@ -2,7 +2,7 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
@@ -37,7 +37,7 @@ public class BoardService {
         cacheManager = "contentCacheManager",
         condition = "#filterRequest.glutenFreeTag == null && #filterRequest.highProteinTag == null && #filterRequest.sugarFreeTag == null && #filterRequest.veganTag == null && #filterRequest.ketogenicTag == null && #filterRequest.category == null && #filterRequest.minPrice == null && #filterRequest.maxPrice == null && #filterRequest.orderAvailableToday == null && #sort == T(com.bbangle.bbangle.board.sort.SortType).RECOMMEND && #cursorId == null && #memberId == null"
     )
-    public BoardCustomPage<List<BoardResponseDto>> getBoardList(
+    public BoardCustomPage<List<BoardResponse>> getBoards(
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId,
@@ -45,7 +45,7 @@ public class BoardService {
     ) {
         List<BoardResponseDao> boards = boardRepository
             .getBoardResponseList(memberId, filterRequest, sort, cursorId);
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(boards,
+        BoardCustomPage<List<BoardResponse>> boardPage = BoardPageGenerator.getBoardPage(boards,
             DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
@@ -56,7 +56,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardCustomPage<List<BoardResponseDto>> getPostInFolder(
+    public BoardCustomPage<List<BoardResponse>> getPostInFolder(
         Long memberId,
         FolderBoardSortType sort,
         Long folderId,
@@ -72,7 +72,7 @@ public class BoardService {
     }
 
     private void updateLikeStatus(
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
+        BoardCustomPage<List<BoardResponse>> boardResponseDto,
         Long memberId
     ) {
         List<Long> responseList = extractIds(boardResponseDto);
@@ -85,11 +85,11 @@ public class BoardService {
     }
 
     private List<Long> extractIds(
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto
+        BoardCustomPage<List<BoardResponse>> boardResponseDto
     ) {
         return boardResponseDto.getContent()
             .stream()
-            .map(BoardResponseDto::getBoardId)
+            .map(BoardResponse::getBoardId)
             .toList();
     }
 

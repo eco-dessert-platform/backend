@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.recommend.service;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
 import com.bbangle.bbangle.board.recommend.repository.MemberSegmentRepository;
@@ -28,7 +28,7 @@ public class RecommendBoardService {
     private final BoardRepository boardRepository;
     private final RecommendBoardRepository recommendboardRepository;
 
-    public BoardCustomPage<List<BoardResponseDto>> getBoardList(
+    public BoardCustomPage<List<BoardResponse>> getBoardList(
         FilterRequest filterRequest,
         Long cursorId,
         Long memberId
@@ -40,7 +40,7 @@ public class RecommendBoardService {
         //TODO: 2. SEGMENT 정보와 일치하는 게시글 id 가져오기(커서 기반 페이지네이션 포함)
         List<BoardResponseDao> recommendBoardList = recommendboardRepository.getRecommendBoardList(
             filterRequest, cursorId, memberSegment);
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(recommendBoardList,
+        BoardCustomPage<List<BoardResponse>> boardPage = BoardPageGenerator.getBoardPage(recommendBoardList,
             DEFAULT_BOARD);
 
         if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
@@ -51,7 +51,7 @@ public class RecommendBoardService {
     }
 
     private void updateLikeStatus(
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
+        BoardCustomPage<List<BoardResponse>> boardResponseDto,
         Long memberId
     ) {
         List<Long> responseList = extractIds(boardResponseDto);
@@ -64,11 +64,11 @@ public class RecommendBoardService {
     }
 
     private List<Long> extractIds(
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto
+        BoardCustomPage<List<BoardResponse>> boardResponseDto
     ) {
         return boardResponseDto.getContent()
             .stream()
-            .map(BoardResponseDto::getBoardId)
+            .map(BoardResponse::getBoardId)
             .toList();
     }
 

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.fixture.TagDaoFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
@@ -45,7 +45,7 @@ class BoardPageGeneratorTest {
     @DisplayName("정상적으로 BoardResponseDao로부터 BoardResponseDto 페이지 리스트를 반환한다.")
     void convertToBoardResponseDtoPageFromBoardResponseDao() {
         //given, when
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(
+        BoardCustomPage<List<BoardResponse>> boardPage = BoardPageGenerator.getBoardPage(
             testList, false);
 
         //then

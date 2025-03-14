@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
@@ -77,14 +77,14 @@ public class BoardController {
     ) {
         sort = settingDefaultSortTypeIfNull(sort);
         if(memberId != null && sort == SortType.RECOMMEND){
-            BoardCustomPage<List<BoardResponseDto>> boardResponseList = recommendBoardService.getBoardList(
+            BoardCustomPage<List<BoardResponse>> boardResponseList = recommendBoardService.getBoardList(
                 filterRequest,
                 cursorId,
                 memberId);
 
             return responseService.getSingleResult(boardResponseList);
         }
-        BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
+        BoardCustomPage<List<BoardResponse>> boardResponseList = boardService.getBoards(
             filterRequest,
             sort,
             cursorId,
@@ -115,7 +115,7 @@ public class BoardController {
         if (sort == null) {
             sort = FolderBoardSortType.WISHLIST_RECENT;
         }
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(
+        BoardCustomPage<List<BoardResponse>> boardResponseDto = boardService.getPostInFolder(
             memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }

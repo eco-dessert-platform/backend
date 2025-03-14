@@ -5,7 +5,7 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,30 +42,31 @@ public class BoardPageGenerator {
      *              2. 함수가 20줄을 넘는다(아주 사소)
      *              3. 나머지는 쿼리로 한 번에 받지 않았기에 함수가 복잡하다(중요)
      */
-    public static BoardCustomPage<List<BoardResponseDto>> getBoardPage(
+    public static BoardCustomPage<List<BoardResponse>> getBoardPage(
         List<BoardResponseDao> boardDaos, Boolean isInFolder
     ) {
         if (boardDaos.isEmpty()) {
             return BoardCustomPage.emptyPage();
         }
 
-        List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(boardDaos, isInFolder);
+
+        List<BoardResponse> boardResponses = convertToBoardResponse(boardDaos, isInFolder);
 
         Long nextCursor = NO_NEXT_CURSOR;
         boolean hasNext = false;
-        if (boardResponseDtos.size() == HAS_NEXT_PAGE_SIZE) {
+        if (boardResponses.size() == HAS_NEXT_PAGE_SIZE) {
             hasNext = true;
-            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1)
+            nextCursor = boardResponses.get(boardResponses.size() - 1)
                 .getBoardId();
         }
-        boardResponseDtos = boardResponseDtos.stream()
+        boardResponses = boardResponses.stream()
             .limit(BOARD_PAGE_SIZE)
             .toList();
 
-        return BoardCustomPage.from(boardResponseDtos, nextCursor, hasNext);
+        return BoardCustomPage.from(boardResponses, nextCursor, hasNext);
     }
 
-    private static List<BoardResponseDto> convertToBoardResponse(
+    private static List<BoardResponse> convertToBoardResponse(
         List<BoardResponseDao> boardResponseDaoList,
         Boolean isInFolder
     ) {
@@ -78,13 +79,13 @@ public class BoardPageGenerator {
 
         boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
 
-        List<BoardResponseDto> boardResponseDtos = getBoardResponseDtos(boardResponseDaoList,
+        List<BoardResponse> boardResponses = getBoardResponseDtos(boardResponseDaoList,
             isInFolder, isBundled, tagMapByBoardId,
             isSoldOut, isBbangcketing);
 
         clearLinkedHashMap(tagMapByBoardId, isBundled, isSoldOut, isBbangcketing);
 
-        return boardResponseDtos;
+        return boardResponses;
     }
 
     private static Map<Long, Boolean> getIsBbangcketing(List<BoardResponseDao> boardResponseDaoList) {
@@ -136,7 +137,7 @@ public class BoardPageGenerator {
             ));
     }
 
-    private static List<BoardResponseDto> getBoardResponseDtos(
+    private static List<BoardResponse> getBoardResponseDtos(
         List<BoardResponseDao> boardResponseDaoList,
         Boolean isInFolder,
         Map<Long, Boolean> isBundled,
@@ -145,7 +146,7 @@ public class BoardPageGenerator {
     ) {
         if (Boolean.TRUE.equals(isInFolder)) {
             return boardResponseDaoList.stream()
-                .map(boardDao -> BoardResponseDto.inFolder(
+                .map(boardDao -> BoardResponse.inFolder(
                     boardDao,
                     isBundled.get(boardDao.boardId()),
                     tagMapByBoardId.get(boardDao.boardId()),
@@ -156,7 +157,7 @@ public class BoardPageGenerator {
         }
 
         return boardResponseDaoList.stream()
-            .map(boardDao -> BoardResponseDto.from(
+            .map(boardDao -> BoardResponse.from(
                 boardDao,
                 isBundled.get(boardDao.boardId()),
                 tagMapByBoardId.get(boardDao.boardId()),

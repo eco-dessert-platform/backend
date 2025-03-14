@@ -1,11 +1,9 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.domain.Board;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class BoardResponseDto {
+public final class BoardResponse {
 
     private Long boardId;
     private Long storeId;
@@ -31,7 +29,7 @@ public final class BoardResponseDto {
     private Integer discountRate;
 
     @Builder
-    public BoardResponseDto(
+    public BoardResponse(
         Long boardId,
         Long storeId,
         String storeName,
@@ -63,8 +61,8 @@ public final class BoardResponseDto {
         this.discountRate = discountRate;
     }
 
-    public static BoardResponseDto from(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
-        return BoardResponseDto.builder()
+    public static BoardResponse from(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
+        return BoardResponse.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
             .reviewRate(board.reviewRate().round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue())
@@ -83,8 +81,8 @@ public final class BoardResponseDto {
     }
 
 
-    public static BoardResponseDto inFolder(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
-        return BoardResponseDto.builder()
+    public static BoardResponse inFolder(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
+        return BoardResponse.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
             .storeName(board.storeName())
