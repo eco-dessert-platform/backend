@@ -55,16 +55,4 @@ public class BoardCustomPage<T> extends CustomPage<T> {
     ) {
         return new BoardCustomPage<>(boardList, nextCursor, hasNext);
     }
-
-    public static BoardCustomPage<List<BoardResponse>> from(
-        List<BoardResponse> boardList,
-        Long requestCursor,
-        boolean hasNext,
-        long boardCnt,
-        long storeCnt
-    ) {
-        return new BoardCustomPage<>(boardList, requestCursor, hasNext, boardCnt,
-            storeCnt);
-    }
-
 }
