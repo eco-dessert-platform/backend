@@ -21,8 +21,9 @@ public class CursorPageResponse<T> {
         boolean hasNext = data.size() > pageSize;
         Long nextCursor = -1L;
 
+        int lastIndex = pageSize;
         if (hasNext) {
-            T lastReponse = data.get(pageSize - 1);
+            T lastReponse = data.get(lastIndex);
             nextCursor = idExtractor.applyAsLong(lastReponse);
             data = data.subList(0, pageSize);
         }

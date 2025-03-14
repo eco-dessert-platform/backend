@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.service.RandomBoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.redis.RedisService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -33,7 +34,7 @@ public class RandomBoardController {
         Long memberId
     ) {
         Integer setNumber = redisService.getSetNumber(memberId);
-        BoardCustomPage<List<BoardResponse>> boardResponseList = randomBoardService.getRandomBoardList(
+        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(
             cursorId,
             memberId,
             setNumber);

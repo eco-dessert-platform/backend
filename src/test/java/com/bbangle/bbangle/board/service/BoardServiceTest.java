@@ -24,6 +24,7 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushType;
 import com.bbangle.bbangle.store.domain.Store;
@@ -116,15 +117,15 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .build();
 
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
-        BoardResponse response1 = boardList.getContent()
+        BoardResponse response1 = boardList.getData()
                 .get(0);
-        BoardResponse response2 = boardList.getContent()
+        BoardResponse response2 = boardList.getData()
                 .get(1);
 
         //then
-        assertThat(boardList.getContent()).hasSize(2);
+        assertThat(boardList.getData()).hasSize(2);
 
         assertThat(response2.getTags()
                 .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
@@ -163,11 +164,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .glutenFreeTag(true)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @Test
@@ -185,11 +186,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .builder()
                 .highProteinTag(true)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @Test
@@ -206,11 +207,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .sugarFreeTag(true)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @Test
@@ -227,11 +228,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .veganTag(true)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse>boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @Test
@@ -248,11 +249,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .ketogenicTag(true)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(2);
+        assertThat(boardList.getData()).hasSize(2);
 
     }
 
@@ -276,20 +277,20 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .category(category)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         if (category.equals(Category.ETC)) {
-            assertThat(boardList.getContent()).hasSize(2);
+            assertThat(boardList.getData()).hasSize(2);
             return;
         }
 
         if (category.equals(Category.ALL)) {
-            assertThat(boardList.getContent()).hasSize(2);
+            assertThat(boardList.getData()).hasSize(2);
             return;
         }
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @ParameterizedTest
@@ -331,11 +332,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 .sugarFreeTag(true)
                 .category(category)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getData()).hasSize(1);
     }
 
     @Test
@@ -352,54 +353,54 @@ class BoardServiceTest extends AbstractIntegrationTest {
         FilterRequest filterRequest = FilterRequest.builder()
                 .minPrice(5000)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList =
+        CursorPageResponse<BoardResponse> boardList =
                 boardService.getBoards(filterRequest, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest2 = FilterRequest.builder()
                 .minPrice(1000)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList2 =
+        CursorPageResponse<BoardResponse> boardList2 =
                 boardService.getBoards(filterRequest2, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest3 = FilterRequest.builder()
                 .maxPrice(10000)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList3 =
+        CursorPageResponse<BoardResponse> boardList3 =
                 boardService.getBoards(filterRequest3, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest4 = FilterRequest.builder()
                 .maxPrice(1000)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList4 =
+        CursorPageResponse<BoardResponse> boardList4 =
                 boardService.getBoards(filterRequest4, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest5 = FilterRequest.builder()
                 .maxPrice(900)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList5 =
+        CursorPageResponse<BoardResponse> boardList5 =
                 boardService.getBoards(filterRequest5, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest6 = FilterRequest.builder()
                 .minPrice(1000)
                 .maxPrice(10000)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList6 =
+        CursorPageResponse<BoardResponse> boardList6 =
                 boardService.getBoards(filterRequest6, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest7 = FilterRequest.builder()
                 .minPrice(1001)
                 .maxPrice(9999)
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList7 =
+        CursorPageResponse<BoardResponse> boardList7 =
                 boardService.getBoards(filterRequest7, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest8 = FilterRequest.builder()
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList8 =
+        CursorPageResponse<BoardResponse> boardList8 =
                 boardService.getBoards(filterRequest8, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
-        assertThat(boardList2.getContent()).hasSize(2);
-        assertThat(boardList3.getContent()).hasSize(2);
-        assertThat(boardList4.getContent()).hasSize(1);
-        assertThat(boardList5.getContent()).isEmpty();
-        assertThat(boardList6.getContent()).hasSize(2);
-        assertThat(boardList7.getContent()).isEmpty();
-        assertThat(boardList8.getContent()).hasSize(2);
+        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList2.getData()).hasSize(2);
+        assertThat(boardList3.getData()).hasSize(2);
+        assertThat(boardList4.getData()).hasSize(1);
+        assertThat(boardList5.getData()).isEmpty();
+        assertThat(boardList6.getData()).hasSize(2);
+        assertThat(boardList7.getData()).isEmpty();
+        assertThat(boardList8.getData()).hasSize(2);
     }
 
 
@@ -429,11 +430,11 @@ class BoardServiceTest extends AbstractIntegrationTest {
         productRepository.save(product3);
         FilterRequest filterRequest = FilterRequest.builder()
                 .build();
-        BoardCustomPage<List<BoardResponse>> boardList = boardService.getBoards(filterRequest,
+        CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(10);
+        assertThat(boardList.getData()).hasSize(10);
     }
 
     @Nested
@@ -484,12 +485,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("wishlist 추가 순으로 폴더 내의 찜한 게시글을 조회한다.")
         void getBoardInFolderWithDefaultOrder() {
             // given, when
-            BoardCustomPage<List<BoardResponse>> response = boardService.getPostInFolder(
+            CursorPageResponse<BoardResponse> response = boardService.getPostInFolder(
                     memberId,
                     DEFAULT_SORT_TYPE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = response.getContent();
+            List<BoardResponse> contents = response.getData();
 
             // then
             assertThat(contents).hasSize(10);
@@ -504,12 +505,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
         @DisplayName("낮은 가격 순으로 폴더 내 찜한 게시글을 조회한다.")
         void getBoardInFolderWithLowPriceOrder() {
             // given, when
-            BoardCustomPage<List<BoardResponse>> response = boardService.getPostInFolder(
+            CursorPageResponse<BoardResponse> response = boardService.getPostInFolder(
                     memberId,
                     FolderBoardSortType.LOW_PRICE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = response.getContent();
+            List<BoardResponse> contents = response.getData();
 
             // then
             assertThat(contents).hasSize(10);
@@ -528,13 +529,13 @@ class BoardServiceTest extends AbstractIntegrationTest {
             member2 = memberRepository.save(member2);
             Long memberId2 = memberService.getFirstJoinedMember(member2);
 
-            BoardCustomPage<List<BoardResponse>> response = boardService.getPostInFolder(
+            CursorPageResponse<BoardResponse> response = boardService.getPostInFolder(
                     memberId,
                     FolderBoardSortType.LOW_PRICE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            Long targetId = response.getContent()
-                    .get(response.getContent()
+            Long targetId = response.getData()
+                    .get(response.getData()
                             .size() - 1)
                     .getBoardId();
 
@@ -543,12 +544,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
             updateBoardStatistic.updateStatistic();
 
             // then
-            BoardCustomPage<List<BoardResponse>> responseAfterWish = boardService.getPostInFolder(
+            CursorPageResponse<BoardResponse> responseAfterWish = boardService.getPostInFolder(
                     memberId,
                     FolderBoardSortType.POPULAR,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = responseAfterWish.getContent();
+            List<BoardResponse> contents = responseAfterWish.getData();
 
             assertThat(contents).hasSize(10);
             assertThat(contents.stream()
