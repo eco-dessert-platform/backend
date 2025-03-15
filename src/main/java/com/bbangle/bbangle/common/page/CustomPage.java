@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.page;
+package com.bbangle.bbangle.common.page;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

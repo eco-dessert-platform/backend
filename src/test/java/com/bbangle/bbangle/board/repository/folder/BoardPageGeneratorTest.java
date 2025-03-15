@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.fixture.TagDaoFixture;
-import com.bbangle.bbangle.page.CursorPageResponse;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;

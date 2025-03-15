@@ -9,7 +9,7 @@ import com.bbangle.bbangle.board.recommend.repository.RecommendBoardRepository;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.CursorPageResponse;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.page;
 
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
