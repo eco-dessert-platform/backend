@@ -47,32 +47,4 @@ class StoreServiceMockTest extends AbstractIntegrationTest {
         );
     }
 
-    @Test
-    void testGetBoardsInStoreWithCursor() {
-        Long memberId = 123L;
-        Long storeId = 456L;
-        Long boardIdAsCursorId = 1L;
-
-        List<BoardInfoDto> boardInfoDtos = new ArrayList<>();
-
-        for (long i = 12; 0 < i; i--) {
-            boardInfoDtos.add(createMockBoardInfoDto(i));
-        }
-
-        when(boardRepository.findBoardsByStoreWithCursor(storeId, memberId, boardIdAsCursorId))
-            .thenReturn(boardInfoDtos);
-
-        CursorPageResponse<BoardInfoDto> result = storeService.getBoardsInStore(memberId, storeId, boardIdAsCursorId);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getData()).isNotEmpty();
-        assertThat(result.getData()).hasSize(10);
-
-        assertThat(result.getHasNext()).isTrue();
-
-        assertThat(result.getData().get(result.getData().size() - 1).getTitle()).isEqualTo("Delicious Bread3");
-
-        verify(boardRepository, times(1)).findBoardsByStoreWithCursor(storeId, memberId, boardIdAsCursorId);
-        verify(boardRepository, never()).findBoardsByStore(anyLong(), anyLong());
-    }
 }

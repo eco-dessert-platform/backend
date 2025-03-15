@@ -26,7 +26,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(price)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();
@@ -48,7 +47,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(randomPrice)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();
@@ -69,7 +67,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(price)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();
