@@ -37,7 +37,7 @@ public class RecommendBoardService {
         List<BoardResponseDao> recommendBoardList = recommendboardRepository.getRecommendBoardList(
                 filterRequest, cursorId, memberSegment);
 
-        return boardService.getResponseFromDoa(recommendBoardList, memberId, DEFAULT_BOARD);
+        return boardService.getResponseFromDao(recommendBoardList, memberId, DEFAULT_BOARD);
     }
 
 

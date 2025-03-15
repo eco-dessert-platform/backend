@@ -40,10 +40,10 @@ public class BoardService {
     public CursorPageResponse<BoardResponse> getBoards(FilterRequest filterRequest, SortType sort,
                                                        Long cursorId, Long memberId) {
         List<BoardResponseDao> boards = boardRepository.getBoardResponseList(memberId, filterRequest, sort, cursorId);
-        return getResponseFromDoa(boards, memberId, DEFAULT_BOARD);
+        return getResponseFromDao(boards, memberId, DEFAULT_BOARD);
     }
 
-    public CursorPageResponse<BoardResponse> getResponseFromDoa(List<BoardResponseDao> boardResponseDaos,
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardResponseDao> boardResponseDaos,
                                                                 Long memberId,
                                                                 Boolean isInFolder) {
         CursorPageResponse<BoardResponse> boardPage = BoardPageGenerator.getBoardPage(boardResponseDaos, isInFolder);
