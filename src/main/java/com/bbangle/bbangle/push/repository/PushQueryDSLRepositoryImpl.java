@@ -76,6 +76,15 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                 .fetch();
     }
 
+    @Override
+    public List<Long> findExistingPushProductIds(List<Long> productIds, Long memberId) {
+        return queryFactory.select(push.productId)
+            .from(push)
+            .where(push.productId.in(productIds),
+                push.memberId.eq(memberId))
+            .fetch();
+    }
+
     private BooleanBuilder commonFilter(Long memberId, Long productId, PushCategory pushCategory) {
         BooleanBuilder builder = new BooleanBuilder();
 
