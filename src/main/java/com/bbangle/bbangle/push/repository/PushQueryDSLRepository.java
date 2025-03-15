@@ -11,4 +11,5 @@ public interface PushQueryDSLRepository {
     Push findPush(Long productId, PushCategory pushCategory, Long memberId);
     List<PushResponse> findPushList(PushCategory pushCategory, Long memberId);
     List<FcmPush> findPushList();
+    List<Long> findExistingPushProductIds(List<Long> productIds, Long memberId);
 }

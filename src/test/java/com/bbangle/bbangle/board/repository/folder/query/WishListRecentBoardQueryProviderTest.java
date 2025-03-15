@@ -132,7 +132,7 @@ class WishListRecentBoardQueryProviderTest extends AbstractIntegrationTest {
             return new BoardResponseDao(board.getId(),
                 store.getId(),
                 store.getName(),
-                board.getProfile(),
+                board.getThumbnail(),
                 board.getTitle(),
                 board.getPrice(),
                 product.getCategory(),

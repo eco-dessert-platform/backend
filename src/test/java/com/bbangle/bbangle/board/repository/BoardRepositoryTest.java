@@ -70,7 +70,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             assertAll(
                     "BoardAndImageDto는 null이 없어야한다.",
                     () -> assertThat(boardAndImageDto.boardId()).isNotNull(),
-                    () -> assertThat(boardAndImageDto.url()).isNotNull()
+                    () -> assertThat(boardAndImageDto.purchaseUrl()).isNotNull()
             );
         }
 
