@@ -1,21 +1,9 @@
 package com.bbangle.bbangle.board.domain;
 
-import jakarta.persistence.ConstraintMode;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.bbangle.bbangle.util.HtmlUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Table(name = "product_detail")
 @Entity
@@ -29,14 +17,15 @@ public class BoardDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JsonIgnore
+    @OneToOne(mappedBy = "boardDetail")
     private Board board;
 
     @Lob
     private String content;
 
-    public void updateBoard(Board board) {
-        this.board = board;
+    public String getFullUrl() {
+        return HtmlUtils.convertHtmlWithFullImageUrls2(content);
     }
+
 }
