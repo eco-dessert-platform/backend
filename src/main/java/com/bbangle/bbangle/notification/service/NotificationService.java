@@ -8,7 +8,7 @@ import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
 import com.bbangle.bbangle.notification.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.page.NotificationCustomPage;
+import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

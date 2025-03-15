@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.page.CursorPageResponse;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import lombok.RequiredArgsConstructor;

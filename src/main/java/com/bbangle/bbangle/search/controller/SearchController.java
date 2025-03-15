@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.common.page.SearchCustomPage;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.service.SearchService;

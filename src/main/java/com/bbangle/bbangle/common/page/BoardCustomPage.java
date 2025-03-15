@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.page;
+package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public class BoardCustomPage<T> extends CustomPage<T> {
         super(content, requestCursor, hasNext);
     }
 
-    public static BoardCustomPage<List<BoardResponseDto>> emptyPage() {
+    public static BoardCustomPage<List<BoardResponse>> emptyPage() {
         long emptyResultNextCursor = -1L;
         boolean emptyResultHasNext = false;
 
@@ -48,23 +48,11 @@ public class BoardCustomPage<T> extends CustomPage<T> {
         );
     }
 
-    public static BoardCustomPage<List<BoardResponseDto>> from(
-        List<BoardResponseDto> boardList,
+    public static BoardCustomPage<List<BoardResponse>> from(
+        List<BoardResponse> boardList,
         Long nextCursor,
         boolean hasNext
     ) {
         return new BoardCustomPage<>(boardList, nextCursor, hasNext);
     }
-
-    public static BoardCustomPage<List<BoardResponseDto>> from(
-        List<BoardResponseDto> boardList,
-        Long requestCursor,
-        boolean hasNext,
-        long boardCnt,
-        long storeCnt
-    ) {
-        return new BoardCustomPage<>(boardList, requestCursor, hasNext, boardCnt,
-            storeCnt);
-    }
-
 }

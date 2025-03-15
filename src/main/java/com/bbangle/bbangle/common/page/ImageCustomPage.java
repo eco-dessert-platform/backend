@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.page;
+package com.bbangle.bbangle.common.page;
 
 import com.bbangle.bbangle.image.dto.ImageDto;
 

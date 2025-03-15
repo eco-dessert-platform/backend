@@ -236,14 +236,13 @@ public abstract class AbstractIntegrationTest {
 
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
-        builder.set("price", 1000);
         setBuilderParams(params, builder);
         Board sample = builder.sample();
 
-        if (!params.containsKey("store")) {
-            // store 선저장을 까먹은 분을 위해
-            storeRepository.save(sample.getStore());
-        }
+//        if (!params.containsKey("store")) {
+//            // store 선저장을 까먹은 분을 위해
+//            storeRepository.save(sample.getStore());
+//        }
         return sample;
     }
 

@@ -1,17 +1,13 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.service.RandomBoardService;
-import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.redis.RedisService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +32,7 @@ public class RandomBoardController {
         Long memberId
     ) {
         Integer setNumber = redisService.getSetNumber(memberId);
-        BoardCustomPage<List<BoardResponseDto>> boardResponseList = randomBoardService.getRandomBoardList(
+        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(
             cursorId,
             memberId,
             setNumber);

@@ -6,7 +6,7 @@ import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOr
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.common.page.SearchCustomPage;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.SearchBoardResponseDto;
