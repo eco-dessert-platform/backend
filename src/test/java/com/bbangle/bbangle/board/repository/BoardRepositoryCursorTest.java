@@ -15,6 +15,7 @@ import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.page.CursorPageResponse;
 import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +52,9 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
         Long cursorId = idList.get(3); // 아마도 3
 
         // when
-        BoardCustomPage<List<BoardResponse>> resultPage = boardService.getBoards(filter,
+        CursorPageResponse<BoardResponse> resultPage = boardService.getBoards(filter,
             SortType.RECOMMEND, cursorId, NULL_MEMBER_ID);
-        List<BoardResponse> result = resultPage.getContent();
+        List<BoardResponse> result = resultPage.getData();
 
         // then
         assertThat(result).hasSize(4);

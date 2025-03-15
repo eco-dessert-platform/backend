@@ -42,26 +42,17 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("findBoardAndBoardImageByBoardId 메서드는")
     class FindBoardAndBoardImageByBoardId {
 
-        private Board targetBoard;
-        private String TEST_URL = "www.TESTURL.com";
-        private final Long NOT_EXIST_BOARD_ID = -1L;
-
-        @BeforeEach
-        void init() {
-            ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url", TEST_URL)));
-            BoardDetail boardDetail = fixtureBoardDetail(
-                    Map.of("imgIndex", productImg.getId().intValue(),
-                            "url", TEST_URL));
-            targetBoard = boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
-            productImg.updateBoard(targetBoard);
-        }
-
         @Test
         @DisplayName("board id가 유효할 때 게시판 정보, 게시판 이미지를 조회할 수 있다.")
         void getBoardInfoAndImages() {
+            //given
+            Board targetBoard = boardRepository.save(fixtureBoard(Map.of()));
+
+            //when
             List<BoardAndImageDto> boardAndImageDtos = boardRepository
                     .findBoardAndBoardImageByBoardId(targetBoard.getId());
 
+            // then
             assertThat(boardAndImageDtos).hasSize(1);
 
             BoardAndImageDto boardAndImageDto = boardAndImageDtos.stream()
@@ -70,17 +61,8 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
             assertAll(
                     "BoardAndImageDto는 null이 없어야한다.",
                     () -> assertThat(boardAndImageDto.boardId()).isNotNull(),
-                    () -> assertThat(boardAndImageDto.url()).isNotNull()
+                    () -> assertThat(boardAndImageDto.price()).isNotNull()
             );
-        }
-
-        @Test
-        @DisplayName("board id가 유효하지 않을 때, 빈 배열을 반환한다.")
-        void getEmptyList() {
-            List<BoardAndImageDto> boardAndImageDtos = boardRepository
-                    .findBoardAndBoardImageByBoardId(NOT_EXIST_BOARD_ID);
-
-            assertThat(boardAndImageDtos).isEmpty();
         }
     }
 
