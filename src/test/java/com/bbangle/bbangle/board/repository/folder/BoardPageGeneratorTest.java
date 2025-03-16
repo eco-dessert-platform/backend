@@ -3,13 +3,12 @@ package com.bbangle.bbangle.board.repository.folder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
 import com.bbangle.bbangle.fixture.TagDaoFixture;
-import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,8 +44,8 @@ class BoardPageGeneratorTest {
     @DisplayName("정상적으로 BoardResponseDao로부터 BoardResponseDto 페이지 리스트를 반환한다.")
     void convertToBoardResponseDtoPageFromBoardResponseDao() {
         //given, when
-        BoardCustomPage<List<BoardResponseDto>> boardPage = BoardPageGenerator.getBoardPage(
-            testList, false);
+        CursorPageResponse<BoardResponse> boardPage = BoardPageGenerator.getBoardPage(
+                testList, false);
 
         //then
         assertAll(

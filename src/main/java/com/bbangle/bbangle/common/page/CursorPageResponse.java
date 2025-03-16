@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.page;
+package com.bbangle.bbangle.common.page;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.function.ToLongFunction;
 @RequiredArgsConstructor
 public class CursorPageResponse<T> {
 
-    private final List<T> data;
+    private final List<T> content;
     private final Long nextCursor;
     private final Boolean hasNext;
 
@@ -21,8 +21,9 @@ public class CursorPageResponse<T> {
         boolean hasNext = data.size() > pageSize;
         Long nextCursor = -1L;
 
+        int lastIndex = pageSize;
         if (hasNext) {
-            T lastReponse = data.get(pageSize - 1);
+            T lastReponse = data.get(lastIndex);
             nextCursor = idExtractor.applyAsLong(lastReponse);
             data = data.subList(0, pageSize);
         }
