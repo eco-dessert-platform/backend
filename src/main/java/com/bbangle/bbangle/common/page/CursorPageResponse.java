@@ -1,12 +1,13 @@
 package com.bbangle.bbangle.common.page;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 import java.util.function.ToLongFunction;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@NoArgsConstructor(force = true)
 @RequiredArgsConstructor
 public class CursorPageResponse<T> {
 
