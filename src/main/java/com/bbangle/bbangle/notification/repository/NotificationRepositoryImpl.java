@@ -6,7 +6,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.domain.QNotice;
 import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.page.NotificationCustomPage;
+import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

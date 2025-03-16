@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.CursorPageResponse;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
 import com.bbangle.bbangle.store.dto.StoreDto;

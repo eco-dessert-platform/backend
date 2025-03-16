@@ -195,7 +195,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
                     .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
                     .andExpect(jsonPath("$.result.content[0].storeId").value(createdBoard.getStore().getId()))
                     .andExpect(jsonPath("$.result.content[0].storeName").value(createdBoard.getStore().getName()))
-                    .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getProfile()))
+                    .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getThumbnail()))
                     .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
                     .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
                     .andExpect(jsonPath("$.result.content[0].isWished").value(true))
