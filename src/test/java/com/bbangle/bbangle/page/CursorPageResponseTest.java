@@ -31,7 +31,7 @@ class CursorPageResponseTest {
         );
 
         // Then
-        assertEquals(3, response.getData().size());
+        assertEquals(3, response.getContent().size());
         assertEquals(3L, response.getNextCursor());
         assertTrue(response.getHasNext());
     }
@@ -53,7 +53,7 @@ class CursorPageResponseTest {
         );
 
         // Then
-        assertEquals(3, response.getData().size());
+        assertEquals(3, response.getContent().size());
         assertEquals(NO_NEXT_CURSOR, response.getNextCursor());
         assertFalse(response.getHasNext());
     }
@@ -74,7 +74,7 @@ class CursorPageResponseTest {
         );
 
         // Then
-        assertEquals(2, response.getData().size());
+        assertEquals(2, response.getContent().size());
         assertEquals(NO_NEXT_CURSOR, response.getNextCursor());
         assertFalse(response.getHasNext());
     }
@@ -92,7 +92,7 @@ class CursorPageResponseTest {
         );
 
         // Then
-        assertTrue(response.getData().isEmpty());
+        assertTrue(response.getContent().isEmpty());
         assertEquals(NO_NEXT_CURSOR, response.getNextCursor());
         assertFalse(response.getHasNext());
     }

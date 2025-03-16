@@ -62,14 +62,14 @@ public class BoardService {
         List<Long> responseList = extractIds(boardResponses);
         List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
 
-        boardResponses.getData()
+        boardResponses.getContent()
                 .stream()
                 .filter(board -> likedContentIds.contains(board.getBoardId()))
                 .forEach(response -> response.updateLike(true));
     }
 
     private List<Long> extractIds(CursorPageResponse<BoardResponse> boardResponses) {
-        return boardResponses.getData()
+        return boardResponses.getContent()
                 .stream()
                 .map(BoardResponse::getBoardId)
                 .toList();

@@ -161,7 +161,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
             CursorPageResponse<BoardInfoDto> boardsInStoreDtos = storeService.getBoardsInStore(
                 NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            List<String> board1Tag = boardsInStoreDtos.getData().get(4).getTags();
+            List<String> board1Tag = boardsInStoreDtos.getContent().get(4).getTags();
             assertAll(
                 () -> assertThat(board1Tag).contains(TagEnum.GLUTEN_FREE.label()),
                 () -> assertThat(board1Tag).doesNotContain(
@@ -171,7 +171,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                     TagEnum.KETOGENIC.label()
                 ));
 
-            List<String> board2Tag = boardsInStoreDtos.getData().get(3).getTags();
+            List<String> board2Tag = boardsInStoreDtos.getContent().get(3).getTags();
             assertAll(
                 () -> assertThat(board2Tag)
                     .contains(TagEnum.HIGH_PROTEIN.label())
@@ -183,7 +183,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                     )
             );
 
-            List<String> board3Tag = boardsInStoreDtos.getData().get(2).getTags();
+            List<String> board3Tag = boardsInStoreDtos.getContent().get(2).getTags();
             assertAll(
                 () -> assertThat(board3Tag)
                     .contains(TagEnum.SUGAR_FREE.label())
@@ -195,7 +195,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                     )
             );
 
-            List<String> board4Tag = boardsInStoreDtos.getData().get(1).getTags();
+            List<String> board4Tag = boardsInStoreDtos.getContent().get(1).getTags();
             assertAll(
                 () -> assertThat(board4Tag)
                     .contains(TagEnum.VEGAN.label())
@@ -207,7 +207,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                     )
             );
 
-            List<String> board5Tag = boardsInStoreDtos.getData().get(0).getTags();
+            List<String> board5Tag = boardsInStoreDtos.getContent().get(0).getTags();
             assertAll(
                 () -> assertThat(board5Tag)
                     .contains(TagEnum.KETOGENIC.label())
@@ -227,9 +227,9 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
             AssertionsForClassTypes.assertThat(
-                boardsInStoreDtos.getData().get(4).getIsBbangcketing()).isTrue();
+                boardsInStoreDtos.getContent().get(4).getIsBbangcketing()).isTrue();
             AssertionsForClassTypes.assertThat(
-                boardsInStoreDtos.getData().get(3).getIsBbangcketing()).isFalse();
+                boardsInStoreDtos.getContent().get(3).getIsBbangcketing()).isFalse();
         }
 
         @Test
@@ -238,9 +238,9 @@ class StoreServiceTest extends AbstractIntegrationTest {
             CursorPageResponse<BoardInfoDto> boardsInStoreDtos = storeService.getBoardsInStore(
                 NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getData().get(4).getIsSoldOut())
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(4).getIsSoldOut())
                 .isTrue();
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getData().get(3).getIsSoldOut())
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(3).getIsSoldOut())
                 .isFalse();
         }
 
@@ -250,9 +250,9 @@ class StoreServiceTest extends AbstractIntegrationTest {
             CursorPageResponse<BoardInfoDto> boardsInStoreDtos = storeService.getBoardsInStore(
                 NULL_MEMBER_ID, store.getId(), NULL_CURSOR);  // board id desc 임
 
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getData().get(1).getIsBundled())
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(1).getIsBundled())
                 .isTrue();
-            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getData().get(0).getIsBundled())
+            AssertionsForClassTypes.assertThat(boardsInStoreDtos.getContent().get(0).getIsBundled())
                 .isFalse();
         }
 
@@ -267,7 +267,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 NULL_MEMBER_ID, emptyStore.getId(), NULL_CURSOR);  // board id desc 임
 
             //then
-            assertThat(boardsInStoreDtos.getData()).isEmpty();
+            assertThat(boardsInStoreDtos.getContent()).isEmpty();
         }
     }
 }

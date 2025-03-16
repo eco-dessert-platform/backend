@@ -53,7 +53,7 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
         // when
         CursorPageResponse<BoardResponse> resultPage = boardService.getBoards(filter,
             SortType.RECOMMEND, cursorId, NULL_MEMBER_ID);
-        List<BoardResponse> result = resultPage.getData();
+        List<BoardResponse> result = resultPage.getContent();
 
         // then
         assertThat(result).hasSize(4);

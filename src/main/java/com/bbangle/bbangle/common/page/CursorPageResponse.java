@@ -10,7 +10,7 @@ import java.util.function.ToLongFunction;
 @RequiredArgsConstructor
 public class CursorPageResponse<T> {
 
-    private final List<T> data;
+    private final List<T> content;
     private final Long nextCursor;
     private final Boolean hasNext;
 

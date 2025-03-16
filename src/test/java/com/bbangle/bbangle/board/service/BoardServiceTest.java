@@ -118,13 +118,13 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
         CursorPageResponse<BoardResponse> boardList = boardService.getBoards(filterRequest,
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
-        BoardResponse response1 = boardList.getData()
+        BoardResponse response1 = boardList.getContent()
                 .get(0);
-        BoardResponse response2 = boardList.getData()
+        BoardResponse response2 = boardList.getContent()
                 .get(1);
 
         //then
-        assertThat(boardList.getData()).hasSize(2);
+        assertThat(boardList.getContent()).hasSize(2);
 
         assertThat(response2.getTags()
                 .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
@@ -167,7 +167,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @Test
@@ -189,7 +189,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @Test
@@ -210,7 +210,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @Test
@@ -231,7 +231,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @Test
@@ -252,7 +252,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(2);
+        assertThat(boardList.getContent()).hasSize(2);
 
     }
 
@@ -281,15 +281,15 @@ class BoardServiceTest extends AbstractIntegrationTest {
 
         //then
         if (category.equals(Category.ETC)) {
-            assertThat(boardList.getData()).hasSize(2);
+            assertThat(boardList.getContent()).hasSize(2);
             return;
         }
 
         if (category.equals(Category.ALL)) {
-            assertThat(boardList.getData()).hasSize(2);
+            assertThat(boardList.getContent()).hasSize(2);
             return;
         }
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @ParameterizedTest
@@ -335,7 +335,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @Test
@@ -392,14 +392,14 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 boardService.getBoards(filterRequest8, DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(1);
-        assertThat(boardList2.getData()).hasSize(2);
-        assertThat(boardList3.getData()).hasSize(2);
-        assertThat(boardList4.getData()).hasSize(1);
-        assertThat(boardList5.getData()).isEmpty();
-        assertThat(boardList6.getData()).hasSize(2);
-        assertThat(boardList7.getData()).isEmpty();
-        assertThat(boardList8.getData()).hasSize(2);
+        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList2.getContent()).hasSize(2);
+        assertThat(boardList3.getContent()).hasSize(2);
+        assertThat(boardList4.getContent()).hasSize(1);
+        assertThat(boardList5.getContent()).isEmpty();
+        assertThat(boardList6.getContent()).hasSize(2);
+        assertThat(boardList7.getContent()).isEmpty();
+        assertThat(boardList8.getContent()).hasSize(2);
     }
 
 
@@ -433,7 +433,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                 DEFAULT_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getData()).hasSize(10);
+        assertThat(boardList.getContent()).hasSize(10);
     }
 
     @Nested
@@ -489,7 +489,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     DEFAULT_SORT_TYPE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = response.getData();
+            List<BoardResponse> contents = response.getContent();
 
             // then
             assertThat(contents).hasSize(10);
@@ -509,7 +509,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     FolderBoardSortType.LOW_PRICE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = response.getData();
+            List<BoardResponse> contents = response.getContent();
 
             // then
             assertThat(contents).hasSize(10);
@@ -533,8 +533,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     FolderBoardSortType.LOW_PRICE,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            Long targetId = response.getData()
-                    .get(response.getData()
+            Long targetId = response.getContent()
+                    .get(response.getContent()
                             .size() - 1)
                     .getBoardId();
 
@@ -548,7 +548,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
                     FolderBoardSortType.POPULAR,
                     wishListFolder.getId(),
                     DEFAULT_CURSOR_ID);
-            List<BoardResponse> contents = responseAfterWish.getData();
+            List<BoardResponse> contents = responseAfterWish.getContent();
 
             assertThat(contents).hasSize(10);
             assertThat(contents.stream()
