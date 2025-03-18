@@ -9,7 +9,7 @@ import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardSta
 import static com.bbangle.bbangle.store.domain.QStore.store;
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
@@ -39,9 +39,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
 
     @Override
-    public List<BoardResponseDao> getThumbnailBoardsByIds(List<Long> boardIds,
-                                                          OrderSpecifier<?>[] orderCondition,
-                                                          Long memberId) {
+    public List<BoardThumbnailDao> getThumbnailBoardsByIds(List<Long> boardIds,
+                                                           OrderSpecifier<?>[] orderCondition,
+                                                           Long memberId) {
         if (memberId == null) {
             memberId = NOT_EXISTS_MEMBER_ID;
         }
@@ -165,7 +165,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<BoardResponseDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber) {
+    public List<BoardThumbnailDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber) {
         if (cursorId == null) {
             cursorId = 1L;
         }

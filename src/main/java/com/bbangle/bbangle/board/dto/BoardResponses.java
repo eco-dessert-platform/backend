@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import java.time.LocalDateTime;
@@ -18,19 +18,19 @@ import java.util.stream.Collectors;
 public record BoardResponses(List<BoardResponse> boardResponses) {
 
     public static BoardResponses convertToBoardResponse(
-            List<BoardResponseDao> boardResponseDaoList,
+            List<BoardThumbnailDao> boardThumbnailDaoList,
             Boolean isInFolder
     ) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
-                boardResponseDaoList);
+                boardThumbnailDaoList);
 
-        Map<Long, Boolean> isBundled = getIsBundled(boardResponseDaoList);
-        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardResponseDaoList);
-        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardResponseDaoList);
+        Map<Long, Boolean> isBundled = getIsBundled(boardThumbnailDaoList);
+        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardThumbnailDaoList);
+        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardThumbnailDaoList);
 
-        boardResponseDaoList = removeDuplicatesByBoardId(boardResponseDaoList);
+        boardThumbnailDaoList = removeDuplicatesByBoardId(boardThumbnailDaoList);
 
-        List<BoardResponse> boardResponses = getBoardResponseDtos(boardResponseDaoList,
+        List<BoardResponse> boardResponses = getBoardResponseDtos(boardThumbnailDaoList,
                 isInFolder, isBundled, tagMapByBoardId,
                 isSoldOut, isBbangcketing);
 
@@ -39,10 +39,10 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
         return new BoardResponses(boardResponses);
     }
 
-    private static Map<Long, Boolean> getIsBbangcketing(List<BoardResponseDao> boardResponseDaoList) {
-        return boardResponseDaoList.stream()
+    private static Map<Long, Boolean> getIsBbangcketing(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
-                        BoardResponseDao::boardId,
+                        BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.orderStartDate())),
                         (existingList, newList) -> {
                             existingList.addAll(newList);
@@ -63,10 +63,10 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                 ));
     }
 
-    private static Map<Long, Boolean> getIsSoldOut(List<BoardResponseDao> boardResponseDaoList) {
-        return boardResponseDaoList.stream()
+    private static Map<Long, Boolean> getIsSoldOut(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
-                        BoardResponseDao::boardId,
+                        BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.isSoldOut())),
                         (existingList, newList) -> {
                             existingList.addAll(newList);
@@ -89,14 +89,14 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
     }
 
     private static List<BoardResponse> getBoardResponseDtos(
-            List<BoardResponseDao> boardResponseDaoList,
+            List<BoardThumbnailDao> boardThumbnailDaoList,
             Boolean isInFolder,
             Map<Long, Boolean> isBundled,
             Map<Long, List<String>> tagMapByBoardId,
             Map<Long, Boolean> isSoldOut, Map<Long, Boolean> isBbangcketing
     ) {
         if (Boolean.TRUE.equals(isInFolder)) {
-            return boardResponseDaoList.stream()
+            return boardThumbnailDaoList.stream()
                     .map(boardDao -> BoardResponse.inFolder(
                             boardDao,
                             isBundled.get(boardDao.boardId()),
@@ -107,7 +107,7 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                     .toList();
         }
 
-        return boardResponseDaoList.stream()
+        return boardThumbnailDaoList.stream()
                 .map(boardDao -> BoardResponse.from(
                         boardDao,
                         isBundled.get(boardDao.boardId()),
@@ -119,11 +119,11 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
     }
 
     private static Map<Long, List<String>> getTagListFromBoardResponseDao(
-            List<BoardResponseDao> boardResponseDaoList
+            List<BoardThumbnailDao> boardThumbnailDaoList
     ) {
-        return boardResponseDaoList.stream()
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
-                        BoardResponseDao::boardId,
+                        BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.tagsDao())),
                         (existingList, newList) -> {
                             existingList.addAll(newList);
@@ -139,11 +139,11 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                 ));
     }
 
-    private static Map<Long, Boolean> getIsBundled(List<BoardResponseDao> boardResponseDaoList) {
-        return boardResponseDaoList
+    private static Map<Long, Boolean> getIsBundled(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList
                 .stream()
                 .collect(Collectors.toMap(
-                        BoardResponseDao::boardId,
+                        BoardThumbnailDao::boardId,
                         board -> new HashSet<>(Collections.singleton(board.category())),
                         (existingSet, newSet) -> {
                             existingSet.addAll(newSet);
@@ -159,18 +159,18 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                 );
     }
 
-    private static List<BoardResponseDao> removeDuplicatesByBoardId(
-            List<BoardResponseDao> boardResponseDaos
+    private static List<BoardThumbnailDao> removeDuplicatesByBoardId(
+            List<BoardThumbnailDao> boardThumbnailDaos
     ) {
-        Map<Long, BoardResponseDao> uniqueBoardMap = boardResponseDaos.stream()
+        Map<Long, BoardThumbnailDao> uniqueBoardMap = boardThumbnailDaos.stream()
                 .collect(Collectors.toMap(
-                        BoardResponseDao::boardId,
+                        BoardThumbnailDao::boardId,
                         boardResponseDao -> boardResponseDao,
                         (existing, replacement) -> existing,
                         LinkedHashMap::new
                 ));
 
-        List<BoardResponseDao> resultList = uniqueBoardMap.values()
+        List<BoardThumbnailDao> resultList = uniqueBoardMap.values()
                 .stream()
                 .toList();
 

@@ -2,8 +2,8 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponses;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -53,14 +53,14 @@ public class BoardService {
 
         BoardSortRepository strategy = boardSortRepositoryFactory.getStrategy(sortType);
         List<Long> boardIds = strategy.findBoardIds(filter, cursorId);
-        List<BoardResponseDao> daos = boardRepository.getThumbnailBoardsByIds(
+        List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(
                 boardIds,
                 strategy.getSortOrders(),
                 memberId);
         return getResponseFromDao(daos, DEFAULT_BOARD);
     }
 
-    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardResponseDao> boardDaos,
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos,
                                                                 Boolean isInFolder) {
         BoardResponses boardResponses = BoardResponses.convertToBoardResponse(boardDaos, isInFolder);
         return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
@@ -79,7 +79,7 @@ public class BoardService {
 
         BoardInFolderSortRepository strategy = boardInFolderSortFactory.getStrategy(sort);
         List<Long> boardIds = strategy.findBoardIds(cursorId, folder.getId());
-        List<BoardResponseDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
+        List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
 
         BoardResponses responses = BoardResponses.convertToBoardResponse(daos, BOARD_IN_FOLDER);
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);

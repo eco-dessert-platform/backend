@@ -5,7 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record BoardResponseDao(
+public record BoardThumbnailDao(
     Long boardId,
     Long storeId,
     String storeName,
@@ -22,7 +22,7 @@ public record BoardResponseDao(
     Integer discountRate
 ) {
     @QueryProjection
-    public BoardResponseDao(
+    public BoardThumbnailDao(
         Long boardId,
         Long storeId,
         String storeName,

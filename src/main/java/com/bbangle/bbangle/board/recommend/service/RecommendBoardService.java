@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.recommend.service;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
@@ -40,7 +40,7 @@ public class RecommendBoardService {
         List<Long> boardIds = recommendboardRepository.getRecommendBoardList(
                 filterRequest, cursorId, memberSegment);
 
-        List<BoardResponseDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds,
+        List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds,
                 SortType.MOST_WISHED.getOrderExpression(), memberId);
 
         return boardService.getResponseFromDao(daos, DEFAULT_BOARD);
