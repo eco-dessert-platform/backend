@@ -62,7 +62,7 @@ public class BoardService {
 
     public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos,
                                                                 Boolean isInFolder) {
-        BoardResponses boardResponses = BoardResponses.convertToBoardResponse(boardDaos, isInFolder);
+        BoardResponses boardResponses = BoardResponses.of(boardDaos, isInFolder);
         return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
@@ -81,7 +81,7 @@ public class BoardService {
         List<Long> boardIds = strategy.findBoardIds(cursorId, folder.getId());
         List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
 
-        BoardResponses responses = BoardResponses.convertToBoardResponse(daos, BOARD_IN_FOLDER);
+        BoardResponses responses = BoardResponses.of(daos, BOARD_IN_FOLDER);
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 

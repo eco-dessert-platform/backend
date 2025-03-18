@@ -17,20 +17,20 @@ import java.util.stream.Collectors;
 
 public record BoardResponses(List<BoardResponse> boardResponses) {
 
-    public static BoardResponses convertToBoardResponse(
-            List<BoardThumbnailDao> boardThumbnailDaoList,
+    public static BoardResponses of(
+            List<BoardThumbnailDao> boardThumbnailDaos,
             Boolean isInFolder
     ) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
-                boardThumbnailDaoList);
+                boardThumbnailDaos);
 
-        Map<Long, Boolean> isBundled = getIsBundled(boardThumbnailDaoList);
-        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardThumbnailDaoList);
-        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardThumbnailDaoList);
+        Map<Long, Boolean> isBundled = getIsBundled(boardThumbnailDaos);
+        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardThumbnailDaos);
+        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardThumbnailDaos);
 
-        boardThumbnailDaoList = removeDuplicatesByBoardId(boardThumbnailDaoList);
+        boardThumbnailDaos = removeDuplicatesByBoardId(boardThumbnailDaos);
 
-        List<BoardResponse> boardResponses = getBoardResponseDtos(boardThumbnailDaoList,
+        List<BoardResponse> boardResponses = getBoardResponseDtos(boardThumbnailDaos,
                 isInFolder, isBundled, tagMapByBoardId,
                 isSoldOut, isBbangcketing);
 
