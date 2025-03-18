@@ -12,6 +12,7 @@ public record BoardResponseDao(
     String thumbnail,
     String title,
     Integer price,
+    Boolean isWished,
     Category category,
     TagsDao tagsDao,
     BigDecimal reviewRate,
@@ -28,6 +29,7 @@ public record BoardResponseDao(
         String thumbnail,
         String title,
         Integer price,
+        Boolean isWished,
         Category category,
         Boolean glutenFreeTag,
         Boolean highProteinTag,
@@ -40,7 +42,7 @@ public record BoardResponseDao(
         Boolean isSoldOut,
         Integer discountRate
     ) {
-        this(boardId, storeId, storeName, thumbnail, title, price, category,
+        this(boardId, storeId, storeName, thumbnail, title, price, isWished, category,
             new TagsDao(glutenFreeTag, highProteinTag, sugarFreeTag, veganTag, ketogenicTag),
             reviewRate, reviewCount, orderStartDate, isSoldOut, discountRate);
     }

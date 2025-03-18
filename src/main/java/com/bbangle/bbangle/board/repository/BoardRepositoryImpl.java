@@ -1,37 +1,24 @@
 package com.bbangle.bbangle.board.repository;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QRandomBoard.randomBoard;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic.boardPreferenceStatistic;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.store.domain.QStore.store;
+import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.domain.QProductImg;
-import com.bbangle.bbangle.board.domain.QRandomBoard;
-import com.bbangle.bbangle.board.dto.*;
-import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
-import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
-import com.bbangle.bbangle.board.repository.basic.cursor.PreferenceRecommendCursorGenerator;
-import com.bbangle.bbangle.board.repository.basic.query.PreferenceRecommendBoardQueryProviderResolver;
-import com.bbangle.bbangle.board.repository.folder.cursor.BoardInFolderCursorGeneratorMapping;
-import com.bbangle.bbangle.board.repository.folder.query.BoardInFolderQueryGeneratorMapping;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.board.repository.basic.query.BoardQueryProviderResolver;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.preference.domain.Preference;
-import com.bbangle.bbangle.preference.domain.PreferenceType;
-import com.bbangle.bbangle.preference.domain.QMemberPreference;
-import com.bbangle.bbangle.preference.domain.QPreference;
-import com.bbangle.bbangle.store.domain.QStore;
-import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
-import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.QTitleDto;
+import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.board.repository.sort.BoardFilterCreator;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -45,24 +32,51 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
+    private static final Long NOT_EXISTS_MEMBER_ID = -9999L;
 
-    private static final QMemberPreference memberPreference = QMemberPreference.memberPreference;
-    private static final QPreference preference = QPreference.preference;
-    private static final QBoard board = QBoard.board;
-    private static final QProduct product = QProduct.product;
-    private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
-    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
-    private static final QBoardPreferenceStatistic preferenceStatistic = QBoardPreferenceStatistic.boardPreferenceStatistic;
-    private static final QRandomBoard randomBoard = QRandomBoard.randomBoard;
-    private static final QStore store = QStore.store;
-
-    private final BoardQueryProviderResolver boardQueryProviderResolver;
-    private final PreferenceRecommendBoardQueryProviderResolver preferenceProviderResolver;
-    private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
-    private final BoardInFolderCursorGeneratorMapping boardInFolderCursorGeneratorMapping;
-    private final PreferenceRecommendCursorGenerator preferenceRecommendCursorGenerator;
 
     private final JPAQueryFactory queryFactory;
+
+
+    @Override
+    public List<BoardResponseDao> getThumbnailBoardsByIds(List<Long> boardIds,
+                                                          OrderSpecifier<?>[] orderCondition,
+                                                          Long memberId) {
+        if (memberId == null) {
+            memberId = NOT_EXISTS_MEMBER_ID;
+        }
+
+        return queryFactory.select(
+                        new QBoardResponseDao(
+                                board.id,
+                                store.id,
+                                store.name,
+                                productImg.url,
+                                board.title,
+                                board.price,
+                                wishListBoard.memberId.isNotNull(),
+                                product.category,
+                                product.glutenFreeTag,
+                                product.highProteinTag,
+                                product.sugarFreeTag,
+                                product.veganTag,
+                                product.ketogenicTag,
+                                boardStatistic.boardReviewGrade,
+                                boardStatistic.boardReviewCount,
+                                product.orderEndDate,
+                                product.soldout,
+                                board.discountRate
+                        ))
+                .from(product)
+                .join(board).on(product.board.id.eq(board.id))
+                .join(store).on(board.store.id.eq(store.id))
+                .join(board.boardStatistic, boardStatistic)
+                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .leftJoin(wishListBoard).on(board.id.eq(wishListBoard.boardId).and(wishListBoard.memberId.eq(memberId)))
+                .where((board.id.in(boardIds)))
+                .orderBy(orderCondition)
+                .fetch();
+    }
 
     @Override
     public List<TitleDto> findAllTitle() {
@@ -73,57 +87,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .from(board)
                 .orderBy(board.id.desc())
                 .fetch();
-    }
-
-    @Override
-    public List<BoardResponseDao> getBoardResponseList(
-            Long memberId,
-            FilterRequest filterRequest,
-            SortType sort,
-            Long cursorId
-    ) {
-        BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
-        BooleanBuilder cursorInfo = boardCursorGeneratorMapping
-                .mappingCursorGenerator(sort)
-                .getCursor(cursorId);
-        OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
-        if (sort == SortType.RECOMMEND && memberId != null) {
-            PreferenceType selectedPreference = getMemberPreference(memberId).getPreferenceType();
-            if (selectedPreference == null) {
-                throw new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND);
-            }
-            cursorInfo = preferenceRecommendCursorGenerator.getCursor(cursorId, selectedPreference);
-            orderExpression = List.of(QBoardPreferenceStatistic.boardPreferenceStatistic.preferenceScore.desc())
-                    .toArray(new OrderSpecifier[0]);
-            return preferenceProviderResolver.findBoards(filter, cursorInfo, orderExpression, memberId,
-                    selectedPreference);
-        }
-
-        return boardQueryProviderResolver.resolve(sort)
-                .findBoards(filter, cursorInfo, orderExpression);
-    }
-
-    @Override
-    public List<BoardResponseDao> getAllByFolder(
-            FolderBoardSortType sort,
-            Long cursorId,
-            WishListFolder folder,
-            Long memberId
-    ) {
-        BooleanBuilder cursorBuilder = boardInFolderCursorGeneratorMapping
-                .mappingCursorGenerator(sort)
-                .getCursor(cursorId, folder.getId());
-        OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
-
-        return BoardInFolderQueryGeneratorMapping.builder()
-                .order(sortBuilder)
-                .sortType(sort)
-                .wishListFolder(folder)
-                .jpaQueryFactory(queryFactory)
-                .cursorBuilder(cursorBuilder)
-                .build()
-                .mappingQueryGenerator()
-                .getBoards();
     }
 
     @Override
@@ -142,7 +105,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                                 board.deliveryFee,
                                 board.freeShippingConditions,
                                 board.discountRate
-                                )
+                        )
                 )
                 .from(board)
                 .leftJoin(productImg)
@@ -173,9 +136,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .from(product)
                 .join(board)
                 .on(product.board.id.eq(board.id))
-                .leftJoin(preferenceStatistic)
-                .on(board.id.eq(preferenceStatistic.boardId))
-                .where(preferenceStatistic.id.isNull())
+                .leftJoin(boardPreferenceStatistic)
+                .on(board.id.eq(boardPreferenceStatistic.boardId))
+                .where(boardPreferenceStatistic.id.isNull())
                 .fetch();
     }
 
@@ -225,6 +188,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                                 productImg.url,
                                 board.title,
                                 board.price,
+                                wishListBoard.memberId.isNotNull(),
                                 product.category,
                                 product.glutenFreeTag,
                                 product.highProteinTag,
@@ -246,19 +210,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .on(randomBoard.randomBoardId.eq(board.id))
                 .join(board.boardStatistic, boardStatistic)
                 .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
+                .leftJoin(wishListBoard).on(board.id.eq(wishListBoard.boardId))
                 .where(board.id.in(boardIds))
                 .where(randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
                 .orderBy(randomBoard.id.asc())
                 .fetch();
-    }
-
-    private Preference getMemberPreference(Long memberId) {
-        return queryFactory.select(preference)
-                .from(preference)
-                .join(memberPreference)
-                .on(preference.id.eq(memberPreference.preferenceId))
-                .where(memberPreference.memberId.eq(memberId))
-                .fetchOne();
     }
 
     @Override
