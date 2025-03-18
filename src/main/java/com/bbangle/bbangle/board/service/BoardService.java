@@ -1,11 +1,18 @@
 package com.bbangle.bbangle.board.service;
 
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardResponses;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.util.BoardPageGenerator;
+import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
+import com.bbangle.bbangle.board.repository.sort.strategy.BoardSortRepository;
+import com.bbangle.bbangle.board.repository.sort.BoardSortRepositoryFactory;
+import com.bbangle.bbangle.wishlist.repository.sort.strategy.BoardInFolderSortRepository;
+import com.bbangle.bbangle.wishlist.repository.sort.BoardInFolderSortFactory;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -14,8 +21,8 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.querydsl.core.BooleanBuilder;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -31,48 +38,32 @@ public class BoardService {
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
 
+    private final BoardSortRepositoryFactory boardSortRepositoryFactory;
+    private final BoardInFolderSortFactory boardInFolderSortFactory;
+
     @Cacheable(
             value = "recommendContents",
             key = "'defaultRecommendCache'",
             cacheManager = "contentCacheManager",
             condition = "#filterRequest.glutenFreeTag == null && #filterRequest.highProteinTag == null && #filterRequest.sugarFreeTag == null && #filterRequest.veganTag == null && #filterRequest.ketogenicTag == null && #filterRequest.category == null && #filterRequest.minPrice == null && #filterRequest.maxPrice == null && #filterRequest.orderAvailableToday == null && #sort == T(com.bbangle.bbangle.board.sort.SortType).RECOMMEND && #cursorId == null && #memberId == null"
     )
-    public CursorPageResponse<BoardResponse> getBoards(FilterRequest filterRequest, SortType sort,
+    public CursorPageResponse<BoardResponse> getBoards(FilterRequest filterRequest, SortType sortType,
                                                        Long cursorId, Long memberId) {
-        List<BoardResponseDao> boards = boardRepository.getBoardResponseList(memberId, filterRequest, sort, cursorId);
-        return getResponseFromDao(boards, memberId, DEFAULT_BOARD);
+        BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
+
+        BoardSortRepository strategy = boardSortRepositoryFactory.getStrategy(sortType);
+        List<Long> boardIds = strategy.findBoardIds(filter, cursorId);
+        List<BoardResponseDao> daos = boardRepository.getThumbnailBoardsByIds(
+                boardIds,
+                strategy.getSortOrders(),
+                memberId);
+        return getResponseFromDao(daos, DEFAULT_BOARD);
     }
 
-    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardResponseDao> boardResponseDaos,
-                                                                Long memberId,
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardResponseDao> boardDaos,
                                                                 Boolean isInFolder) {
-        CursorPageResponse<BoardResponse> boardPage = BoardPageGenerator.getBoardPage(boardResponseDaos, isInFolder);
-
-        if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
-            updateLikeStatus(boardPage, memberId);
-        }
-
-        return boardPage;
-    }
-
-    private void updateLikeStatus(
-            CursorPageResponse<BoardResponse> boardResponses,
-            Long memberId
-    ) {
-        List<Long> responseList = extractIds(boardResponses);
-        List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
-
-        boardResponses.getContent()
-                .stream()
-                .filter(board -> likedContentIds.contains(board.getBoardId()))
-                .forEach(response -> response.updateLike(true));
-    }
-
-    private List<Long> extractIds(CursorPageResponse<BoardResponse> boardResponses) {
-        return boardResponses.getContent()
-                .stream()
-                .map(BoardResponse::getBoardId)
-                .toList();
+        BoardResponses boardResponses = BoardResponses.convertToBoardResponse(boardDaos, isInFolder);
+        return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
     @Transactional(readOnly = true)
@@ -82,13 +73,16 @@ public class BoardService {
             Long folderId,
             Long cursorId
     ) {
+
         WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
-        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder,
-                memberId);
+        BoardInFolderSortRepository strategy = boardInFolderSortFactory.getStrategy(sort);
+        List<Long> boardIds = strategy.findBoardIds(cursorId, folder.getId());
+        List<BoardResponseDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
 
-        return BoardPageGenerator.getBoardPage(allByFolder, BOARD_IN_FOLDER);
+        BoardResponses responses = BoardResponses.convertToBoardResponse(daos, BOARD_IN_FOLDER);
+        return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
     @Transactional(readOnly = true)

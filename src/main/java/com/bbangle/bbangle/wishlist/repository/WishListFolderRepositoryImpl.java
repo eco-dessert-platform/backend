@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishlist.repository.impl;
+package com.bbangle.bbangle.wishlist.repository;
 
 
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
@@ -7,7 +7,6 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderQueryDSLRepository;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 

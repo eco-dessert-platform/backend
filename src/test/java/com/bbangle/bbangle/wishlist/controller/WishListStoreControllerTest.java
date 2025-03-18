@@ -11,7 +11,7 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
-import com.bbangle.bbangle.wishlist.repository.impl.WishListStoreRepositoryImpl;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepositoryImpl;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import java.time.Duration;
 import org.apache.http.HttpHeaders;

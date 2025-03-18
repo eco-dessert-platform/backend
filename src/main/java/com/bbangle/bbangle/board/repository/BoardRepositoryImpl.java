@@ -18,7 +18,7 @@ import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
-import com.bbangle.bbangle.board.repository.sort.BoardFilterCreator;
+import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
