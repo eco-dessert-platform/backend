@@ -1,0 +1,2 @@
+ALTER TABLE search
+    ADD COLUMN modified_at DATETIME(6) NULL;
