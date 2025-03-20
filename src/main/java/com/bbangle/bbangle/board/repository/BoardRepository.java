@@ -2,10 +2,13 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
-import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository {
 
@@ -37,5 +40,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     List<BoardInfoDto> findBestBoards(@Param("memberId") Long memberId,
                                       @Param("storeId") Long storeId);
 
-
+    @EntityGraph(attributePaths = {"store", "boardDetail", "boardStatistic"})
+    Optional<Board> findById(Long boardId);
 }

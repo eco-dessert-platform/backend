@@ -19,9 +19,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -74,25 +76,27 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<ProductImg> productImgs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<BoardDetail> boardDetails = new ArrayList<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private BoardDetail boardDetail;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "productInfoNotice_id")
     private ProductInfoNotice productInfoNotice;
 
-    @OneToOne(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL ) // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
+    @OneToOne(mappedBy = "board", cascade = CascadeType.ALL)
+    // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
     private BoardStatistic boardStatistic;
 
     public void addProducts(List<Product> products) {
         this.products.addAll(products);
-        products.forEach(product -> product.setBoard(this)); 
+        products.forEach(product -> product.setBoard(this));
     }
 
-    public void addBoardDetails(List<BoardDetail> boardDetails) {
-        this.boardDetails.addAll(boardDetails);
-        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this)); 
-    }
+//    public void addBoardDetails(List<BoardDetail> boardDetails) {
+//        this.boardDetails.addAll(boardDetails);
+//        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this));
+//    }
 
     public Board(Store store, String title, int price, int discountRate,
                  int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
@@ -119,12 +123,13 @@ public class Board extends BaseEntity {
             throw new BbangleException(BbangleErrorCode.INVALID_DELIVERY_FEE);
         }
     }
+
     public List<String> getTags() {
         return products.stream()
-            .map(Product::getTags)
-            .flatMap(List::stream)
-            .distinct()
-            .toList();
+                .map(Product::getTags)
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
     }
 
     public boolean isSoldOut() {
@@ -137,8 +142,8 @@ public class Board extends BaseEntity {
 
     public boolean isBundled() {
         return products.stream().map(Product::getCategory)
-            .distinct()
-            .count() > 1;
+                .distinct()
+                .count() > 1;
     }
 
     public String getThumbnail() {
@@ -147,5 +152,12 @@ public class Board extends BaseEntity {
                 .findFirst()
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_WITH_IMAGE_NOTFOUND))
                 .getUrl();
+    }
+
+    public List<String> getSupportingImages() {
+        return productImgs.stream()
+                .filter(img -> !img.isThumbnail())
+                .map(ProductImg::getUrl)
+                .toList();
     }
 }

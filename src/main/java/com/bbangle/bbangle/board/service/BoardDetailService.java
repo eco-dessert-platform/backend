@@ -1,56 +1,68 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.common.TagUtils;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ViewCount;
-import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.BoardAndImageResponses;
-import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardInfo;
-import com.bbangle.bbangle.board.dto.SimilarityBoardDto;
-import com.bbangle.bbangle.board.dto.SimilarityBoardResponse;
+import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.service.component.ViewCountComponent;
+import com.bbangle.bbangle.board.service.dto.BoardDetailCommand;
+import com.bbangle.bbangle.board.service.dto.BoardDetailInfo;
+import com.bbangle.bbangle.board.service.mapper.BoardDetailInfoMapper;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.push.repository.PushRepository;
 import com.bbangle.bbangle.util.HtmlUtils;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoardDetailService {
 
-    private final WishListBoardRepository wishListBoardRepository;
-    private final ViewCountComponent viewCountComponent;
     private static final int RECOMMENDATION_ITEM_COUNT = 3;
     private static final int ZERO_INSUFFICIENT = 0;
+    private static final Boolean NOT_WISHED_BOARD = false;
+    private static final Boolean NOT_WISHED_STORE = false;
+    private static final List<Long> NOT_BBANGKETTING_PRODUCT_IDS = List.of();
+
+
+    private final WishListBoardRepository wishListBoardRepository;
+    private final WishListStoreRepository wishListStoreRepository;
+    private final PushRepository pushRepository;
+    private final ViewCountComponent viewCountComponent;
     private final BoardStatisticRepository boardStatisticRepository;
     private final BoardDetailRepository boardDetailRepository;
     private final BoardStatisticService boardStatisticService;
     private final BoardRepository boardRepository;
     private final HtmlUtils htmlUtils;
+    private final BoardDetailInfoMapper boardDetailInfoMapper;
 
     @Transactional
-    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId, String ipAddress) {
-        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(boardId);
-        BoardAndImageResponses boardAndImageResponses = BoardAndImageResponses.createFromDtos(boardAndImageDtos);
+    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId,
+                                                 String ipAddress) {
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
+                boardId);
+        BoardAndImageResponses boardAndImageResponses = BoardAndImageResponses.createFromDtos(
+                boardAndImageDtos);
 
         boolean isWished = Objects.nonNull(memberId)
                 && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
 
         String boardDetailHtml = boardDetailRepository.findByBoardId(boardId);
-        String boardDetailHtmlWithCdnUrl = htmlUtils.convertHtmlWithFullImageUrls(boardDetailHtml);
+        String boardDetailHtmlWithCdnUrl = htmlUtils.convertHtmlWithFullImageUrls(
+                boardDetailHtml);
 
         String visitorInfo = ViewCount.builder()
                 .boardId(boardId)
@@ -67,7 +79,8 @@ public class BoardDetailService {
                 boardDetailHtmlWithCdnUrl);
     }
 
-    public List<SimilarityBoardResponse> getSimilarityBoardResponses(Long memberId, Long boardId) {
+    public List<SimilarityBoardResponse> getSimilarityBoardResponses(Long memberId,
+                                                                     Long boardId) {
         List<Long> similarityOrderByBoardIds = new ArrayList<>(
                 boardDetailRepository.findSimilarityBoardIdsByNotSoldOut(boardId,
                         RECOMMENDATION_ITEM_COUNT));
@@ -113,22 +126,95 @@ public class BoardDetailService {
                 }).collect(Collectors.toCollection(ArrayList::new));
 
         boardResponses.sort(
-                Comparator.comparingInt(dto -> similarityOrderByBoardIds.indexOf(dto.getBoardId())));
+                Comparator.comparingInt(
+                        dto -> similarityOrderByBoardIds.indexOf(dto.getBoardId())));
 
         return boardResponses;
     }
 
     private void addRandomRecommandationBoard(List<Long> similarityOrderByBoardIds) {
-        int insufficientNumber = RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
+        int insufficientNumber =
+                RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
         if (insufficientNumber > ZERO_INSUFFICIENT) {
-            List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(30).stream()
+            List<Long> popularBoardIds = boardStatisticRepository.findPopularBoardIds(
+                            30).stream()
                     .filter(id -> !similarityOrderByBoardIds.contains(id))
                     .collect(Collectors.toCollection(ArrayList::new));
 
             Collections.shuffle(popularBoardIds);
 
-            similarityOrderByBoardIds.addAll(popularBoardIds.stream().limit(3).toList());
+            similarityOrderByBoardIds.addAll(
+                    popularBoardIds.stream().limit(3).toList());
         }
+    }
+
+    @Transactional
+    public BoardImageDetailResponse getBoardDetails(Long memberId, Long boardId,
+                                                    String ipAddress) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
+                boardId);
+        BoardAndImageResponses boardAndImageResponses = BoardAndImageResponses.createFromDtos(
+                boardAndImageDtos);
+
+        boolean isWished = Objects.nonNull(memberId)
+                && wishListBoardRepository.existsByBoardIdAndMemberId(boardId, memberId);
+
+        String boardDetailHtml = boardDetailRepository.findByBoardId(boardId);
+        String boardDetailHtmlWithCdnUrl = htmlUtils.convertHtmlWithFullImageUrls(
+                boardDetailHtml);
+
+        String visitorInfo = ViewCount.builder()
+                .boardId(boardId)
+                .ipAddress(ipAddress)
+                .build()
+                .toString();
+
+        viewCountComponent.visit(visitorInfo);
+        boardStatisticService.updateViewCount(boardId);
+
+        return BoardImageDetailResponse.of(
+                boardAndImageResponses,
+                isWished,
+                boardDetailHtmlWithCdnUrl);
+    }
+
+    public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
+        Board board = boardRepository.findById(command.boardId())
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        if (Objects.isNull(command.memberId())) {
+            return boardDetailInfoMapper.toMainInfo(board, NOT_WISHED_STORE, NOT_WISHED_BOARD, NOT_BBANGKETTING_PRODUCT_IDS);
+        }
+
+        boolean isWishedBoard = wishListBoardRepository.existsByBoardIdAndMemberId(
+                command.boardId(), command.memberId());
+        boolean isWishedStore = wishListStoreRepository.existsByStoreIdAndMemberId(
+                board.getStore().getId(), command.memberId());
+
+        List<Long> bbangkettingProductIds = getBbankettingProductsIds(board, command.memberId());
+
+        return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard, bbangkettingProductIds);
+    }
+
+    private List<Long> getBbankettingProductsIds(Board board, Long memberId) {
+        List<Long> productIds = board.getProducts().stream().map(Product::getId).toList();
+        return pushRepository.findExistingPushProductIds(productIds, memberId);
+    }
+
+    // 패키지 구조 수정 시, 로직 변경해야함
+    @Transactional
+    public void increaseVisitor(BoardDetailCommand.Main command) {
+        String visitorInfo = ViewCount.builder()
+                .boardId(command.boardId())
+                .ipAddress(command.ipAddress())
+                .build()
+                .toString();
+
+        viewCountComponent.visit(visitorInfo);
+        boardStatisticService.updateViewCount(command.boardId());
     }
 }
 
