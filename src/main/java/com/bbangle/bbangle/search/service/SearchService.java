@@ -3,23 +3,25 @@ package com.bbangle.bbangle.search.service;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
 
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.common.page.SearchCustomPage;
+import com.bbangle.bbangle.common.page.ProcessedDataCursor;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.SearchBoardResponseDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
+import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.service.mapper.SearchInfoMapper;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
-import java.util.ArrayList;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class SearchService {
     private final BoardRepository boardRepository;
     private final AutoCompleteUtil autoCompleteUtil;
     private final KeywordUtil keywordUtil;
+    private final SearchInfoMapper searchInfoMapper;
 
     @Transactional
     public void saveKeyword(Long memberId, String keyword) {
@@ -62,65 +65,34 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    public SearchCustomPage<SearchResponse> getBoardList(
-        FilterRequest filterRequest,
-        SortType sort,
-        String keyword,
-        Long cursorId,
-        Long memberId
-    ) {
-        List<SearchBoardResponseDto> boards = new ArrayList<>(
-            searchRepository.getBoardResponseList(keyword, filterRequest, sort, cursorId)
-                .stream()
-                .map(SearchBoardResponseDto::new)
-                .toList()
+    public ProcessedDataCursor<SearchInfo.Select, SearchInfo.SearchBoardPage> getBoardList(SearchCommand.Main command) {
+
+        List<Board> boards = searchRepository.getBoardResponseList(command);
+        Long boardCount = searchRepository.getAllCount(command.keyword(), command.filterRequest());
+
+        List<SearchInfo.Select> selects;
+        Map<Long, Boolean> boardWishedMap = Objects.nonNull(command.memberId())
+                ? getBoardWishedMap(command.memberId(), boards)
+                : Collections.emptyMap();
+
+        selects = boards.stream()
+                .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
+                .toList();
+
+        return ProcessedDataCursor.of(
+                selects,
+                BOARD_PAGE_SIZE,
+                SearchInfo.Select::getBoardId,
+                board -> new SearchInfo.SearchBoardPage(board, boardCount)
         );
-        addBoardWished(memberId, boards);
-        Long boardCount = searchRepository.getAllCount(keyword, filterRequest);
-
-        return getSearchBoardPage(
-            boards,
-            boardCount);
     }
 
-    private void addBoardWished(Long memberId, List<SearchBoardResponseDto> boards) {
-        if (Objects.isNull(memberId)) {
-            return;
-        }
 
-        List<Long> boardIds = boards.stream().map(SearchBoardResponseDto::getBoardId).toList();
-        Map<Long, Boolean> boardMap = boardIds.stream()
-            .collect(Collectors.toMap(id -> id, id -> false));
-
-        boardRepository.getLikedContentsIds(boardIds, memberId)
-            .stream().forEach(boardId -> boardMap.put(boardId, true));
-
-        boards.stream().forEach(searchBoardResponseDto -> searchBoardResponseDto.updateWished(
-            boardMap.get(searchBoardResponseDto.getBoardId())));
-    }
-
-    public static SearchCustomPage<SearchResponse> getSearchBoardPage(
-        List<SearchBoardResponseDto> boards,
-        Long allItemCount
-    ) {
-        if (boards.isEmpty()) {
-            return SearchCustomPage.emptyPage();
-        }
-
-        Long nextCursor = NO_NEXT_CURSOR;
-        boolean hasNext = false;
-        if (boards.size() > BOARD_PAGE_SIZE) {
-            int endBoardIndex = boards.size() - 1;
-
-            hasNext = true;
-            nextCursor = boards.get(endBoardIndex).getBoardId() - 1;
-            boards.remove(endBoardIndex);
-        }
-        boards = boards.stream().limit(BOARD_PAGE_SIZE).toList();
-
-        SearchResponse searchResponse = SearchResponse.of(boards, allItemCount);
-
-        return SearchCustomPage.from(searchResponse, nextCursor, hasNext);
+    private Map<Long, Boolean> getBoardWishedMap(Long memberId, List<Board> boards) {
+        List<Long> boardIds = boards.stream().map(Board::getId).toList();
+        Map<Long, Boolean> boardMap = boardIds.stream().collect(Collectors.toMap(id -> id, id -> false));
+        boardRepository.getLikedContentsIds(boardIds, memberId).forEach(boardId -> boardMap.put(boardId, true));
+        return boardMap;
     }
 
     @Transactional(readOnly = true)

@@ -22,4 +22,5 @@ public interface BoardDetailMapper {
     BoardDetailCommand.Main toBoardDetailMain(Long boardId, Long memberId, HttpServletRequest request);
 
     BoardDetailResponse.Main toBoardDetailMainResponse(BoardDetailInfo.Main info);
+
 }

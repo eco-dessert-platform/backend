@@ -1,5 +1,20 @@
 package com.bbangle.bbangle.search.repository;
 
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
+import com.bbangle.bbangle.search.dto.KeywordDto;
+import com.bbangle.bbangle.search.dto.QKeywordDto;
+import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
@@ -7,40 +22,22 @@ import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardSta
 import static com.bbangle.bbangle.search.domain.QSearch.search;
 import static com.bbangle.bbangle.store.domain.QStore.store;
 
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.QKeywordDto;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDateTime;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 @Repository
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
 
+    private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
     private final JPAQueryFactory queryFactory;
 
 
     @Override
-    public List<Board> getBoardResponseList(
-        String keyword,
-        FilterRequest filterRequest,
-        SortType sort,
-        Long cursorId
-    ) {
-        BooleanBuilder filter = new SearchFilterCreator(keyword, filterRequest).create();
-//        BooleanBuilder cursorInfo = boardCursorGeneratorMapping.mappingCursorGenerator(sort)
-//            .getCursor(cursorId);
-        BooleanBuilder cursorInfo = new BooleanBuilder();
-        OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
+    public List<Board> getBoardResponseList(SearchCommand.Main command) {
+        BooleanBuilder filter = new SearchFilterCreator(command.keyword(), command.filterRequest()).create();
+        BooleanBuilder cursorInfo = boardCursorGeneratorMapping.mappingCursorGenerator(command.sort())
+            .getCursor(command.cursorId());
+        OrderSpecifier<?>[] orderExpression = command.sort().getOrderExpression();
 
         return queryFactory.selectFrom(board)
             .join(board.store, store).fetchJoin()
