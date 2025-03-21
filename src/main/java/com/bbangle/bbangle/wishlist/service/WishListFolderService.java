@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.wishlist.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
@@ -11,7 +9,7 @@ import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.repository.impl.WishListFolderRepositoryImpl;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepositoryImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

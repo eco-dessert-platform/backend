@@ -12,7 +12,7 @@ import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
-import com.bbangle.bbangle.wishlist.repository.impl.WishListStoreRepositoryImpl;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepositoryImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,20 +1,16 @@
 package com.bbangle.bbangle.board.recommend.repository;
 
-import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.recommend.domain.QSegmentIntolerance.segmentIntolerance;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
-import com.bbangle.bbangle.board.dao.QBoardResponseDao;
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
-import com.bbangle.bbangle.board.recommend.domain.QSegmentIntolerance;
-import com.bbangle.bbangle.board.repository.basic.BoardFilterCreator;
-import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
+import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -26,24 +22,17 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQueryDSLRepository {
 
-    private static final QBoardStatistic boardStatistic = QBoardStatistic.boardStatistic;
-    private static final QBoard board = QBoard.board;
-    private static final QProduct product = QProduct.product;
-    private static final QStore store = QStore.store;
-    private static final QSegmentIntolerance segmentIntolerance = QSegmentIntolerance.segmentIntolerance;
-
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<BoardResponseDao> getRecommendBoardList(
-            FilterRequest filterRequest,
-            Long cursorId,
+    public List<Long> getRecommendBoardList(
+            FilterRequest filterRequest, Long cursorId,
             MemberSegment memberSegment
     ) {
         BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
         BooleanBuilder cursorInfo = getCursor(cursorId);
         BooleanBuilder exclusionCondition = getExclusionCondition(memberSegment);
-        List<Long> boardIds = queryFactory.select(board.id)
+        return queryFactory.select(board.id)
                 .distinct()
                 .from(product)
                 .join(board)
@@ -58,37 +47,6 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
                 )
                 .orderBy(boardStatistic.boardWishCount.desc())
                 .limit(BOARD_PAGE_SIZE + 1)
-                .fetch();
-
-        return queryFactory.select(
-                        new QBoardResponseDao(
-                                board.id,
-                                store.id,
-                                store.name,
-                                productImg.url,
-                                board.title,
-                                board.price,
-                                product.category,
-                                product.glutenFreeTag,
-                                product.highProteinTag,
-                                product.sugarFreeTag,
-                                product.veganTag,
-                                product.ketogenicTag,
-                                boardStatistic.boardReviewGrade,
-                                boardStatistic.boardReviewCount,
-                                product.orderEndDate,
-                                product.soldout,
-                                board.discountRate
-                        ))
-                .from(product)
-                .join(board)
-                .on(product.board.id.eq(board.id))
-                .join(store)
-                .on(board.store.id.eq(store.id))
-                .join(board.boardStatistic, boardStatistic)
-                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
-                .where(board.id.in(boardIds))
-                .orderBy(boardStatistic.boardWishCount.desc())
                 .fetch();
     }
 

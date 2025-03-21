@@ -9,7 +9,6 @@ import static com.bbangle.bbangle.store.domain.QStore.store;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.repository.basic.cursor.BoardCursorGeneratorMapping;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.QKeywordDto;
@@ -27,7 +26,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
 
-    private final BoardCursorGeneratorMapping boardCursorGeneratorMapping;
     private final JPAQueryFactory queryFactory;
 
 
@@ -39,8 +37,9 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         Long cursorId
     ) {
         BooleanBuilder filter = new SearchFilterCreator(keyword, filterRequest).create();
-        BooleanBuilder cursorInfo = boardCursorGeneratorMapping.mappingCursorGenerator(sort)
-            .getCursor(cursorId);
+//        BooleanBuilder cursorInfo = boardCursorGeneratorMapping.mappingCursorGenerator(sort)
+//            .getCursor(cursorId);
+        BooleanBuilder cursorInfo = new BooleanBuilder();
         OrderSpecifier<?>[] orderExpression = sort.getOrderExpression();
 
         return queryFactory.selectFrom(board)

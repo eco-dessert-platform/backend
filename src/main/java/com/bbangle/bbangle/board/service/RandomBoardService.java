@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.service;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
@@ -20,8 +20,8 @@ public class RandomBoardService {
             Long memberId,
             Integer setNumber
     ) {
-        List<BoardResponseDao> boardResponseDaoList = boardRepository.getRandomboardList(cursorId, memberId, setNumber);
+        List<BoardThumbnailDao> boardThumbnailDaoList = boardRepository.getRandomboardList(cursorId, memberId, setNumber);
 
-        return boardService.getResponseFromDao(boardResponseDaoList, memberId, false);
+        return boardService.getResponseFromDao(boardThumbnailDaoList, false);
     }
 }

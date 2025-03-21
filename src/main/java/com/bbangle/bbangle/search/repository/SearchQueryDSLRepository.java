@@ -1,13 +1,10 @@
 package com.bbangle.bbangle.search.repository;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
 import java.time.LocalDateTime;
 import java.util.List;
 
