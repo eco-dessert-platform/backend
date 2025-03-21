@@ -11,7 +11,7 @@ import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
-import com.bbangle.bbangle.board.dao.QBoardResponseDao;
+import com.bbangle.bbangle.board.dao.QBoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
@@ -47,7 +47,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
 
         return queryFactory.select(
-                        new QBoardResponseDao(
+                        new QBoardThumbnailDao(
                                 board.id,
                                 store.id,
                                 store.name,
@@ -181,7 +181,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .fetch();
 
         return queryFactory.select(
-                        new QBoardResponseDao(
+                        new QBoardThumbnailDao(
                                 board.id,
                                 store.id,
                                 store.name,
