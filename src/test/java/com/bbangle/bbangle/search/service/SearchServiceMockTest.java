@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
@@ -49,8 +49,8 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         private String keyword;
         private Long cursorId;
         private Long memberId;
-        private BoardResponseDao boardResponseDao1;
-        private BoardResponseDao boardResponseDao2;
+        private BoardThumbnailDao boardThumbnailDao1;
+        private BoardThumbnailDao boardThumbnailDao2;
 
         @BeforeEach
         void setUp() {
@@ -70,7 +70,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             cursorId = 1L;
             memberId = 2L;
 
-            boardResponseDao1 = new BoardResponseDao(
+            boardThumbnailDao1 = new BoardThumbnailDao(
                 2L,
                 1L,
                 "testStoreName",
@@ -89,7 +89,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
                 false,
                 10);
 
-            boardResponseDao2 = new BoardResponseDao(
+            boardThumbnailDao2 = new BoardThumbnailDao(
                 3L,
                 1L,
                 "testStoreName",

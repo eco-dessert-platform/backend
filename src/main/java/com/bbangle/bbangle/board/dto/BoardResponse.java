@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
@@ -61,7 +61,7 @@ public final class BoardResponse {
         this.discountRate = discountRate;
     }
 
-    public static BoardResponse from(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
+    public static BoardResponse from(BoardThumbnailDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
         return BoardResponse.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
@@ -81,7 +81,7 @@ public final class BoardResponse {
     }
 
 
-    public static BoardResponse inFolder(BoardResponseDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
+    public static BoardResponse inFolder(BoardThumbnailDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
         return BoardResponse.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())

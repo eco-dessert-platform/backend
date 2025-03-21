@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.board.service.BoardUploadService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -11,9 +12,6 @@ import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.page.CustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,39 +31,31 @@ public class BoardController {
     private final RecommendBoardService recommendBoardService;
 
     @Operation(summary = "게시글 전체 조회")
-    @ApiResponse(
-            responseCode = "200",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = CustomPage.class)
-            )
-    )
     @GetMapping
     public CommonResult getList(
             @ParameterObject
             FilterRequest filterRequest,
-            @RequestParam(required = false, value = "sort")
+            @RequestParam(required = false, defaultValue = "RECOMMEND")
             SortType sort,
-            @RequestParam(required = false, value = "cursorId")
+            @RequestParam(required = false)
             Long cursorId,
             @AuthenticationPrincipal
             Long memberId
     ) {
-        sort = settingDefaultSortTypeIfNull(sort);
         if (memberId != null && sort == SortType.RECOMMEND) {
-            CursorPageResponse<BoardResponse> boardResponseList = recommendBoardService.getBoardList(
+            CursorPageResponse<BoardResponse> response = recommendBoardService.getBoardList(
                     filterRequest,
                     cursorId,
                     memberId);
 
-            return responseService.getSingleResult(boardResponseList);
+            return responseService.getSingleResult(response);
         }
-        CursorPageResponse<BoardResponse> boardResponseList = boardService.getBoards(
+        CursorPageResponse<BoardResponse> response = boardService.getBoards(
                 filterRequest,
                 sort,
                 cursorId,
                 memberId);
-        return responseService.getSingleResult(boardResponseList);
+        return responseService.getSingleResult(response);
     }
 
     @GetMapping("/count")
@@ -95,14 +85,5 @@ public class BoardController {
                 memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }
-
-    private SortType settingDefaultSortTypeIfNull(SortType sort) {
-        if (sort == null) {
-            sort = SortType.RECOMMEND;
-        }
-
-        return sort;
-    }
-
 }
 
