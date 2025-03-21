@@ -1,0 +1,1 @@
+ALTER TABLE product_img MODIFY COLUMN img_order INT NOT NULL;
