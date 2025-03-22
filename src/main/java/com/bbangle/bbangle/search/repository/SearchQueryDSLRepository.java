@@ -1,20 +1,22 @@
 package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchInfo;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SearchQueryDSLRepository {
 
-    List<Board> getBoardResponseList(SearchCommand.Main command);
+    SearchInfo.CursorCondition getCursorCondition(Long cursorId);
+
+    List<Board> getBoardResponseList(SearchCommand.Main command, SearchInfo.CursorCondition condition);
 
     Long getAllCount(
-        String keyword,
-        FilterRequest filterRequest
+            SearchCommand.Main command,
+            SearchInfo.CursorCondition condition
     );
 
     List<KeywordDto> getRecencyKeyword(Long memberId);
