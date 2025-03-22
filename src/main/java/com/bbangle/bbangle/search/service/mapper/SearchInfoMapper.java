@@ -24,9 +24,12 @@ public interface SearchInfoMapper {
     @Mapping(target = "isSoldOut", expression = "java(board.isSoldOut())")
     @Mapping(target = "isBundled", expression = "java(board.isBundled())")
     @Mapping(target = "isBbangcketing", expression = "java(board.isBbangketing())")
+    @Mapping(target = "tags", expression = "java(board.getTags())")
     @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "thumbnail", source = "board.thumbnail")
+    @Mapping(target = "title", source = "board.title")
+    @Mapping(target = "price", source = "board.price")
+    @Mapping(target = "discountRate", source = "board.discountRate")
     SearchInfo.Select toSearchSelectInfo(Board board, Boolean isWished);
-
-
 
 }
