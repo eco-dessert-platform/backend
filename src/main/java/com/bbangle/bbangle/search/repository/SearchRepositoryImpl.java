@@ -1,5 +1,11 @@
 package com.bbangle.bbangle.search.repository;
 
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.search.domain.QSearch.search;
+import static com.bbangle.bbangle.store.domain.QStore.store;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -11,24 +17,17 @@ import com.bbangle.bbangle.search.service.dto.QSearchInfo_CursorCondition;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import static com.bbangle.bbangle.board.domain.QBoard.board;
-import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
-import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-import static com.bbangle.bbangle.search.domain.QSearch.search;
-import static com.bbangle.bbangle.store.domain.QStore.store;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
-        private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = BOARD_PAGE_SIZE + 1;
+        private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = 11;
 
         private final JPAQueryFactory queryFactory;
         private final SearchFilter searchFilter;
@@ -55,8 +54,10 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         @Override
         public List<Board> getBoardResponseList(SearchCommand.Main command, SearchInfo.CursorCondition condition) {
                 return queryFactory.selectFrom(board)
+                    .distinct()
                     .join(board.store, store).fetchJoin()
                     .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+                    .leftJoin(board.products, product)
                     .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
@@ -76,7 +77,9 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             SearchInfo.CursorCondition condition
         ) {
                 return queryFactory.select(board.count())
+                    .distinct()
                     .from(board)
+                    .leftJoin(board.products, product)
                     .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
