@@ -5,13 +5,14 @@ import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOr
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.common.page.ProcessedDataCursor;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchCommand.Main;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
 import com.bbangle.bbangle.search.service.mapper.SearchInfoMapper;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
@@ -65,7 +66,7 @@ public class SearchService {
         }
 
         @Transactional(readOnly = true)
-        public ProcessedDataCursor<SearchInfo.Select, SearchInfo.SearchBoardPage> getBoardList(SearchCommand.Main command) {
+        public CursorPagination<Select> getBoardList(Main command) {
 
                 SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
                     searchRepository.getCursorCondition(command.cursorId()) :
@@ -82,11 +83,11 @@ public class SearchService {
                     .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
                     .toList();
 
-                return ProcessedDataCursor.of(
+                return CursorPagination.of(
                     selects,
                     BOARD_PAGE_SIZE,
-                    SearchInfo.Select::getBoardId,
-                    board -> new SearchInfo.SearchBoardPage(board, boardCount)
+                    boardCount,
+                    SearchInfo.Select::getBoardId
                 );
         }
 

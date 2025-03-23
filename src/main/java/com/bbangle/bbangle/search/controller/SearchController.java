@@ -3,25 +3,26 @@ package com.bbangle.bbangle.search.controller;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.page.ProcessedDataCursor;
-import com.bbangle.bbangle.common.page.SearchCustomPage;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.search.controller.mapper.SearchMapper;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
 import com.bbangle.bbangle.search.facade.SearchFacade;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Objects;
-
-import static com.bbangle.bbangle.board.sort.SortType.RECOMMEND;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class SearchController {
     private final SearchFacade searchFacade;
 
     @GetMapping("/boards")
-    public CommonResult getList(
+    public SingleResult<CursorPagination<Select>> getList(
         @ParameterObject
         FilterRequest filterRequest,
         @RequestParam(required = false, defaultValue = "RECOMMEND",value = "sort")
