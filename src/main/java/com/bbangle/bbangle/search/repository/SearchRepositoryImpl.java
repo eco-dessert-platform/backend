@@ -76,8 +76,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             SearchCommand.Main command,
             SearchInfo.CursorCondition condition
         ) {
-                return queryFactory.select(board.count())
-                    .distinct()
+                return queryFactory.select(board.id.countDistinct())
                     .from(board)
                     .leftJoin(board.products, product)
                     .where(
@@ -85,7 +84,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
                         searchFilter.getCategory(command.filterRequest()),
-                        searchFilter.getCursorCondition(command.sort(), condition),
                         board.isDeleted.isFalse()
                     ).fetchOne();
         }
