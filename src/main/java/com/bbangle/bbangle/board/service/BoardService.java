@@ -32,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BoardService {
 
-    private static final Boolean DEFAULT_BOARD = false;
-    private static final Boolean BOARD_IN_FOLDER = true;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
 
     private final BoardSortRepositoryFactory boardSortRepositoryFactory;
@@ -57,12 +54,11 @@ public class BoardService {
                 boardIds,
                 strategy.getSortOrders(),
                 memberId);
-        return getResponseFromDao(daos, DEFAULT_BOARD);
+        return getResponseFromDao(daos);
     }
 
-    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos,
-                                                                Boolean isInFolder) {
-        BoardResponses boardResponses = BoardResponses.of(boardDaos, isInFolder);
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos) {
+        BoardResponses boardResponses = BoardResponses.of(boardDaos);
         return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
@@ -81,7 +77,7 @@ public class BoardService {
         List<Long> boardIds = strategy.findBoardIds(cursorId, folder.getId());
         List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
 
-        BoardResponses responses = BoardResponses.of(daos, BOARD_IN_FOLDER);
+        BoardResponses responses = BoardResponses.of(daos);
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 

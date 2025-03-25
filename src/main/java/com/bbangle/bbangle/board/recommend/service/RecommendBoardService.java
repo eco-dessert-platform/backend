@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecommendBoardService {
 
-    private static final Boolean DEFAULT_BOARD = false;
-
     private final MemberSegmentRepository memberSegmentRepository;
     private final RecommendBoardRepository recommendboardRepository;
     private final BoardService boardService;
@@ -43,7 +41,7 @@ public class RecommendBoardService {
         List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds,
                 SortType.MOST_WISHED.getOrderExpression(), memberId);
 
-        return boardService.getResponseFromDao(daos, DEFAULT_BOARD);
+        return boardService.getResponseFromDao(daos);
     }
 
 

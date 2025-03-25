@@ -74,34 +74,9 @@ public final class BoardResponse {
             .thumbnail(board.thumbnail())
             .title(board.title())
             .price(board.price())
-            .isWished(false)
+            .isWished(board.isWished())
             .isBundled(isBundled)
             .tags(tags)
             .build();
     }
-
-
-    public static BoardResponse inFolder(BoardThumbnailDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
-        return BoardResponse.builder()
-            .boardId(board.boardId())
-            .storeId(board.storeId())
-            .storeName(board.storeName())
-            .reviewRate(board.reviewRate().round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue())
-            .reviewCount(board.reviewCount())
-            .isBbangcketing(isBbangcketing)
-            .isSoldOut(isSoldOut)
-            .discountRate(board.discountRate())
-            .thumbnail(board.thumbnail())
-            .title(board.title())
-            .price(board.price())
-            .isWished(true)
-            .isBundled(isBundled)
-            .tags(tags)
-            .build();
-    }
-
-    public void updateLike(boolean status) {
-        this.isWished = status;
-    }
-
 }
