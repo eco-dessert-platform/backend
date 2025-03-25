@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public record BoardResponses(List<BoardResponse> boardResponses) {
 
-    public static BoardResponses of(List<BoardThumbnailDao> boardThumbnailDaos) {
+    public static BoardResponses from(List<BoardThumbnailDao> boardThumbnailDaos) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
                 boardThumbnailDaos);
 
@@ -93,7 +93,7 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
     ) {
 
         return boardThumbnailDaoList.stream()
-                .map(boardDao -> BoardResponse.from(
+                .map(boardDao -> BoardResponse.of(
                         boardDao,
                         isBundled.get(boardDao.boardId()),
                         tagMapByBoardId.get(boardDao.boardId()),

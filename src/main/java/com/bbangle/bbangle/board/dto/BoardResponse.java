@@ -61,7 +61,7 @@ public final class BoardResponse {
         this.discountRate = discountRate;
     }
 
-    public static BoardResponse from(BoardThumbnailDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
+    public static BoardResponse of(BoardThumbnailDao board, boolean isBundled, List<String> tags, Boolean isBbangcketing, Boolean isSoldOut) {
         return BoardResponse.builder()
             .boardId(board.boardId())
             .storeId(board.storeId())
