@@ -95,9 +95,9 @@ public class SearchService {
                         return RecencySearchResponse.getEmpty();
                 }
 
-                List<KeywordDto> kewords = searchRepository.getRecencyKeyword(memberId);
+                List<KeywordDto> keywords = searchRepository.getRecencyKeyword(memberId);
 
-                return RecencySearchResponse.of(kewords);
+                return RecencySearchResponse.of(keywords);
         }
 
         @Transactional
