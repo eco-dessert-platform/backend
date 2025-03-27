@@ -1,11 +1,5 @@
 package com.bbangle.bbangle.search.repository;
 
-import static com.bbangle.bbangle.board.domain.QBoard.board;
-import static com.bbangle.bbangle.board.domain.QProduct.product;
-import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-import static com.bbangle.bbangle.search.domain.QSearch.search;
-import static com.bbangle.bbangle.store.domain.QStore.store;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -17,11 +11,18 @@ import com.bbangle.bbangle.search.service.dto.QSearchInfo_CursorCondition;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.search.domain.QSearch.search;
+import static com.bbangle.bbangle.store.domain.QStore.store;
 
 @Repository
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         }
 
         @Override
-        public List<Board> getBoardResponseList(SearchCommand.Main command, SearchInfo.CursorCondition condition) {
+        public List<Board> getBoards(SearchCommand.Main command, SearchInfo.CursorCondition condition) {
                 return queryFactory.selectFrom(board)
                     .distinct()
                     .join(board.store, store).fetchJoin()
@@ -63,6 +64,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
                         searchFilter.getCategory(command.filterRequest()),
+                        searchFilter.getDaysOfWeekCondition(command.filterRequest()),
                         searchFilter.getCursorCondition(command.sort(), condition),
                         board.isDeleted.isFalse()
                     )

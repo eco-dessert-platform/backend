@@ -1,18 +1,21 @@
 package com.bbangle.bbangle.search.repository.component;
 
-import static com.bbangle.bbangle.board.domain.QBoard.board;
-import static com.bbangle.bbangle.board.domain.QProduct.product;
-import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.Objects;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +27,23 @@ public class SearchFilter {
                 }
 
                 return board.title.like("%" + keyword + "%");
+        }
+
+        public BooleanExpression getDaysOfWeekCondition(FilterRequest filterRequest) {
+                if (Objects.isNull(filterRequest.orderAvailableToday()) || Boolean.FALSE.equals(filterRequest.orderAvailableToday())) {
+                        return null;
+                }
+
+                DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+                return switch (dayOfWeek) {
+                        case MONDAY -> product.monday.eq(true);
+                        case TUESDAY -> product.tuesday.eq(true);
+                        case WEDNESDAY -> product.wednesday.eq(true);
+                        case THURSDAY -> product.thursday.eq(true);
+                        case FRIDAY -> product.friday.eq(true);
+                        case SATURDAY -> product.saturday.eq(true);
+                        case SUNDAY -> product.sunday.eq(true);
+                };
         }
 
         public BooleanExpression getCategory(FilterRequest filterRequest) {
@@ -80,7 +100,7 @@ public class SearchFilter {
         }
 
         public BooleanExpression getCursorCondition(SortType sortType,
-            SearchInfo.CursorCondition condition) {
+                                                    SearchInfo.CursorCondition condition) {
                 if (condition.getCursorId().equals(Long.MAX_VALUE)) {
                         return null;
                 }
