@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.search.service;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
@@ -31,10 +30,7 @@ public class SearchService {
 
         private static final int LIMIT_KEYWORD_COUNT = 20;
         private static final Long ANONYMOUS_MEMBER_ID = 1L;
-        private static final Long NO_NEXT_CURSOR = -1L;
-
         private final SearchRepository searchRepository;
-        private final BoardRepository boardRepository;
         private final AutoCompleteUtil autoCompleteUtil;
         private final KeywordUtil keywordUtil;
         private final SearchInfoMapper searchInfoMapper;
