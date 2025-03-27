@@ -1,17 +1,35 @@
 package com.bbangle.bbangle.search.service.dto;
 
-import com.bbangle.bbangle.board.sort.SortType;
-import com.bbangle.bbangle.search.dto.SearchBoardResponseDto;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.common.mapstructure.Default;
 import com.querydsl.core.annotations.QueryProjection;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class SearchInfo {
+
+        @Data
+        public static class BoardsInfo {
+                List<Board> boards;
+                Long boardCount;
+                Map<Long, Boolean> boardWishedMap;
+
+                @Default
+                public BoardsInfo(
+                    List<Board> boards,
+                    Long boardCount
+                ) {
+                        this.boards = boards;
+                        this.boardCount = boardCount;
+                }
+        }
 
         @Data
         @AllArgsConstructor
@@ -47,10 +65,6 @@ public class SearchInfo {
                 private Integer price;
                 private Long boardWishedCount;
                 private Long boardReviewCount;
-
-                public CursorCondition(Long cursorId) {
-                        this.cursorId = cursorId;
-                }
 
                 @QueryProjection
                 public CursorCondition(Long cursorId, Double boardBasicScore, Integer price, Long boardWishedCount, Long boardReviewCount) {

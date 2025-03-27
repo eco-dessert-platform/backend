@@ -1,14 +1,5 @@
 package com.bbangle.bbangle.board.repository;
 
-import static com.bbangle.bbangle.board.domain.QBoard.board;
-import static com.bbangle.bbangle.board.domain.QProduct.product;
-import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
-import static com.bbangle.bbangle.board.domain.QRandomBoard.randomBoard;
-import static com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic.boardPreferenceStatistic;
-import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-import static com.bbangle.bbangle.store.domain.QStore.store;
-import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
-
 import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.dao.QBoardThumbnailDao;
@@ -23,9 +14,19 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static com.bbangle.bbangle.board.domain.QBoard.board;
+import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QRandomBoard.randomBoard;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardPreferenceStatistic.boardPreferenceStatistic;
+import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.store.domain.QStore.store;
+import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 @Repository
 @RequiredArgsConstructor
@@ -145,6 +146,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
+                .distinct()
                 .from(board)
                 .leftJoin(wishListBoard)
                 .on(board.id.eq(wishListBoard.boardId))

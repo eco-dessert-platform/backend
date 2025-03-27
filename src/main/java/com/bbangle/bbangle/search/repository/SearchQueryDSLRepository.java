@@ -12,7 +12,7 @@ public interface SearchQueryDSLRepository {
 
     SearchInfo.CursorCondition getCursorCondition(Long cursorId);
 
-    List<Board> getBoardResponseList(SearchCommand.Main command, SearchInfo.CursorCondition condition);
+    List<Board> getBoards(SearchCommand.Main command, SearchInfo.CursorCondition condition);
 
     Long getAllCount(
             SearchCommand.Main command,

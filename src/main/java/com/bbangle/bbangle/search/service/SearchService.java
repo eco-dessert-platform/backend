@@ -1,8 +1,5 @@
 package com.bbangle.bbangle.search.service;
 
-import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
-import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.page.CursorPagination;
@@ -12,21 +9,20 @@ import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.dto.SearchCommand.Main;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
-import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
 import com.bbangle.bbangle.search.service.mapper.SearchInfoMapper;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
 
 @Slf4j
 @Service
@@ -66,37 +62,30 @@ public class SearchService {
         }
 
         @Transactional(readOnly = true)
-        public CursorPagination<Select> getBoardList(Main command) {
+        public SearchInfo.BoardsInfo getBoardList(Main command) {
 
                 SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
                     searchRepository.getCursorCondition(command.cursorId()) :
                     SearchInfo.CursorCondition.empty();
 
-                List<Board> boards = searchRepository.getBoardResponseList(command, cursorCondition);
+                List<Board> boards = searchRepository.getBoards(command, cursorCondition);
                 Long boardCount = searchRepository.getAllCount(command, cursorCondition);
 
-                Map<Long, Boolean> boardWishedMap = Objects.nonNull(command.memberId())
-                    ? getBoardWishedMap(command.memberId(), boards)
-                    : Collections.emptyMap();
+                return searchInfoMapper.toBoardsInfo(boards, boardCount);
+        }
 
-                List<SearchInfo.Select> selects = boards.stream()
+        public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
+
+                List<SearchInfo.Select> selects = boardsInfo.getBoards().stream()
                     .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
                     .toList();
 
                 return CursorPagination.of(
                     selects,
                     BOARD_PAGE_SIZE,
-                    boardCount,
+                    boardsInfo.getBoardCount(),
                     SearchInfo.Select::getBoardId
                 );
-        }
-
-
-        private Map<Long, Boolean> getBoardWishedMap(Long memberId, List<Board> boards) {
-                List<Long> boardIds = boards.stream().map(Board::getId).toList();
-                Map<Long, Boolean> boardMap = boardIds.stream().collect(Collectors.toMap(id -> id, id -> false));
-                boardRepository.getLikedContentsIds(boardIds, memberId).forEach(boardId -> boardMap.put(boardId, true));
-                return boardMap;
         }
 
         @Transactional(readOnly = true)

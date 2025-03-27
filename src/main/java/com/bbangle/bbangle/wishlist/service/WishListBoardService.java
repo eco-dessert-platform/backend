@@ -9,15 +9,16 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +94,16 @@ public class WishListBoardService {
         } catch (DataIntegrityViolationException e) {
             throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
+    }
+
+    public Map<Long, Boolean> getBoardWishedMap(Long memberId, List<Board> boards) {
+        if (Objects.isNull(memberId)) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> boardIds = boards.stream().map(Board::getId).toList();
+        List<Long> likedBoardIds = boardRepository.getLikedContentsIds(boardIds, memberId);
+        return boardIds.stream().collect(Collectors.toMap(id -> id, likedBoardIds::contains));
     }
 
 }
