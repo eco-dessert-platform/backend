@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.bbangle.bbangle.board.recommend.domain.SegmentIntolerance;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.PushType;
