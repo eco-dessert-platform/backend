@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
-import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardMemoryRepository;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

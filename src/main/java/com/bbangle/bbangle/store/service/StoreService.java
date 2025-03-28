@@ -1,12 +1,12 @@
 package com.bbangle.bbangle.store.service;
 
-import static com.bbangle.bbangle.board.validator.BoardValidator.validateNotNull;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.store.domain.Store;
@@ -47,6 +47,12 @@ public class StoreService {
         storeDto.updateWished(isWished);
 
         return storeDto;
+    }
+
+    private void validateNotNull(Object object, BbangleErrorCode errorCode) {
+        if (Objects.isNull(object)) {
+            throw new BbangleException(errorCode);
+        }
     }
 
     public StoreDetailStoreDto getStoreResponse(Long memberId, Long storeId) {

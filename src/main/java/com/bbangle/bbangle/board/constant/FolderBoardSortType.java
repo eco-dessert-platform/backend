@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.sort;
+package com.bbangle.bbangle.board.constant;
 
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;
@@ -18,9 +18,4 @@ public enum FolderBoardSortType {
     FolderBoardSortType(Supplier<OrderSpecifier<?>> setOrder) {
         this.setOrder = setOrder;
     }
-
-    public OrderSpecifier<?> getOrderSpecifier() {
-        return setOrder.get();
-    }
-
 }

@@ -6,11 +6,8 @@ import com.bbangle.bbangle.board.dao.QBoardThumbnailDao;
 import com.bbangle.bbangle.board.dao.QBoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.QTitleDto;
 import com.bbangle.bbangle.board.dto.TitleDto;
-import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -153,17 +150,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .where(board.id.in(responseList)
                         .and(wishListBoard.memberId.eq(memberId)))
                 .fetch();
-    }
-
-    @Override
-    public Long getBoardCount(FilterRequest filterRequest) {
-        BooleanBuilder filter = new BoardFilterCreator(filterRequest).create();
-        return queryFactory.select(board.countDistinct())
-                .from(board)
-                .leftJoin(product)
-                .on(board.id.eq(product.board.id))
-                .where(filter)
-                .fetchOne();
     }
 
     @Override

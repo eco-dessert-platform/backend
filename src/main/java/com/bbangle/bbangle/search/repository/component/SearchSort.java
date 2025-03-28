@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.search.repository.component;
 
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.querydsl.core.types.OrderSpecifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

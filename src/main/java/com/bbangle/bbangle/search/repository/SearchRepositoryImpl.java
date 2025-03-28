@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
+import com.bbangle.bbangle.board.domain.MemberSegment;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.dto.KeywordDto;
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
-import static com.bbangle.bbangle.board.recommend.domain.QSegmentIntolerance.segmentIntolerance;
+import static com.bbangle.bbangle.board.domain.QSegmentIntolerance.segmentIntolerance;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 import static com.bbangle.bbangle.search.domain.QSearch.search;
 import static com.bbangle.bbangle.store.domain.QStore.store;

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.controller.mapper;
 
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import org.mapstruct.*;
 

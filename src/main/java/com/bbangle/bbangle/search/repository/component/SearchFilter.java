@@ -2,8 +2,8 @@ package com.bbangle.bbangle.search.repository.component;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.domain.MemberSegment;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -16,7 +16,7 @@ import java.util.Objects;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
-import static com.bbangle.bbangle.board.recommend.domain.QSegmentIntolerance.segmentIntolerance;
+import static com.bbangle.bbangle.board.domain.QSegmentIntolerance.segmentIntolerance;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 
 @Component

@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.search.service;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
-import com.bbangle.bbangle.board.recommend.repository.MemberSegmentRepository;
+import com.bbangle.bbangle.board.domain.MemberSegment;
+import com.bbangle.bbangle.board.repository.MemberSegmentRepository;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;

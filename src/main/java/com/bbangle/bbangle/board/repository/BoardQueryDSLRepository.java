@@ -23,8 +23,6 @@ public interface BoardQueryDSLRepository {
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
 
-    Long getBoardCount(FilterRequest filterRequest);
-
     List<BoardThumbnailDao> getRandomboardList(Long cursorId, Long memberId, Integer setNumber);
 
     List<Board> findBoardsByStore(Long storeId, Long boardIdAsCursorId);

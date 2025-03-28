@@ -6,7 +6,7 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.querydsl.core.BooleanBuilder;

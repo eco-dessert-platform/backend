@@ -1,8 +1,6 @@
-package com.bbangle.bbangle.board.recommend.domain;
+package com.bbangle.bbangle.board.domain;
 
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.recommend.enums.Segment;
+import com.bbangle.bbangle.board.constant.Segment;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

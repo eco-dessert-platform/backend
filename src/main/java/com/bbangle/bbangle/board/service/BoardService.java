@@ -4,9 +4,8 @@ import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponses;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -24,19 +23,18 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoardService {
-    private static final Boolean BOARD_IN_FOLDER = true;
+
     private final BoardRepository boardRepository;
     private final WishListFolderRepository folderRepository;
     private final BoardInFolderSortFactory boardInFolderSortFactory;
 
-    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos,
-                                                                Boolean isInFolder) {
-        BoardResponses boardResponses = BoardResponses.of(boardDaos, isInFolder);
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos) {
+        BoardResponses boardResponses = BoardResponses.from(boardDaos);
         return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
-    @Transactional(readOnly = true)
     public CursorPageResponse<BoardResponse> getPostInFolder(
             Long memberId,
             FolderBoardSortType sort,
@@ -56,14 +54,8 @@ public class BoardService {
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
-    @Transactional(readOnly = true)
     public List<BoardInfoDto> getTopBoardInfo(Long memberId, Long storeId) {
         return boardRepository.findBestBoards(memberId, storeId);
-    }
-
-    @Transactional(readOnly = true)
-    public Long getFilteredBoardCount(FilterRequest filterRequest) {
-        return boardRepository.getBoardCount(filterRequest);
     }
 
 }

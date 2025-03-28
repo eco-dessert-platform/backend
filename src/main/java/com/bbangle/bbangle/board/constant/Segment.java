@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.recommend.enums;
+package com.bbangle.bbangle.board.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
