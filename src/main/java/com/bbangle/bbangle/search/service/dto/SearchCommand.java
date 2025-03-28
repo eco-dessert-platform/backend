@@ -10,7 +10,8 @@ public class SearchCommand {
             SortType sort,
             String keyword,
             Long cursorId,
-            Long memberId
+            Long memberId,
+            Boolean isExcludedProduct
     ) {
 
     }

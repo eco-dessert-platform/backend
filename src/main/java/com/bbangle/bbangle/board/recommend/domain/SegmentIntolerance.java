@@ -1,12 +1,9 @@
 package com.bbangle.bbangle.board.recommend.domain;
 
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.recommend.enums.Segment;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,16 +16,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SegmentIntolerance {
 
-    @Column(name = "product_board_id")
-    private Long boardId;
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Board board;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "final_segment")
     private Segment segment;
-
-    @Id
-    @Column(name = "product_id")
-    private Long productId;
 
     @Column(name = "lactose_tag", columnDefinition = "tinyint")
     private Boolean lactoseTag;

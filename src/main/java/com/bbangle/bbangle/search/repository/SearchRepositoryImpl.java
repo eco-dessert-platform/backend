@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.recommend.domain.MemberSegment;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.dto.KeywordDto;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.recommend.domain.QSegmentIntolerance.segmentIntolerance;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 import static com.bbangle.bbangle.search.domain.QSearch.search;
 import static com.bbangle.bbangle.store.domain.QStore.store;
@@ -86,6 +88,51 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
                         searchFilter.getCategory(command.filterRequest()),
+                        board.isDeleted.isFalse()
+                    ).fetchOne();
+        }
+
+        @Override
+        public List<Board> getRecommendBoardList(SearchCommand.Main command, SearchInfo.CursorCondition condition, MemberSegment memberSegment) {
+                return queryFactory.selectFrom(board)
+                    .distinct()
+                    .join(board.store, store).fetchJoin()
+                    .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+                    .leftJoin(board.products, product)
+                    .leftJoin(product.segmentIntolerances, segmentIntolerance)
+                    .where(
+                        searchFilter.getLikeKeyword(command.keyword()),
+                        searchFilter.getEqualTag(command.filterRequest()),
+                        searchFilter.getBetweenPrice(command.filterRequest()),
+                        searchFilter.getCategory(command.filterRequest()),
+                        searchFilter.getDaysOfWeekCondition(command.filterRequest()),
+                        searchFilter.getCursorCondition(command.sort(), condition),
+                        searchFilter.getExclusionCondition(memberSegment),
+                        segmentIntolerance.segment.eq(memberSegment.getSegment()),
+                        board.isDeleted.isFalse()
+                    )
+                    .orderBy(boardStatistic.boardWishCount.desc())
+                    .limit(BOARD_PAGE_SIZE_PLUS_ONE)
+                    .fetch();
+        }
+
+        @Override
+        public Long getRecommendAllCount(
+            SearchCommand.Main command,
+            SearchInfo.CursorCondition condition,
+            MemberSegment memberSegment
+        ) {
+                return queryFactory.select(board.id.countDistinct())
+                    .from(board)
+                    .leftJoin(board.products, product)
+                    .leftJoin(product.segmentIntolerances, segmentIntolerance)
+                    .where(
+                        searchFilter.getLikeKeyword(command.keyword()),
+                        searchFilter.getEqualTag(command.filterRequest()),
+                        searchFilter.getBetweenPrice(command.filterRequest()),
+                        searchFilter.getCategory(command.filterRequest()),
+                        searchFilter.getExclusionCondition(memberSegment),
+                        segmentIntolerance.segment.eq(memberSegment.getSegment()),
                         board.isDeleted.isFalse()
                     ).fetchOne();
         }

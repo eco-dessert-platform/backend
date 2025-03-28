@@ -38,8 +38,7 @@ public class RecommendBoardQueryDSLRepositoryImpl implements RecommendBoardQuery
                 .join(board)
                 .on(product.board.id.eq(board.id))
                 .join(board.boardStatistic, boardStatistic)
-                .join(segmentIntolerance)
-                .on(product.id.eq(segmentIntolerance.productId))
+                .join(product.segmentIntolerances, segmentIntolerance)
                 .where(
                         cursorInfo.and(filter)
                                 .and(exclusionCondition)
