@@ -1,11 +1,10 @@
 package com.bbangle.bbangle.board.service;
 
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.dto.BoardInfoDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponses;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -52,10 +51,6 @@ public class BoardService {
 
         BoardResponses responses = BoardResponses.from(daos);
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
-    }
-
-    public List<BoardInfoDto> getTopBoardInfo(Long memberId, Long storeId) {
-        return boardRepository.findBestBoards(memberId, storeId);
     }
 
 }

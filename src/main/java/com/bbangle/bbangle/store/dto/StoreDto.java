@@ -26,4 +26,5 @@ public class StoreDto {
     public void updateWished(Boolean isWished) {
         this.isWished = isWished;
     }
+
 }
