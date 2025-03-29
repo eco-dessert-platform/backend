@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.domain.MemberSegment;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
@@ -18,6 +18,14 @@ public interface SearchQueryDSLRepository {
     Long getAllCount(
             SearchCommand.Main command,
             SearchInfo.CursorCondition condition
+    );
+
+    List<Board> getRecommendBoardList(SearchCommand.Main command, SearchInfo.CursorCondition condition, MemberSegment memberSegment);
+
+    Long getRecommendAllCount(
+        SearchCommand.Main command,
+        SearchInfo.CursorCondition condition,
+        MemberSegment memberSegment
     );
 
     List<KeywordDto> getRecencyKeyword(Long memberId);
