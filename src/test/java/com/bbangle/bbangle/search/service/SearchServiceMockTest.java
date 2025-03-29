@@ -7,22 +7,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.KeywordUtil;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,78 +32,6 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
     KeywordUtil keywordUtil;
     @Autowired
     SearchService searchService;
-
-    @Nested
-    @DisplayName("getBoardList 메서드는")
-    class GetSearchBoard {
-
-        private FilterRequest filterRequest;
-        private SortType sort;
-        private String keyword;
-        private Long cursorId;
-        private Long memberId;
-        private BoardThumbnailDao boardThumbnailDao1;
-        private BoardThumbnailDao boardThumbnailDao2;
-
-        @BeforeEach
-        void setUp() {
-            filterRequest = new FilterRequest(
-                    true,
-                    true,
-                    false,
-                    false,
-                    false,
-                    Category.COOKIE,
-                    null,
-                    null,
-                    false
-            );
-            sort = SortType.RECOMMEND;
-            keyword = "testKeyword";
-            cursorId = 1L;
-            memberId = 2L;
-
-            boardThumbnailDao1 = new BoardThumbnailDao(
-                    2L,
-                    1L,
-                    "testStoreName",
-                    "testThumbnail",
-                    keyword,
-                    3000,
-                    true,
-                    Category.COOKIE,
-                    true,
-                    true,
-                    false,
-                    false,
-                    false,
-                    BigDecimal.ONE,
-                    10L,
-                    LocalDateTime.now(),
-                    false,
-                    10);
-
-            boardThumbnailDao2 = new BoardThumbnailDao(
-                    3L,
-                    1L,
-                    "testStoreName",
-                    "testThumbnail",
-                    keyword,
-                    3000,
-                    true,
-                    Category.COOKIE,
-                    true,
-                    true,
-                    false,
-                    false,
-                    false,
-                    BigDecimal.ONE,
-                    10L,
-                    LocalDateTime.now(),
-                    false,
-                    10);
-        }
-    }
 
     @Nested
     @DisplayName("최근 검색어 조회 테스트")
