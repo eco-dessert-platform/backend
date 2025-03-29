@@ -55,15 +55,15 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         @BeforeEach
         void setUp() {
             filterRequest = new FilterRequest(
-                true,
-                true,
-                false,
-                false,
-                false,
-                Category.COOKIE,
-                null,
-                null,
-                false
+                    true,
+                    true,
+                    false,
+                    false,
+                    false,
+                    Category.COOKIE,
+                    null,
+                    null,
+                    false
             );
             sort = SortType.RECOMMEND;
             keyword = "testKeyword";
@@ -71,42 +71,44 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             memberId = 2L;
 
             boardThumbnailDao1 = new BoardThumbnailDao(
-                2L,
-                1L,
-                "testStoreName",
-                "testThumbnail",
-                keyword,
-                3000,
-                Category.COOKIE,
-                true,
-                true,
-                false,
-                false,
-                false,
-                BigDecimal.ONE,
-                10L,
-                LocalDateTime.now(),
-                false,
-                10);
+                    2L,
+                    1L,
+                    "testStoreName",
+                    "testThumbnail",
+                    keyword,
+                    3000,
+                    true,
+                    Category.COOKIE,
+                    true,
+                    true,
+                    false,
+                    false,
+                    false,
+                    BigDecimal.ONE,
+                    10L,
+                    LocalDateTime.now(),
+                    false,
+                    10);
 
             boardThumbnailDao2 = new BoardThumbnailDao(
-                3L,
-                1L,
-                "testStoreName",
-                "testThumbnail",
-                keyword,
-                3000,
-                Category.COOKIE,
-                true,
-                true,
-                false,
-                false,
-                false,
-                BigDecimal.ONE,
-                10L,
-                LocalDateTime.now(),
-                false,
-                10);
+                    3L,
+                    1L,
+                    "testStoreName",
+                    "testThumbnail",
+                    keyword,
+                    3000,
+                    true,
+                    Category.COOKIE,
+                    true,
+                    true,
+                    false,
+                    false,
+                    false,
+                    BigDecimal.ONE,
+                    10L,
+                    LocalDateTime.now(),
+                    false,
+                    10);
         }
     }
 
@@ -128,7 +130,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         void withValidMemberId() {
             Long validMemberId = 2L;
             List<KeywordDto> keywords = Arrays.asList(new KeywordDto("keyword1"),
-                new KeywordDto("keyword2"));
+                    new KeywordDto("keyword2"));
 
             when(searchRepository.getRecencyKeyword(validMemberId)).thenReturn(keywords);
 
@@ -144,7 +146,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         void withNoKeywords() {
             Long validMemberId = 2L;
             when(searchRepository.getRecencyKeyword(validMemberId)).thenReturn(
-                Collections.emptyList());
+                    Collections.emptyList());
 
             RecencySearchResponse response = searchService.getRecencyKeyword(validMemberId);
 
@@ -164,9 +166,9 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             searchService.saveKeyword(ANONYMOUS_MEMBER_ID, keyword);
 
             Search search = Search.builder()
-                .memberId(1L)
-                .keyword(keyword)
-                .build();
+                    .memberId(1L)
+                    .keyword(keyword)
+                    .build();
 
             when(searchRepository.save(any(Search.class))).thenReturn(search);
 
@@ -180,9 +182,9 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
             searchService.saveKeyword(MEMBER_ID, keyword);
 
             Search search = Search.builder()
-                .memberId(MEMBER_ID)
-                .keyword(keyword)
-                .build();
+                    .memberId(MEMBER_ID)
+                    .keyword(keyword)
+                    .build();
 
             when(searchRepository.save(any(Search.class))).thenReturn(search);
 
@@ -194,7 +196,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         void withUnValidKeyword() {
             String keyword = "";
             assertThatThrownBy(() -> searchService.saveKeyword(MEMBER_ID, keyword))
-                .isInstanceOf(BbangleException.class);
+                    .isInstanceOf(BbangleException.class);
         }
 
         @Test
@@ -202,7 +204,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
         void unvalidKeywordToNull() {
             String keyword = null;
             assertThatThrownBy(() -> searchService.saveKeyword(MEMBER_ID, keyword))
-                .isInstanceOf(BbangleException.class);
+                    .isInstanceOf(BbangleException.class);
         }
 
     }
@@ -211,7 +213,7 @@ class SearchServiceMockTest extends AbstractIntegrationTest {
     @DisplayName("인기 검색어 조회 테스트")
     void getBestKeyword() {
         List<String> bestKeywords = List.of("testBestKeyword1", "testBestKeyword2",
-            "testBestKeyword3");
+                "testBestKeyword3");
 
         when(keywordUtil.getBestKeyword()).thenReturn(bestKeywords);
 
