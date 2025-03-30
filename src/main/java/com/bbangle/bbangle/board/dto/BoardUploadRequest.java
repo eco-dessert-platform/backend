@@ -1,10 +1,10 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.board.constant.DeliveryCompany;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.delivery.DeliveryCompany;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,13 +26,13 @@ public class BoardUploadRequest {
 
     public Board toBoard(Store store) {
         Board board = new Board(
-                store,
-                boardTitle,
-                price,
-                discountRate,
-                deliveryFee,
-                freeShippingConditions,
-                productInfoNoticeRequest.toEntity()
+            store,
+            boardTitle,
+            price,
+            discountRate,
+            deliveryFee,
+            freeShippingConditions,
+            productInfoNoticeRequest.toEntity()
         );
         toProducts(board);
         toBoardDetail(board);
@@ -41,9 +41,9 @@ public class BoardUploadRequest {
 
     private void toProducts(Board board) {
         List<Product> products = this.productRequests
-                .stream()
-                .map(productRequest -> productRequest.toEntity(board))
-                .toList();
+            .stream()
+            .map(productRequest -> productRequest.toEntity(board))
+            .toList();
 
         board.addProducts(products);
     }

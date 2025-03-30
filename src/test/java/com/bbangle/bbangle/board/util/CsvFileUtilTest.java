@@ -2,14 +2,11 @@ package com.bbangle.bbangle.board.util;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import java.io.BufferedReader;
+import com.bbangle.bbangle.util.CsvUtil;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

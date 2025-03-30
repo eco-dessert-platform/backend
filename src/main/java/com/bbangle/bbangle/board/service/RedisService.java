@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.redis;
+package com.bbangle.bbangle.board.service;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;

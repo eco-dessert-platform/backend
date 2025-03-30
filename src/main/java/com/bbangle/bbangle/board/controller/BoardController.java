@@ -1,11 +1,13 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.facade.BoardFacade;
 import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.service.BoardUploadService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.page.CursorPagination;
