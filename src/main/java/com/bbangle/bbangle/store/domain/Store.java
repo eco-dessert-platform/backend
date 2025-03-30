@@ -48,8 +48,4 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
 
-    public Store updateProfile(String profile) {
-        this.profile = profile;
-        return this;
-    }
 }

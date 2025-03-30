@@ -9,10 +9,12 @@ import static com.bbangle.bbangle.store.domain.QStore.store;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.dto.QAiLearningStoreDto;
-import com.bbangle.bbangle.store.dto.QStoreDto;
-import com.bbangle.bbangle.store.dto.StoreDto;
+import com.bbangle.bbangle.store.domain.Store;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -23,17 +25,31 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public StoreDto findByBoardId(Long boardId) {
-        return queryFactory.select(
-                new QStoreDto(
-                    store.id,
-                    store.name,
-                    store.profile
-                )
-            ).from(board)
-            .join(store).on(store.eq(board.store))
+    public List<Board> findBoards(Long storeId, Long cursorId) {
+        return queryFactory.selectFrom(board)
+            .join(board.store, store).fetchJoin()
+            .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+            .where(
+                getLoeCursorId(cursorId),
+                store.id.eq(storeId))
+            .orderBy(board.id.desc())
+            .fetch();
+    }
+
+    private BooleanExpression getLoeCursorId(Long cursorId) {
+        if (Objects.isNull(cursorId)) {
+            return null;
+        }
+
+        return board.id.loe(cursorId);
+    }
+
+    @Override
+    public Optional<Store> findByBoardId(Long boardId) {
+        return Optional.ofNullable(queryFactory.selectFrom(store)
+            .join(store.boards, board)
             .where(board.id.eq(boardId))
-            .fetchFirst();
+            .fetchFirst());
     }
 
     @Override

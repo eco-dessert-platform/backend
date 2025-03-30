@@ -11,20 +11,20 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.service.ReviewService;
-import com.bbangle.bbangle.store.dto.StoreDto;
+import com.bbangle.bbangle.store.facade.StoreFacade;
 import com.bbangle.bbangle.store.service.StoreService;
+import com.bbangle.bbangle.store.service.dto.StoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/boards")
@@ -39,6 +39,7 @@ public class BoardDetailController {
     private final ReviewService reviewService;
     private final BoardDetailMapper boardDetailMapper;
     private final BoardDetailFacade boardDetailFacade;
+    private final StoreFacade storeFacade;
 
     @Operation(summary = "게시판 조회")
     @GetMapping("/{boardId}")
@@ -54,6 +55,7 @@ public class BoardDetailController {
         return responseService.getSingleResult(response);
     }
 
+    // 프론트에서 /new API 변경 후 삭제 예정
     @Operation(summary = "스토어 조회")
     @GetMapping("/{boardId}/store")
     public CommonResult getStoreInfoInBoardDetail(
@@ -62,8 +64,8 @@ public class BoardDetailController {
             @AuthenticationPrincipal
             Long memberId
     ) {
-        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, boardId);
-        return responseService.getSingleResult(storeDto);
+        StoreInfo.Store storeInfo = storeFacade.getStoreInfo(memberId, boardId);
+        return responseService.getSingleResult(storeInfo);
     }
 
     @GetMapping("/{boardId}/similar_board")
@@ -78,6 +80,7 @@ public class BoardDetailController {
         return responseService.getSingleResult(similarityBoardResponses);
     }
 
+    // 프론트에서 /new API 변경 후 삭제 예정
     @Operation(summary = "상품 조회")
     @GetMapping("/{boardId}/product")
     public CommonResult getProductResponse(
