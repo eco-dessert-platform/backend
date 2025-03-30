@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.store.controller;
+package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.store.controller.dto.StoreResponse;
-import com.bbangle.bbangle.store.controller.mapper.StoreMapper;
-import com.bbangle.bbangle.store.facade.StoreFacade;
-import com.bbangle.bbangle.store.service.dto.StoreInfo;
-import com.bbangle.bbangle.store.service.dto.StoreInfo.AllBoard;
+import com.bbangle.bbangle.board.controller.dto.StoreResponse;
+import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
+import com.bbangle.bbangle.board.facade.StoreFacade;
+import com.bbangle.bbangle.board.service.dto.StoreInfo;
+import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

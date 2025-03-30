@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.controller.dto;
+package com.bbangle.bbangle.board.controller.dto;
 
 public class StoreResponse {
 

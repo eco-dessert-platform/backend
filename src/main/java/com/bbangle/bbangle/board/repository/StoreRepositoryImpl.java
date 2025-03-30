@@ -1,15 +1,15 @@
-package com.bbangle.bbangle.store.repository;
+package com.bbangle.bbangle.board.repository;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-import static com.bbangle.bbangle.store.domain.QStore.store;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.dto.QAiLearningStoreDto;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

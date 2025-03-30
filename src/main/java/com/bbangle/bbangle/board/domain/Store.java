@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.domain;
+package com.bbangle.bbangle.board.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;

@@ -1,10 +1,10 @@
-package com.bbangle.bbangle.store.facade;
+package com.bbangle.bbangle.board.facade;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.store.service.StoreService;
-import com.bbangle.bbangle.store.service.dto.StoreInfo;
-import com.bbangle.bbangle.store.service.dto.StoreInfo.AllBoard;
-import com.bbangle.bbangle.store.service.dto.StoreInfo.StoreDetail;
+import com.bbangle.bbangle.board.service.StoreService;
+import com.bbangle.bbangle.board.service.dto.StoreInfo;
+import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
+import com.bbangle.bbangle.board.service.dto.StoreInfo.StoreDetail;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;

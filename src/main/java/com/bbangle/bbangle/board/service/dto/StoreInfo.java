@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.service.dto;
+package com.bbangle.bbangle.board.service.dto;
 
 import com.bbangle.bbangle.common.mapstructure.Default;
 import java.math.BigDecimal;

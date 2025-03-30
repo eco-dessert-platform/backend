@@ -13,7 +13,7 @@ import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComp
 import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
 import com.bbangle.bbangle.board.util.CsvFileUtil;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.board.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
