@@ -93,10 +93,10 @@ public class Board extends BaseEntity {
         products.forEach(product -> product.setBoard(this));
     }
 
-//    public void addBoardDetails(List<BoardDetail> boardDetails) {
-//        this.boardDetails.addAll(boardDetails);
-//        boardDetails.forEach(boardDetail -> boardDetail.updateBoard(this));
-//    }
+    public void addBoardDetails(BoardDetail boardDetail) {
+        this.boardDetail = boardDetail;
+        boardDetail.updateBoard(this);
+    }
 
     public Board(Store store, String title, int price, int discountRate,
                  int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {

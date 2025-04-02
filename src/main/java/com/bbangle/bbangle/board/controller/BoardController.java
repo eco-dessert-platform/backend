@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.board.service.BoardUploadService;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -27,6 +29,15 @@ public class BoardController {
     private final ResponseService responseService;
     private final BoardService boardService;
     private final RecommendBoardService recommendBoardService;
+    private final BoardUploadService boardUploadService;
+
+    @PostMapping("/board/{storeId}")
+    public CommonResult upload(@PathVariable Long storeId,
+                               @RequestBody BoardUploadRequest request) {
+        boardUploadService.upload(storeId, request);
+        return responseService.getSuccessResult();
+    }
+
 
     @Operation(summary = "게시글 전체 조회")
     @GetMapping

@@ -8,19 +8,18 @@ import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponses;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
-import com.bbangle.bbangle.board.repository.sort.strategy.BoardSortRepository;
 import com.bbangle.bbangle.board.repository.sort.BoardSortRepositoryFactory;
-import com.bbangle.bbangle.wishlist.repository.sort.strategy.BoardInFolderSortRepository;
-import com.bbangle.bbangle.wishlist.repository.sort.BoardInFolderSortFactory;
+import com.bbangle.bbangle.board.repository.sort.strategy.BoardSortRepository;
+import com.bbangle.bbangle.board.repository.util.BoardFilterCreator;
 import com.bbangle.bbangle.board.sort.FolderBoardSortType;
 import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.sort.BoardInFolderSortFactory;
+import com.bbangle.bbangle.wishlist.repository.sort.strategy.BoardInFolderSortRepository;
 import com.querydsl.core.BooleanBuilder;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BoardService {
 
-    private static final Boolean DEFAULT_BOARD = false;
-    private static final Boolean BOARD_IN_FOLDER = true;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
 
     private final BoardSortRepositoryFactory boardSortRepositoryFactory;
@@ -57,12 +53,11 @@ public class BoardService {
                 boardIds,
                 strategy.getSortOrders(),
                 memberId);
-        return getResponseFromDao(daos, DEFAULT_BOARD);
+        return getResponseFromDao(daos);
     }
 
-    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos,
-                                                                Boolean isInFolder) {
-        BoardResponses boardResponses = BoardResponses.of(boardDaos, isInFolder);
+    public CursorPageResponse<BoardResponse> getResponseFromDao(List<BoardThumbnailDao> boardDaos) {
+        BoardResponses boardResponses = BoardResponses.from(boardDaos);
         return CursorPageResponse.of(boardResponses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 
@@ -79,9 +74,10 @@ public class BoardService {
 
         BoardInFolderSortRepository strategy = boardInFolderSortFactory.getStrategy(sort);
         List<Long> boardIds = strategy.findBoardIds(cursorId, folder.getId());
-        List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(), folder.getId());
+        List<BoardThumbnailDao> daos = boardRepository.getThumbnailBoardsByIds(boardIds, strategy.getSortOrders(),
+                folder.getId());
 
-        BoardResponses responses = BoardResponses.of(daos, BOARD_IN_FOLDER);
+        BoardResponses responses = BoardResponses.from(daos);
         return CursorPageResponse.of(responses.boardResponses(), BOARD_PAGE_SIZE, BoardResponse::getBoardId);
     }
 

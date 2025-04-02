@@ -22,6 +22,6 @@ public class RandomBoardService {
     ) {
         List<BoardThumbnailDao> boardThumbnailDaoList = boardRepository.getRandomboardList(cursorId, memberId, setNumber);
 
-        return boardService.getResponseFromDao(boardThumbnailDaoList, false);
+        return boardService.getResponseFromDao(boardThumbnailDaoList);
     }
 }
