@@ -17,10 +17,7 @@ import java.util.stream.Collectors;
 
 public record BoardResponses(List<BoardResponse> boardResponses) {
 
-    public static BoardResponses of(
-            List<BoardThumbnailDao> boardThumbnailDaos,
-            Boolean isInFolder
-    ) {
+    public static BoardResponses from(List<BoardThumbnailDao> boardThumbnailDaos) {
         Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
                 boardThumbnailDaos);
 
@@ -31,7 +28,7 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
         boardThumbnailDaos = removeDuplicatesByBoardId(boardThumbnailDaos);
 
         List<BoardResponse> boardResponses = getBoardResponseDtos(boardThumbnailDaos,
-                isInFolder, isBundled, tagMapByBoardId,
+                isBundled, tagMapByBoardId,
                 isSoldOut, isBbangcketing);
 
         clearLinkedHashMap(tagMapByBoardId, isBundled, isSoldOut, isBbangcketing);
@@ -90,25 +87,13 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
 
     private static List<BoardResponse> getBoardResponseDtos(
             List<BoardThumbnailDao> boardThumbnailDaoList,
-            Boolean isInFolder,
             Map<Long, Boolean> isBundled,
             Map<Long, List<String>> tagMapByBoardId,
             Map<Long, Boolean> isSoldOut, Map<Long, Boolean> isBbangcketing
     ) {
-        if (Boolean.TRUE.equals(isInFolder)) {
-            return boardThumbnailDaoList.stream()
-                    .map(boardDao -> BoardResponse.inFolder(
-                            boardDao,
-                            isBundled.get(boardDao.boardId()),
-                            tagMapByBoardId.get(boardDao.boardId()),
-                            isBbangcketing.get(boardDao.boardId()),
-                            isSoldOut.get(boardDao.boardId()))
-                    )
-                    .toList();
-        }
 
         return boardThumbnailDaoList.stream()
-                .map(boardDao -> BoardResponse.from(
+                .map(boardDao -> BoardResponse.of(
                         boardDao,
                         isBundled.get(boardDao.boardId()),
                         tagMapByBoardId.get(boardDao.boardId()),

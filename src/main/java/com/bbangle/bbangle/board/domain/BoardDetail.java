@@ -28,4 +28,8 @@ public class BoardDetail {
         return HtmlUtils.convertHtmlWithFullImageUrls2(content);
     }
 
+    public void updateBoard(Board board) {
+        this.board = board;
+    }
+
 }
