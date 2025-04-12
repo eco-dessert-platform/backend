@@ -24,7 +24,8 @@ public class CorsConfig implements WebMvcConfigurer {
                                 "http://localhost:8000",
                                 "http://dev.bbanggree.com",
                                 "https://dev.bbanggree.com",
-                                "https://master.d2xvuesi0d3ssg.amplifyapp.com"
+                                "http://develop.bbanggree.com",
+                                "https://develop.bbanggree.com"
                         )
                         .allowedHeaders("*")
                         .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
