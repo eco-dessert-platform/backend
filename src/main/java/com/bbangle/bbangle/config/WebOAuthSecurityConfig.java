@@ -35,7 +35,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
         "http://localhost:3000",
         "https://www.bbanggree.com",
         "https://api.bbanggree.com",
-        "https://master.d2xvuesi0d3ssg.amplifyapp.com"
+        "https://develop.bbanggree.com"
     };
     private final TokenProvider tokenProvider;
 
