@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.util;
+package com.bbangle.bbangle.util;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.CSV_NOT_READ_ERROR;
 

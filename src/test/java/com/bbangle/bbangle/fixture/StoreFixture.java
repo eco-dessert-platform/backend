@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

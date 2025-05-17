@@ -6,7 +6,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import jakarta.persistence.EntityManager;

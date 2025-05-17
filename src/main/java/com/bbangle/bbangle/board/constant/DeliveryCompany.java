@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.delivery;
+package com.bbangle.bbangle.board.constant;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;

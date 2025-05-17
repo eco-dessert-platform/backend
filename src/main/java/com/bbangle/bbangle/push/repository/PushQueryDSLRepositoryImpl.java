@@ -16,9 +16,9 @@ import java.util.List;
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.member.domain.QMember.member;
 import static com.bbangle.bbangle.push.domain.QPush.push;
-import static com.bbangle.bbangle.store.domain.QStore.store;
 
 @Repository
 @RequiredArgsConstructor
