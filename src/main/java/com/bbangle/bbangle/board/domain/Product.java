@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +91,9 @@ public class Product {
 
     @Embedded
     private Nutrition nutrition;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<SegmentIntolerance> segmentIntolerances = new ArrayList<>();
 
     public Product(Board board, String title, int price, Category category, int stock,
                    boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,

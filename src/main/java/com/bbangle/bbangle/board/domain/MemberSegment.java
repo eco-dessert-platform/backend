@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.board.recommend.domain;
+package com.bbangle.bbangle.board.domain;
 
 
-import com.bbangle.bbangle.board.recommend.enums.Segment;
+import com.bbangle.bbangle.board.constant.Segment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

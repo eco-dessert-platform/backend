@@ -6,7 +6,7 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.repository.RecommendAiBoardRepository;
-import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardMemoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

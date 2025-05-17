@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.service.dto;
 
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.constant.SortType;
 
 public class SearchCommand {
 
@@ -10,7 +10,8 @@ public class SearchCommand {
             SortType sort,
             String keyword,
             Long cursorId,
-            Long memberId
+            Long memberId,
+            Boolean isExcludedProduct
     ) {
 
     }
