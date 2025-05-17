@@ -1,12 +1,13 @@
 package com.bbangle.bbangle.store.controller;
 
 import com.bbangle.bbangle.board.dto.BoardInfoDto;
-import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.store.dto.StoreDetailStoreDto;
+import com.bbangle.bbangle.store.facade.StoreFacade;
 import com.bbangle.bbangle.store.service.StoreService;
+import com.bbangle.bbangle.store.service.dto.StoreInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
-    private final BoardService boardService;
+    private final StoreFacade storeFacade;
     private final ResponseService responseService;
 
     @GetMapping("/{storeId}")
@@ -40,8 +41,7 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        List<BoardInfoDto> popularBoardResponses = boardService.getTopBoardInfo(
-            memberId, storeId);
+        List<StoreInfo.BestBoard> popularBoardResponses = storeFacade.getBestBoards(memberId, storeId);
         return responseService.getListResult(popularBoardResponses);
     }
 

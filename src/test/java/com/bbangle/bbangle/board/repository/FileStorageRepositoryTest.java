@@ -1,11 +1,8 @@
 package com.bbangle.bbangle.board.repository;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.AmazonServiceException;
-import com.bbangle.bbangle.board.repository.FileStorageRepository;
-import com.bbangle.bbangle.board.repository.util.FileStorageRepositoryImpl;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;

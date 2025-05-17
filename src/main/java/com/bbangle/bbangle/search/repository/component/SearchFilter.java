@@ -2,7 +2,8 @@ package com.bbangle.bbangle.search.repository.component;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.domain.MemberSegment;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -15,6 +16,7 @@ import java.util.Objects;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.domain.QSegmentIntolerance.segmentIntolerance;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 
 @Component
@@ -149,6 +151,40 @@ public class SearchFilter {
                     .or(
                         boardStatistic.basicScore.eq(condition.getBoardBasicScore())
                             .and(board.id.loe(condition.getCursorId())));
+        }
+
+        public BooleanBuilder getExclusionCondition(MemberSegment memberSegment) {
+                BooleanBuilder exclusionCondition = new BooleanBuilder();
+
+                if (Boolean.TRUE.equals(memberSegment.getLactoseIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.lactoseTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getPeanutIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.peanutTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getPeachIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.peachTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getRiceIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.riceTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getTomatoIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.tomatoTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getPineNutsIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.pineNutsTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getSoyMilkIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.soyMilkTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getBeanIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.beanTag.eq(false));
+                }
+                if (Boolean.TRUE.equals(memberSegment.getWalnutsIntolerance())) {
+                        exclusionCondition.and(segmentIntolerance.walnutsTag.eq(false));
+                }
+
+                return exclusionCondition;
         }
 
 }

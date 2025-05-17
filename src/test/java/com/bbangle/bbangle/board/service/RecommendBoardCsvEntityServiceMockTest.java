@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
-import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardMemoryRepository;
 import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

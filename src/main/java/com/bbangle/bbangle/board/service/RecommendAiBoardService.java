@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.dto.RecommendBoardCsvDto;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.RecommendAiBoardRepository;
 import com.bbangle.bbangle.board.repository.RecommendationLearningRepository;
-import com.bbangle.bbangle.board.repository.temp.RecommendationSimilarBoardMemoryRepository;
+import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardMemoryRepository;
 import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
 import com.bbangle.bbangle.board.service.component.RecommendBoardMapper;
 import com.bbangle.bbangle.board.util.CsvFileUtil;

@@ -1,23 +1,34 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.recommend.service.RecommendBoardService;
+import com.bbangle.bbangle.board.facade.BoardFacade;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.board.service.BoardUploadService;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
-import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.search.controller.mapper.SearchMapper;
+import com.bbangle.bbangle.search.facade.SearchFacade;
+import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -28,7 +39,8 @@ public class BoardController {
 
     private final ResponseService responseService;
     private final BoardService boardService;
-    private final RecommendBoardService recommendBoardService;
+    private final BoardFacade boardFacade;
+    private final SearchMapper searchMapper;
     private final BoardUploadService boardUploadService;
 
     @PostMapping("/board/{storeId}")
@@ -39,9 +51,9 @@ public class BoardController {
     }
 
 
-    @Operation(summary = "게시글 전체 조회")
-    @GetMapping
-    public CommonResult getList(
+        @Operation(summary = "게시글 전체 조회")
+        @GetMapping
+        public CommonResult getList(
             @ParameterObject
             FilterRequest filterRequest,
             @RequestParam(required = false, defaultValue = "RECOMMEND")
@@ -50,34 +62,14 @@ public class BoardController {
             Long cursorId,
             @AuthenticationPrincipal
             Long memberId
-    ) {
-        if (memberId != null && sort == SortType.RECOMMEND) {
-            CursorPageResponse<BoardResponse> response = recommendBoardService.getBoardList(
-                    filterRequest,
-                    cursorId,
-                    memberId);
-
-            return responseService.getSingleResult(response);
+        ) {
+                SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, null, cursorId, memberId);
+                CursorPagination<SearchInfo.Select> searchBoardPage = boardFacade.getBoardList(command);
+                return responseService.getSingleResult(searchBoardPage);
         }
-        CursorPageResponse<BoardResponse> response = boardService.getBoards(
-                filterRequest,
-                sort,
-                cursorId,
-                memberId);
-        return responseService.getSingleResult(response);
-    }
 
-    @GetMapping("/count")
-    public CommonResult getCount(
-            @ParameterObject
-            FilterRequest filterRequest
-    ) {
-        Long boardCount = boardService.getFilteredBoardCount(filterRequest);
-        return responseService.getSingleResult(boardCount);
-    }
-
-    @GetMapping("/folders/{folderId}")
-    public CommonResult getPostInFolder(
+        @GetMapping("/folders/{folderId}")
+        public CommonResult getPostInFolder(
             @RequestParam(required = false, value = "sort")
             FolderBoardSortType sort,
             @PathVariable(value = "folderId")
@@ -86,13 +78,13 @@ public class BoardController {
             Long cursorId,
             @AuthenticationPrincipal
             Long memberId
-    ) {
-        if (sort == null) {
-            sort = FolderBoardSortType.WISHLIST_RECENT;
+        ) {
+                if (sort == null) {
+                        sort = FolderBoardSortType.WISHLIST_RECENT;
+                }
+                CursorPageResponse<BoardResponse> boardResponseDto = boardService.getPostInFolder(
+                    memberId, sort, folderId, cursorId);
+                return responseService.getSingleResult(boardResponseDto);
         }
-        CursorPageResponse<BoardResponse> boardResponseDto = boardService.getPostInFolder(
-                memberId, sort, folderId, cursorId);
-        return responseService.getSingleResult(boardResponseDto);
-    }
 }
 

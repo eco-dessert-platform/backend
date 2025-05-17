@@ -1,7 +1,11 @@
 package com.bbangle.bbangle.search.service;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.MemberSegment;
+import com.bbangle.bbangle.board.repository.MemberSegmentRepository;
 import com.bbangle.bbangle.common.page.CursorPagination;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
@@ -26,11 +30,13 @@ import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOr
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SearchService {
 
         private static final int LIMIT_KEYWORD_COUNT = 20;
         private static final Long ANONYMOUS_MEMBER_ID = 1L;
         private final SearchRepository searchRepository;
+        private final MemberSegmentRepository memberSegmentRepository;
         private final AutoCompleteUtil autoCompleteUtil;
         private final KeywordUtil keywordUtil;
         private final SearchInfoMapper searchInfoMapper;
@@ -57,16 +63,28 @@ public class SearchService {
                 return memberId;
         }
 
-        @Transactional(readOnly = true)
         public SearchInfo.BoardsInfo getBoardList(Main command) {
 
                 SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
                     searchRepository.getCursorCondition(command.cursorId()) :
                     SearchInfo.CursorCondition.empty();
 
+                return command.isExcludedProduct() ?
+                    getRecommendBoardList(command, cursorCondition) :
+                    getDefaultBoardList(command, cursorCondition);
+        }
+
+        private SearchInfo.BoardsInfo getDefaultBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
                 List<Board> boards = searchRepository.getBoards(command, cursorCondition);
                 Long boardCount = searchRepository.getAllCount(command, cursorCondition);
+                return searchInfoMapper.toBoardsInfo(boards, boardCount);
+        }
 
+        private SearchInfo.BoardsInfo getRecommendBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
+                MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
+                    .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
+                List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
+                Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
                 return searchInfoMapper.toBoardsInfo(boards, boardCount);
         }
 

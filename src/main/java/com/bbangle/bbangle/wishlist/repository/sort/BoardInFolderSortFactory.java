@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.wishlist.repository.sort;
 
 import com.bbangle.bbangle.wishlist.repository.sort.strategy.BoardInFolderSortRepository;
-import com.bbangle.bbangle.board.sort.FolderBoardSortType;
+import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
