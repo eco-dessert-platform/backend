@@ -1,21 +1,14 @@
 package com.bbangle.bbangle.board.service.component;
 
 import com.bbangle.bbangle.board.domain.CsvFile;
-import com.bbangle.bbangle.board.dto.AiLearningProductDto;
-import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
-import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.repository.FileStorageRepository;
-import com.bbangle.bbangle.board.util.CsvFileUtil;
-import com.bbangle.bbangle.board.util.CsvUtil;
+import com.bbangle.bbangle.util.CsvUtil;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

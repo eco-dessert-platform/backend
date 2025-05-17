@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.aop;
+package com.bbangle.bbangle.common.aop;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,7 +14,7 @@ import org.springframework.util.StopWatch;
 @Component
 public class ExecutionTimeLogImpl {
 
-    @Around("@annotation(ExecutionTimeLog)")
+    @Around("@annotation(com.bbangle.bbangle.common.aop.ExecutionTimeLog)")
     public Object assumeExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         StopWatch stopWatch = new StopWatch(signature.getMethod().getName());

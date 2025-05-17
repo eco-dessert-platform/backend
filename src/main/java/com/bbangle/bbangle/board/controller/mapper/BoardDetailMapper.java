@@ -23,4 +23,6 @@ public interface BoardDetailMapper {
 
     BoardDetailResponse.Main toBoardDetailMainResponse(BoardDetailInfo.Main info);
 
+
+
 }

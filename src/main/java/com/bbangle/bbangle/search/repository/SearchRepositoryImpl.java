@@ -22,9 +22,9 @@ import java.util.Optional;
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QSegmentIntolerance.segmentIntolerance;
+import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 import static com.bbangle.bbangle.search.domain.QSearch.search;
-import static com.bbangle.bbangle.store.domain.QStore.store;
 
 @Repository
 @RequiredArgsConstructor

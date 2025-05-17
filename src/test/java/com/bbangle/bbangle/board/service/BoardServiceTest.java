@@ -26,7 +26,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushType;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.time.LocalDateTime;

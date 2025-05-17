@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.aop;
+package com.bbangle.bbangle.common.aop;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

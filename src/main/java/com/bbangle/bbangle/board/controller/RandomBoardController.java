@@ -5,7 +5,7 @@ import com.bbangle.bbangle.board.service.RandomBoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
-import com.bbangle.bbangle.redis.RedisService;
+import com.bbangle.bbangle.board.service.RedisService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
