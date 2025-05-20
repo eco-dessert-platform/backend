@@ -30,38 +30,36 @@ import static com.bbangle.bbangle.search.domain.QSearch.search;
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
-        private static final Integer BOARD_PAGE_SIZE_PLUS_ONE = 11;
+    private final JPAQueryFactory queryFactory;
+    private final SearchFilter searchFilter;
+    private final SearchSort searchSort;
 
-        private final JPAQueryFactory queryFactory;
-        private final SearchFilter searchFilter;
-        private final SearchSort searchSort;
-
-        @Override
-        public SearchInfo.CursorCondition getCursorCondition(Long cursorId) {
-                return Optional.ofNullable(
+    @Override
+    public SearchInfo.CursorCondition getCursorCondition(Long cursorId) {
+        return Optional.ofNullable(
                         queryFactory.select(
-                                new QSearchInfo_CursorCondition(
-                                    board.id,
-                                    boardStatistic.basicScore,
-                                    board.price,
-                                    boardStatistic.boardWishCount,
-                                    boardStatistic.boardReviewCount))
-                            .from(boardStatistic)
-                            .join(boardStatistic.board, board)
-                            .where(board.id.eq(cursorId))
-                            .fetchOne())
-                    .orElseThrow(() -> new BbangleException(
+                                        new QSearchInfo_CursorCondition(
+                                                board.id,
+                                                boardStatistic.basicScore,
+                                                board.price,
+                                                boardStatistic.boardWishCount,
+                                                boardStatistic.boardReviewCount))
+                                .from(boardStatistic)
+                                .join(boardStatistic.board, board)
+                                .where(board.id.eq(cursorId))
+                                .fetchOne())
+                .orElseThrow(() -> new BbangleException(
                         BbangleErrorCode.RANKING_NOT_FOUND));
-        }
+    }
 
-        @Override
-        public List<Board> getBoards(SearchCommand.Main command, SearchInfo.CursorCondition condition) {
-                return queryFactory.selectFrom(board)
-                    .distinct()
-                    .join(board.store, store).fetchJoin()
-                    .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
-                    .leftJoin(board.products, product)
-                    .where(
+    @Override
+    public List<Board> getBoards(SearchCommand.Main command, SearchInfo.CursorCondition condition) {
+        return queryFactory.selectFrom(board)
+                .distinct()
+                .join(board.store, store).fetchJoin()
+                .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+                .leftJoin(board.products, product)
+                .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
@@ -69,38 +67,38 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getDaysOfWeekCondition(command.filterRequest()),
                         searchFilter.getCursorCondition(command.sort(), condition),
                         board.isDeleted.isFalse()
-                    )
-                    .orderBy(searchSort.getSortType(command.sort()))
-                    .limit(BOARD_PAGE_SIZE_PLUS_ONE)
-                    .fetch();
-        }
+                )
+                .orderBy(searchSort.getSortType(command.sort()))
+                .limit(command.limitSize() + 1)
+                .fetch();
+    }
 
-        @Override
-        public Long getAllCount(
+    @Override
+    public Long getAllCount(
             SearchCommand.Main command,
             SearchInfo.CursorCondition condition
-        ) {
-                return queryFactory.select(board.id.countDistinct())
-                    .from(board)
-                    .leftJoin(board.products, product)
-                    .where(
+    ) {
+        return queryFactory.select(board.id.countDistinct())
+                .from(board)
+                .leftJoin(board.products, product)
+                .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
                         searchFilter.getCategory(command.filterRequest()),
                         board.isDeleted.isFalse()
-                    ).fetchOne();
-        }
+                ).fetchOne();
+    }
 
-        @Override
-        public List<Board> getRecommendBoardList(SearchCommand.Main command, SearchInfo.CursorCondition condition, MemberSegment memberSegment) {
-                return queryFactory.selectFrom(board)
-                    .distinct()
-                    .join(board.store, store).fetchJoin()
-                    .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
-                    .leftJoin(board.products, product)
-                    .leftJoin(product.segmentIntolerances, segmentIntolerance)
-                    .where(
+    @Override
+    public List<Board> getRecommendBoardList(SearchCommand.Main command, SearchInfo.CursorCondition condition, MemberSegment memberSegment) {
+        return queryFactory.selectFrom(board)
+                .distinct()
+                .join(board.store, store).fetchJoin()
+                .leftJoin(board.boardStatistic, boardStatistic).fetchJoin()
+                .leftJoin(board.products, product)
+                .leftJoin(product.segmentIntolerances, segmentIntolerance)
+                .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
@@ -110,23 +108,23 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getExclusionCondition(memberSegment),
                         segmentIntolerance.segment.eq(memberSegment.getSegment()),
                         board.isDeleted.isFalse()
-                    )
-                    .orderBy(boardStatistic.boardWishCount.desc())
-                    .limit(BOARD_PAGE_SIZE_PLUS_ONE)
-                    .fetch();
-        }
+                )
+                .orderBy(boardStatistic.boardWishCount.desc())
+                .limit(command.limitSize() + 1)
+                .fetch();
+    }
 
-        @Override
-        public Long getRecommendAllCount(
+    @Override
+    public Long getRecommendAllCount(
             SearchCommand.Main command,
             SearchInfo.CursorCondition condition,
             MemberSegment memberSegment
-        ) {
-                return queryFactory.select(board.id.countDistinct())
-                    .from(board)
-                    .leftJoin(board.products, product)
-                    .leftJoin(product.segmentIntolerances, segmentIntolerance)
-                    .where(
+    ) {
+        return queryFactory.select(board.id.countDistinct())
+                .from(board)
+                .leftJoin(board.products, product)
+                .leftJoin(product.segmentIntolerances, segmentIntolerance)
+                .where(
                         searchFilter.getLikeKeyword(command.keyword()),
                         searchFilter.getEqualTag(command.filterRequest()),
                         searchFilter.getBetweenPrice(command.filterRequest()),
@@ -134,47 +132,47 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         searchFilter.getExclusionCondition(memberSegment),
                         segmentIntolerance.segment.eq(memberSegment.getSegment()),
                         board.isDeleted.isFalse()
-                    ).fetchOne();
-        }
+                ).fetchOne();
+    }
 
-        @Override
-        public List<KeywordDto> getRecencyKeyword(Long memberId) {
-                return queryFactory.select(
+    @Override
+    public List<KeywordDto> getRecencyKeyword(Long memberId) {
+        return queryFactory.select(
                         new QKeywordDto(
-                            search.keyword))
-                    .distinct()
-                    .from(search)
-                    .where(
+                                search.keyword))
+                .distinct()
+                .from(search)
+                .where(
                         search.isDeleted.eq(false),
                         search.member.id.eq(memberId))
-                    .orderBy(search.id.desc())
-                    .limit(7)
-                    .fetch();
-        }
+                .orderBy(search.id.desc())
+                .limit(7)
+                .fetch();
+    }
 
-        @Override
-        public String[] getBestKeyword(
+    @Override
+    public String[] getBestKeyword(
             LocalDateTime beforeOneDayTime
-        ) {
-                return queryFactory.select(search.keyword)
-                    .from(search)
-                    .where(search.createdAt.gt(beforeOneDayTime))
-                    .groupBy(search.keyword)
-                    .orderBy(search.count().desc())
-                    .limit(7)
-                    .fetch()
-                    .toArray(new String[0]);
-        }
+    ) {
+        return queryFactory.select(search.keyword)
+                .from(search)
+                .where(search.createdAt.gt(beforeOneDayTime))
+                .groupBy(search.keyword)
+                .orderBy(search.count().desc())
+                .limit(7)
+                .fetch()
+                .toArray(new String[0]);
+    }
 
-        @Override
-        public void markAsDeleted(String keyword, Long memberId) {
-                queryFactory.update(search)
-                    .set(search.isDeleted, true)
-                    .where(
+    @Override
+    public void markAsDeleted(String keyword, Long memberId) {
+        queryFactory.update(search)
+                .set(search.isDeleted, true)
+                .where(
                         search.member.id.eq(memberId)
-                            .and(search.keyword.eq(keyword))
-                    )
-                    .execute();
-        }
+                                .and(search.keyword.eq(keyword))
+                )
+                .execute();
+    }
 
 }

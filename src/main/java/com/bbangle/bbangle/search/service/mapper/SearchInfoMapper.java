@@ -32,7 +32,8 @@ public interface SearchInfoMapper {
     @Mapping(target = "discountRate", source = "board.discountRate")
     SearchInfo.Select toSearchSelectInfo(Board board, Boolean isWished);
 
+    @Mapping(target = "boardLimitSize", source = "limitSize")
     @Mapping(target = "boardWishedMap", ignore = true)
-    SearchInfo.BoardsInfo toBoardsInfo(List<Board> boards, Long boardCount);
+    SearchInfo.BoardsInfo toBoardsInfo(List<Board> boards, Long boardCount, int limitSize);
 
 }
