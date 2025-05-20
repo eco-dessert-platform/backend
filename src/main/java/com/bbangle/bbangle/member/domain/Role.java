@@ -8,11 +8,10 @@ public enum Role {
 
     ROLE_USER("ROLE_USER", "사용자"),
     ROLE_SELLER("ROLE_SELLER", "판매자"),
-    ROLE_ADMIN("ROLE_ADMIN", "빵그리오븐관리자 ");
+    ROLE_ADMIN("ROLE_ADMIN", "빵그리오븐관리자");
 
     private final String role;
     private final String description;
-
 
     Role(String role, String description) {
         this.role = role;
@@ -25,5 +24,5 @@ public enum Role {
                 .findFirst()
                 .orElse(ROLE_USER);
     }
-    
+
 }
