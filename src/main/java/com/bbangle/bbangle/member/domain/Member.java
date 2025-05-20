@@ -9,7 +9,6 @@ import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -69,7 +68,7 @@ public class Member extends BaseEntity implements UserDetails {
     private String providerId;
 
     @Column(name = "member_role")
-    @Convert(converter = RoleConverter.class)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
