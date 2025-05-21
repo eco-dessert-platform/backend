@@ -1,0 +1,4 @@
+ALTER TABLE member
+    ADD COLUMN member_role VARCHAR(15) NOT NULL DEFAULT 'ROLE_USER';
+UPDATE member
+SET member_role = 'ROLE_USER';

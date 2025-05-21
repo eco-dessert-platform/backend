@@ -9,8 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.domain.Role;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
@@ -48,7 +49,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
 
         @BeforeEach
         void setup() {
-            Store store =  storeRepository.save(fixtureStore(emptyMap()));
+            Store store = storeRepository.save(fixtureStore(emptyMap()));
 
             Map<String, Object> boardParams = new HashMap<>();
             boardParams.put("store", store);
@@ -155,6 +156,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
     class BoardInFolderApiTest {
 
         Long memberId;
+        Role role;
         Board createdBoard;
         Long wishListFolderId;
 
@@ -163,11 +165,12 @@ class BoardControllerTest extends AbstractIntegrationTest {
             // Member 생성
             Member member = memberRepository.save(fixtureMember(emptyMap()));
             memberId = member.getId();
+            role = member.getRole();
             List<WishListFolder> wishListFolders = member.getWishListFolders();
             wishListFolderId = wishListFolders.get(0).getId();
 
             // Store 생성
-            Store store =  storeRepository.save(fixtureStore(emptyMap()));
+            Store store = storeRepository.save(fixtureStore(emptyMap()));
 
             // Board 생성
             Map<String, Object> boardParams = new HashMap<>();
@@ -183,7 +186,7 @@ class BoardControllerTest extends AbstractIntegrationTest {
         @Transactional
         void getBoardInFolder() throws Exception {
             //given
-            String authentication = getAuthentication(memberId);
+            String authentication = getAuthentication(memberId, role);
 
             mockMvc.perform(get("/api/v1/boards/folders/" + wishListFolderId)
                             .header(HttpHeaders.AUTHORIZATION, authentication))
@@ -212,8 +215,8 @@ class BoardControllerTest extends AbstractIntegrationTest {
                     .andExpect(jsonPath("$.result.hasNext").value(false));
         }
 
-        private String getAuthentication(Long memberId) {
-            String token = tokenProvider.generateToken(memberId, Duration.ofMinutes(1));
+        private String getAuthentication(Long memberId, Role role) {
+            String token = tokenProvider.generateToken(memberId, role, Duration.ofMinutes(1));
             return "Bearer " + token;
         }
     }
