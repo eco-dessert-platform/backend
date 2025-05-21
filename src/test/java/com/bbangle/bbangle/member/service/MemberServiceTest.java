@@ -4,6 +4,7 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.MemberAssignResponse;
+import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
@@ -23,7 +24,7 @@ class MemberServiceTest extends AbstractIntegrationTest {
     @Autowired
     PreferenceService preferenceService;
 
-    Long memberId;
+    MemberIdWithRoleDto memberIdWithRoleDto;
     Member member;
 
     @BeforeEach
@@ -31,14 +32,14 @@ class MemberServiceTest extends AbstractIntegrationTest {
         member = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Member.class)
                 .set("provider", OauthServerType.KAKAO)
                 .sample();
-        memberId = memberService.getFirstJoinedMember(member);
+        member = memberService.getFirstJoinedMember(member);
     }
 
     @Test
     @DisplayName("정상적으로 멤버가 약관에 동의하고 선호도를 기록했는지 확인할 수 있다.")
     void getIsFullyAssigned() {
         //given, when
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())
@@ -52,8 +53,8 @@ class MemberServiceTest extends AbstractIntegrationTest {
     void getIsFullyAssignedWithPreferenceTrue() {
         //given, when
         preferenceService.register(new PreferenceSelectRequest(PreferenceType.DIET),
-                memberId);
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
+                member.getId());
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())
@@ -73,8 +74,8 @@ class MemberServiceTest extends AbstractIntegrationTest {
                 .set("birthDate", "2024-11-13")
                 .sample();
 
-        memberService.updateMemberInfo(request, memberId, NULL_FILE);
-        MemberAssignResponse isAssigned = memberService.getIsAssigned(memberId);
+        memberService.updateMemberInfo(request, member.getId(), NULL_FILE);
+        MemberAssignResponse isAssigned = memberService.getIsAssigned(member.getId());
 
         //then
         Assertions.assertThat(isAssigned.isFullyAssigned())
@@ -87,10 +88,10 @@ class MemberServiceTest extends AbstractIntegrationTest {
     @DisplayName("멤버는 정상적으로 탈퇴가 가능하다")
     void getWithdrawSuccess() {
         //given
-        memberService.deleteMember(memberId);
+        memberService.deleteMember(member.getId());
 
         //when
-        Member deletedMember = memberRepository.findById(memberId).orElseThrow();
+        Member deletedMember = memberRepository.findById(member.getId()).orElseThrow();
 
         //then
         Assertions.assertThat(deletedMember.isDeleted()).isTrue();
@@ -109,7 +110,7 @@ class MemberServiceTest extends AbstractIntegrationTest {
         String name = member.getName();
         String nickName = member.getNickname();
         String email = member.getEmail();
-        memberService.deleteMember(memberId);
+        memberService.deleteMember(member.getId());
         Member newMember = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Member.class)
                 .set("name", name)
                 .set("nickName", nickName)
@@ -117,10 +118,10 @@ class MemberServiceTest extends AbstractIntegrationTest {
                 .sample();
 
         //when
-        Long rejoinedId = memberService.getFirstJoinedMember(newMember);
+        Member joinedMember = memberService.getFirstJoinedMember(newMember);
 
         //then
-        Assertions.assertThat(memberId).isNotEqualTo(rejoinedId);
+        Assertions.assertThat(member.getId()).isNotEqualTo(joinedMember.getId());
     }
 
 }

@@ -1,23 +1,25 @@
 package com.bbangle.bbangle.member.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
+import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Optional;
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class MemberRepositoryImpl implements MemberQueryDSLRepository{
+public class MemberRepositoryImpl implements MemberQueryDSLRepository {
 
     private static final QMember member = QMember.member;
     private final JPAQueryFactory queryFactory;
@@ -25,7 +27,7 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
 
     @Override
     public Member findMemberById(Long memberId) {
-        if(memberId == null){
+        if (memberId == null) {
             throw new BbangleException(NOTFOUND_MEMBER);
         }
 
@@ -54,6 +56,21 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
                 .where(member.isDeleted.isFalse()
                         .and(createdAt.between(startDate, endDate)))
                 .fetchOne();
+    }
+
+    @Override
+    public Optional<MemberIdWithRoleDto> findByProviderAndProviderId(OauthServerType provider, String providerId) {
+        return Optional.ofNullable(
+                queryFactory.select(Projections.constructor(
+                                MemberIdWithRoleDto.class,
+                                member.id,
+                                member.role))
+                        .from(member)
+                        .where(member.provider.eq(provider)
+                                .and(member.providerId.eq(providerId))
+                                .and(member.isDeleted.isFalse()))
+                        .fetchOne()
+        );
     }
 
 
