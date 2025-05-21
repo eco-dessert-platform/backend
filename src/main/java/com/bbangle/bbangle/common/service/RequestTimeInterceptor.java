@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.common.service;
 
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.common.querylistener.QueryTimerContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class RequestTimeInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-        Object handler) {
+                             Object handler) {
         long startTime = System.currentTimeMillis();
         request.setAttribute("startTime", startTime);
         return true;
@@ -27,20 +27,27 @@ public class RequestTimeInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-        Object handler, Exception ex) {
+                                Object handler, Exception ex) {
 
         long startTime = (Long) request.getAttribute("startTime");
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
 
+        long dbTime = QueryTimerContext.getTotalTime();
+        QueryTimerContext.clear();
+
         String requestURI = request.getRequestURI();
         String requestMethod = request.getMethod();
-
+        String slackMessage = String.format("""
+                
+                - API           : %s %s
+                - 총 DB 처리 시간 : %d ms
+                - 총 처리시간     : %d ms
+                """, requestMethod, requestURI, dbTime, duration);
+        log.info(slackMessage);
         if (duration > THREE_SECONDS) {
-            String header = String.format("요청 [%s %s]", requestMethod, requestURI);
-            String content = String.format("처리 시간: %dms", duration);
-            slackAdaptor.sendText(header, content);
-            log.debug(header + header);
+            slackAdaptor.sendText("느린 요청 알림", slackMessage);
         }
     }
+
 }

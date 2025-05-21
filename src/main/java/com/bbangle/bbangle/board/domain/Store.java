@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.domain;
+package com.bbangle.bbangle.board.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
@@ -48,8 +48,4 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
 
-    public Store updateProfile(String profile) {
-        this.profile = profile;
-        return this;
-    }
 }

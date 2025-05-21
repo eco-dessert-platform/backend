@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.util;
+package com.bbangle.bbangle.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

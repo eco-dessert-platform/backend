@@ -10,7 +10,7 @@ import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
