@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.controller;
 
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.constant.SortType;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
@@ -12,6 +12,8 @@ import com.bbangle.bbangle.search.facade.SearchFacade;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -26,13 +28,13 @@ import java.util.List;
 @RequestMapping("api/v1/search")
 public class SearchController {
 
-        private final SearchService searchService;
-        private final ResponseService responseService;
-        private final SearchMapper searchMapper;
-        private final SearchFacade searchFacade;
+    private final SearchService searchService;
+    private final ResponseService responseService;
+    private final SearchMapper searchMapper;
+    private final SearchFacade searchFacade;
 
-        @GetMapping("/boards")
-        public SingleResult<CursorPagination<Select>> getList(
+    @GetMapping("/boards")
+    public SingleResult<CursorPagination<Select>> getList(
             @ParameterObject
             FilterRequest filterRequest,
             @RequestParam(required = false, defaultValue = "RECOMMEND", value = "sort")
@@ -41,59 +43,65 @@ public class SearchController {
             String keyword,
             @RequestParam(required = false, value = "cursorId")
             Long cursorId,
+            @Parameter(
+                    description = "최대 30까지 입력 가능합니다.",
+                    schema = @Schema(defaultValue = "30", maximum = "30")
+            )
+            @RequestParam(required = false, defaultValue = "30")
+            Long limitSize,
             @AuthenticationPrincipal
             Long memberId
-        ) {
-                SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword, cursorId, memberId);
-                CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
-                return responseService.getSingleResult(searchBoardPage);
-        }
+    ) {
+        SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword, cursorId, memberId, limitSize);
+        CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
+        return responseService.getSingleResult(searchBoardPage);
+    }
 
 
-        @PostMapping
-        public CommonResult saveKeyword(
+    @PostMapping
+    public CommonResult saveKeyword(
             @RequestParam("keyword")
             String keyword,
             @AuthenticationPrincipal
             Long memberId
-        ) {
-                searchService.saveKeyword(memberId, keyword);
-                return responseService.getSuccessResult();
-        }
+    ) {
+        searchService.saveKeyword(memberId, keyword);
+        return responseService.getSuccessResult();
+    }
 
-        @GetMapping("/recency")
-        public CommonResult getRecencyKeyword(
+    @GetMapping("/recency")
+    public CommonResult getRecencyKeyword(
             @AuthenticationPrincipal
             Long memberId
-        ) {
-                RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
-                return responseService.getSingleResult(recencyKeyword);
-        }
+    ) {
+        RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
+        return responseService.getSingleResult(recencyKeyword);
+    }
 
-        @DeleteMapping("/recency")
-        public CommonResult deleteRecencyKeyword(
+    @DeleteMapping("/recency")
+    public CommonResult deleteRecencyKeyword(
             @RequestParam(value = "keyword")
             String keyword,
             @AuthenticationPrincipal
             Long memberId
-        ) {
-                searchService.deleteRecencyKeyword(keyword, memberId);
+    ) {
+        searchService.deleteRecencyKeyword(keyword, memberId);
 
-                return responseService.getSuccessResult();
-        }
+        return responseService.getSuccessResult();
+    }
 
-        @GetMapping("/best-keyword")
-        public CommonResult getBestKeyword() {
-                List<String> bestKeywords = searchService.getBestKeyword();
-                return responseService.getListResult(bestKeywords);
-        }
+    @GetMapping("/best-keyword")
+    public CommonResult getBestKeyword() {
+        List<String> bestKeywords = searchService.getBestKeyword();
+        return responseService.getListResult(bestKeywords);
+    }
 
-        @GetMapping("/auto-keyword")
-        public CommonResult getAutoKeyword(
+    @GetMapping("/auto-keyword")
+    public CommonResult getAutoKeyword(
             @RequestParam("keyword")
             String keyword
-        ) {
-                List<String> autoKeywords = searchService.getAutoKeyword(keyword);
-                return responseService.getListResult(autoKeywords);
-        }
+    ) {
+        List<String> autoKeywords = searchService.getAutoKeyword(keyword);
+        return responseService.getListResult(autoKeywords);
+    }
 }

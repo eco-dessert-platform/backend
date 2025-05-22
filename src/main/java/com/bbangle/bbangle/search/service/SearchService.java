@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
 
 @Slf4j
@@ -33,97 +32,97 @@ import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOr
 @Transactional(readOnly = true)
 public class SearchService {
 
-        private static final int LIMIT_KEYWORD_COUNT = 20;
-        private static final Long ANONYMOUS_MEMBER_ID = 1L;
-        private final SearchRepository searchRepository;
-        private final MemberSegmentRepository memberSegmentRepository;
-        private final AutoCompleteUtil autoCompleteUtil;
-        private final KeywordUtil keywordUtil;
-        private final SearchInfoMapper searchInfoMapper;
+    private static final int LIMIT_KEYWORD_COUNT = 20;
+    private static final Long ANONYMOUS_MEMBER_ID = 1L;
+    private final SearchRepository searchRepository;
+    private final MemberSegmentRepository memberSegmentRepository;
+    private final AutoCompleteUtil autoCompleteUtil;
+    private final KeywordUtil keywordUtil;
+    private final SearchInfoMapper searchInfoMapper;
 
-        @Transactional
-        public void saveKeyword(Long memberId, String keyword) {
-                checkNullOrEmptyKeyword(keyword);
+    @Transactional
+    public void saveKeyword(Long memberId, String keyword) {
+        checkNullOrEmptyKeyword(keyword);
 
-                memberId = checkAnonymousId(memberId);
-                Search search = Search.builder()
-                    .memberId(memberId)
-                    .keyword(keyword)
-                    .build();
+        memberId = checkAnonymousId(memberId);
+        Search search = Search.builder()
+                .memberId(memberId)
+                .keyword(keyword)
+                .build();
 
-                // 캐싱하여 특정 시간에 저장하는게 좋을까?
-                searchRepository.save(search);
+        // 캐싱하여 특정 시간에 저장하는게 좋을까?
+        searchRepository.save(search);
+    }
+
+    private Long checkAnonymousId(Long memberId) {
+        if (Objects.isNull(memberId)) {
+            return ANONYMOUS_MEMBER_ID;
         }
 
-        private Long checkAnonymousId(Long memberId) {
-                if (Objects.isNull(memberId)) {
-                        return ANONYMOUS_MEMBER_ID;
-                }
+        return memberId;
+    }
 
-                return memberId;
+    public SearchInfo.BoardsInfo getBoardList(Main command) {
+
+        SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
+                searchRepository.getCursorCondition(command.cursorId()) :
+                SearchInfo.CursorCondition.empty();
+
+        return command.isExcludedProduct() ?
+                getRecommendBoardList(command, cursorCondition) :
+                getDefaultBoardList(command, cursorCondition);
+    }
+
+    private SearchInfo.BoardsInfo getDefaultBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
+        List<Board> boards = searchRepository.getBoards(command, cursorCondition);
+        Long boardCount = searchRepository.getAllCount(command, cursorCondition);
+        return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
+    }
+
+    private SearchInfo.BoardsInfo getRecommendBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
+        MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
+        List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
+        Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
+        return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
+    }
+
+    public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
+
+        List<SearchInfo.Select> selects = boardsInfo.getBoards().stream()
+                .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
+                .toList();
+
+        return CursorPagination.of(
+                selects,
+                boardsInfo.getBoardLimitSize(),
+                boardsInfo.getBoardCount(),
+                SearchInfo.Select::getBoardId
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public RecencySearchResponse getRecencyKeyword(Long memberId) {
+
+        if (Objects.isNull(memberId)) {
+            return RecencySearchResponse.getEmpty();
         }
 
-        public SearchInfo.BoardsInfo getBoardList(Main command) {
+        List<KeywordDto> keywords = searchRepository.getRecencyKeyword(memberId);
 
-                SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
-                    searchRepository.getCursorCondition(command.cursorId()) :
-                    SearchInfo.CursorCondition.empty();
+        return RecencySearchResponse.of(keywords);
+    }
 
-                return command.isExcludedProduct() ?
-                    getRecommendBoardList(command, cursorCondition) :
-                    getDefaultBoardList(command, cursorCondition);
-        }
+    @Transactional
+    public void deleteRecencyKeyword(String keyword, Long memberId) {
+        searchRepository.markAsDeleted(keyword, memberId);
+    }
 
-        private SearchInfo.BoardsInfo getDefaultBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
-                List<Board> boards = searchRepository.getBoards(command, cursorCondition);
-                Long boardCount = searchRepository.getAllCount(command, cursorCondition);
-                return searchInfoMapper.toBoardsInfo(boards, boardCount);
-        }
+    public List<String> getBestKeyword() {
+        return keywordUtil.getBestKeyword();
+    }
 
-        private SearchInfo.BoardsInfo getRecommendBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
-                MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
-                    .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
-                List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
-                Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
-                return searchInfoMapper.toBoardsInfo(boards, boardCount);
-        }
-
-        public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
-
-                List<SearchInfo.Select> selects = boardsInfo.getBoards().stream()
-                    .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
-                    .toList();
-
-                return CursorPagination.of(
-                    selects,
-                    BOARD_PAGE_SIZE,
-                    boardsInfo.getBoardCount(),
-                    SearchInfo.Select::getBoardId
-                );
-        }
-
-        @Transactional(readOnly = true)
-        public RecencySearchResponse getRecencyKeyword(Long memberId) {
-
-                if (Objects.isNull(memberId)) {
-                        return RecencySearchResponse.getEmpty();
-                }
-
-                List<KeywordDto> keywords = searchRepository.getRecencyKeyword(memberId);
-
-                return RecencySearchResponse.of(keywords);
-        }
-
-        @Transactional
-        public void deleteRecencyKeyword(String keyword, Long memberId) {
-                searchRepository.markAsDeleted(keyword, memberId);
-        }
-
-        public List<String> getBestKeyword() {
-                return keywordUtil.getBestKeyword();
-        }
-
-        public List<String> getAutoKeyword(String keyword) {
-                return autoCompleteUtil.autoComplete(keyword, LIMIT_KEYWORD_COUNT);
-        }
+    public List<String> getAutoKeyword(String keyword) {
+        return autoCompleteUtil.autoComplete(keyword, LIMIT_KEYWORD_COUNT);
+    }
 }
