@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.service.dto;
 
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.constant.SortType;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 
 public class SearchCommand {
 
@@ -11,9 +11,9 @@ public class SearchCommand {
             String keyword,
             Long cursorId,
             Long memberId,
-            Boolean isExcludedProduct
+            Boolean isExcludedProduct,
+            Integer limitSize
     ) {
-
     }
 
 }
