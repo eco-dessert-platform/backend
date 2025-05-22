@@ -26,8 +26,11 @@ public class RecentBoardInFolderSortRepository implements BoardInFolderSortRepos
         return queryFactory.select(board.id)
                 .distinct()
                 .from(product)
-                .join(board)
-                .on(product.board.id.eq(board.id))
+                .join(board).on(product.board.id.eq(board.id))
+                .join(wishListBoard).on(
+                        board.id.eq(wishListBoard.boardId)
+                                .and(wishListBoard.wishlistFolderId.eq(folderId))
+                )
                 .where(getCursorCondition(cursorId))
                 .orderBy(getSortOrders())
                 .limit(BOARD_PAGE_SIZE + 1)
