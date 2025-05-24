@@ -146,6 +146,10 @@ public class Member extends BaseEntity implements UserDetails {
         this.nickname = request.nickname();
     }
 
+    public void clearProfile() {
+        updateProfile(null);
+    }
+
     public void updateProfile(String imgUrl) {
         this.profile = imgUrl;
     }
