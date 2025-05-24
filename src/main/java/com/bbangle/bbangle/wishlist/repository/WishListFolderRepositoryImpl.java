@@ -43,7 +43,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 .on(wishedBoard.wishlistFolderId.eq(wishListFolder.id))
                 .leftJoin(board)
                 .on(wishedBoard.boardId.eq(board.id))
-                .innerJoin(productImg)
+                .leftJoin(productImg)
                 .on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
                 .where(wishListFolder.member.eq(member)
                         .and(wishListFolder.isDeleted.eq(false)))
