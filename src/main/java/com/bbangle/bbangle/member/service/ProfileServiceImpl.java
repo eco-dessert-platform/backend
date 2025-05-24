@@ -42,10 +42,14 @@ public class ProfileServiceImpl implements ProfileService {
     ) {
         Member member = profileRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+
         if (profileImg != null && !profileImg.isEmpty()) {
             String imgUrl = imageService.save(MEMBER_PROFILE, profileImg, memberId);
             member.updateProfile(imgUrl);
+        } else {
+            member.clearProfile();
         }
+
         member.update(request);
     }
 
