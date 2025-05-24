@@ -36,6 +36,7 @@ public class BoardDetailResponse {
         private Integer freeShippingConditions;
         private int discountRate;
         private Boolean isBoardWished;
+        private Boolean isBundled;
         private List<String> boardImages;
         private String boardDetail;
     }
