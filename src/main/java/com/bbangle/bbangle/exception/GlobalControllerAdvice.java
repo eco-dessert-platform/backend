@@ -31,6 +31,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResult defaultExceptionHandler(HttpServletRequest request, Exception ex) {
+        log.error(ex.getMessage(), ex);
         slackAdaptor.sendAlert(request, ex);
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
@@ -44,22 +45,22 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(BbangleException.class)
     public ResponseEntity<CommonResult> handleBbangleException(
-        HttpServletRequest request,
-        BbangleException ex
+            HttpServletRequest request,
+            BbangleException ex
     ) {
         CommonResult result = responseService.getFailResult(
-            hasText(ex.getMessage()) ? ex.getMessage() : "error",
-            ex.getBbangleErrorCode().getCode()
+                hasText(ex.getMessage()) ? ex.getMessage() : "error",
+                ex.getBbangleErrorCode().getCode()
         );
         return new ResponseEntity<>(result, ex.getBbangleErrorCode().getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonResult> handleMethodArgumentNotValidException(
-        MethodArgumentNotValidException ex
+            MethodArgumentNotValidException ex
     ) {
         CommonResult methodArgumentNotValidExceptionResult = responseService
-            .getMethodArgumentNotValidExceptionResult(ex);
+                .getMethodArgumentNotValidExceptionResult(ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
     }
 
@@ -69,7 +70,7 @@ public class GlobalControllerAdvice {
         log.error(String.format("%s:\n%s", e, AWS_ACL_BLOCK.getMessage()));
 
         return ResponseEntity.internalServerError()
-            .body(responseService.getError(AWS_ACL_BLOCK));
+                .body(responseService.getError(AWS_ACL_BLOCK));
     }
 
     @ExceptionHandler(value = SdkClientException.class)
@@ -79,7 +80,7 @@ public class GlobalControllerAdvice {
         log.error(String.format("%s:\n%s", e, AWS_ENVIRONMENT));
 
         return ResponseEntity.internalServerError()
-            .body(responseService.getError(AWS_ENVIRONMENT));
+                .body(responseService.getError(AWS_ENVIRONMENT));
     }
 
 }
