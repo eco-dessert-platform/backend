@@ -31,6 +31,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResult defaultExceptionHandler(HttpServletRequest request, Exception ex) {
+        log.error(ex.getMessage(), ex);
         slackAdaptor.sendAlert(request, ex);
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
@@ -39,47 +40,48 @@ public class GlobalControllerAdvice {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public CommonResult notFoundExceptionHandler(NoResourceFoundException ex) {
         // 404 는 쓸데없는 알람이 너무 많이와서 얼럿에서 제외
+        log.error(ex.getMessage(), ex);
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
 
     @ExceptionHandler(BbangleException.class)
     public ResponseEntity<CommonResult> handleBbangleException(
-        HttpServletRequest request,
-        BbangleException ex
+            HttpServletRequest request,
+            BbangleException ex
     ) {
+        log.error(ex.getMessage(), ex);
         CommonResult result = responseService.getFailResult(
-            hasText(ex.getMessage()) ? ex.getMessage() : "error",
-            ex.getBbangleErrorCode().getCode()
+                hasText(ex.getMessage()) ? ex.getMessage() : "error",
+                ex.getBbangleErrorCode().getCode()
         );
         return new ResponseEntity<>(result, ex.getBbangleErrorCode().getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonResult> handleMethodArgumentNotValidException(
-        MethodArgumentNotValidException ex
+            MethodArgumentNotValidException ex
     ) {
+        log.error(ex.getMessage(), ex);
         CommonResult methodArgumentNotValidExceptionResult = responseService
-            .getMethodArgumentNotValidExceptionResult(ex);
+                .getMethodArgumentNotValidExceptionResult(ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
     }
 
     //아마존 S3 ACL 권한 설정 안했을 시 에러 발생
     @ExceptionHandler(value = AmazonS3Exception.class)
     public ResponseEntity<CommonResult> amazonS3Exception(AmazonS3Exception e) {
-        log.error(String.format("%s:\n%s", e, AWS_ACL_BLOCK.getMessage()));
-
+        log.error(AWS_ACL_BLOCK.getMessage(), e);
         return ResponseEntity.internalServerError()
-            .body(responseService.getError(AWS_ACL_BLOCK));
+                .body(responseService.getError(AWS_ACL_BLOCK));
     }
 
     @ExceptionHandler(value = SdkClientException.class)
     public ResponseEntity<CommonResult> sdkClientException(SdkClientException e) {
         // build.gradle에, spring-cloud-starter-aws 의존성 주입시
         // 로컬환경은, aws환경이 아니기때문에 나는 에러
-        log.error(String.format("%s:\n%s", e, AWS_ENVIRONMENT));
-
+        log.error(AWS_ENVIRONMENT.getMessage(), e);
         return ResponseEntity.internalServerError()
-            .body(responseService.getError(AWS_ENVIRONMENT));
+                .body(responseService.getError(AWS_ENVIRONMENT));
     }
 
 }
