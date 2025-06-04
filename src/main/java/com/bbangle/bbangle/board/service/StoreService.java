@@ -1,19 +1,22 @@
 package com.bbangle.bbangle.board.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
-
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.board.repository.StoreRepository;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.StoreDetail;
 import com.bbangle.bbangle.board.service.mapper.StoreInfoMapper;
-import java.util.List;
-import java.util.Map;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.exception.BbangleException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -48,12 +51,14 @@ public class StoreService {
                 return storeRepository.findBoards(storeId, boardIdAsCursorId);
         }
 
-        public List<StoreInfo.AllBoard> convertToAllBoard(List<Board> boards,
-            Map<Long, Boolean> boardWishedMap) {
+        public List<StoreInfo.AllBoard> convertToAllBoard(List<Board> boards, Map<Long, Boolean> boardWishedMap) {
                 return boards.stream().map(board ->
-                        storeInfoMapper.toAllBoard(board,
-                            boardWishedMap.getOrDefault(board.getId(), false)))
+                        storeInfoMapper.toAllBoard(board, boardWishedMap.getOrDefault(board.getId(), false)))
                     .toList();
+        }
+
+        public CursorPageResponse<StoreInfo.AllBoard> getCursorByAllBoards(List<StoreInfo.AllBoard> allBoards) {
+                return CursorPageResponse.of(allBoards, BOARD_PAGE_SIZE, StoreInfo.AllBoard::boardId);
         }
 
         public List<Board> getBestBoards(Long storeId) {
