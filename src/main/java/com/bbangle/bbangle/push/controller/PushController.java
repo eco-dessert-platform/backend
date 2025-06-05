@@ -1,16 +1,19 @@
 package com.bbangle.bbangle.push.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.dto.FcmRequest;
 import com.bbangle.bbangle.push.dto.FcmTestDto;
 import com.bbangle.bbangle.push.dto.PushRequest;
+import com.bbangle.bbangle.push.dto.PushResponse;
 import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/push")
@@ -46,7 +47,6 @@ public class PushController {
         return responseService.getSuccessResult();
     }
 
-
     @PatchMapping
     public CommonResult cancelPush(
             @Validated @RequestBody PushRequest request,
@@ -55,7 +55,6 @@ public class PushController {
         pushService.cancelPush(request, memberId);
         return responseService.getSuccessResult();
     }
-
 
     @DeleteMapping
     public CommonResult deletePush(
@@ -66,9 +65,8 @@ public class PushController {
         return responseService.getSuccessResult();
     }
 
-
     @GetMapping
-    public CommonResult getPushes(
+    public ListResult<PushResponse> getPushes(
             @RequestParam(value = "pushCategory") PushCategory pushCategory,
             @AuthenticationPrincipal Long memberId
     ) {
@@ -76,7 +74,7 @@ public class PushController {
     }
 
     @GetMapping("/test")
-    public CommonResult test(){
+    public CommonResult test() {
         List<FcmRequest> requestList = pushService.getPushesForNotification();
         fcmService.sendMessage(requestList);
         return responseService.getSuccessResult();

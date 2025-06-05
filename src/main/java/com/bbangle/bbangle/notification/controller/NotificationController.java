@@ -1,17 +1,17 @@
 package com.bbangle.bbangle.notification.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
 import com.bbangle.bbangle.notification.service.NotificationService;
+import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class NotificationController {
     private final ResponseService responseService;
 
     @GetMapping
-    public CommonResult getList(
+    public SingleResult<NotificationCustomPage<List<NotificationResponse>>> getList(
         @RequestParam(required = false, value = "cursorId")
         Long cursorId
     ) {
@@ -30,7 +30,7 @@ public class NotificationController {
     }
 
     @GetMapping("/{id}")
-    public CommonResult getNoticeDetail(
+    public SingleResult<NotificationDetailResponseDto> getNoticeDetail(
         @PathVariable
         Long id
     ) {

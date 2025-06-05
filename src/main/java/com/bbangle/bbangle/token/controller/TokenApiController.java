@@ -22,8 +22,8 @@ public class TokenApiController {
 
     @PostMapping("/api/v1/token")
     public CommonResult createNewAccessToken(
-        HttpServletRequest request,
-        HttpServletResponse response
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         String refreshToken = tokenCookieProvider.getRefreshTokenFromCookie(request);
         if (refreshToken == null || !tokenProvider.isValidToken(refreshToken)) {

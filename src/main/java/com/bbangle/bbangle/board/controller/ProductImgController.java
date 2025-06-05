@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.dto.ProductImgResponse;
 import com.bbangle.bbangle.board.service.ProductImgService;
-import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class ProductImgController {
      * 단일 이미지 업로드 (Board 연결 없이)
      */
     @PostMapping(value = "/image/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResult uploadImage(
+    public SingleResult<ProductImgResponse> uploadImage(
             @RequestParam("image") MultipartFile image) {
         return responseService.getSingleResult(productImgService.uploadSingle(image));
     }
@@ -33,7 +34,7 @@ public class ProductImgController {
      * 다중 이미지 업로드 (Board 연결 없이)
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResult uploadMultipleImages(
+    public SingleResult<List<ProductImgResponse>> uploadMultipleImages(
             @RequestParam("images") List<MultipartFile> images) {
         return responseService.getSingleResult(productImgService.uploadMultiple(images));
     }

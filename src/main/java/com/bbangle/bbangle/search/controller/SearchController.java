@@ -3,6 +3,7 @@ package com.bbangle.bbangle.search.controller;
 import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -14,13 +15,17 @@ import com.bbangle.bbangle.search.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,7 +57,8 @@ public class SearchController {
             @AuthenticationPrincipal
             Long memberId
     ) {
-        SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword, cursorId, memberId, limitSize);
+        SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword, cursorId, memberId,
+                limitSize);
         CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
         return responseService.getSingleResult(searchBoardPage);
     }
@@ -70,7 +76,7 @@ public class SearchController {
     }
 
     @GetMapping("/recency")
-    public CommonResult getRecencyKeyword(
+    public SingleResult<RecencySearchResponse> getRecencyKeyword(
             @AuthenticationPrincipal
             Long memberId
     ) {
@@ -91,13 +97,13 @@ public class SearchController {
     }
 
     @GetMapping("/best-keyword")
-    public CommonResult getBestKeyword() {
+    public ListResult<String> getBestKeyword() {
         List<String> bestKeywords = searchService.getBestKeyword();
         return responseService.getListResult(bestKeywords);
     }
 
     @GetMapping("/auto-keyword")
-    public CommonResult getAutoKeyword(
+    public ListResult<String> getAutoKeyword(
             @RequestParam("keyword")
             String keyword
     ) {
