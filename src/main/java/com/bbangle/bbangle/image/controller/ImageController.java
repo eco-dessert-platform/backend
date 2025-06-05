@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.image.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.image.domain.ImageCategory;
 import com.bbangle.bbangle.image.service.ImageService;
@@ -25,8 +26,8 @@ public class ImageController {
 
     @Operation(summary = "보드 이미지 이외의 이미지 저장")
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResult saveImg(@RequestParam ImageCategory imageCategory,
-                                @RequestParam MultipartFile file) {
+    public SingleResult<String> saveImg(@RequestParam ImageCategory imageCategory,
+                                        @RequestParam MultipartFile file) {
         return responseService.getSingleResult(imageService.save(imageCategory, file, -1));
     }
 }

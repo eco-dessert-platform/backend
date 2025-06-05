@@ -1,13 +1,16 @@
 package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.controller.mapper.BoardDetailMapper;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse.Main;
 import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.SimilarityBoardResponse;
 import com.bbangle.bbangle.board.dto.orders.ProductResponse;
 import com.bbangle.bbangle.board.facade.BoardDetailFacade;
 import com.bbangle.bbangle.board.service.BoardDetailService;
 import com.bbangle.bbangle.board.service.ProductService;
+import com.bbangle.bbangle.board.service.dto.StoreInfo.Store;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.review.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.service.ReviewService;
@@ -43,7 +46,7 @@ public class BoardDetailController {
 
     @Operation(summary = "게시판 조회")
     @GetMapping("/{boardId}")
-    public CommonResult getBoardDetailResponse(
+    public SingleResult<BoardImageDetailResponse> getBoardDetailResponse(
             @PathVariable("boardId")
             Long boardId,
             @AuthenticationPrincipal
@@ -58,7 +61,7 @@ public class BoardDetailController {
     // 프론트에서 /new API 변경 후 삭제 예정
     @Operation(summary = "스토어 조회")
     @GetMapping("/{boardId}/store")
-    public CommonResult getStoreInfoInBoardDetail(
+    public SingleResult<Store> getStoreInfoInBoardDetail(
             @PathVariable("boardId")
             Long boardId,
             @AuthenticationPrincipal
@@ -69,7 +72,7 @@ public class BoardDetailController {
     }
 
     @GetMapping("/{boardId}/similar_board")
-    public CommonResult getCount(
+    public SingleResult<List<SimilarityBoardResponse>> getCount(
             @PathVariable(value = "boardId")
             Long boardId,
             @AuthenticationPrincipal
@@ -83,7 +86,7 @@ public class BoardDetailController {
     // 프론트에서 /new API 변경 후 삭제 예정
     @Operation(summary = "상품 조회")
     @GetMapping("/{boardId}/product")
-    public CommonResult getProductResponse(
+    public SingleResult<ProductResponse> getProductResponse(
             @PathVariable("boardId")
             Long boardId,
             @AuthenticationPrincipal
@@ -101,7 +104,7 @@ public class BoardDetailController {
 
     @Operation(summary = "리뷰 조회")
     @GetMapping("/{boardId}/review")
-    public CommonResult getReviewResponse(
+    public SingleResult<SummarizedReviewResponse> getReviewResponse(
             @PathVariable("boardId")
             Long boardId) {
         SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
@@ -111,7 +114,7 @@ public class BoardDetailController {
 
     @Operation(summary = "게시판 조회(new)")
     @GetMapping("/{boardId}/new")
-    public CommonResult getBoardDetail(
+    public SingleResult<Main> getBoardDetail(
             @PathVariable("boardId")
             Long boardId,
             @AuthenticationPrincipal

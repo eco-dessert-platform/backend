@@ -2,10 +2,10 @@ package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.service.RandomBoardService;
-import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.board.service.RedisService;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.common.service.ResponseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,17 +25,17 @@ public class RandomBoardController {
     private final RedisService redisService;
 
     @GetMapping("/boards-random")
-    public CommonResult getList(
-        @RequestParam(required = false, value = "cursorId")
-        Long cursorId,
-        @AuthenticationPrincipal
-        Long memberId
+    public SingleResult<CursorPageResponse<BoardResponse>> getList(
+            @RequestParam(required = false, value = "cursorId")
+            Long cursorId,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         Integer setNumber = redisService.getSetNumber(memberId);
         CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(
-            cursorId,
-            memberId,
-            setNumber);
+                cursorId,
+                memberId,
+                setNumber);
         return responseService.getSingleResult(boardResponseList);
     }
 }
