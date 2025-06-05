@@ -1,20 +1,19 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.board.controller.dto.StoreResponse;
 import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
 import com.bbangle.bbangle.board.facade.StoreFacade;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
-import java.util.List;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.common.service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,17 +49,16 @@ public class StoreController {
                 return responseService.getListResult(popularBoardResponses);
         }
 
-        @GetMapping("/{storeId}/boards")
-        public CommonResult getStoreAllBoard(
+    @GetMapping("/{storeId}/boards")
+    public SingleResult<CursorPageResponse<AllBoard>> getStoreAllBoard(
             @PathVariable("storeId")
             Long storeId,
             @RequestParam(value = "cursorId", required = false)
             Long boardIdAsCursorId,
             @AuthenticationPrincipal
             Long memberId
-        ) {
-                List<AllBoard> boardListResponse = storeFacade.getAllBoard(memberId, storeId,
-                    boardIdAsCursorId);
-                return responseService.getSingleResult(boardListResponse);
-        }
+    ) {
+        CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId, boardIdAsCursorId);
+        return responseService.getSingleResult(response);
+    }
 }
