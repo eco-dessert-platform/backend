@@ -7,6 +7,7 @@ import com.bbangle.bbangle.util.SecurityUtils;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class WishListStoreController {
     private static final String REMOVE_WISHLIST_STORE = "스토어 찜을 해제했습니다";
 
     @GetMapping("/stores")
+    @Operation(summary = "위시리스트 상점 조회")
     public SingleResult<WishListStoreCustomPage<List<WishListStoreResponseDto>>> getWishListStores(
             @RequestParam(required = false, value = "cursorId") Long cursorId) {
         Long memberId = SecurityUtils.getMemberId();
@@ -38,6 +40,7 @@ public class WishListStoreController {
     }
 
     @PostMapping("/store/{storeId}")
+    @Operation(summary = "위시리스트에 상점 추가")
     public SingleResult<MessageDto> addWishListStore(@PathVariable("storeId") Long storeId) {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.save(memberId, storeId);
@@ -47,6 +50,7 @@ public class WishListStoreController {
     }
 
     @PatchMapping("/store/{storeId}")
+    @Operation(summary = "위시리스트에 상점 삭제")
     public SingleResult<MessageDto> deleteWishListStore(@PathVariable("storeId") Long storeId) {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.deleteStore(memberId, storeId);
