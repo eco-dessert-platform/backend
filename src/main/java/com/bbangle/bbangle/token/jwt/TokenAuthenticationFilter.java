@@ -8,15 +8,15 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
+@Component
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final static String HEADER_AUTHORIZATION = "Authorization";
-    private final static String TOKEN_PREFIX = "Bearer ";
-
     private final TokenProvider tokenProvider;
+    private final TokenCookieProvider tokenCookieProvider;
 
     @Override
     protected void doFilterInternal(
@@ -24,25 +24,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         HttpServletResponse response,
         FilterChain filterChain
     ) throws ServletException, IOException {
+        String token = tokenCookieProvider.getAccessTokenFromCookie(request);
 
-        String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
-        String token = getAccessToken(authorizationHeader);
-
-        if (tokenProvider.isValidToken(token)) {
+        if (token != null && tokenProvider.isValidToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext()
-                .setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
     }
-
-    private String getAccessToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith(TOKEN_PREFIX)) {
-            return authorizationHeader.substring(TOKEN_PREFIX.length());
-        }
-
-        return null;
-    }
-
 }
