@@ -9,6 +9,7 @@ import com.bbangle.bbangle.board.facade.BoardFacade;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.board.service.BoardUploadService;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -45,10 +46,9 @@ public class BoardController {
         return responseService.getSuccessResult();
     }
 
-
     @Operation(summary = "게시글 전체 조회")
     @GetMapping
-    public CommonResult getList(
+    public SingleResult<CursorPagination<SearchInfo.Select>> getList(
             @ParameterObject
             FilterRequest filterRequest,
             @RequestParam(required = false, defaultValue = "RECOMMEND")
@@ -70,7 +70,7 @@ public class BoardController {
     }
 
     @GetMapping("/folders/{folderId}")
-    public CommonResult getPostInFolder(
+    public SingleResult<CursorPageResponse<BoardResponse>> getPostInFolder(
             @RequestParam(required = false, value = "sort")
             FolderBoardSortType sort,
             @PathVariable(value = "folderId")
