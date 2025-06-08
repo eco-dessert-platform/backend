@@ -34,16 +34,17 @@ public interface StoreInfoMapper {
         StoreInfo.StoreDetail toStoreDetail(Store store);
 
         @Mapping(target = "boardId", source = "board.id")
-        @Mapping(target = "thumbnail", expression = "java(board.getThumbnail())")
+        @Mapping(target = "thumbnail", source = "board.thumbnail")
         @Mapping(target = "title", source = "board.title")
         @Mapping(target = "price", source = "board.price")
         @Mapping(target = "discountRate", source = "board.discountRate")
         @Mapping(target = "reviewRate", source = "board.boardStatistic.boardReviewGrade")
         @Mapping(target = "reviewCount", source = "board.boardStatistic.boardReviewCount")
-        @Mapping(target = "isSoldOut", expression = "java(board.isSoldOut())")
-        @Mapping(target = "isBbangcketing", expression = "java(board.isBbangketing())")
-        @Mapping(target = "tags", expression = "java(board.getTags())")
-        @Mapping(target = "isBundled", expression = "java(board.isBundled())")
+        @Mapping(target = "isSoldOut", source = "board.soldOut")
+        @Mapping(target = "isBbangcketing", source = "board.bbangketing")
+        @Mapping(target = "tags", source = "board.tags")
+        @Mapping(target = "isBundled", source = "board.bundled")
+        @Mapping(target = "isWished", source = "isWished")
         StoreInfo.AllBoard toAllBoard(Board board, Boolean isWished);
 
 }

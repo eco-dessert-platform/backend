@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.service.StoreService;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.StoreDetail;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,11 @@ public class StoreFacade {
                 return storeDetail;
         }
 
-        public List<AllBoard> getAllBoard(Long memberId, Long storeId, Long cursorId) {
+        public CursorPageResponse<AllBoard> getAllBoard(Long memberId, Long storeId, Long cursorId) {
                 List<Board> boards = storeService.getBoardsInStore(storeId, cursorId);
                 Map<Long, Boolean> boardWishedMap = wishListBoardService.getBoardWishedMap(memberId, boards);
-                return storeService.convertToAllBoard(boards, boardWishedMap);
+                List<AllBoard> allBoards = storeService.convertToAllBoard(boards, boardWishedMap);
+                return storeService.getCursorByAllBoards(allBoards);
         }
 
 }

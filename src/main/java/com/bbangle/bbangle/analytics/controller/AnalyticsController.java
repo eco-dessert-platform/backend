@@ -42,9 +42,9 @@ public class AnalyticsController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd)", example = "2024-01-01")
             Optional<LocalDate> startDate,
-            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             @RequestParam(value = "endDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             Optional<LocalDate> endDate
     ) {
         return responseService.getSingleResult(analyticsService.countMembersByPeriod(startDate, endDate));
