@@ -19,7 +19,7 @@ public record FilterRequest(
     Boolean sugarFreeTag,
     @Schema(description = "비건 여부", nullable = true, type = "boolean")
     Boolean veganTag,
-    @Schema(description = "키토제닉 여부", nullable = true, type = "boolean")
+    @Schema(description = "키토제닉 여부(현재 저지방으로 사용 중)", nullable = true, type = "boolean")
     Boolean ketogenicTag,
     @Parameter
     Category category,

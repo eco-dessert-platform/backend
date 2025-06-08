@@ -31,7 +31,7 @@ public class BoardUploadRequest {
     @Schema(description = "무료배송 조건 (할인 금액 제외, 순수 상품 가격 기준)", example = "30000")
     private int freeShippingConditions;
 
-    @Schema(description = "배송 회사", implementation = DeliveryCompany.class)
+    @Schema(description = "배송 회사")
     private DeliveryCompany deliveryCompany;
 
     @Schema(description = "상품 요청 목록")

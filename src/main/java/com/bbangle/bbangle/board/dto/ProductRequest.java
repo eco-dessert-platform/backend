@@ -19,7 +19,7 @@ public class ProductRequest {
     @Schema(description = "게시글 가격에 추가되는 금액", example = "1000")
     private int plusPriceWithBoardPrice;
 
-    @Schema(description = "상품 카테고리", implementation = Category.class)
+    @Schema(description = "상품 카테고리")
     private Category category;
 
     @Schema(description = "재고 수량", example = "100")
