@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.preference.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
@@ -25,10 +26,10 @@ public class PreferenceController {
 
     @PostMapping
     public CommonResult select(
-        @RequestBody
-        PreferenceSelectRequest request,
-        @AuthenticationPrincipal
-        Long memberId
+            @RequestBody
+            PreferenceSelectRequest request,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         preferenceService.register(request, memberId);
         return responseService.getSuccessResult();
@@ -36,19 +37,19 @@ public class PreferenceController {
 
     @PutMapping
     public CommonResult update(
-        @RequestBody
-        PreferenceUpdateRequest request,
-        @AuthenticationPrincipal
-        Long memberId
+            @RequestBody
+            PreferenceUpdateRequest request,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         preferenceService.update(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @GetMapping
-    public CommonResult getPreference(
-        @AuthenticationPrincipal
-        Long memberId
+    public SingleResult<MemberPreferenceResponse> getPreference(
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         MemberPreferenceResponse response = preferenceService.getPreference(memberId);
         return responseService.getSingleResult(response);
