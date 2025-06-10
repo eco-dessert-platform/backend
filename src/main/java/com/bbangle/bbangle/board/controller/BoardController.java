@@ -72,10 +72,12 @@ public class BoardController {
     @GetMapping("/folders/{folderId}")
     public SingleResult<CursorPageResponse<BoardResponse>> getPostInFolder(
             @RequestParam(required = false, value = "sort")
+            @Schema(description = "위시리스트 상품 정렬 타입")
             FolderBoardSortType sort,
             @PathVariable(value = "folderId")
             Long folderId,
             @RequestParam(value = "cursorId", required = false)
+            @Schema(description = "커서 아이디")
             Long cursorId,
             @AuthenticationPrincipal
             Long memberId

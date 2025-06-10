@@ -19,20 +19,19 @@ public class ProductInfoNotice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String productName;              // 제품명
-    private String foodType;                 // 식품 유형
-    private String manufacturer;             // 제조사 / 생산자
-    private String originLocation;           // 원산지 / 제조소 소재지
-    private String manufactureDate;          // 제조년월일
-    private String expirationDate;           // 소비기한 또는 품질 유지기한
-    private String storageGuide;             // 보관 방법 및 주의사항
-    private String packagingQuantityUnit;    // 포장 단위별 용량(중량) 및 수량
-    private String rawMaterialName;          // 원재료명 및 함량
-    private String nutritionInfo;            // 영양 정보
-    private String transgenic;               // 유전자 변형 식품 여부
-    private String customerWarning;          // 소비자 안전 정보 및 주의사항
-    private String importFood;               // 수입 식품 관련 정보
-
+    private String productName;
+    private String foodType;
+    private String manufacturer;
+    private String originLocation;
+    private String manufactureDate;
+    private String expirationDate;
+    private String storageGuide;
+    private String packagingQuantityUnit;
+    private String rawMaterialName;
+    private String nutritionInfo;
+    private String transgenic;
+    private String customerWarning;
+    private String importFood;
 
     public ProductInfoNotice(String productName, String foodType, String manufacturer, String originLocation,
                              String manufactureDate, String expirationDate, String storageGuide,
