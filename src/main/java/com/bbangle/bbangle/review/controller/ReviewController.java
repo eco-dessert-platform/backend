@@ -14,6 +14,7 @@ import com.bbangle.bbangle.review.dto.ReviewRateResponse;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
 import com.bbangle.bbangle.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -72,7 +73,7 @@ public class ReviewController {
             value = "/{reviewId}",
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     public CommonResult updateReview(
-            @PathVariable("reviewId")
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
             Long reviewId,
             @Valid @RequestBody
             ReviewRequest reviewRequest,
@@ -86,7 +87,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 삭제")
     @DeleteMapping("/{reviewId}")
     public CommonResult deleteReview(
-            @PathVariable("reviewId")
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId) {
@@ -96,16 +97,18 @@ public class ReviewController {
 
     @Operation(summary = "상품페이지(리뷰) 평점")
     @GetMapping(value = "/rate/{boardId}")
-    public SingleResult<ReviewRateResponse> getReviewRate(@PathVariable("boardId") Long boardId) {
+    public SingleResult<ReviewRateResponse> getReviewRate(
+            @PathVariable("boardId") @Parameter(description = "게시글 ID", example = "1") Long boardId
+    ) {
         return responseService.getSingleResult(reviewService.getReviewRate(boardId));
     }
 
     @Operation(summary = "상품페이지(리뷰) 목록")
     @GetMapping(value = "/list/{boardId}")
     public SingleResult<ReviewCustomPage<List<ReviewInfoResponse>>> getReviews(
-            @PathVariable("boardId")
+            @PathVariable("boardId") @Parameter(description = "게시글 ID", example = "1")
             Long boardId,
-            @RequestParam(required = false, value = "cursorId")
+            @RequestParam(required = false, value = "cursorId") @Parameter(description = "커서 ID")
             Long cursorId,
             @AuthenticationPrincipal
             Long memberId) {
@@ -115,7 +118,7 @@ public class ReviewController {
     @Operation(summary = "도움되요 추가")
     @PostMapping(value = "/like/{reviewId}")
     public CommonResult insertLike(
-            @PathVariable("reviewId")
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId) {
@@ -126,7 +129,7 @@ public class ReviewController {
     @Operation(summary = "도움되요 해제")
     @DeleteMapping(value = "/like/{reviewId}")
     public CommonResult removeLike(
-            @PathVariable("reviewId")
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId) {
@@ -137,7 +140,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 상세")
     @GetMapping(value = "/{reviewId}")
     public SingleResult<ReviewInfoResponse> getReviewDetail(
-            @PathVariable("reviewId")
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
             Long reviewId,
             @AuthenticationPrincipal
             Long memberId) {
@@ -146,7 +149,10 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 대표 이미지")
     @GetMapping(value = "/images/{reviewId}")
-    public SingleResult<ReviewImagesResponse> getReviewImages(@PathVariable("reviewId") Long reviewId) {
+    public SingleResult<ReviewImagesResponse> getReviewImages(
+            @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
+            Long reviewId
+    ) {
         return responseService.getSingleResult(reviewService.getReviewImages(reviewId));
     }
 
@@ -155,7 +161,7 @@ public class ReviewController {
     public SingleResult<ReviewCustomPage<List<ReviewInfoResponse>>> getMyReviews(
             @AuthenticationPrincipal
             Long memberId,
-            @RequestParam(required = false, value = "cursorId")
+            @RequestParam(required = false, value = "cursorId") @Parameter(description = "커서 ID")
             Long cursorId) {
         return responseService.getSingleResult(reviewService.getMyReviews(memberId, cursorId));
     }
@@ -163,22 +169,26 @@ public class ReviewController {
     @Operation(summary = "사진 리뷰 전체보기")
     @GetMapping(value = "/{boardId}/images")
     public SingleResult<ImageCustomPage<List<ImageDto>>> getAllImagesByBoardId(
-            @PathVariable("boardId")
+            @PathVariable("boardId") @Parameter(description = "게시글 ID", example = "1")
             Long boardId,
-            @RequestParam(required = false, value = "cursorId")
+            @RequestParam(required = false, value = "cursorId") @Parameter(description = "커서 ID")
             Long cursorId) {
         return responseService.getSingleResult(reviewService.getAllImagesByBoardId(boardId, cursorId));
     }
 
     @Operation(summary = "사진 리뷰 크게보기")
     @GetMapping(value = "/image/{imageId}")
-    public SingleResult<ImageDto> getImage(@PathVariable("imageId") Long imageId) {
+    public SingleResult<ImageDto> getImage(
+            @PathVariable("imageId") @Parameter(description = "이미지 ID", example = "1")
+            Long imageId) {
         return responseService.getSingleResult(reviewService.getImage(imageId));
     }
 
     @Operation(summary = "리뷰 수정 화면에서 사진 삭제")
     @DeleteMapping(value = "/image/{imageId}")
-    public CommonResult deleteImage(@PathVariable("imageId") Long imageId) {
+    public CommonResult deleteImage(
+            @PathVariable("imageId") @Parameter(description = "이미지 ID", example = "1")
+            Long imageId) {
         reviewService.deleteImage(imageId);
         return responseService.getSuccessResult();
     }
