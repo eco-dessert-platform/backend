@@ -8,6 +8,8 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -38,9 +40,11 @@ public class AnalyticsController {
     public SingleResult<AnalyticsMembersCountResponseDto> getNewMembersCount(
             @RequestParam(value = "startDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd)", example = "2024-01-01")
             Optional<LocalDate> startDate,
             @RequestParam(value = "endDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             Optional<LocalDate> endDate
     ) {
         return responseService.getSingleResult(analyticsService.countMembersByPeriod(startDate, endDate));
@@ -51,7 +55,9 @@ public class AnalyticsController {
     public SingleResult<AnalyticsCreatedWithinPeriodResponseDto> getWishlistBoardAnalytics(
             @RequestParam(value = "startDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd)", example = "2024-01-01")
             Optional<LocalDate> startDate,
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             @RequestParam(value = "endDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             Optional<LocalDate> endDate
@@ -64,9 +70,11 @@ public class AnalyticsController {
     public SingleResult<AnalyticsCreatedWithinPeriodResponseDto> getReviewAnalytics(
             @RequestParam(value = "startDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd)", example = "2024-01-01")
             Optional<LocalDate> startDate,
             @RequestParam(value = "endDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             Optional<LocalDate> endDate
     ) {
         return responseService.getSingleResult(analyticsService.analyzeReviewByPeriod(startDate, endDate));
@@ -77,9 +85,11 @@ public class AnalyticsController {
     public ListResult<AnalyticsCumulationResponseDto> getCumulatedReviewsCount(
             @RequestParam(value = "startDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd)", example = "2024-01-01")
             Optional<LocalDate> startDate,
             @RequestParam(value = "endDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd)", example = "2024-12-31")
             Optional<LocalDate> endDate
     ) {
         return responseService.getListResult(analyticsService.countCumulatedReviewsByPeriod(startDate, endDate));

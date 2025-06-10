@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.token.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.token.jwt.TokenCookieProvider;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
