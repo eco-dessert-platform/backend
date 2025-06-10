@@ -4,9 +4,11 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.member.dto.MemberAssignResponse;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,6 +32,7 @@ public class MemberController {
     private static final String DELETE_SUCCESS_MSG = "회원 탈퇴에 성공했습니다";
 
     @PutMapping(value = "additional-information", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "사용자 정보 수정")
     public CommonResult updateInfo(
             @RequestPart
             MemberInfoRequest additionalInfo,
@@ -46,6 +49,7 @@ public class MemberController {
     }
 
     @PatchMapping
+    @Operation(summary = "회원탈퇴")
     public SingleResult<MessageDto> deleteMember(
             @RequestBody WithdrawalRequestDto withdrawalRequestDto,
             @AuthenticationPrincipal
@@ -57,7 +61,8 @@ public class MemberController {
     }
 
     @GetMapping("/status")
-    public CommonResult getIsAssigned(
+    @Operation(summary = "사용자가 마케팅 조사, 취향조사, 설문조사했는지 조회")
+    public SingleResult<MemberAssignResponse> getIsAssigned(
             @AuthenticationPrincipal
             Long memberId
     ) {
