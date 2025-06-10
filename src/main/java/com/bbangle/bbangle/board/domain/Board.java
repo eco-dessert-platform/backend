@@ -80,7 +80,7 @@ public class Board extends BaseEntity {
     private BoardDetail boardDetail;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "productInfoNotice_id")
+    @JoinColumn(name = "product_info_notice_id")
     private ProductInfoNotice productInfoNotice;
 
     @OneToOne(mappedBy = "board", cascade = CascadeType.ALL)

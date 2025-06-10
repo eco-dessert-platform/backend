@@ -8,10 +8,11 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
+@Schema(description = "게시글 상세보기 요청 DTO")
 public class BoardDetailRequest {
 
-    @Schema(description = "HTML 형식의 상세페이지 내용")
-    private String content; // HTML 형식의 상세페이지 내용
+    @Schema(description = "HTML 형식의 상세페이지 내용", example = "<div>...</div>")
+    private String content;
 
     public BoardDetail toEntity(Board board) {
         return BoardDetail.builder()
