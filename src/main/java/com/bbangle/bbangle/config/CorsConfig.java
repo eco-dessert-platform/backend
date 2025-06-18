@@ -28,7 +28,8 @@ public class CorsConfig {
                                 "http://dev.bbanggree.com",
                                 "https://dev.bbanggree.com",
                                 "http://develop.bbanggree.com",
-                                "https://develop.bbanggree.com"
+                                "https://develop.bbanggree.com",
+                                "http://local.bbanggree.com:3000"
                         )
                         .allowedMethods(
                                 HttpMethod.GET.name(),
