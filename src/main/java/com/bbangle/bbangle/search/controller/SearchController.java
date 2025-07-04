@@ -45,6 +45,7 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "RECOMMEND", value = "sort")
             SortType sort,
             @RequestParam(required = false, value = "keyword")
+            @Schema(name = "검색어")
             String keyword,
             @RequestParam(required = false, value = "cursorId")
             Long cursorId,
@@ -53,6 +54,7 @@ public class SearchController {
                     schema = @Schema(defaultValue = "30", maximum = "30")
             )
             @RequestParam(required = false, defaultValue = "30")
+            @Schema(name = "검색 조회 개수 제한")
             Long limitSize,
             @AuthenticationPrincipal
             Long memberId
@@ -67,6 +69,7 @@ public class SearchController {
     @PostMapping
     public CommonResult saveKeyword(
             @RequestParam("keyword")
+            @Schema(name = "검색어")
             String keyword,
             @AuthenticationPrincipal
             Long memberId
@@ -87,6 +90,7 @@ public class SearchController {
     @DeleteMapping("/recency")
     public CommonResult deleteRecencyKeyword(
             @RequestParam(value = "keyword")
+            @Schema(name = "검색어")
             String keyword,
             @AuthenticationPrincipal
             Long memberId
@@ -105,6 +109,7 @@ public class SearchController {
     @GetMapping("/auto-keyword")
     public ListResult<String> getAutoKeyword(
             @RequestParam("keyword")
+            @Schema(name = "검색어")
             String keyword
     ) {
         List<String> autoKeywords = searchService.getAutoKeyword(keyword);

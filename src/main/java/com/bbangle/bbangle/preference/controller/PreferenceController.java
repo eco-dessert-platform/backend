@@ -7,6 +7,7 @@ import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
 import com.bbangle.bbangle.preference.service.PreferenceService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ public class PreferenceController {
     private final ResponseService responseService;
 
     @PostMapping
+    @Operation(summary = "사용자 취향 등록")
     public CommonResult select(
             @RequestBody
             PreferenceSelectRequest request,
@@ -36,6 +38,7 @@ public class PreferenceController {
     }
 
     @PutMapping
+    @Operation(summary = "사용자 취향 수정")
     public CommonResult update(
             @RequestBody
             PreferenceUpdateRequest request,
@@ -47,6 +50,7 @@ public class PreferenceController {
     }
 
     @GetMapping
+    @Operation(summary = "사용자 취향 조회")
     public SingleResult<MemberPreferenceResponse> getPreference(
             @AuthenticationPrincipal
             Long memberId
