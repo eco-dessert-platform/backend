@@ -7,23 +7,23 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 public record BoardResponses(List<BoardResponse> boardResponses) {
 
     public static BoardResponses from(List<BoardThumbnailDao> boardThumbnailDaos) {
-        WeakHashMap<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
+        Map<Long, List<String>> tagMapByBoardId = getTagListFromBoardResponseDao(
                 boardThumbnailDaos);
 
-        WeakHashMap<Long, Boolean> isBundled = getIsBundled(boardThumbnailDaos);
-        WeakHashMap<Long, Boolean> isSoldOut = getIsSoldOut(boardThumbnailDaos);
-        WeakHashMap<Long, Boolean> isBbangcketing = getIsBbangcketing(boardThumbnailDaos);
+        Map<Long, Boolean> isBundled = getIsBundled(boardThumbnailDaos);
+        Map<Long, Boolean> isSoldOut = getIsSoldOut(boardThumbnailDaos);
+        Map<Long, Boolean> isBbangcketing = getIsBbangcketing(boardThumbnailDaos);
 
         boardThumbnailDaos = removeDuplicatesByBoardId(boardThumbnailDaos);
 
@@ -31,11 +31,13 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                 isBundled, tagMapByBoardId,
                 isSoldOut, isBbangcketing);
 
+        clearLinkedHashMap(tagMapByBoardId, isBundled, isSoldOut, isBbangcketing);
+
         return new BoardResponses(boardResponses);
     }
 
-    private static WeakHashMap<Long, Boolean> getIsBbangcketing(List<BoardThumbnailDao> boardThumbnailDaoList) {
-        Map<Long, Boolean> intermediateMap = boardThumbnailDaoList.stream()
+    private static Map<Long, Boolean> getIsBbangcketing(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
                         BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.orderStartDate())),
@@ -56,12 +58,10 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                             return false;
                         }
                 ));
-        return new WeakHashMap<>(intermediateMap);
-
     }
 
-    private static WeakHashMap<Long, Boolean> getIsSoldOut(List<BoardThumbnailDao> boardThumbnailDaoList) {
-        Map<Long, Boolean> intermediateMap = boardThumbnailDaoList.stream()
+    private static Map<Long, Boolean> getIsSoldOut(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
                         BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.isSoldOut())),
@@ -83,8 +83,6 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                             return true;
                         }
                 ));
-        return new WeakHashMap<>(intermediateMap);
-
     }
 
     private static List<BoardResponse> getBoardResponseDtos(
@@ -105,10 +103,10 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                 .toList();
     }
 
-    private static WeakHashMap<Long, List<String>> getTagListFromBoardResponseDao(
+    private static Map<Long, List<String>> getTagListFromBoardResponseDao(
             List<BoardThumbnailDao> boardThumbnailDaoList
     ) {
-        Map<Long, List<String>> intermediateMap = boardThumbnailDaoList.stream()
+        return boardThumbnailDaoList.stream()
                 .collect(Collectors.toMap(
                         BoardThumbnailDao::boardId,
                         board -> new ArrayList<>(Collections.singletonList(board.tagsDao())),
@@ -124,12 +122,10 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                                 .stream()
                                 .toList()
                 ));
-        return new WeakHashMap<>(intermediateMap);
-
     }
 
-    private static WeakHashMap<Long, Boolean> getIsBundled(List<BoardThumbnailDao> boardThumbnailDaoList) {
-        Map<Long, Boolean> intermediateMap = boardThumbnailDaoList
+    private static Map<Long, Boolean> getIsBundled(List<BoardThumbnailDao> boardThumbnailDaoList) {
+        return boardThumbnailDaoList
                 .stream()
                 .collect(Collectors.toMap(
                         BoardThumbnailDao::boardId,
@@ -146,19 +142,17 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
                         entry -> entry.getValue()
                                 .size() > 1)
                 );
-        return new WeakHashMap<>(intermediateMap);
-
     }
 
     private static List<BoardThumbnailDao> removeDuplicatesByBoardId(
             List<BoardThumbnailDao> boardThumbnailDaos
     ) {
-        WeakHashMap<Long, BoardThumbnailDao> uniqueBoardMap = boardThumbnailDaos.stream()
+        Map<Long, BoardThumbnailDao> uniqueBoardMap = boardThumbnailDaos.stream()
                 .collect(Collectors.toMap(
                         BoardThumbnailDao::boardId,
                         boardResponseDao -> boardResponseDao,
                         (existing, replacement) -> existing,
-                        WeakHashMap::new
+                        LinkedHashMap::new
                 ));
 
         List<BoardThumbnailDao> resultList = uniqueBoardMap.values()
@@ -189,6 +183,18 @@ public record BoardResponses(List<BoardResponse> boardResponses) {
         if (condition) {
             tags.add(tag);
         }
+    }
+
+    private static void clearLinkedHashMap(
+            Map<Long, List<String>> tagMapByBoardId,
+            Map<Long, Boolean> isBundled,
+            Map<Long, Boolean> isSoldOut,
+            Map<Long, Boolean> isBbangcketing
+    ) {
+        tagMapByBoardId.clear();
+        isBundled.clear();
+        isSoldOut.clear();
+        isBbangcketing.clear();
     }
 
     public int size() {
