@@ -24,7 +24,6 @@ jobs:
       - name: application.yml 정보 넣기
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_YML_AWS }}" | base64 --decode > src/main/resources/application-production.yml
           find src
 
