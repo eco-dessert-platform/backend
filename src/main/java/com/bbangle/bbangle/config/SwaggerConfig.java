@@ -55,7 +55,7 @@ public class SwaggerConfig {
 
         Server devServerWithHttp = new Server();
         devServerWithHttp.setDescription("dev-server-http");
-        devServerWithHttp.setUrl("http://52.79.47.179:8001");
+        devServerWithHttp.setUrl("http://dev.bbanggree.com");
 
         Server devServerWithHttps = new Server();
         devServerWithHttps.setDescription("dev-server-https");
