@@ -67,6 +67,10 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "member_role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
@@ -94,11 +98,12 @@ public class Member extends BaseEntity implements UserDetails {
         this.profile = profile;
         this.providerId = providerId;
         this.provider = provider;
+        this.role = Role.ROLE_USER; // 초기 유저는 무조건 USER 권한
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
+        return List.of(new SimpleGrantedAuthority(role.getRole()));
     }
 
     @Override
@@ -139,6 +144,10 @@ public class Member extends BaseEntity implements UserDetails {
         this.sex = request.sex();
         this.birth = request.birthDate();
         this.nickname = request.nickname();
+    }
+
+    public void clearProfile() {
+        updateProfile(null);
     }
 
     public void updateProfile(String imgUrl) {

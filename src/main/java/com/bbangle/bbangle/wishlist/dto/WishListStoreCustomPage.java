@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.wishlist.dto;
 
-import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.common.page.CustomPage;
 import java.util.List;
 
 public class WishListStoreCustomPage<T> extends CustomPage {

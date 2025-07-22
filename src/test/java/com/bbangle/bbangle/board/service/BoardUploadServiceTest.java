@@ -110,10 +110,10 @@ class BoardUploadServiceTest {
         // Then
         Board savedBoard = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
-        List<BoardDetail> boardDetails = savedBoard.getBoardDetails();
+        BoardDetail boardDetail = savedBoard.getBoardDetail();
 
-        assertThat(boardDetails).isNotEmpty();
-        assertThat(boardDetails.get(0).getContent())
+        assertThat(boardDetail).isNotNull();
+        assertThat(boardDetail.getContent())
                 .isEqualTo(boardUploadRequest.getBoardDetailRequest().getContent());
     }
 

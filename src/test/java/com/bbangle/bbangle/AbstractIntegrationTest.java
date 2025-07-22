@@ -30,9 +30,9 @@ import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.store.service.StoreService;
+import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.board.repository.StoreRepository;
+import com.bbangle.bbangle.board.service.StoreService;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
@@ -236,14 +236,13 @@ public abstract class AbstractIntegrationTest {
 
     protected Board fixtureBoard(Map<String, Object> params) {
         ArbitraryBuilder<Board> builder = fixtureMonkey.giveMeBuilder(Board.class);
-        builder.set("price", 1000);
         setBuilderParams(params, builder);
         Board sample = builder.sample();
 
-        if (!params.containsKey("store")) {
-            // store 선저장을 까먹은 분을 위해
-            storeRepository.save(sample.getStore());
-        }
+//        if (!params.containsKey("store")) {
+//            // store 선저장을 까먹은 분을 위해
+//            storeRepository.save(sample.getStore());
+//        }
         return sample;
     }
 

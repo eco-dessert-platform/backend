@@ -2,6 +2,7 @@ package com.bbangle.bbangle.member.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.MessageDto;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
@@ -39,7 +40,7 @@ public class ProfileController {
     }
 
     @GetMapping("/doublecheck")
-    public CommonResult doubleCheckNickname(
+    public SingleResult<MessageDto> doubleCheckNickname(
         @RequestParam("nickname") String nickname
     ) {
         Long memberId = SecurityUtils.getMemberId();

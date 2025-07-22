@@ -4,8 +4,8 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,14 +21,14 @@ public class OauthController {
     private final ResponseService responseService;
 
     @GetMapping("/login/{oauthServerType}")
+    @Operation(summary = "Oauth 로그인")
     CommonResult login(
-        @PathVariable("oauthServerType")
-        OauthServerType oauthServerType,
-        @RequestParam("token")
-        String token
+            @PathVariable("oauthServerType")
+            OauthServerType oauthServerType,
+            @RequestParam("token")
+            String token
     ) {
         LoginTokenResponse loginTokenResponse = oauthService.login(oauthServerType, token);
         return responseService.getSingleResult(loginTokenResponse);
     }
-
 }

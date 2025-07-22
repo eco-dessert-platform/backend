@@ -1,17 +1,21 @@
 package com.bbangle.bbangle.search.controller;
 
-import static com.bbangle.bbangle.board.sort.SortType.RECOMMEND;
-
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.ListResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.page.SearchCustomPage;
+import com.bbangle.bbangle.search.controller.mapper.SearchMapper;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
+import com.bbangle.bbangle.search.facade.SearchFacade;
 import com.bbangle.bbangle.search.service.SearchService;
+import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -31,49 +35,53 @@ public class SearchController {
 
     private final SearchService searchService;
     private final ResponseService responseService;
+    private final SearchMapper searchMapper;
+    private final SearchFacade searchFacade;
 
     @GetMapping("/boards")
-    public CommonResult getList(
-        @ParameterObject
-        FilterRequest filterRequest,
-        @RequestParam(required = false, value = "sort")
-        SortType sort,
-        @RequestParam(required = false, value = "keyword")
-        String keyword,
-        @RequestParam(required = false, value = "cursorId")
-        Long cursorId,
-        @AuthenticationPrincipal
-        Long memberId
+    public SingleResult<CursorPagination<Select>> getList(
+            @ParameterObject
+            FilterRequest filterRequest,
+            @RequestParam(required = false, defaultValue = "RECOMMEND", value = "sort")
+            SortType sort,
+            @RequestParam(required = false, value = "keyword")
+            @Schema(name = "검색어")
+            String keyword,
+            @RequestParam(required = false, value = "cursorId")
+            Long cursorId,
+            @Parameter(
+                    description = "최대 30까지 입력 가능합니다.",
+                    schema = @Schema(defaultValue = "30", maximum = "30")
+            )
+            @RequestParam(required = false, defaultValue = "30")
+            @Schema(name = "검색 조회 개수 제한")
+            Long limitSize,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
-        sort = settingDefaultSortTypeIfNull(sort);
-        SearchCustomPage<SearchResponse> searchCustomPage = searchService.getBoardList(
-            filterRequest,
-            sort,
-            keyword,
-            cursorId,
-            memberId);
-        return responseService.getSingleResult(searchCustomPage);
+        SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword, cursorId, memberId,
+                limitSize);
+        CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
+        return responseService.getSingleResult(searchBoardPage);
     }
 
-    private SortType settingDefaultSortTypeIfNull(SortType sort) {
-        return Objects.nonNull(sort) ? sort : RECOMMEND;
-    }
 
     @PostMapping
     public CommonResult saveKeyword(
-        @RequestParam("keyword")
-        String keyword,
-        @AuthenticationPrincipal
-        Long memberId
+            @RequestParam("keyword")
+            @Schema(name = "검색어")
+            String keyword,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         searchService.saveKeyword(memberId, keyword);
         return responseService.getSuccessResult();
     }
 
     @GetMapping("/recency")
-    public CommonResult getRecencyKeyword(
-        @AuthenticationPrincipal
-        Long memberId
+    public SingleResult<RecencySearchResponse> getRecencyKeyword(
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
         return responseService.getSingleResult(recencyKeyword);
@@ -81,10 +89,11 @@ public class SearchController {
 
     @DeleteMapping("/recency")
     public CommonResult deleteRecencyKeyword(
-        @RequestParam(value = "keyword")
-        String keyword,
-        @AuthenticationPrincipal
-        Long memberId
+            @RequestParam(value = "keyword")
+            @Schema(name = "검색어")
+            String keyword,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
         searchService.deleteRecencyKeyword(keyword, memberId);
 
@@ -92,15 +101,16 @@ public class SearchController {
     }
 
     @GetMapping("/best-keyword")
-    public CommonResult getBestKeyword() {
+    public ListResult<String> getBestKeyword() {
         List<String> bestKeywords = searchService.getBestKeyword();
         return responseService.getListResult(bestKeywords);
     }
 
     @GetMapping("/auto-keyword")
-    public CommonResult getAutoKeyword(
-        @RequestParam("keyword")
-        String keyword
+    public ListResult<String> getAutoKeyword(
+            @RequestParam("keyword")
+            @Schema(name = "검색어")
+            String keyword
     ) {
         List<String> autoKeywords = searchService.getAutoKeyword(keyword);
         return responseService.getListResult(autoKeywords);

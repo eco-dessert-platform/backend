@@ -43,20 +43,5 @@ class SearchControllerTest extends AbstractIntegrationTest {
             .andExpect(status().isOk());
     }
 
-    // AutoComplete 리팩토링 때 보수공사 하겠습니다
-//    @Test
-//    @DisplayName("getAutoKeyword 메서드는 최근 검색어를 삭제할 수 있다")
-//    void getAutoKeyword() throws Exception {
-//        MultiValueMap<String, String> params = new LinkedMultiValueMap();
-//        params.put("keyword", Collections.singletonList("비건"));
-//
-//        when(searchService.getAutoKeyword(any())).thenReturn(List.of("비건", "비건 베이커리", "비건 빵"));
-//
-//        mockMvc.perform(delete("/api/v1/search/auto-keyword")
-//                .params(params))
-//            .andDo(print())
-//            .andExpect(status().isOk())
-//            .andReturn();
-//    }
 }
 

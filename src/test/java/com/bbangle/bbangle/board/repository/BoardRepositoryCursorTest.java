@@ -6,19 +6,18 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.constant.SortType;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
-import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.board.domain.Store;
 import java.util.ArrayList;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -52,9 +51,9 @@ class BoardRepositoryCursorTest extends AbstractIntegrationTest {
         Long cursorId = idList.get(3); // 아마도 3
 
         // when
-        BoardCustomPage<List<BoardResponseDto>> resultPage = boardService.getBoardList(filter,
+        CursorPageResponse<BoardResponse> resultPage = boardService.getBoards(filter,
             SortType.RECOMMEND, cursorId, NULL_MEMBER_ID);
-        List<BoardResponseDto> result = resultPage.getContent();
+        List<BoardResponse> result = resultPage.getContent();
 
         // then
         assertThat(result).hasSize(4);

@@ -10,6 +10,7 @@ import com.bbangle.bbangle.push.dto.PushRequest;
 import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,6 @@ public class PushController {
         return responseService.getSuccessResult();
     }
 
-
     @PatchMapping
     public CommonResult cancelPush(
             @Validated @RequestBody PushRequest request,
@@ -55,7 +55,6 @@ public class PushController {
         pushService.cancelPush(request, memberId);
         return responseService.getSuccessResult();
     }
-
 
     @DeleteMapping
     public CommonResult deletePush(
@@ -66,10 +65,11 @@ public class PushController {
         return responseService.getSuccessResult();
     }
 
-
     @GetMapping
     public CommonResult getPushes(
-            @RequestParam(value = "pushCategory") PushCategory pushCategory,
+            @RequestParam(value = "pushCategory")
+            @Schema(description = "푸시 카테고리 타입")
+            PushCategory pushCategory,
             @AuthenticationPrincipal Long memberId
     ) {
         return responseService.getListResult(pushService.getPushes(pushCategory, memberId));

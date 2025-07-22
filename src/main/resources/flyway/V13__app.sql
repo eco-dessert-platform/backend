@@ -1,0 +1,1 @@
+ALTER TABLE product_detail DROP FOREIGN KEY fk_product_board_product_detail;

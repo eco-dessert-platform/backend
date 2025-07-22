@@ -15,9 +15,10 @@ import java.util.List;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
+import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
+import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.member.domain.QMember.member;
 import static com.bbangle.bbangle.push.domain.QPush.push;
-import static com.bbangle.bbangle.store.domain.QStore.store;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,13 +40,14 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                         product.id,
                         store.name,
                         product.title,
-                        board.profile,
+                        productImg.url,
                         push.isActive
                 ))
                 .from(push)
                 .join(product).on(push.productId.eq(product.id))
                 .join(board).on(product.board.id.eq(board.id))
                 .join(store).on(board.store.id.eq(store.id))
+                .innerJoin(productImg).on(board.id.eq(productImg.board.id).and(productImg.imgOrder.eq(0)))
                 .where(commonFilter(memberId, null, pushCategory))
                 .fetch();
     }
@@ -72,6 +74,15 @@ public class PushQueryDSLRepositoryImpl implements PushQueryDSLRepository {
                 .join(board).on(product.board.id.eq(board.id))
                 .where(push.isActive.isTrue())
                 .fetch();
+    }
+
+    @Override
+    public List<Long> findExistingPushProductIds(List<Long> productIds, Long memberId) {
+        return queryFactory.select(push.productId)
+            .from(push)
+            .where(push.productId.in(productIds),
+                push.memberId.eq(memberId))
+            .fetch();
     }
 
     private BooleanBuilder commonFilter(Long memberId, Long productId, PushCategory pushCategory) {

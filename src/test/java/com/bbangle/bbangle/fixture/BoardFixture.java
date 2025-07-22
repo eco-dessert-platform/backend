@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.Store;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -26,7 +26,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(price)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();
@@ -48,7 +47,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(randomPrice)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();
@@ -69,7 +67,6 @@ public class BoardFixture {
             .title(CommonFaker.faker.book().title())
             .price(price)
             .status(true)
-            .profile(CommonFaker.faker.internet().url())
             .purchaseUrl(CommonFaker.faker.internet().url())
             .isDeleted(false)
             .build();

@@ -9,7 +9,7 @@
 //import com.bbangle.bbangle.board.dto.BoardResponseDto;
 //import com.bbangle.bbangle.board.dto.CursorInfo;
 //import com.bbangle.bbangle.board.dto.FilterRequest;
-//import com.bbangle.bbangle.board.sort.SortType;
+//import com.bbangle.bbangle.board.constant.SortType;
 //import com.bbangle.bbangle.page.BoardCustomPage;
 //import java.time.DayOfWeek;
 //import java.time.LocalDateTime;

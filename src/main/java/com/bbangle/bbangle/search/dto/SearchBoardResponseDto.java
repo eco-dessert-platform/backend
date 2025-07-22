@@ -24,10 +24,11 @@ public class SearchBoardResponseDto {
     Boolean isWished;
 
     public SearchBoardResponseDto(Board board) {
+
         this.boardId = board.getId();
         this.storeId = board.getStore().getId();
         this.storeName = board.getStore().getName();
-        this.thumbnail = board.getProfile();
+        this.thumbnail = board.getThumbnail();
         this.title = board.getTitle();
         this.price = board.getPrice();
         this.isBundled = board.isBundled();

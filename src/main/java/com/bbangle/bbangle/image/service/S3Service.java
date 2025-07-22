@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,10 @@ public class S3Service {
 
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
+  @Value("${bucket.domain}")
+  private String bucketDomain;
+  @Value("${cdn.domain}")
+  private String cdnDomain;
 
   @Transactional
   public String saveImage(MultipartFile request) {
@@ -38,6 +43,13 @@ public class S3Service {
     final String ext = originName.substring(originName.lastIndexOf("."));
     final String changedImageName = changeImageName(ext);
     return uploadImage(request, ext, changedImageName);
+  }
+
+  @Transactional
+  public String saveAndReturnWithCdn(String folderName, MultipartFile image) {
+    String imagePath = saveImage(image, folderName);
+    imagePath = removeBucketDomainInFolder(imagePath);
+    return addCdnDomain(imagePath);
   }
 
   @Transactional
@@ -91,5 +103,13 @@ public class S3Service {
     final String uuid = UUID.randomUUID()
         .toString();
     return uuid + ext;
+  }
+
+  public @NotNull String removeBucketDomainInFolder(String imagePath) {
+    return imagePath.replace(bucketDomain, "");
+  }
+
+  public String addCdnDomain(String url){
+    return cdnDomain+url;
   }
 }

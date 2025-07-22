@@ -15,10 +15,11 @@ import com.bbangle.bbangle.image.domain.Image;
 import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.image.service.ImageService;
+import com.bbangle.bbangle.image.service.S3Service;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.page.ImageCustomPage;
-import com.bbangle.bbangle.page.ReviewCustomPage;
+import com.bbangle.bbangle.common.page.ImageCustomPage;
+import com.bbangle.bbangle.common.page.ReviewCustomPage;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
@@ -67,6 +68,7 @@ public class ReviewService {
     private final ReviewStatistics reviewStatistics;
     private final ImageService imageService;
     private final ImageRepository imageRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
@@ -172,7 +174,7 @@ public class ReviewService {
     public ReviewImagesResponse getReviewImages(Long reviewId) {
         List<String> imagePathById = imageService.findImagePathById(REVIEW, reviewId);
         imagePathById = imagePathById.stream()
-                .map(imageService::addCdnDomain)
+                .map(s3Service::addCdnDomain)
                 .toList();
         return new ReviewImagesResponse(imagePathById);
     }
@@ -233,7 +235,7 @@ public class ReviewService {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BbangleException(IMAGE_NOT_FOUND));
         return ImageDto.builder()
-                .url(imageService.addCdnDomain(image.getPath()))
+                .url(s3Service.addCdnDomain(image.getPath()))
                 .build();
     }
     @Transactional
@@ -328,7 +330,7 @@ public class ReviewService {
             String url = imageDto.getUrl();
             Long id = imageDto.getId();
             imageDtos.remove(i);
-            imageDtos.add(i, new ImageDto(id, imageService.addCdnDomain(url)));
+            imageDtos.add(i, new ImageDto(id, s3Service.addCdnDomain(url)));
         }
     }
 

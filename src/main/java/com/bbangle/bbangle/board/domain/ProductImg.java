@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductImg {
 
+    private static final int THUMBNAIL_ORDER = 0;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,7 +37,17 @@ public class ProductImg {
     @Column(name = "url")
     private String url;
 
+    private int imgOrder;
+
     public void updateBoard(Board board) {
         this.board = board;
+    }
+
+    public void updateBoard(Board board, int imgOrder) {
+        this.board = board;
+    }
+
+    public boolean isThumbnail() {
+        return this.imgOrder == THUMBNAIL_ORDER;
     }
 }

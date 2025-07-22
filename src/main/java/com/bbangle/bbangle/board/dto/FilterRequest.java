@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.validator.BoardValidator;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Objects;
 import lombok.Builder;
 
 @Builder
@@ -17,7 +19,7 @@ public record FilterRequest(
     Boolean sugarFreeTag,
     @Schema(description = "비건 여부", nullable = true, type = "boolean")
     Boolean veganTag,
-    @Schema(description = "키토제닉 여부", nullable = true, type = "boolean")
+    @Schema(description = "키토제닉 여부(현재 저지방으로 사용 중)", nullable = true, type = "boolean")
     Boolean ketogenicTag,
     @Parameter
     Category category,
@@ -30,8 +32,20 @@ public record FilterRequest(
 ) {
 
     public FilterRequest {
-        BoardValidator.validateMinPrice(minPrice);
-        BoardValidator.validateMaxPrice(maxPrice);
+        validateMinPrice(minPrice);
+        validateMaxPrice(maxPrice);
+    }
+
+    public static void validateMinPrice(Integer minPrice) {
+        if (Objects.nonNull(minPrice) && minPrice < 0) {
+            throw new BbangleException(BbangleErrorCode.PRICE_NOT_OVER_ZERO);
+        }
+    }
+
+    public static void validateMaxPrice(Integer maxPrice) {
+        if (Objects.nonNull(maxPrice) && maxPrice < 0) {
+            throw new BbangleException(BbangleErrorCode.PRICE_NOT_OVER_ZERO);
+        }
     }
 
 }

@@ -1,28 +1,31 @@
 package com.bbangle.bbangle.search.repository;
 
-import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.sort.SortType;
+import com.bbangle.bbangle.board.domain.MemberSegment;
 import com.bbangle.bbangle.search.dto.KeywordDto;
+import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.service.dto.SearchInfo;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SearchQueryDSLRepository {
 
-    List<Board> getBoardResponseList(
-        String keyword,
-        FilterRequest filterRequest,
-        SortType sort,
-        Long cursorId
-    );
+    SearchInfo.CursorCondition getCursorCondition(Long cursorId);
+
+    List<Board> getBoards(SearchCommand.Main command, SearchInfo.CursorCondition condition);
 
     Long getAllCount(
-        String keyword,
-        FilterRequest filterRequest
+            SearchCommand.Main command,
+            SearchInfo.CursorCondition condition
+    );
+
+    List<Board> getRecommendBoardList(SearchCommand.Main command, SearchInfo.CursorCondition condition, MemberSegment memberSegment);
+
+    Long getRecommendAllCount(
+        SearchCommand.Main command,
+        SearchInfo.CursorCondition condition,
+        MemberSegment memberSegment
     );
 
     List<KeywordDto> getRecencyKeyword(Long memberId);

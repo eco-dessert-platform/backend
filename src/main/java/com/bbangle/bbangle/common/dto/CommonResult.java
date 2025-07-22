@@ -22,7 +22,7 @@ public class CommonResult {
     @Schema(description = "응답 코드 번호 : >= 0 정상, < 0 비정상", example = "0")
     private int code;
 
-    @Schema(description = "응답 메시지", example = "Success")
+    @Schema(description = "응답 메시지", example = "Success or ~에러가 발생했습니다.")
     private String message;
 
     @JsonIgnore
@@ -33,8 +33,8 @@ public class CommonResult {
     private FieldError[] fieldErrors;
 
     public record FieldError(
-            @Schema(description = "필드명", example = "username") String field,
-            @Schema(description = "필드 검즈 에러 메세지", example = "must not be empty") String msg
+            @Schema(description = "필드명(값 없을 시 표시X)", example = "username") String field,
+            @Schema(description = "필드 검즈 에러 메세지(값 없을 시 표시X)", example = "must not be empty") String msg
     ) {
     }
 }

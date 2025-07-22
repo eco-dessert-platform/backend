@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.dto.ProductImgResponse;
 import com.bbangle.bbangle.board.service.ProductImgService;
-import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -20,20 +22,16 @@ public class ProductImgController {
     private final ProductImgService productImgService;
     private final ResponseService responseService;
 
-    /**
-     * 단일 이미지 업로드 (Board 연결 없이)
-     */
     @PostMapping(value = "/image/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResult uploadImage(
+    @Operation(summary = "Board 연결 없이 상품 이미지 1 개 업로드")
+    public SingleResult<ProductImgResponse> uploadImage(
             @RequestParam("image") MultipartFile image) {
         return responseService.getSingleResult(productImgService.uploadSingle(image));
     }
 
-    /**
-     * 다중 이미지 업로드 (Board 연결 없이)
-     */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResult uploadMultipleImages(
+    @Operation(summary = "Board 연결 없이 상품 이미지 여러 개 업로드")
+    public SingleResult<List<ProductImgResponse>> uploadMultipleImages(
             @RequestParam("images") List<MultipartFile> images) {
         return responseService.getSingleResult(productImgService.uploadMultiple(images));
     }

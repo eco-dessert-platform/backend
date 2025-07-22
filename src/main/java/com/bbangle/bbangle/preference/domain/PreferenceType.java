@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PreferenceType {
+    NONE("선택안함", PreferenceType::calculateNoneScore),
     DIET("다이어트", PreferenceType::calculateDietOrMuscleGrowScore),
     MUSCLE_GROW("근육 증가", PreferenceType::calculateDietOrMuscleGrowScore),
     CONSTITUTION("체질 개선", PreferenceType::calculateAllergyScore),
@@ -25,6 +26,10 @@ public enum PreferenceType {
 
     public int getCalculatedScore(TagsDao tags){
         return function.apply(tags);
+    }
+
+    private static int calculateNoneScore(TagsDao tags) {
+        return 0;
     }
 
     private static int calculateDietOrMuscleGrowScore(TagsDao tags){

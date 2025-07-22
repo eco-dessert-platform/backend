@@ -1,0 +1,1 @@
+ALTER TABLE product_detail DROP COLUMN product_board_id;

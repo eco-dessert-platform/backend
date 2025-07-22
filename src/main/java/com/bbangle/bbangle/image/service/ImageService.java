@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-    @Value("${bucket.domain}")
-    private String bucketDomain;
-    @Value("${cdn.domain}")
-    private String cdnDomain;
+
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
 
@@ -57,7 +54,7 @@ public class ImageService {
         int order
     ) {
         String imagePath = s3Service.saveImage(image, imageFolderPathResolver(category, domainId));
-        imagePath = removeBucketDomainInFolder(imagePath);
+        imagePath = s3Service.removeBucketDomainInFolder(imagePath);
         Image entity = createEntity(category, domainId, imagePath, order);
         imageRepository.save(entity);
 
@@ -74,7 +71,7 @@ public class ImageService {
         List<Image> entities = imageList.stream().map(image -> {
             String pathFromS3 = imageFolderPathResolver(category, domainId);
             String imagePath = s3Service.saveImage(image, pathFromS3);
-            imagePath = removeBucketDomainInFolder(imagePath);
+            imagePath = s3Service.removeBucketDomainInFolder(imagePath);
             return createEntity(category, domainId, imagePath, order.getAndIncrement());
         }).toList();
 
@@ -92,14 +89,6 @@ public class ImageService {
 
     public void deleteImages(List<String> urls){
         s3Service.deleteImages(urls);
-    }
-
-    public String addCdnDomain(String url){
-        return cdnDomain+url;
-    }
-
-    private @NotNull String removeBucketDomainInFolder(String imagePath) {
-        return imagePath.replace(bucketDomain, "");
     }
 
     private Image createEntity(
