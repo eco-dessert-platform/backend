@@ -78,6 +78,7 @@ public class StoreController {
         @Parameter(description = "검색어", example = "빵그리의 오븐")
         String value
     ) {
+        // TODO: 구현 필요
         List<StoreResponse.SearchResponse> response = new ArrayList<>();
         response.add(new SearchResponse(1L, "빵그리의 오븐 즉석빵 상점"));
         response.add(new SearchResponse(2L, "빵그리의 오븐 공장빵 상점"));
