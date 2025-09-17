@@ -72,9 +72,9 @@ public class StoreController {
     }
 
     @Operation(summary = "스토어 검색")
-    @GetMapping("/search}")
+    @GetMapping("/search")
     public ListResult<StoreResponse.SearchResponse> search(
-        @RequestParam(required = false)
+        @RequestParam
         @Parameter(description = "검색어", example = "빵그리의 오븐")
         String searchValue
     ) {
