@@ -72,11 +72,11 @@ public class StoreController {
     }
 
     @Operation(summary = "스토어 검색")
-    @GetMapping("/search/{value}")
+    @GetMapping("/search}")
     public ListResult<StoreResponse.SearchResponse> search(
-        @PathVariable("value")
+        @RequestParam(required = false)
         @Parameter(description = "검색어", example = "빵그리의 오븐")
-        String value
+        String searchValue
     ) {
         // TODO: 구현 필요
         List<StoreResponse.SearchResponse> response = new ArrayList<>();
