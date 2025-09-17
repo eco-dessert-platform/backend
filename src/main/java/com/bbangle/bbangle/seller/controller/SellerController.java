@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Seller", description = "판매자 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/sellers")
+@RequestMapping("/api/v1/sellers")
 public class SellerController {
     private final ResponseService responseService;
 
