@@ -44,9 +44,9 @@ public class OrderController {
     ) {
         // TODO: 구현 필요
         List<OrderSummary> orderSummaries = List.of(
-            new OrderSummary(PURCHASED, "0000-1231", "CJ대한통운", "123-123",
+            new OrderSummary(1L, PURCHASED, "0000-1231", "CJ대한통운", "123-123",
                 LocalDateTime.of(2024, 1, 1, 12, 0), MONDAY, "홍길동", "저칼로리 베이글", 5),
-            new OrderSummary(CANCELED, "0000-1234", "롯데택배", "123-159",
+            new OrderSummary(2L, CANCELED, "0000-1234", "롯데택배", "123-159",
                 LocalDateTime.of(2024, 1, 1, 12, 0), TUESDAY, "김영희", "저당 초콜릿", 10)
         );
         PageImpl<OrderSummary> page = new PageImpl<>(orderSummaries, pageable, 10);

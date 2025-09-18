@@ -9,6 +9,7 @@ public class CompletedOrderResponse {
 
     @Schema(description = "완료 주문 내역")
     public record OrderSummary(
+        @Schema(description = "주문 ID") Long orderId,
         @Schema(description = "상태") CompletedOrderStatus status,
         @Schema(description = "주문 번호") String orderNum,
         @Schema(description = "택배사") String deliveryCompany,
