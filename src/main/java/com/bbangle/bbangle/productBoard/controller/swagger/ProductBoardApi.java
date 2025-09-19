@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Product-Boards", description = "상품 게시글 관련 API")
@@ -71,21 +72,24 @@ public interface ProductBoardApi {
     })
     // Doc 전용 파라미터
     @Parameters({
-        @Parameter(name = "topName", description = "대분류명", example = "빵"),
-        @Parameter(name = "subName", description = "중분류명", example = "식빵"),
+        @Parameter(name = "storeId", description = "스토어 ID", example = "1"),
+        @Parameter(name = "topName", description = "대분류명", example = "빵", required = true),
+        @Parameter(name = "subName", description = "중분류명", example = "식빵", required = true),
         @Parameter(name = "fieldType", description = "키워드 타입",
             schema = @Schema(allowableValues = {"PRODUCT_NAME", "ORDER_NO", "ALL"})),
         @Parameter(name = "keyword", description = "키워드", example = "건강빵"),
-        @Parameter(name = "page", description = "페이지 번호", schema = @Schema(defaultValue = "0"), example = "0"),
-        @Parameter(name = "size", description = "페이지 크기", schema = @Schema(defaultValue = "100"), example = "100"),
-        @Parameter(name = "sortBy", description = "정렬 필드", example = "createdAt"),
-        @Parameter(name = "direction", description = "정렬 방향",
-            schema = @Schema(allowableValues = {"ASC", "DESC"}))
+        @Parameter(name = "page", description = "페이지 번호", schema = @Schema(defaultValue = "0"), example = "0", required = true),
+        @Parameter(name = "size", description = "페이지 크기", schema = @Schema(defaultValue = "100"), example = "100", required = true),
+        @Parameter(name = "sortBy", description = "정렬 필드", example = "createdAt", required = true),
+        @Parameter(name = "direction", description = "정렬 방향", schema = @Schema(allowableValues = {
+            "ASC", "DESC"}), required = true)
     })
-    @GetMapping
+    @GetMapping("/{store-id}")
     PaginatedResponse searchProductBoard(
         @Valid
         @ParameterObject
+        @PathVariable(name = "store-id")
+        Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
         ProductBoardRequest.ProductBoardSearchRequest request);
 }
