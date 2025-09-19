@@ -23,12 +23,26 @@ public class OauthController {
     @GetMapping("/login/{oauthServerType}")
     @Operation(summary = "Oauth 로그인")
     CommonResult login(
-            @PathVariable("oauthServerType")
-            OauthServerType oauthServerType,
-            @RequestParam("token")
-            String token
+        @PathVariable("oauthServerType")
+        OauthServerType oauthServerType,
+        @RequestParam("token")
+        String token
     ) {
         LoginTokenResponse loginTokenResponse = oauthService.login(oauthServerType, token);
         return responseService.getSingleResult(loginTokenResponse);
     }
+
+    @GetMapping("/seller/login/{oauthServerType}")
+    @Operation(summary = "판매자 Oauth 로그인")
+    CommonResult sellerLogin(
+        @PathVariable("oauthServerType")
+        OauthServerType oauthServerType,
+        @RequestParam("token")
+        String token
+    ) {
+        // TODO: 개발 필요
+        LoginTokenResponse loginTokenResponse = oauthService.login(oauthServerType, token);
+        return responseService.getSingleResult(loginTokenResponse);
+    }
+
 }
