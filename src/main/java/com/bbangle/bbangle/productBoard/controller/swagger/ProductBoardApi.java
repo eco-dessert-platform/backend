@@ -17,7 +17,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
+@Tag(name = "Product-Boards", description = "상품 게시글 관련 API")
 @RequestMapping("api/v1/product-boards")
 public interface ProductBoardApi {
 
