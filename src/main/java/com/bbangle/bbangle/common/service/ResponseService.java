@@ -6,6 +6,7 @@ import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import java.util.Arrays;
 import java.util.List;
@@ -110,11 +111,18 @@ public record ResponseService(MessageSource messageSource) {
         return result;
     }
 
+    public <T> PaginatedResponse<T> getPagingResult(PaginatedResponse<T> paginatedResponse) {
+        PaginatedResponse<T> result = new PaginatedResponse<>();
+        getSuccessResult();
+        return result;
+    }
+
     public CommonResult getError(BbangleErrorCode error) {
         return getFailResult(error.getMessage(), error.getCode());
     }
 
-    public CommonResult getMethodArgumentNotValidExceptionResult(MethodArgumentNotValidException ex) {
+    public CommonResult getMethodArgumentNotValidExceptionResult(
+        MethodArgumentNotValidException ex) {
         CommonResult result = new CommonResult();
         result.setSuccess(false);
         CommonResult.FieldError[] fes = ex.getBindingResult()

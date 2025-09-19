@@ -1,14 +1,14 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
+// TODO : 공통 페이징 로직에 따라서 사용여부 결정
 @Getter
 @Setter
-public class PaginatedResponse<T> extends CommonResult {
+public class PaginatedResponse<T> {
 
     private List<T> content;
 
