@@ -6,6 +6,9 @@ public class SellerRequest {
 
     @Schema(description = "판매자 정보 수정 요청 DTO")
     public record sellerUpdateRequest(
+        @Schema(description = "상점아이디")
+        int storeId,
+
         @Schema(description = "상점명", example = "빵그리의 오븐")
         String storeName,
 
