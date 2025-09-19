@@ -22,6 +22,7 @@ public class ProductBoardController implements ProductBoardApi {
 
     @Override
     public PaginatedResponse<ProductBoardSearchResponse> searchProductBoard(
+        Long storeId,
         ProductBoardSearchRequest request) {
         // TODO : 비즈니스 로직 차후 구현 예정
 
