@@ -16,9 +16,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -130,7 +130,7 @@ public interface ProductBoardApi {
             )
         )
     })
-    @DeleteMapping("/{storeId}/product-board")
+    @PostMapping("/{storeId}/product-board")
     CommonResult removeProductBoards(
         @Parameter(name = "storeId", description = "스토어 ID", example = "1")
         @PathVariable(name = "storeId") Long storeId,
