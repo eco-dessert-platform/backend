@@ -1,11 +1,13 @@
 package com.bbangle.bbangle.productBoard.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.productBoard.controller.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.productBoard.controller.ProductBoardResponse.ProductBoardSearchResponse;
 import com.bbangle.bbangle.productBoard.controller.swagger.ProductBoardApi;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,5 +40,11 @@ public class ProductBoardController implements ProductBoardApi {
         response.setTotalElements(resultPage.getTotalElements());
 
         return responseService.getPagingResult(response);
+    }
+
+    @Override
+    public CommonResult removeProductBoards(List<Long> boardIds) {
+        // TODO: 비즈니스 로직 구현 예정
+        return responseService.getSuccessResult();
     }
 }
