@@ -18,4 +18,8 @@ public class SellerController implements SellerApi {
         return responseService.getSuccessResult();
     }
 
+    @Override
+    public CommonResult accountVerification(String accountNumber, String sellerName) {
+        return responseService.getSuccessResult();
+    }
 }
