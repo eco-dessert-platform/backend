@@ -43,7 +43,7 @@ public class ProductBoardController implements ProductBoardApi {
     }
 
     @Override
-    public CommonResult removeProductBoards(List<Long> boardIds) {
+    public CommonResult removeProductBoards(Long storeId, List<Long> boardIds) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSuccessResult();
     }

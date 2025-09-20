@@ -130,14 +130,9 @@ public interface ProductBoardApi {
             )
         )
     })
-    // Doc 전용 파라미터
-    @Parameters({
-        @Parameter(name = "storeId", description = "스토어 ID", example = "1"),
-
-    })
-    @DeleteMapping
+    @DeleteMapping("/{storeId}/product-board")
     CommonResult removeProductBoards(
+        @Parameter(name = "storeId", description = "스토어 ID", example = "1")
+        @PathVariable(name = "storeId") Long storeId,
         @Valid @RequestBody List<Long> boardIds);
-
-
 }
