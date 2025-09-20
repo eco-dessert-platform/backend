@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Product-Boards", description = "상품 게시글 관련 API")
-@RequestMapping("api/v1/product-boards")
+@RequestMapping("api/v1/store")
 public interface ProductBoardApi {
 
     @Operation(
@@ -84,11 +84,11 @@ public interface ProductBoardApi {
         @Parameter(name = "direction", description = "정렬 방향", schema = @Schema(allowableValues = {
             "ASC", "DESC"}), required = true)
     })
-    @GetMapping("/{store-id}")
+    @GetMapping("/{storeId}/product-boards")
     PaginatedResponse searchProductBoard(
         @Valid
         @ParameterObject
-        @PathVariable(name = "store-id")
+        @PathVariable(name = "storeId")
         Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
         ProductBoardRequest.ProductBoardSearchRequest request);
