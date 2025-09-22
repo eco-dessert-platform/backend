@@ -4,6 +4,7 @@ import static com.bbangle.bbangle.board.controller.dto.StoreResponse.StoreDetail
 
 import com.bbangle.bbangle.board.controller.dto.StoreResponse.SearchResponse;
 import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
+import com.bbangle.bbangle.board.controller.swagger.StoreApi;
 import com.bbangle.bbangle.board.facade.StoreFacade;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
@@ -11,9 +12,6 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Store", description = "스토어 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/stores")
-public class StoreController {
+public class StoreController implements StoreApi {
 
     private final StoreFacade storeFacade;
     private final StoreMapper storeMapper;
@@ -72,13 +69,9 @@ public class StoreController {
         return responseService.getSingleResult(response);
     }
 
-    @Operation(summary = "스토어 검색")
+    @Override
     @GetMapping("/search")
-    public ListResult<SearchResponse> search(
-        @RequestParam
-        @Parameter(description = "검색어", example = "빵그리의 오븐")
-        String searchValue
-    ) {
+    public ListResult<SearchResponse> search(@RequestParam String searchValue) {
         // TODO: 구현 필요
         List<SearchResponse> response = new ArrayList<>();
         response.add(new SearchResponse(1L, "빵그리의 오븐 즉석빵 상점"));
