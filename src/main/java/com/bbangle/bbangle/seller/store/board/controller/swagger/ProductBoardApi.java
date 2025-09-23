@@ -13,9 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
 public interface ProductBoardApi {
@@ -83,10 +81,8 @@ public interface ProductBoardApi {
             "ASC", "DESC"}), required = true)
     })
     PaginatedResponse<ProductBoardSearchResponse> searchProductBoard(
-        @Valid
-        @ParameterObject
-        @PathVariable(name = "storeId")
         Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
+        @ParameterObject
         ProductBoardRequest.ProductBoardSearchRequest request);
 }
