@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.productBoard.controller;
+package com.bbangle.bbangle.seller.store.board.controller;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

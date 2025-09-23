@@ -112,9 +112,8 @@ public record ResponseService(MessageSource messageSource) {
     }
 
     public <T> PaginatedResponse<T> getPagingResult(PaginatedResponse<T> paginatedResponse) {
-        PaginatedResponse<T> result = new PaginatedResponse<>();
-        getSuccessResult();
-        return result;
+        setSuccessResult(paginatedResponse);
+        return paginatedResponse;
     }
 
     public CommonResult getError(BbangleErrorCode error) {

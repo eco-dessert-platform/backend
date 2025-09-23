@@ -1,8 +1,9 @@
-package com.bbangle.bbangle.productBoard.controller.swagger;
+package com.bbangle.bbangle.seller.store.board.controller.swagger;
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
-import com.bbangle.bbangle.exception.ErrorResponse;
-import com.bbangle.bbangle.productBoard.controller.ProductBoardRequest;
+import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.seller.store.board.controller.ProductBoardRequest;
+import com.bbangle.bbangle.seller.store.board.controller.ProductBoardResponse.ProductBoardSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -14,12 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "Product-Boards", description = "상품 게시글 관련 API")
-@RequestMapping("api/v1/store")
+@Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
 public interface ProductBoardApi {
 
     @Operation(
@@ -66,7 +64,7 @@ public interface ProductBoardApi {
             responseCode = "400",
             description = "잘못된 요청 데이터",
             content = @Content(
-                schema = @Schema(implementation = ErrorResponse.class)
+                schema = @Schema(implementation = GlobalControllerAdvice.class)
             )
         )
     })
@@ -84,8 +82,7 @@ public interface ProductBoardApi {
         @Parameter(name = "direction", description = "정렬 방향", schema = @Schema(allowableValues = {
             "ASC", "DESC"}), required = true)
     })
-    @GetMapping("/{storeId}/product-boards")
-    PaginatedResponse searchProductBoard(
+    PaginatedResponse<ProductBoardSearchResponse> searchProductBoard(
         @Valid
         @ParameterObject
         @PathVariable(name = "storeId")

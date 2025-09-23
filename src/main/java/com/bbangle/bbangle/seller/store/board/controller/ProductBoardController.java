@@ -1,29 +1,41 @@
-package com.bbangle.bbangle.productBoard.controller;
+package com.bbangle.bbangle.seller.store.board.controller;
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.productBoard.controller.ProductBoardRequest.ProductBoardSearchRequest;
-import com.bbangle.bbangle.productBoard.controller.ProductBoardResponse.ProductBoardSearchResponse;
-import com.bbangle.bbangle.productBoard.controller.swagger.ProductBoardApi;
+import com.bbangle.bbangle.seller.store.board.controller.ProductBoardResponse.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.board.controller.swagger.ProductBoardApi;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("api/v1/store")
 @Slf4j
 public class ProductBoardController implements ProductBoardApi {
 
     private final ResponseService responseService;
 
     @Override
+    @GetMapping("/{storeId}/boards")
     public PaginatedResponse<ProductBoardSearchResponse> searchProductBoard(
+        @Valid
+        @ParameterObject
+        @PathVariable(name = "storeId")
         Long storeId,
-        ProductBoardSearchRequest request) {
+        @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
+        ProductBoardRequest.ProductBoardSearchRequest request) {
+
         // TODO : 비즈니스 로직 차후 구현 예정
 
         PageRequest pageable = PageRequest.of(request.page(), request.size());

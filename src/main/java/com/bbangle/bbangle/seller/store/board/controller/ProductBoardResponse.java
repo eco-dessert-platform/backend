@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.productBoard.controller;
+package com.bbangle.bbangle.seller.store.board.controller;
 
 public class ProductBoardResponse {
 
