@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.productBoard.controller.dto;
+package com.bbangle.bbangle.seller.store.board.controller.dto;
 
 import com.bbangle.bbangle.board.constant.DeliveryCompany;
 import com.bbangle.bbangle.board.constant.DeliveryCondition;
