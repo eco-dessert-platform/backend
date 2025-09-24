@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.productBoard.controller.swagger;
+package com.bbangle.bbangle.seller.store.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.exception.ErrorResponse;
+import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,15 +10,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "Product-Boards", description = "상품 게시글 관련 API")
-@RequestMapping("api/v1/store")
+@Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
 public interface ProductBoardApi {
 
     @Operation(
@@ -49,13 +43,12 @@ public interface ProductBoardApi {
             responseCode = "400",
             description = "잘못된 요청 데이터",
             content = @Content(
-                schema = @Schema(implementation = ErrorResponse.class)
+                schema = @Schema(implementation = GlobalControllerAdvice.class)
             )
         )
     })
-    @PostMapping("/{storeId}/product-board")
     CommonResult removeProductBoards(
         @Parameter(name = "storeId", description = "스토어 ID", example = "1")
-        @PathVariable(name = "storeId") Long storeId,
-        @Valid @RequestBody List<Long> boardIds);
+        Long storeId,
+        List<Long> boardIds);
 }
