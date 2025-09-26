@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller;
+package com.bbangle.bbangle.seller.store.order.controller;
 
 
 public class OrderResponse {

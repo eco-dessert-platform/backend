@@ -1,13 +1,12 @@
-package com.bbangle.bbangle.order.controller.swagger;
+package com.bbangle.bbangle.seller.store.order.controller.swagger;
 
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.ErrorResponse;
-import com.bbangle.bbangle.order.controller.OrderRequest;
-import com.bbangle.bbangle.order.controller.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.seller.store.order.controller.OrderRequest;
+import com.bbangle.bbangle.seller.store.order.controller.OrderResponse.OrderSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,12 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Order", description = "주문 관련 API")
-@RequestMapping("api/v1/orders")
 public interface OrderApi {
 
     @Operation(
@@ -82,27 +77,12 @@ public interface OrderApi {
             )
         )
     })
-
-    @Parameters({
-        @Parameter(name = "startDate", description = "시작일", example = "2025-08-11", required = true),
-        @Parameter(name = "endDate", description = "종료일", example = "2025-08-12", required = true),
-        @Parameter(name = "deliveryStatus", description = "배송상태", schema = @Schema(allowableValues = {
-            "ALL", "PAYMENT_COMPLETED", "PREPARING_ORDER", "SHIPPED",
-            "DELIVERED"}, defaultValue = "ALL"), required = true),
-        @Parameter(name = "fieldType", description = "키워드 타입",
-            schema = @Schema(allowableValues = {"ORDER_NUMBER", "BUYER", "ITEM_NAME",
-                "TRACKING_NUMBER"}, defaultValue = "ORDER_NUMBER")),
-        @Parameter(name = "keyword", description = "키워드", example = "건강빵"),
-        @Parameter(name = "page", description = "페이지 번호", schema = @Schema(defaultValue = "0"), example = "0", required = true),
-        @Parameter(name = "size", description = "페이지 크기", schema = @Schema(defaultValue = "100"), example = "100", required = true),
-    })
-    @GetMapping("/seller")
     PaginatedResponse<OrderSearchResponse> searchOrders(
-        @Valid
-        @RequestParam(name = "sellerId")
+        @Parameter(description = "판매자 ID", example = "1")
         Long sellerId,
         @Parameter(hidden = true)
         @ParameterObject
+        @Valid
         OrderRequest.OrderSearchRequest request);
 
 

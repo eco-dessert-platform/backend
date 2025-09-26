@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.order.controller;
+package com.bbangle.bbangle.seller.store.order.controller;
 
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.order.controller.OrderRequest.OrderSearchRequest;
-import com.bbangle.bbangle.order.controller.OrderResponse.OrderSearchResponse;
-import com.bbangle.bbangle.order.controller.swagger.OrderApi;
+import com.bbangle.bbangle.seller.store.order.controller.OrderRequest.OrderSearchRequest;
+import com.bbangle.bbangle.seller.store.order.controller.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.seller.store.order.controller.swagger.OrderApi;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -13,17 +13,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("api/v1/seller")
 public class OrderController implements OrderApi {
 
     private final ResponseService responseService;
 
     @Override
-    public PaginatedResponse<OrderSearchResponse> searchOrders(Long sellerId,
-        OrderSearchRequest request) {
+    @GetMapping("/{sellerId}/orders")
+    public PaginatedResponse<OrderSearchResponse> searchOrders(
+        @PathVariable(name = "sellerId")
+        Long sellerId,
+        @ModelAttribute OrderSearchRequest request) {
 
         // Mock 데이터 생성
         List<OrderSearchResponse> mockOrders = List.of(
