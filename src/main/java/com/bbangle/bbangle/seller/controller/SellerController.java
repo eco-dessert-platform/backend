@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.seller.dto.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.dto.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.service.SellerService;
@@ -42,6 +43,16 @@ public class SellerController implements SellerApi {
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerService.updateStoreName(request, sellerId);
+        return responseService.getSuccessResult();
+    }
+
+    @PatchMapping("/account")
+    @Override
+    public CommonResult updateAccount(
+        @RequestBody @Validated SellerAccountUpdateRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerService.updateAccount(request, sellerId);
         return responseService.getSuccessResult();
     }
 }
