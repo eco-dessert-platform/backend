@@ -1,11 +1,14 @@
 package com.bbangle.bbangle.order.controller.swagger;
 
+import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
+import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.OrderDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +21,11 @@ public interface SellerOrderApi_v1 {
         @ParameterObject CompletedOrderFilter filter,
         Long memberId
     );
+
+    @Operation(summary = "주문 상세 조회")
+    ListResult<OrderDetail> getCompletedOrders(
+        List<Long> orderItemIds,
+        Long memberId
+    );
+
 }
