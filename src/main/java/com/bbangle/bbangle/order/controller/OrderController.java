@@ -9,12 +9,11 @@ import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
+import com.bbangle.bbangle.order.controller.swagger.OrderApi;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,20 +23,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Order", description = "주문 API")
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/orders")
-public class OrderController {
+public class OrderController implements OrderApi {
     private final ResponseService responseService;
 
-    @Operation(summary = "완료주문내역 페이징 조회")
+    @Override
     @GetMapping("/completed")
     public SingleResult<BbanglePageResponse<OrderSummary>> getCompletedOrders(
         @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
-        @ParameterObject
         Pageable pageable,
-        @ParameterObject CompletedOrderFilter filter,
+        CompletedOrderFilter filter,
         @AuthenticationPrincipal
         Long memberId
     ) {
