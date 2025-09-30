@@ -5,7 +5,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.multipart.MultipartFile;
 
-public class SellerRequest {
+public class SellerRequest_v1 {
 
     public record SellerDocumentsRegisterRequest(
         @Schema(description = "사업자 등록증", requiredMode = REQUIRED, type = "string", format = "binary")
