@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/sellers")
+@RequestMapping("/api/v1/seller/sellers")
 public class SellerController implements SellerApi {
 
     private final ResponseService responseService;
