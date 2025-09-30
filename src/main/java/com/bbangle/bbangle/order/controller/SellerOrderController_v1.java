@@ -1,14 +1,11 @@
 package com.bbangle.bbangle.order.controller;
 
-import com.bbangle.bbangle.common.dto.ListResult;
-
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
-import com.bbangle.bbangle.order.controller.swagger.OrderApi;
-import io.swagger.v3.oas.annotations.Operation;
+import com.bbangle.bbangle.order.controller.swagger.SellerOrderApi_v1;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
@@ -20,11 +17,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/orders")
-public class OrderController implements OrderApi {
+@RequestMapping("/api/v1/seller/orders")
+public class SellerOrderController_v1 implements SellerOrderApi_v1 {
+
     private final ResponseService responseService;
 
     @Override
