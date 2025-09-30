@@ -4,7 +4,7 @@ import static com.bbangle.bbangle.board.controller.dto.StoreResponse.StoreDetail
 
 import com.bbangle.bbangle.board.controller.dto.StoreResponse.SearchResponse;
 import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
-import com.bbangle.bbangle.board.controller.swagger.StoreApi;
+import com.bbangle.bbangle.board.controller.swagger.SellerStoreApi_v1;
 import com.bbangle.bbangle.board.facade.StoreFacade;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/stores")
-public class StoreController implements StoreApi {
+public class StoreController {
 
     private final StoreFacade storeFacade;
     private final StoreMapper storeMapper;
@@ -67,16 +67,6 @@ public class StoreController implements StoreApi {
     ) {
         CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId, boardIdAsCursorId);
         return responseService.getSingleResult(response);
-    }
-
-    @Override
-    @GetMapping("/search")
-    public ListResult<SearchResponse> search(@RequestParam String searchValue) {
-        // TODO: 구현 필요
-        List<SearchResponse> response = new ArrayList<>();
-        response.add(new SearchResponse(1L, "빵그리의 오븐 즉석빵 상점"));
-        response.add(new SearchResponse(2L, "빵그리의 오븐 공장빵 상점"));
-        return responseService.getListResult(response);
     }
 
 }
