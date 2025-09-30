@@ -1,10 +1,12 @@
 package com.bbangle.bbangle.order.controller;
 
+import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
+import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.controller.swagger.SellerOrderApi_v1;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

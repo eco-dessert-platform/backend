@@ -22,7 +22,7 @@ public interface SellerOrderApi_v1 {
         Long memberId
     );
 
-    @Operation(summary = "주문 상세 조회")
+    @Operation(summary = "(판매자) 주문 상세 조회")
     ListResult<OrderDetail> getCompletedOrders(
         List<Long> orderItemIds,
         Long memberId
