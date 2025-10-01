@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 @Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
-public interface ProductBoardApi {
+public interface ProductBoardApi_v3 {
 
     @Operation(
         summary = "상품 게시글 삭제",
