@@ -2,8 +2,8 @@ package com.bbangle.bbangle.seller.store.order.controller;
 
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse.OrderItemDetailResponse;
-import com.bbangle.bbangle.seller.store.order.controller.swagger.OrderApi;
+import com.bbangle.bbangle.seller.store.order.controller.OrderResponse_v3.OrderItemDetailResponse;
+import com.bbangle.bbangle.seller.store.order.controller.swagger.OrderApi_v3;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/seller")
-public class OrderController implements OrderApi {
+public class OrderController_v3 implements OrderApi_v3 {
 
     private final ResponseService responseService;
 
@@ -24,19 +24,19 @@ public class OrderController implements OrderApi {
         @RequestBody
         List<Long> orderItemList) {
 
-        List<OrderResponse.OrderItemDetailResponse> responses = orderItemList.stream()
-            .map(id -> new OrderResponse.OrderItemDetailResponse(
+        List<OrderResponse_v3.OrderItemDetailResponse> responses = orderItemList.stream()
+            .map(id -> new OrderResponse_v3.OrderItemDetailResponse(
                 // 주문번호
                 "ORDER-2025-04-05-test",
 
                 // 주문 정보
-                new OrderResponse.OrderItemDetailResponse.OrderInfo(
+                new OrderResponse_v3.OrderItemDetailResponse.OrderInfo(
                     "2025-04-05",                // orderDate (String, yyyy-MM-dd)
                     "반품-상품발송"                 // orderStatusLabel
                 ),
 
                 // 주문자 정보
-                new OrderResponse.OrderItemDetailResponse.BuyerInfo(
+                new OrderResponse_v3.OrderItemDetailResponse.BuyerInfo(
                     "홍길동",                     // recipientName
                     "홍길동",                     // buyerName
                     "010-1234-5678",             // buyerPhone1
@@ -44,7 +44,7 @@ public class OrderController implements OrderApi {
                 ),
 
                 // 배송 정보
-                new OrderResponse.OrderItemDetailResponse.ShippingInfo(
+                new OrderResponse_v3.OrderItemDetailResponse.ShippingInfo(
                     "수거중",                     // statusLabel
                     "CJ대한통운",                 // courierCompany
                     "1234-5678-910",             // trackingNumber
@@ -54,7 +54,7 @@ public class OrderController implements OrderApi {
                 ),
 
                 // 주문 상품
-                new OrderResponse.OrderItemDetailResponse.OrderItem(
+                new OrderResponse_v3.OrderItemDetailResponse.OrderItem(
                     "예제 상품",                  // boardTitle
                     "예제 상품",                  // itemName
                     2,                           // quantity

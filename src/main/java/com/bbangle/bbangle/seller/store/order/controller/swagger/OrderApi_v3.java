@@ -2,8 +2,8 @@ package com.bbangle.bbangle.seller.store.order.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse.OrderItemDetailResponse;
+import com.bbangle.bbangle.seller.store.order.controller.OrderResponse_v3;
+import com.bbangle.bbangle.seller.store.order.controller.OrderResponse_v3.OrderItemDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 @Tag(name = "Order", description = "주문 관련 API")
-public interface OrderApi {
+public interface OrderApi_v3 {
 
     @Operation(
         summary = "주문 품목 상세 정보 조회",
@@ -26,7 +26,7 @@ public interface OrderApi {
             responseCode = "200",
             description = "주문 품목 상세정보 조회 성공",
             content = @Content(
-                schema = @Schema(implementation = OrderResponse.class),
+                schema = @Schema(implementation = OrderResponse_v3.class),
                 examples = @ExampleObject(
                     name = "successResponse",
                     summary = "성공응답 예시",

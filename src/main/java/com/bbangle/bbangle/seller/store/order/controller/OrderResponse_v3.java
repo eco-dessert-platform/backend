@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-public class OrderResponse {
+public class OrderResponse_v3 {
 
     @Schema(description = "주문 품목 상세 조회")
     public record OrderItemDetailResponse(
