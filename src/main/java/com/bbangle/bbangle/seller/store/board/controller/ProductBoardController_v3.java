@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.seller.store.board.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardRequest_v3.ProductBoardSearchRequest;
 import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardResponse_v3.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardUpdateRequest_v3;
 import com.bbangle.bbangle.seller.store.board.controller.swagger.ProductBoardApi_v3;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,5 +51,15 @@ public class ProductBoardController_v3 implements ProductBoardApi_v3 {
         response.setTotalElements(resultPage.getTotalElements());
 
         return responseService.getPagingResult(response);
+    }
+
+    @Override
+    @PutMapping("{storeId}/boards/{boardId}")
+    public CommonResult changeProductBoard(
+        @PathVariable(name = "storeId") Long storeId,
+        @PathVariable(name = "boardId") Long boardId,
+        @Valid @RequestBody ProductBoardUpdateRequest_v3 request) {
+        // TODO: 비즈니스 로직 구현 예정
+        return responseService.getSingleResult(request);
     }
 }

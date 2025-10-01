@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // TODO: PR merge가 다 완료된 이후 board에 합칠 경우를 고려해야함.
-public record ProductBoardUpdateRequest(
+public record ProductBoardUpdateRequest_v3(
     @Schema(description = "게시글 제목", example = "맛있는 다이어트 도시락")
     String boardTitle,
 
