@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.seller.store.board.controller;
+package com.bbangle.bbangle.seller.store.board.controller.dto;
 
-public class ProductBoardResponse {
+public class ProductBoardResponse_v3 {
 
     public record ProductBoardSearchResponse(
         Long storeId,

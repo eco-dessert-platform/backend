@@ -2,8 +2,9 @@ package com.bbangle.bbangle.seller.store.board.controller;
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.store.board.controller.ProductBoardResponse.ProductBoardSearchResponse;
-import com.bbangle.bbangle.seller.store.board.controller.swagger.ProductBoardApi;
+import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardRequest_v3;
+import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardResponse_v3.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.board.controller.swagger.ProductBoardApi_v3;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/seller/store")
 @Slf4j
-public class ProductBoardController implements ProductBoardApi {
+public class ProductBoardController_v3 implements ProductBoardApi_v3 {
 
     private final ResponseService responseService;
 
@@ -30,7 +31,7 @@ public class ProductBoardController implements ProductBoardApi {
         @Valid
         @PathVariable(name = "storeId")
         Long storeId,
-        ProductBoardRequest.ProductBoardSearchRequest request) {
+        ProductBoardRequest_v3.ProductBoardSearchRequest request) {
 
         // TODO : 비즈니스 로직 차후 구현 예정
 

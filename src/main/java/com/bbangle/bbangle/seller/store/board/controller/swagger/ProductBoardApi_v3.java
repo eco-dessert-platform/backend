@@ -2,8 +2,8 @@ package com.bbangle.bbangle.seller.store.board.controller.swagger;
 
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.seller.store.board.controller.ProductBoardRequest;
-import com.bbangle.bbangle.seller.store.board.controller.ProductBoardResponse.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardRequest_v3;
+import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardResponse_v3.ProductBoardSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
-public interface ProductBoardApi {
+public interface ProductBoardApi_v3 {
 
     @Operation(
         summary = "상품 게시글 조회",
@@ -84,5 +84,5 @@ public interface ProductBoardApi {
         Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
         @ParameterObject
-        ProductBoardRequest.ProductBoardSearchRequest request);
+        ProductBoardRequest_v3.ProductBoardSearchRequest request);
 }
