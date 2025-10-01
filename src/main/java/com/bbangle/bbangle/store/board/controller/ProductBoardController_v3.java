@@ -2,7 +2,7 @@ package com.bbangle.bbangle.store.board.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.store.board.controller.swagger.ProductBoardApi;
+import com.bbangle.bbangle.store.board.controller.swagger.ProductBoardApi_v3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/seller/store/")
 @Slf4j
-public class ProductBoardController implements ProductBoardApi {
+public class ProductBoardController_v3 implements ProductBoardApi_v3 {
 
     private final ResponseService responseService;
 

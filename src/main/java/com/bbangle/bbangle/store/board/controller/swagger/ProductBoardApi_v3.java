@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
-public interface ProductBoardApi {
+public interface ProductBoardApi_v3 {
 
 
     @Operation(
