@@ -2,7 +2,6 @@ package com.bbangle.bbangle.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.controller.SellerRequest_v3.SellerCreateRequest;
 import com.bbangle.bbangle.seller.controller.swagger.SellerApi_v3;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +19,19 @@ public class SellerController_v3 implements SellerApi_v3 {
 
     private final ResponseService responseService;
 
+
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult createSeller(
-        @Valid @RequestPart("request") SellerCreateRequest request,
+        @Valid @RequestPart("request") SellerRequest_v3.SellerCreateRequest request,
         @RequestPart("profileImage") MultipartFile profileImage
     ) {
         return responseService.getSuccessResult();
     }
 
+
+    @Override
+    public CommonResult accountVerification(String accountNumber, String sellerName) {
+        return responseService.getSuccessResult();
+    }
 }
