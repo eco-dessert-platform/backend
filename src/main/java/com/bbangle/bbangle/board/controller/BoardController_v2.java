@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.dto.BoardUploadRequest_v2;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.facade.BoardFacade;
 import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.board.service.BoardUploadService;
+import com.bbangle.bbangle.board.service.BoardUploadService_v2;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
@@ -37,13 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/boards")
 @Tag(name = "Boards", description = "게시판 API")
 @RequiredArgsConstructor
-public class BoardController {
+public class BoardController_v2 {
 
     private final ResponseService responseService;
     private final BoardService boardService;
     private final BoardFacade boardFacade;
     private final SearchMapper searchMapper;
-    private final BoardUploadService boardUploadService;
+    private final BoardUploadService_v2 boardUploadService;
 
     @PostMapping("/board/{storeId}")
     public CommonResult upload(@PathVariable Long storeId,

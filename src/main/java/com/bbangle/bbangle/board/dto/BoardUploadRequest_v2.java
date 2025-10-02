@@ -49,10 +49,10 @@ public record BoardUploadRequest_v2(
     List<ProductRequest_v2> productRequests,
 
     @Schema(description = "게시글 상세 내용 요청")
-    BoardDetailRequest boardDetailRequest,
+    BoardDetailRequest_v2 boardDetailRequest,
 
     @Schema(description = "상품 정보 고시 요청")
-    ProductInfoNoticeRequest productInfoNoticeRequest
+    ProductInfoNoticeRequest_v2 productInfoNoticeRequest
 ) {
     public Board toBoard(Store store) {
         Board board = new Board(

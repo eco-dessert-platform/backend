@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class BoardUploadService {
+public class BoardUploadService_v2 {
 
     private final BoardRepository boardRepository;
     private final StoreRepository storeRepository;
