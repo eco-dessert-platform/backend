@@ -2,11 +2,11 @@ package com.bbangle.bbangle.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.dto.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest;
-import com.bbangle.bbangle.seller.dto.SellerUpdateRequest;
-import com.bbangle.bbangle.seller.service.SellerService;
-import com.bbangle.bbangle.seller.swagger.SellerApi;
+import com.bbangle.bbangle.seller.dto.SellerAccountUpdateRequest_v2;
+import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest_v2;
+import com.bbangle.bbangle.seller.dto.SellerUpdateRequest_v2;
+import com.bbangle.bbangle.seller.service.SellerService_v2;
+import com.bbangle.bbangle.seller.swagger.SellerApi_v2;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,17 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/sellers")
+@RequestMapping("/api/v1/seller")
 @Tag(name = "Sellers", description = "판매자 관리 API")
-public class SellerController implements SellerApi {
+public class SellerController_v2 implements SellerApi_v2 {
 
     private final ResponseService responseService;
-    private final SellerService sellerService;
+    private final SellerService_v2 sellerService;
 
     @PutMapping
     @Override
     public CommonResult updateSeller(
-        @RequestBody @Validated SellerUpdateRequest request,
+        @RequestBody @Validated SellerUpdateRequest_v2 request,
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerService.updateSeller(request, sellerId);
@@ -39,7 +39,7 @@ public class SellerController implements SellerApi {
     @PatchMapping("/store-name")
     @Override
     public CommonResult updateStoreName(
-        @RequestBody @Validated SellerStoreNameUpdateRequest request,
+        @RequestBody @Validated SellerStoreNameUpdateRequest_v2 request,
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerService.updateStoreName(request, sellerId);
@@ -49,7 +49,7 @@ public class SellerController implements SellerApi {
     @PatchMapping("/account")
     @Override
     public CommonResult updateAccount(
-        @RequestBody @Validated SellerAccountUpdateRequest request,
+        @RequestBody @Validated SellerAccountUpdateRequest_v2 request,
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerService.updateAccount(request, sellerId);

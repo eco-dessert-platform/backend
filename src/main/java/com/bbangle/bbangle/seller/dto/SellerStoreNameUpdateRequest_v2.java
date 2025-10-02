@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "스토어명 변경 요청 DTO")
-public record SellerStoreNameUpdateRequest(
+public record SellerStoreNameUpdateRequest_v2(
     @Schema(description = "상점 ID", example = "1")
     @NotNull(message = "상점 ID는 필수입니다.")
     Long storeId,

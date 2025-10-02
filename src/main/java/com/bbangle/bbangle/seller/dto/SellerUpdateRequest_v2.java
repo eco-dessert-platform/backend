@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
 
 @Schema(description = "판매자 정보 수정 요청 DTO")
-public record SellerUpdateRequest(
+public record SellerUpdateRequest_v2(
     @Schema(description = "상점 ID", example = "1")
     Long storeId,
 
