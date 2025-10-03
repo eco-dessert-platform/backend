@@ -4,7 +4,7 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
-import io.swagger.v3.oas.annotations.Operation;
+import com.bbangle.bbangle.token.swagger.OauthApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,17 +12,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/oauth")
 @RestController
-public class OauthController {
+@RequestMapping("/api/v1/oauth")
+public class OauthController implements OauthApi {
 
     private final OauthService oauthService;
     private final ResponseService responseService;
 
+    @Override
     @GetMapping("/login/{oauthServerType}")
-    @Operation(summary = "Oauth 로그인")
-    CommonResult login(
+    public CommonResult login(
         @PathVariable("oauthServerType")
         OauthServerType oauthServerType,
         @RequestParam("token")
@@ -32,9 +33,9 @@ public class OauthController {
         return responseService.getSingleResult(loginTokenResponse);
     }
 
+    @Override
     @GetMapping("/seller/login/{oauthServerType}")
-    @Operation(summary = "판매자 Oauth 로그인")
-    CommonResult sellerLogin(
+    public CommonResult sellerLogin(
         @PathVariable("oauthServerType")
         OauthServerType oauthServerType,
         @RequestParam("token")
