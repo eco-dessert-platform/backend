@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/seller")
+@RequestMapping("/api/v1/seller/sellers")
 @Tag(name = "Sellers", description = "판매자 관리 API")
 public class SellerController_v2 implements SellerApi_v2 {
 
