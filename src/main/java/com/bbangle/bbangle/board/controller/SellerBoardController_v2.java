@@ -34,10 +34,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/boards")
+@RequestMapping("/api/v1/seller/boards")
 @Tag(name = "Boards", description = "게시판 API")
 @RequiredArgsConstructor
-public class BoardController_v2 {
+public class SellerBoardController_v2 {
 
     private final ResponseService responseService;
     private final BoardService boardService;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.domain;
+package com.bbangle.bbangle.board.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

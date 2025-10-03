@@ -1,11 +1,11 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.domain.AvailabilityRequest;
+import com.bbangle.bbangle.board.controller.dto.AvailabilityRequest;
+import com.bbangle.bbangle.board.controller.dto.DietaryTagsRequest;
+import com.bbangle.bbangle.board.controller.dto.NutritionInfoRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.DietaryTagsRequest;
 import com.bbangle.bbangle.board.domain.Nutrition;
-import com.bbangle.bbangle.board.domain.NutritionInfoRequest;
 import com.bbangle.bbangle.board.domain.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 
