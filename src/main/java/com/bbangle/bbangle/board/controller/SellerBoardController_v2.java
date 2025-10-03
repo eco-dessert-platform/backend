@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.constant.FolderBoardSortType;
 import com.bbangle.bbangle.board.constant.SortType;
+import com.bbangle.bbangle.board.controller.swagger.SellerBoardApi_v2;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardUploadRequest_v2;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -19,7 +20,6 @@ import com.bbangle.bbangle.search.service.dto.SearchInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -35,9 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/seller/boards")
-@Tag(name = "Boards", description = "게시판 API")
 @RequiredArgsConstructor
-public class SellerBoardController_v2 {
+public class SellerBoardController_v2 implements SellerBoardApi_v2 {
 
     private final ResponseService responseService;
     private final BoardService boardService;
@@ -46,6 +45,7 @@ public class SellerBoardController_v2 {
     private final BoardUploadService_v2 boardUploadService;
 
     @PostMapping("/board/{storeId}")
+    @Override
     public CommonResult upload(@PathVariable Long storeId,
                                @RequestBody BoardUploadRequest_v2 request) {
         boardUploadService.upload(storeId, request);
