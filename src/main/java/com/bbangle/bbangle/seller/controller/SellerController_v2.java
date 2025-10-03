@@ -7,7 +7,6 @@ import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest_v2;
 import com.bbangle.bbangle.seller.dto.SellerUpdateRequest_v2;
 import com.bbangle.bbangle.seller.service.SellerService_v2;
 import com.bbangle.bbangle.seller.swagger.SellerApi_v2;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/seller/sellers")
-@Tag(name = "Sellers", description = "판매자 관리 API")
 public class SellerController_v2 implements SellerApi_v2 {
 
     private final ResponseService responseService;
