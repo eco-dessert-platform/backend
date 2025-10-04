@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishlist.dto;
+package com.bbangle.bbangle.wishlist.customer.dto;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;

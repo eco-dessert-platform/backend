@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishlist.validator;
+package com.bbangle.bbangle.wishlist.customer.validator;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.BbangleErrorCode;

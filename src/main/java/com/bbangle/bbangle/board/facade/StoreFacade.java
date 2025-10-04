@@ -6,8 +6,8 @@ import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.StoreDetail;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
-import com.bbangle.bbangle.wishlist.service.WishListStoreService;
+import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.customer.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

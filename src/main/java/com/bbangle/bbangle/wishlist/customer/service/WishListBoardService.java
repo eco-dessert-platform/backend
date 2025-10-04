@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishlist.service;
+package com.bbangle.bbangle.wishlist.customer.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -9,7 +9,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import lombok.RequiredArgsConstructor;

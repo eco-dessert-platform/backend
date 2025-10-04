@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
-import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
-import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
-import com.bbangle.bbangle.wishlist.service.WishListFolderService;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderUpdateDto;
+import com.bbangle.bbangle.wishlist.customer.service.WishListFolderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

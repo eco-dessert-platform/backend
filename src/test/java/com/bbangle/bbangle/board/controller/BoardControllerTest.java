@@ -14,7 +14,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.Role;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Duration;

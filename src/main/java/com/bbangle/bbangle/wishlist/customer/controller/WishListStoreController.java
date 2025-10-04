@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
-import com.bbangle.bbangle.wishlist.service.WishListStoreService;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreCustomPage;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.wishlist.customer.service.WishListStoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

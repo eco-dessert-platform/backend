@@ -3,12 +3,12 @@ package com.bbangle.bbangle.wishlist.repository;
 import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
+import com.bbangle.bbangle.wishlist.customer.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreCustomPage;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

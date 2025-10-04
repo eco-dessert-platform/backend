@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 
 import com.querydsl.core.Tuple;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishlist.dto;
+package com.bbangle.bbangle.wishlist.customer.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
