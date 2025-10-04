@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.survey.dto.request;
+package com.bbangle.bbangle.survey.customer.dto.request;
 
 import com.bbangle.bbangle.survey.collections.DietLimitations;
 import com.bbangle.bbangle.survey.collections.UnmatchedIngredients;

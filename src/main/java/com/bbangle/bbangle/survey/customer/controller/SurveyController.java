@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.survey.controller;
+package com.bbangle.bbangle.survey.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
@@ -8,8 +8,8 @@ import com.bbangle.bbangle.survey.collections.HealthConcerns;
 import com.bbangle.bbangle.survey.collections.IsVegetarians;
 import com.bbangle.bbangle.survey.collections.SurveyInfo;
 import com.bbangle.bbangle.survey.collections.UnmatchedIngredients;
-import com.bbangle.bbangle.survey.dto.request.RecommendationSurveyDto;
-import com.bbangle.bbangle.survey.service.SurveyService;
+import com.bbangle.bbangle.survey.customer.dto.request.RecommendationSurveyDto;
+import com.bbangle.bbangle.survey.customer.service.SurveyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
