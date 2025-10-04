@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.wishlist.repository;
 
-import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
+import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
 import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;

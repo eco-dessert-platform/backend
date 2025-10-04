@@ -1,15 +1,14 @@
-package com.bbangle.bbangle.analytics.controller;
+package com.bbangle.bbangle.analytics.admin.controller;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
-import com.bbangle.bbangle.analytics.service.AnalyticsService;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsMembersCountResponseDto;
+import com.bbangle.bbangle.analytics.admin.service.AnalyticsService;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.Optional;

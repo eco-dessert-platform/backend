@@ -1,9 +1,9 @@
 package com.bbangle.bbangle.review.repository;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
+import com.bbangle.bbangle.analytics.admin.dto.QAnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.QDateAndCountDto;
 import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.board.dto.QAiLearningReviewDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;

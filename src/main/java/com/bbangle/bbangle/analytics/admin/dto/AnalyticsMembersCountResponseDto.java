@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.analytics.dto;
+package com.bbangle.bbangle.analytics.admin.dto;
 
 import lombok.Builder;
 

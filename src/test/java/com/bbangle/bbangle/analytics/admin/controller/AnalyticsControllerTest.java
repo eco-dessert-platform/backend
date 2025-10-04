@@ -1,6 +1,7 @@
-package com.bbangle.bbangle.analytics.controller;
+package com.bbangle.bbangle.analytics.admin.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.analytics.admin.controller.AnalyticsController;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.domain.Member;

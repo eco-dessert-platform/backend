@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.analytics.service;
+package com.bbangle.bbangle.analytics.admin.service;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
-import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsMembersCountResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;

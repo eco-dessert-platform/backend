@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.analytics.service;
+package com.bbangle.bbangle.analytics.admin.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsMembersCountResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.review.domain.Badge;

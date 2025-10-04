@@ -1,6 +1,6 @@
 package com.bbangle.bbangle;
 
-import com.bbangle.bbangle.analytics.service.AnalyticsService;
+import com.bbangle.bbangle.analytics.admin.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
