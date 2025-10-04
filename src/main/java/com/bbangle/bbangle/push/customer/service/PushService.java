@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.push.service;
+package com.bbangle.bbangle.push.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -6,11 +6,11 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.domain.PushType;
-import com.bbangle.bbangle.push.dto.CreatePushRequest;
-import com.bbangle.bbangle.push.dto.FcmPush;
-import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.dto.PushResponse;
+import com.bbangle.bbangle.push.customer.dto.CreatePushRequest;
+import com.bbangle.bbangle.push.customer.dto.FcmPush;
+import com.bbangle.bbangle.push.customer.dto.FcmRequest;
+import com.bbangle.bbangle.push.customer.dto.PushRequest;
+import com.bbangle.bbangle.push.customer.dto.PushResponse;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;

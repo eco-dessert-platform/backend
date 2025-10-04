@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.push.dto;
+package com.bbangle.bbangle.push.customer.dto;
 
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.domain.PushType;

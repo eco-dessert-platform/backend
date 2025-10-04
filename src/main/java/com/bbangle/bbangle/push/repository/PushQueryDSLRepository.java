@@ -2,8 +2,8 @@ package com.bbangle.bbangle.push.repository;
 
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
-import com.bbangle.bbangle.push.dto.FcmPush;
-import com.bbangle.bbangle.push.dto.PushResponse;
+import com.bbangle.bbangle.push.customer.dto.FcmPush;
+import com.bbangle.bbangle.push.customer.dto.PushResponse;
 
 import java.util.List;
 

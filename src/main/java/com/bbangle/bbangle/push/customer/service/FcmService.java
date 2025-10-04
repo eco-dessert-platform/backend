@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.push.service;
+package com.bbangle.bbangle.push.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
-import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.FcmTestDto;
+import com.bbangle.bbangle.push.customer.dto.FcmRequest;
+import com.bbangle.bbangle.push.customer.dto.FcmTestDto;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;

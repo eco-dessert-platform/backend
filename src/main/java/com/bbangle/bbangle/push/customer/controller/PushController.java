@@ -1,14 +1,14 @@
-package com.bbangle.bbangle.push.controller;
+package com.bbangle.bbangle.push.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.push.domain.PushCategory;
-import com.bbangle.bbangle.push.dto.CreatePushRequest;
-import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.FcmTestDto;
-import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.service.FcmService;
-import com.bbangle.bbangle.push.service.PushService;
+import com.bbangle.bbangle.push.customer.dto.CreatePushRequest;
+import com.bbangle.bbangle.push.customer.dto.FcmRequest;
+import com.bbangle.bbangle.push.customer.dto.FcmTestDto;
+import com.bbangle.bbangle.push.customer.dto.PushRequest;
+import com.bbangle.bbangle.push.customer.service.FcmService;
+import com.bbangle.bbangle.push.customer.service.PushService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;

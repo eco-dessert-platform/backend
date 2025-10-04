@@ -1,8 +1,8 @@
-package com.bbangle.bbangle.push.scheduler;
+package com.bbangle.bbangle.push.customer.scheduler;
 
-import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.service.FcmService;
-import com.bbangle.bbangle.push.service.PushService;
+import com.bbangle.bbangle.push.customer.dto.FcmRequest;
+import com.bbangle.bbangle.push.customer.service.FcmService;
+import com.bbangle.bbangle.push.customer.service.PushService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
