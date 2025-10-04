@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.review.domain;
 
-import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewSingleDto;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 

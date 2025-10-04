@@ -2,7 +2,7 @@ package com.bbangle.bbangle.review.domain;
 
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
+import com.bbangle.bbangle.review.customer.dto.ReviewRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;

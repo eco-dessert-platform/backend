@@ -1,7 +1,6 @@
-package com.bbangle.bbangle.review.dto;
+package com.bbangle.bbangle.review.customer.dto;
 
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.domain.Review;
 import lombok.Builder;
 
 import java.math.BigDecimal;

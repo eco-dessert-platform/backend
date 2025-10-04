@@ -1,10 +1,9 @@
-package com.bbangle.bbangle.review.scheduler;
+package com.bbangle.bbangle.review.customer.scheduler;
 
 import com.bbangle.bbangle.image.repository.ImageRepository;
-import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
-import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.customer.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

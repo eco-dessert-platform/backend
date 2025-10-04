@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.service;
+package com.bbangle.bbangle.review.customer.service;
 
 import static com.bbangle.bbangle.review.domain.Badge.BAD;
 import static com.bbangle.bbangle.review.domain.Badge.DRY;
@@ -9,7 +9,7 @@ import static com.bbangle.bbangle.review.domain.Badge.SWEET;
 
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewBadgeDto;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.List;

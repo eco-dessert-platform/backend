@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.controller;
+package com.bbangle.bbangle.review.customer.controller;
 
 import static java.util.Collections.emptyMap;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
+import com.bbangle.bbangle.review.customer.dto.ReviewInfoResponse;
 
 import java.util.List;
 

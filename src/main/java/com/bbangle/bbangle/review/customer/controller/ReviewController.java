@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.controller;
+package com.bbangle.bbangle.review.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
@@ -6,13 +6,13 @@ import com.bbangle.bbangle.common.page.ImageCustomPage;
 import com.bbangle.bbangle.common.page.ReviewCustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.image.dto.ImageDto;
-import com.bbangle.bbangle.review.dto.ReviewImageUploadRequest;
-import com.bbangle.bbangle.review.dto.ReviewImageUploadResponse;
-import com.bbangle.bbangle.review.dto.ReviewImagesResponse;
-import com.bbangle.bbangle.review.dto.ReviewInfoResponse;
-import com.bbangle.bbangle.review.dto.ReviewRateResponse;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
-import com.bbangle.bbangle.review.service.ReviewService;
+import com.bbangle.bbangle.review.customer.dto.ReviewImageUploadRequest;
+import com.bbangle.bbangle.review.customer.dto.ReviewImageUploadResponse;
+import com.bbangle.bbangle.review.customer.dto.ReviewImagesResponse;
+import com.bbangle.bbangle.review.customer.dto.ReviewInfoResponse;
+import com.bbangle.bbangle.review.customer.dto.ReviewRateResponse;
+import com.bbangle.bbangle.review.customer.dto.ReviewRequest;
+import com.bbangle.bbangle.review.customer.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

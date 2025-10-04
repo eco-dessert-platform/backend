@@ -9,11 +9,11 @@ import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.image.dto.ImageDto;
-import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
-import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
-import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
-import com.bbangle.bbangle.review.dto.ReviewDto;
-import com.bbangle.bbangle.review.dto.ReviewSingleDto;
+import com.bbangle.bbangle.review.customer.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewBadgeDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewSingleDto;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.dto;
+package com.bbangle.bbangle.review.customer.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
