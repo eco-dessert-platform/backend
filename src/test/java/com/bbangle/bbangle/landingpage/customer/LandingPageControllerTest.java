@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.landingpage;
+package com.bbangle.bbangle.landingpage.customer;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
