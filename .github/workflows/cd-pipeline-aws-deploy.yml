@@ -24,7 +24,7 @@ jobs:
       - name: application.yml 정보 넣기
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML_AWS }}" | base64 --decode > src/main/resources/application-production.yml
+          echo "${{ secrets.PROD_APPLICATION_YML }}" | base64 --decode > src/main/resources/application-production.yml
           find src
 
       - name: FcmKey 정보 넣기
@@ -57,30 +57,30 @@ jobs:
       - name: 기존 서버 내 jar 파일 삭제
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          host: ${{ secrets.PROD_AWS_SSH_HOST }}
+          username: ${{ secrets.PROD_AWS_SSH_USERNAME }}
+          key: ${{ secrets.PROD_AWS_SSH_KEY }}
+          port: ${{ secrets.PROD_AWS_SSH_PORT }}
           script: |
             rm -f ~/docker/server/Bbangle-0.0.1-SNAPSHOT.jar
 
       - name: jar 파일 운영 서버 전송
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          host: ${{ secrets.PROD_AWS_SSH_HOST }}
+          username: ${{ secrets.PROD_AWS_SSH_USERNAME }}
+          key: ${{ secrets.PROD_AWS_SSH_KEY }}
+          port: ${{ secrets.PROD_AWS_SSH_PORT }}
           source: "Bbangle-0.0.1-SNAPSHOT.jar"
           target: "~/docker/server"
 
       - name: 이미지 새로 build 및 docker 서버 재실행
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DEPLOY_AWS_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_AWS_SSH_USERNAME }}
-          key: ${{ secrets.DEPLOY_AWS_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_AWS_SSH_PORT }}
+          host: ${{ secrets.PROD_AWS_SSH_HOST }}
+          username: ${{ secrets.PROD_AWS_SSH_USERNAME }}
+          key: ${{ secrets.PROD_AWS_SSH_KEY }}
+          port: ${{ secrets.PROD_AWS_SSH_PORT }}
           script: |
             chmod +x main-docker.sh
             ./main-docker.sh
