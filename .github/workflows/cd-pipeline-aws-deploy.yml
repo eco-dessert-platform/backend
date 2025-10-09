@@ -82,5 +82,5 @@ jobs:
           key: ${{ secrets.PROD_AWS_SSH_KEY }}
           port: ${{ secrets.PROD_AWS_SSH_PORT }}
           script: |
-            chmod +x main-docker.sh
-            ./main-docker.sh
+            chmod +x docker.sh
+            ./docker.sh
