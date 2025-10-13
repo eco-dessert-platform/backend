@@ -115,4 +115,43 @@ public interface ProductBoardApi_v3 {
         @Parameter(name = "boardId", description = "게시글 ID", example = "1") Long boardId,
         ProductBoardUpdateRequest_v3 request);
 
+
+    @Operation(
+        summary = "상품 게시글 복제",
+        description = "상품 게시글을 복제 합니다."
+    )
+
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "상품 게시글 복제",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success": true,
+                            "code": 0,
+                            "message": "SUCCESS",
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청 데이터",
+            content = @Content(
+                schema = @Schema(implementation = GlobalControllerAdvice.class)
+            )
+        )
+    })
+    CommonResult copyProductBoard(
+        @Parameter(name = "storeId", description = "스토어 ID", example = "1")
+        Long storeId,
+        @Parameter(name = "boardId", description = "게시글 ID", example = "1")
+        Long boardId);
+
 }
