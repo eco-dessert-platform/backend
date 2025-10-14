@@ -16,18 +16,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/seller/store")
 @Slf4j
 public class ProductBoardController_v3 implements ProductBoardApi_v3 {
 
     private final ResponseService responseService;
+
 
     @Override
     @GetMapping("/{storeId}/boards")
@@ -61,5 +61,13 @@ public class ProductBoardController_v3 implements ProductBoardApi_v3 {
         @Valid @RequestBody ProductBoardUpdateRequest_v3 request) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSingleResult(request);
+    }
+
+    @Override
+    @PostMapping("{storeId}/boards/{boardId}")
+    public CommonResult copyProductBoard(
+        @PathVariable(name = "storeId") Long storeId,
+        @PathVariable(name = "boardId") Long boardId) {
+        return responseService.getSuccessResult();
     }
 }
