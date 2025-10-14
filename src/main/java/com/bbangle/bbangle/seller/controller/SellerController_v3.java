@@ -20,6 +20,7 @@ public class SellerController_v3 implements SellerApi_v3 {
 
     private final ResponseService responseService;
 
+
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult createSeller(
@@ -29,4 +30,9 @@ public class SellerController_v3 implements SellerApi_v3 {
         return responseService.getSuccessResult();
     }
 
+
+    @Override
+    public CommonResult accountVerification(String accountNumber, String sellerName) {
+        return responseService.getSuccessResult();
+    }
 }
