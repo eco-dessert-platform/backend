@@ -3,7 +3,7 @@ package com.bbangle.bbangle.seller.store.board.controller.dto;
 public class ProductBoardResponse_v3 {
 
     public record ProductBoardSearchResponse(
-        Long storeId,
+        Long productId,
         String imgUrl,
         String productName,
         String inventoryStatus,

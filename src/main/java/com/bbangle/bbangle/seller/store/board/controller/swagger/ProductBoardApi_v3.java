@@ -38,7 +38,8 @@ public interface ProductBoardApi_v3 {
                             "code": 0,
                             "message": "SUCCESS",
                             "content": [
-                                {
+                                {   
+                                    "productId": 1,
                                     "imgUrl": "https://image.bbangle.com/...",
                                     "productName": "맛있는 식빵",
                                     "inventoryStatus": "재고 있음",
