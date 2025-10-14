@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.seller.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.exception.ErrorResponse;
+import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.seller.controller.SellerRequest_v3.SellerCreateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -82,7 +83,6 @@ public interface SellerApi_v3 {
             )
         )
     })
-
     CommonResult accountVerification(
         String accountNumber,
         String sellerName);
