@@ -12,10 +12,10 @@ import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.domain.Image;
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
 import com.bbangle.bbangle.image.repository.ImageRepository;
-import com.bbangle.bbangle.image.service.ImageService;
-import com.bbangle.bbangle.image.service.S3Service;
+import com.bbangle.bbangle.image.customer.service.ImageService;
+import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.page.ImageCustomPage;

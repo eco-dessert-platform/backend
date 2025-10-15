@@ -4,7 +4,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.image.service.ImageService;
+import com.bbangle.bbangle.image.customer.service.ImageService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;

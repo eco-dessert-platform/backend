@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.review.customer.dto;
 
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
 import lombok.Builder;
 import lombok.Getter;
 

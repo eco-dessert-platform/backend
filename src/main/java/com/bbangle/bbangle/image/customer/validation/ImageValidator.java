@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.validation;
+package com.bbangle.bbangle.image.customer.validation;
 
 import static io.jsonwebtoken.lang.Assert.isTrue;
 import static io.jsonwebtoken.lang.Assert.notNull;

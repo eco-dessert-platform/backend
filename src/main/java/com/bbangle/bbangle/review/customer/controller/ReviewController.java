@@ -5,7 +5,7 @@ import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.ImageCustomPage;
 import com.bbangle.bbangle.common.page.ReviewCustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
 import com.bbangle.bbangle.review.customer.dto.ReviewImageUploadRequest;
 import com.bbangle.bbangle.review.customer.dto.ReviewImageUploadResponse;
 import com.bbangle.bbangle.review.customer.dto.ReviewImagesResponse;

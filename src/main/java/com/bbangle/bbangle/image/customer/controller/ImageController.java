@@ -1,10 +1,9 @@
-package com.bbangle.bbangle.image.controller;
+package com.bbangle.bbangle.image.customer.controller;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.image.domain.ImageCategory;
-import com.bbangle.bbangle.image.service.ImageService;
+import com.bbangle.bbangle.image.customer.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

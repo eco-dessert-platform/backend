@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.service;
+package com.bbangle.bbangle.image.customer.service;
 
 import static java.util.Locale.ROOT;
 
@@ -8,8 +8,6 @@ import com.bbangle.bbangle.image.repository.ImageRepository;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

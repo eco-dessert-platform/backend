@@ -2,7 +2,7 @@ package com.bbangle.bbangle.member.service;
 
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
-import com.bbangle.bbangle.image.service.ImageService;
+import com.bbangle.bbangle.image.customer.service.ImageService;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.service;
+package com.bbangle.bbangle.image.customer.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.exception.BbangleException;

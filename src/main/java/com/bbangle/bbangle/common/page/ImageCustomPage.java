@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.dto;
+package com.bbangle.bbangle.image.customer.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;

@@ -8,7 +8,7 @@ import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardGrade;
 import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
 import com.bbangle.bbangle.review.customer.dto.LikeCountPerReviewIdDto;
 import com.bbangle.bbangle.review.customer.dto.ReviewBadgeDto;
 import com.bbangle.bbangle.review.customer.dto.ReviewCountPerBoardIdDto;

@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.image.service;
+package com.bbangle.bbangle.image.customer.service;
 
-import static com.bbangle.bbangle.image.validation.ImageValidator.validateImage;
+import static com.bbangle.bbangle.image.customer.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AccessControlList;
