@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notification.controller;
+package com.bbangle.bbangle.notification.customer.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
@@ -21,10 +21,11 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
-import com.bbangle.bbangle.notification.service.NotificationService;
+import com.bbangle.bbangle.notification.customer.controller.NotificationController;
+import com.bbangle.bbangle.notification.customer.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.customer.service.NotificationService;
 import com.bbangle.bbangle.token.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;

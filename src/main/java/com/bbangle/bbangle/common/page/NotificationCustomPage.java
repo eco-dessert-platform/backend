@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import java.util.List;
 
 public class NotificationCustomPage<T> extends CustomPage<T> {

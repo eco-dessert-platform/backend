@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notification.dto;
+package com.bbangle.bbangle.notification.customer.dto;
 
 public record NotificationResponse(
     Long id,

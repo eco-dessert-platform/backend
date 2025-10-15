@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notification.service;
+package com.bbangle.bbangle.notification.customer.service;
 
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
@@ -10,10 +10,11 @@ import static org.mockito.Mockito.times;
 
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.notification.customer.service.NotificationService;
 import com.bbangle.bbangle.notification.domain.Notice;
-import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.customer.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationUploadRequest;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

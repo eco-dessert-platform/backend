@@ -2,7 +2,7 @@ package com.bbangle.bbangle.common.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

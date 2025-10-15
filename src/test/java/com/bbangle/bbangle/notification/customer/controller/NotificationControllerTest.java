@@ -1,11 +1,10 @@
-package com.bbangle.bbangle.notification.controller;
+package com.bbangle.bbangle.notification.customer.controller;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.DatabaseCleaner;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.notification.service.NotificationService;
+import com.bbangle.bbangle.notification.customer.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.notification.domain;
 
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

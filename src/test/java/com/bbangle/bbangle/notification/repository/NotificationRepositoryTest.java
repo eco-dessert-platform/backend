@@ -9,7 +9,7 @@ import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.NoticeFixture;
 import com.bbangle.bbangle.notification.domain.Notice;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import jakarta.persistence.EntityManager;

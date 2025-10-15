@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.notification.controller;
+package com.bbangle.bbangle.notification.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
-import com.bbangle.bbangle.notification.service.NotificationService;
+import com.bbangle.bbangle.notification.customer.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.customer.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

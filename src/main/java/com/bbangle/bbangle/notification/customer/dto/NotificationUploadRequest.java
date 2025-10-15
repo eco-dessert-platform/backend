@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notification.dto;
+package com.bbangle.bbangle.notification.customer.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
