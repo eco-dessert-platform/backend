@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.boardstatistic.repository;
+package com.bbangle.bbangle.boardstatistic.customer.repository;
 
 import java.util.List;
 

@@ -1,14 +1,15 @@
-package com.bbangle.bbangle.boardstatistic.service;
+package com.bbangle.bbangle.boardstatistic.customer.service;
 
 import static org.assertj.core.api.Assertions.*;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
-import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
-import com.bbangle.bbangle.boardstatistic.update.UpdateType;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.customer.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.customer.update.UpdateType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardPreferenceStatisticFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;

@@ -8,7 +8,7 @@ import static java.util.Locale.ROOT;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.domain.Image;

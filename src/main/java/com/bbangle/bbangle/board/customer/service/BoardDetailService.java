@@ -18,7 +18,7 @@ import com.bbangle.bbangle.board.customer.service.dto.BoardDetailCommand;
 import com.bbangle.bbangle.board.customer.service.dto.BoardDetailInfo;
 import com.bbangle.bbangle.board.customer.service.mapper.BoardDetailInfoMapper;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.repository.PushRepository;

@@ -16,7 +16,7 @@ import com.bbangle.bbangle.board.customer.service.BoardDetailService;
 import com.bbangle.bbangle.board.customer.service.BoardService;
 import com.bbangle.bbangle.board.customer.service.ProductService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;

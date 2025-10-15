@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.boardstatistic.ranking;
+package com.bbangle.bbangle.boardstatistic.customer.ranking;
 
-import com.bbangle.bbangle.boardstatistic.service.BoardPreferenceStatisticService;
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardPreferenceStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

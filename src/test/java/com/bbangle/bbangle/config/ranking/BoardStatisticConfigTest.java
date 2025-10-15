@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.ranking.BoardStatisticConfig;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardStatisticConfig;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;

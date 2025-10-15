@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.boardstatistic.service;
+package com.bbangle.bbangle.boardstatistic.customer.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
-import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
-import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
-import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
+import com.bbangle.bbangle.boardstatistic.customer.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardWishCount;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
