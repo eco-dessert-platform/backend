@@ -2,9 +2,9 @@ package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.MemberSegment;
-import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.service.dto.SearchCommand;
-import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.customer.dto.KeywordDto;
+import com.bbangle.bbangle.search.customer.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
 
 import java.time.LocalDateTime;
 import java.util.List;

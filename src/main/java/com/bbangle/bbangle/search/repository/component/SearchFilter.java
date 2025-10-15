@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.customer.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.MemberSegment;
 import com.bbangle.bbangle.board.domain.constant.SortType;
-import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.search.dto.response.SearchResponse;
+import com.bbangle.bbangle.search.customer.dto.response.SearchResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
