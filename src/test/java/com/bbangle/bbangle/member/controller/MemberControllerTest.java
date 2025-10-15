@@ -9,7 +9,7 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.Role;
-import com.bbangle.bbangle.preference.service.PreferenceService;
+import com.bbangle.bbangle.preference.customer.service.PreferenceService;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import java.time.Duration;
 import org.apache.http.HttpHeaders;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.preference.service;
+package com.bbangle.bbangle.preference.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -6,9 +6,9 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.preference.domain.MemberPreference;
 import com.bbangle.bbangle.preference.domain.Preference;
-import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
-import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
-import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
+import com.bbangle.bbangle.preference.customer.dto.MemberPreferenceResponse;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceSelectRequest;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceUpdateRequest;
 import com.bbangle.bbangle.preference.repository.MemberPreferenceRepository;
 import com.bbangle.bbangle.preference.repository.PreferenceRepository;
 import lombok.RequiredArgsConstructor;

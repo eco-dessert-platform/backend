@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.preference.controller;
+package com.bbangle.bbangle.preference.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
-import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
-import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
-import com.bbangle.bbangle.preference.service.PreferenceService;
+import com.bbangle.bbangle.preference.customer.dto.MemberPreferenceResponse;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceSelectRequest;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceUpdateRequest;
+import com.bbangle.bbangle.preference.customer.service.PreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
