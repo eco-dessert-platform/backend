@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.customer.service.component;
 
 import com.bbangle.bbangle.board.domain.CsvFile;
-import com.bbangle.bbangle.board.customer.repository.FileStorageRepository;
+import com.bbangle.bbangle.board.repository.FileStorageRepository;
 import com.bbangle.bbangle.util.CsvUtil;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;

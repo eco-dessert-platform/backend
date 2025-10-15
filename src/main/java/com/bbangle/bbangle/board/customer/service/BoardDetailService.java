@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.customer.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.customer.dto.BoardInfo;
 import com.bbangle.bbangle.board.customer.dto.SimilarityBoardDto;
 import com.bbangle.bbangle.board.customer.dto.SimilarityBoardResponse;
-import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;

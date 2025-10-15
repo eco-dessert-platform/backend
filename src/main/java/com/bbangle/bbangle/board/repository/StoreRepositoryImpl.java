@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.repository;
+package com.bbangle.bbangle.board.repository;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;

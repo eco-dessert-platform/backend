@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.boardstatistic.customer.service;
 
-import com.bbangle.bbangle.board.customer.repository.dao.BoardWithTagDao;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;

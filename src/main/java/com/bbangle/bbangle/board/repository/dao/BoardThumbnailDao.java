@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.repository.dao;
+package com.bbangle.bbangle.board.repository.dao;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.querydsl.core.annotations.QueryProjection;

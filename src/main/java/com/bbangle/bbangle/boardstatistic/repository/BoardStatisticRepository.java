@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.boardstatistic.repository;
 
-import com.bbangle.bbangle.boardstatistic.customer.repository.BoardStatisticQueryDSLRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import java.math.BigDecimal;
 import java.util.List;

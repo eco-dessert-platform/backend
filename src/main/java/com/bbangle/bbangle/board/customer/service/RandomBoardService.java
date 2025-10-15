@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.customer.service;
 
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.customer.dto.BoardResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.page.CursorPageResponse;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.preference.domain;
 
-import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
-import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 
 public class TagDaoFixture {
 

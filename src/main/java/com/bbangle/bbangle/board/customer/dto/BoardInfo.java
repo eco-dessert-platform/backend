@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.customer.dto;
 
-import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
 import java.math.BigDecimal;
 import java.util.ArrayList;

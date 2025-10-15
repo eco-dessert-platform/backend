@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.boardstatistic.customer.repository;
+package com.bbangle.bbangle.boardstatistic.repository;
 
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.repository;
+package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.customer.dto.QAiLearningProductDto;
 import com.bbangle.bbangle.board.customer.dto.QTitleDto;

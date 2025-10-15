@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.board.customer.repository;
+package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.customer.repository.dao.BoardWithTagDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.customer.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.customer.dto.TitleDto;

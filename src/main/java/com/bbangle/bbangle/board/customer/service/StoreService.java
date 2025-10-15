@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-import static com.bbangle.bbangle.board.customer.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 

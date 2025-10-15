@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.customer.repository.BoardQueryDSLRepository;
 import com.bbangle.bbangle.board.domain.Board;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.repository;
+package com.bbangle.bbangle.board.repository;
 
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
@@ -10,13 +10,13 @@ import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardSta
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 import com.bbangle.bbangle.board.customer.dto.QTitleDto;
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.customer.repository.dao.BoardWithTagDao;
-import com.bbangle.bbangle.board.customer.repository.dao.QBoardThumbnailDao;
-import com.bbangle.bbangle.board.customer.repository.dao.QBoardWithTagDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.customer.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.customer.dto.TitleDto;
+import com.bbangle.bbangle.board.repository.dao.QBoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.QBoardWithTagDao;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;

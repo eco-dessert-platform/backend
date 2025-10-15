@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.customer.dto;
 
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.repository;
+package com.bbangle.bbangle.board.repository;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;

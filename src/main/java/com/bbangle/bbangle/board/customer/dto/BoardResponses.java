@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.customer.dto;
 
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

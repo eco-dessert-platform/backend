@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.customer.service;
 
 import com.bbangle.bbangle.board.domain.constant.FolderBoardSortType;
-import com.bbangle.bbangle.board.customer.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.customer.dto.BoardResponse;
 import com.bbangle.bbangle.board.customer.dto.BoardResponses;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.bbangle.bbangle.board.customer.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
 @Service
 @RequiredArgsConstructor
