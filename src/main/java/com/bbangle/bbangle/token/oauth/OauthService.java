@@ -2,9 +2,9 @@ package com.bbangle.bbangle.token.oauth;
 
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;

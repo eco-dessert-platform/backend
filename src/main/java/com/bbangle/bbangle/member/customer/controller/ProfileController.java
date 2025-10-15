@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.member.controller;
+package com.bbangle.bbangle.member.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
-import com.bbangle.bbangle.member.service.ProfileService;
+import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
+import com.bbangle.bbangle.member.customer.service.ProfileService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

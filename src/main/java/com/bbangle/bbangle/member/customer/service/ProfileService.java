@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.member.service;
+package com.bbangle.bbangle.member.customer.service;
 
-import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
+import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 

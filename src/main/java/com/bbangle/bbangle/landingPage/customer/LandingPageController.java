@@ -2,7 +2,7 @@ package com.bbangle.bbangle.landingPage.customer;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.RequestEmailDto;
+import com.bbangle.bbangle.member.customer.dto.RequestEmailDto;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Files;

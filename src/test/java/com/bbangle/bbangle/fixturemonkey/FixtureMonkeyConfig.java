@@ -5,7 +5,7 @@ import static org.hibernate.sql.ast.SqlTreeCreationLogger.LOGGER;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
 import com.bbangle.bbangle.review.domain.Review;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.ArbitraryIntrospectorResult;

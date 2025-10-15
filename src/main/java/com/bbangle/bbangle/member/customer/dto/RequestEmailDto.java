@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.member.dto;
+package com.bbangle.bbangle.member.customer.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

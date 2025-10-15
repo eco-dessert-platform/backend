@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.member.service;
+package com.bbangle.bbangle.member.customer.service;
 
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
@@ -7,9 +7,9 @@ import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.domain.Withdrawal;
-import com.bbangle.bbangle.member.dto.MemberAssignResponse;
-import com.bbangle.bbangle.member.dto.MemberInfoRequest;
-import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
+import com.bbangle.bbangle.member.customer.dto.MemberAssignResponse;
+import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.customer.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;

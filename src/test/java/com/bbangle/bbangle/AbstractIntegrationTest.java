@@ -23,7 +23,7 @@ import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.image.repository.ImageRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import com.bbangle.bbangle.push.customer.service.FcmService;

@@ -5,7 +5,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
-import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;

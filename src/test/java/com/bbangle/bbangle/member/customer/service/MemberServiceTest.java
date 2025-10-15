@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.member.service;
+package com.bbangle.bbangle.member.customer.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.MemberAssignResponse;
-import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
-import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.customer.dto.MemberAssignResponse;
+import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.customer.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.customer.service.PreferenceService;

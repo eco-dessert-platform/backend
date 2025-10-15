@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.member.controller;
+package com.bbangle.bbangle.member.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.MemberAssignResponse;
-import com.bbangle.bbangle.member.dto.MemberInfoRequest;
-import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
-import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.member.customer.dto.MemberAssignResponse;
+import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.customer.dto.WithdrawalRequestDto;
+import com.bbangle.bbangle.member.customer.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;

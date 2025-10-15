@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.member.dto;
+package com.bbangle.bbangle.member.customer.dto;
 
 import lombok.Getter;
 

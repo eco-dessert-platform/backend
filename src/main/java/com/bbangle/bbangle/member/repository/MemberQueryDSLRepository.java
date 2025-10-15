@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.member.repository;
 
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import java.time.LocalDate;
 import java.util.Optional;
