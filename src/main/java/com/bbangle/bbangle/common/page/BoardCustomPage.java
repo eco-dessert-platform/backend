@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.common.page;
 
-import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.customer.dto.BoardResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Collections;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.search.dao;
 
-import com.bbangle.bbangle.board.dao.TagsDao;
+import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
 import com.querydsl.core.annotations.QueryProjection;
 

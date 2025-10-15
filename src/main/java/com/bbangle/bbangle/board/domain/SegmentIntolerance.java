@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
-import com.bbangle.bbangle.board.constant.Segment;
+import com.bbangle.bbangle.board.domain.constant.Segment;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

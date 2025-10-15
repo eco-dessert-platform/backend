@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.controller;
 
-import com.bbangle.bbangle.board.constant.SortType;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.domain.constant.SortType;
+import com.bbangle.bbangle.board.customer.dto.FilterRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;

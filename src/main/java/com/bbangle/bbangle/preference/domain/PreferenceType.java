@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.preference.domain;
 
-import com.bbangle.bbangle.board.dao.TagsDao;
-import io.opencensus.tags.Tags;
+import com.bbangle.bbangle.board.customer.repository.dao.TagsDao;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

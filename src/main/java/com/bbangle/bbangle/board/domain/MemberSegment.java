@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.domain;
 
 
-import com.bbangle.bbangle.board.constant.Segment;
+import com.bbangle.bbangle.board.domain.constant.Segment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
