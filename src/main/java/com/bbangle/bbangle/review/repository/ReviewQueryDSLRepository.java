@@ -5,7 +5,7 @@ import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
 import com.bbangle.bbangle.board.customer.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardGrade;
-import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
+import com.bbangle.bbangle.review.repository.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
 import com.bbangle.bbangle.image.customer.dto.ImageDto;

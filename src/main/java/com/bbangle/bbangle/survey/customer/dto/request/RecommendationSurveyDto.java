@@ -1,14 +1,14 @@
 package com.bbangle.bbangle.survey.customer.dto.request;
 
-import com.bbangle.bbangle.survey.collections.DietLimitations;
-import com.bbangle.bbangle.survey.collections.UnmatchedIngredients;
-import com.bbangle.bbangle.survey.collections.HealthConcerns;
-import com.bbangle.bbangle.survey.collections.IsVegetarians;
+import com.bbangle.bbangle.survey.customer.collections.DietLimitations;
+import com.bbangle.bbangle.survey.customer.collections.UnmatchedIngredients;
+import com.bbangle.bbangle.survey.customer.collections.HealthConcerns;
+import com.bbangle.bbangle.survey.customer.collections.IsVegetarians;
 import com.bbangle.bbangle.survey.domain.FoodSurvey;
-import com.bbangle.bbangle.survey.enums.DietLimitation;
-import com.bbangle.bbangle.survey.enums.HealthConcern;
-import com.bbangle.bbangle.survey.enums.IsVegetarian;
-import com.bbangle.bbangle.survey.enums.UnmatchedIngredient;
+import com.bbangle.bbangle.survey.domain.enums.DietLimitation;
+import com.bbangle.bbangle.survey.domain.enums.HealthConcern;
+import com.bbangle.bbangle.survey.domain.enums.IsVegetarian;
+import com.bbangle.bbangle.survey.domain.enums.UnmatchedIngredient;
 import java.util.List;
 
 public record RecommendationSurveyDto(

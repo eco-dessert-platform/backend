@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import lombok.Builder;
 

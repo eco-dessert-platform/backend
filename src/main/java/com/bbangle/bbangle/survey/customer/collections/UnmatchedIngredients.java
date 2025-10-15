@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import com.bbangle.bbangle.survey.domain.UnmatchedIngredientsInfo;
-import com.bbangle.bbangle.survey.enums.UnmatchedIngredient;
+import com.bbangle.bbangle.survey.domain.enums.UnmatchedIngredient;
 import java.util.ArrayList;
 import java.util.List;
 

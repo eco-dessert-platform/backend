@@ -9,7 +9,7 @@ import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardGrade;
 import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardWishCount;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
-import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
+import com.bbangle.bbangle.review.repository.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;

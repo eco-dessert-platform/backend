@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.dao;
+package com.bbangle.bbangle.review.repository.dao;
 
 import com.querydsl.core.annotations.QueryProjection;
 

@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import com.bbangle.bbangle.survey.domain.HealthConcernInfo;
-import com.bbangle.bbangle.survey.enums.HealthConcern;
+import com.bbangle.bbangle.survey.domain.enums.HealthConcern;
 import java.util.ArrayList;
 import java.util.List;
 
