@@ -1,10 +1,8 @@
 package com.bbangle.bbangle.board.controller;
 
-import static com.bbangle.bbangle.board.controller.dto.StoreResponse.StoreDetail;
+import static com.bbangle.bbangle.board.seller.store.dto.StoreResponse.StoreDetail;
 
-import com.bbangle.bbangle.board.controller.dto.StoreResponse.SearchResponse;
 import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
-import com.bbangle.bbangle.board.controller.swagger.SellerStoreApi_v1;
 import com.bbangle.bbangle.board.facade.StoreFacade;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.service.dto.StoreInfo.AllBoard;
@@ -12,7 +10,6 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -65,7 +62,8 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId, boardIdAsCursorId);
+        CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId,
+            boardIdAsCursorId);
         return responseService.getSingleResult(response);
     }
 
