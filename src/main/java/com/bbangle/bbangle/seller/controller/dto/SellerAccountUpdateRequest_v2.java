@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.dto;
+package com.bbangle.bbangle.seller.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -22,4 +22,5 @@ public record SellerAccountUpdateRequest_v2(
     @NotBlank(message = "계좌번호는 필수입니다.")
     String accountNumber
 ) {
+
 }

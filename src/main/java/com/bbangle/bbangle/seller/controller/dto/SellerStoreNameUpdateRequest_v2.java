@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.dto;
+package com.bbangle.bbangle.seller.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -14,4 +14,5 @@ public record SellerStoreNameUpdateRequest_v2(
     @NotBlank(message = "스토어명은 필수입니다.")
     String storeName
 ) {
+
 }

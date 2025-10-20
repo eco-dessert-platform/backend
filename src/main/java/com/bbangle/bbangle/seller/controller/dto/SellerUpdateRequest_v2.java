@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.dto;
+package com.bbangle.bbangle.seller.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
@@ -36,4 +36,5 @@ public record SellerUpdateRequest_v2(
     @Schema(description = "상세 주소", example = "나동 456호")
     String originAddressDetail
 ) {
+
 }

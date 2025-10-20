@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.seller.swagger;
+package com.bbangle.bbangle.seller.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.seller.dto.SellerAccountUpdateRequest_v2;
-import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest_v2;
-import com.bbangle.bbangle.seller.dto.SellerUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerAccountUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerStoreNameUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerUpdateRequest_v2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -2,11 +2,11 @@ package com.bbangle.bbangle.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.dto.SellerAccountUpdateRequest_v2;
-import com.bbangle.bbangle.seller.dto.SellerStoreNameUpdateRequest_v2;
-import com.bbangle.bbangle.seller.dto.SellerUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerAccountUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerStoreNameUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.dto.SellerUpdateRequest_v2;
+import com.bbangle.bbangle.seller.controller.swagger.SellerApi_v2;
 import com.bbangle.bbangle.seller.service.SellerService_v2;
-import com.bbangle.bbangle.seller.swagger.SellerApi_v2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
