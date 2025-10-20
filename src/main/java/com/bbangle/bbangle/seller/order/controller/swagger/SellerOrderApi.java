@@ -1,14 +1,17 @@
-package com.bbangle.bbangle.seller.store.order.controller.swagger;
-
+package com.bbangle.bbangle.seller.order.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.ListResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.ErrorResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.seller.store.order.controller.OrderRequest;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse.OrderSearchResponse;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse_v3;
-import com.bbangle.bbangle.seller.store.order.controller.OrderResponse_v3.OrderItemDetailResponse;
+import com.bbangle.bbangle.seller.order.controller.dto.request.CompletedOrderFilter;
+import com.bbangle.bbangle.seller.order.controller.dto.request.OrderRequest;
+import com.bbangle.bbangle.seller.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
+import com.bbangle.bbangle.seller.order.controller.dto.response.OrderDetailResponse.OrderDetail;
+import com.bbangle.bbangle.seller.order.controller.dto.response.OrderResponse.OrderItemDetailResponse;
+import com.bbangle.bbangle.seller.order.controller.dto.response.OrderResponse.OrderSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,10 +23,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 
-@Tag(name = "Order", description = "주문 관련 API")
-public interface OrderApi_v3 {
+@Tag(name = "Seller Order", description = "(판매자) 주문 API")
+public interface SellerOrderApi {
 
+    @Operation(summary = "(판매자) 완료주문내역 페이징 조회")
+    SingleResult<BbanglePageResponse<OrderSummary>> getCompletedOrders(
+        @ParameterObject Pageable pageable,
+        @ParameterObject CompletedOrderFilter filter,
+        Long memberId
+    );
+
+    @Operation(summary = "(판매자) 주문 상세 조회")
+    ListResult<OrderDetail> getCompletedOrders(
+        List<Long> orderItemIds,
+        Long memberId
+    );
+
+    // TODO: v3
     @Operation(
         summary = "주문 품목 상세 정보 조회",
         description = "List에 주문 품목의 Id값을 받아 이를 상세 조회합니다."
@@ -34,7 +52,7 @@ public interface OrderApi_v3 {
             responseCode = "200",
             description = "주문 품목 상세정보 조회 성공",
             content = @Content(
-                schema = @Schema(implementation = OrderResponse_v3.class),
+                schema = @Schema(implementation = OrderItemDetailResponse.class),
                 examples = @ExampleObject(
                     name = "successResponse",
                     summary = "성공응답 예시",
@@ -156,6 +174,5 @@ public interface OrderApi_v3 {
         @ParameterObject
         @Valid
         OrderRequest.OrderSearchRequest request);
-
 
 }

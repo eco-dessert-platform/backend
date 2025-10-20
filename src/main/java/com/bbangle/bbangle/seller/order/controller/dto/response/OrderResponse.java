@@ -1,4 +1,5 @@
-package com.bbangle.bbangle.seller.store.order.controller;
+package com.bbangle.bbangle.seller.order.controller.dto.response;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,7 +11,20 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-public class OrderResponse_v3 {
+public class OrderResponse {
+
+    public record OrderSearchResponse(
+        String orderStatus,
+        String deliveryStatus,
+        String courierCompany,
+        String trackingNumber,
+        String orderNumber,
+        String paymentAt,
+        String recipientName,
+        String itemName
+    ) {
+
+    }
 
     @Schema(description = "주문 품목 상세 조회")
     public record OrderItemDetailResponse(
@@ -103,6 +117,5 @@ public class OrderResponse_v3 {
 
         }
     }
-
 
 }

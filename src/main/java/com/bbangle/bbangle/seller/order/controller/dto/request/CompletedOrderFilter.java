@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.order.controller.dto.request;
+package com.bbangle.bbangle.seller.order.controller.dto.request;
 
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderSearchType;
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus;
+import com.bbangle.bbangle.seller.order.controller.dto.CompletedOrderSearchType;
+import com.bbangle.bbangle.seller.order.controller.dto.CompletedOrderStatus;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.time.LocalDate;
 
@@ -12,4 +12,5 @@ public record CompletedOrderFilter(
     @Parameter(description = "검색 상세 조건") CompletedOrderSearchType searchType,
     @Parameter(description = "검색어", example = "저당 베이글") String searchValue
 ) {
+
 }

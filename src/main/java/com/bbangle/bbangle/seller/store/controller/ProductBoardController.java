@@ -1,14 +1,15 @@
-package com.bbangle.bbangle.seller.store.board.controller;
+package com.bbangle.bbangle.seller.store.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardRequest_v3.ProductBoardSearchRequest;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardResponse_v3.ProductBoardSearchResponse;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardUpdateRequest_v3;
-import com.bbangle.bbangle.seller.store.board.controller.swagger.ProductBoardApi_v3;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardRequest.ProductBoardSearchRequest;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardResponse.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardUpdateRequest;
+import com.bbangle.bbangle.seller.store.controller.swagger.ProductBoardApi;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ProductBoardController_v3 implements ProductBoardApi_v3 {
+public class ProductBoardController implements ProductBoardApi {
 
     private final ResponseService responseService;
 
@@ -58,7 +59,7 @@ public class ProductBoardController_v3 implements ProductBoardApi_v3 {
     public CommonResult changeProductBoard(
         @PathVariable(name = "storeId") Long storeId,
         @PathVariable(name = "boardId") Long boardId,
-        @Valid @RequestBody ProductBoardUpdateRequest_v3 request) {
+        @Valid @RequestBody ProductBoardUpdateRequest request) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSingleResult(request);
     }
@@ -68,6 +69,16 @@ public class ProductBoardController_v3 implements ProductBoardApi_v3 {
     public CommonResult copyProductBoard(
         @PathVariable(name = "storeId") Long storeId,
         @PathVariable(name = "boardId") Long boardId) {
+        return responseService.getSuccessResult();
+    }
+
+
+    @Override
+    @PostMapping("/{storeId}/boards")
+    public CommonResult removeProductBoards(
+        @PathVariable(name = "storeId") Long storeId,
+        @RequestBody List<Long> boardIds) {
+        // TODO: 비즈니스 로직 구현 예정
         return responseService.getSuccessResult();
     }
 }

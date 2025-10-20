@@ -1,21 +1,15 @@
 package com.bbangle.bbangle.board.dto;
 
-import com.bbangle.bbangle.board.constant.DeliveryCompany;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.BoardDetail;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @NoArgsConstructor
 @Data
 @Schema(description = "게시글 업로드 요청 DTO")
 public class BoardUploadRequest {
-
+    //TODO : 사용안하는 클래스 주석 처리
+/*
     @Schema(description = "게시글 제목", example = "맛있는 다이어트 도시락")
     private String boardTitle;
 
@@ -73,7 +67,7 @@ public class BoardUploadRequest {
     private void toBoardDetail(Board board) {
         BoardDetail boardDetail = boardDetailRequest.toEntity(board);
         board.addBoardDetails(boardDetail);
-    }
+    }*/
 
 }
 

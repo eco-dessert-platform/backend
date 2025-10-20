@@ -1,10 +1,10 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.seller.order.controller.dto.response;
 
-import static com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus.CANCELED;
-import static com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus.PURCHASED;
+import static com.bbangle.bbangle.seller.order.controller.dto.CompletedOrderStatus.CANCELED;
+import static com.bbangle.bbangle.seller.order.controller.dto.CompletedOrderStatus.PURCHASED;
 
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus;
-import com.bbangle.bbangle.order.controller.dto.DayOfWeek;
+import com.bbangle.bbangle.seller.order.controller.dto.CompletedOrderStatus;
+import com.bbangle.bbangle.seller.order.controller.dto.DayOfWeek;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -23,6 +23,7 @@ public class CompletedOrderResponse {
         @Schema(description = "수취인명") String recipient,
         List<OrderItem> orderItems
     ) {
+
         public static OrderSummary sample() {
             OrderItem item1 = OrderItem.of(1L, PURCHASED, "CJ대한통운", "123-123", "저칼로리 베이글", 5);
             OrderItem item2 = OrderItem.of(2L, CANCELED, "롯데택배", "123-456", "저당 초콜릿", 10);
@@ -44,7 +45,8 @@ public class CompletedOrderResponse {
             String recipient,
             List<OrderItem> orderItems
         ) {
-            return new OrderSummary(orderId, orderNum, paidAt, paidDayOfWeek, recipient, orderItems);
+            return new OrderSummary(orderId, orderNum, paidAt, paidDayOfWeek, recipient,
+                orderItems);
         }
 
         public record OrderItem(
@@ -55,6 +57,7 @@ public class CompletedOrderResponse {
             @Schema(description = "상품명") String productName,
             @Schema(description = "판매 수량") Integer quantity
         ) {
+
             public static OrderItem of(
                 Long orderItemId,
                 CompletedOrderStatus status,
@@ -63,7 +66,8 @@ public class CompletedOrderResponse {
                 String productName,
                 Integer quantity
             ) {
-                return new OrderItem(orderItemId, status, deliveryCompany, trackingNumber, productName, quantity);
+                return new OrderItem(orderItemId, status, deliveryCompany, trackingNumber,
+                    productName, quantity);
             }
         }
     }

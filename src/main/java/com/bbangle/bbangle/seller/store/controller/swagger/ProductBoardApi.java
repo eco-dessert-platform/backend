@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.seller.store.board.controller.swagger;
+package com.bbangle.bbangle.seller.store.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardRequest_v3;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardResponse_v3.ProductBoardSearchResponse;
-import com.bbangle.bbangle.seller.store.board.controller.dto.ProductBoardUpdateRequest_v3;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardRequest;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardResponse.ProductBoardSearchResponse;
+import com.bbangle.bbangle.seller.store.controller.dto.ProductBoardUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -15,10 +15,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "ProductBoards", description = "상품 게시글 관련 API")
-public interface ProductBoardApi_v3 {
+public interface ProductBoardApi {
 
     @Operation(
         summary = "상품 게시글 조회",
@@ -87,7 +88,7 @@ public interface ProductBoardApi_v3 {
         Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
         @ParameterObject
-        ProductBoardRequest_v3.ProductBoardSearchRequest request);
+        ProductBoardRequest.ProductBoardSearchRequest request);
 
     @Operation(summary = "상품 게시글 수정", description = "상품 게시글을 수정합니다.")
 
@@ -113,7 +114,7 @@ public interface ProductBoardApi_v3 {
     CommonResult changeProductBoard(
         @Parameter(name = "storeId", description = "스토어 ID", example = "1") Long storeId,
         @Parameter(name = "boardId", description = "게시글 ID", example = "1") Long boardId,
-        ProductBoardUpdateRequest_v3 request);
+        ProductBoardUpdateRequest request);
 
 
     @Operation(
@@ -153,5 +154,42 @@ public interface ProductBoardApi_v3 {
         Long storeId,
         @Parameter(name = "boardId", description = "게시글 ID", example = "1")
         Long boardId);
+
+    @Operation(
+        summary = "상품 게시글 삭제",
+        description = "상품 게시글을 삭제합니다, List로 여러개의 ID 값을 받아 처리할 수있습니다."
+    )
+
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "상품 게시글 삭제 성공",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success": true,
+                            "code": 0,
+                            "message": "SUCCESS",
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청 데이터",
+            content = @Content(
+                schema = @Schema(implementation = GlobalControllerAdvice.class)
+            )
+        )
+    })
+    CommonResult removeProductBoards(
+        @Parameter(name = "storeId", description = "스토어 ID", example = "1")
+        Long storeId,
+        List<Long> boardIds);
 
 }

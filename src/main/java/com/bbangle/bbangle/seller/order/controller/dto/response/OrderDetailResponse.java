@@ -1,11 +1,12 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.seller.order.controller.dto.response;
 
-import com.bbangle.bbangle.order.controller.dto.DeliveryStatus;
-import com.bbangle.bbangle.order.controller.dto.OrderStatus;
+import com.bbangle.bbangle.seller.order.controller.dto.DeliveryStatus;
+import com.bbangle.bbangle.seller.order.controller.dto.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public class OrderDetailResponse {
+
     @Schema(description = "주문 상세 내역")
     public record OrderDetail(
         OrderInfo order,
@@ -43,6 +44,7 @@ public class OrderDetailResponse {
             @Schema(description = "주문 상태") OrderStatus status,
             @Schema(description = "총 결제 금액") Integer totalPrice
         ) {
+
         }
 
         @Schema(description = "구매자 정보")
@@ -52,6 +54,7 @@ public class OrderDetailResponse {
             @Schema(description = "연락처1") String phone1,
             @Schema(description = "연락처2") String phone2
         ) {
+
         }
 
         @Schema(description = "배송 정보")
@@ -63,6 +66,7 @@ public class OrderDetailResponse {
             @Schema(description = "배송지 주소") String address,
             @Schema(description = "배송 메모") String deliveryMemo
         ) {
+
         }
 
         @Schema(description = "반품 배송 정보")
@@ -74,6 +78,7 @@ public class OrderDetailResponse {
             @Schema(description = "회수지 주소") String address,
             @Schema(description = "배송 메모") String deliveryMemo
         ) {
+
         }
 
         @Schema(description = "교환 배송 정보")
@@ -85,6 +90,7 @@ public class OrderDetailResponse {
             @Schema(description = "배송지 주소") String address,
             @Schema(description = "배송 메모") String deliveryMemo
         ) {
+
         }
 
         @Schema(description = "주문 상품 정보")
@@ -95,6 +101,7 @@ public class OrderDetailResponse {
             @Schema(description = "수량") Integer quantity,
             @Schema(description = "상품 가격") Integer price
         ) {
+
         }
     }
 }

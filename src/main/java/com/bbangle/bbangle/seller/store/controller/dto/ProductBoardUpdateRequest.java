@@ -1,16 +1,16 @@
-package com.bbangle.bbangle.seller.store.board.controller.dto;
+package com.bbangle.bbangle.seller.store.controller.dto;
 
 import com.bbangle.bbangle.board.constant.DeliveryCompany;
 import com.bbangle.bbangle.board.constant.DeliveryCondition;
-import com.bbangle.bbangle.board.dto.BoardDetailRequest;
-import com.bbangle.bbangle.board.dto.ProductInfoNoticeRequest;
+import com.bbangle.bbangle.board.dto.BoardDetailRequest_v2;
+import com.bbangle.bbangle.board.dto.ProductInfoNoticeRequest_v2;
 import com.bbangle.bbangle.board.dto.ProductRequest_v2;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 
 // TODO: PR merge가 다 완료된 이후 board에 합칠 경우를 고려해야함.
-public record ProductBoardUpdateRequest_v3(
+public record ProductBoardUpdateRequest(
     @Schema(description = "게시글 제목", example = "맛있는 다이어트 도시락")
     String boardTitle,
 
@@ -48,10 +48,10 @@ public record ProductBoardUpdateRequest_v3(
     List<ProductRequest_v2> productRequests,
 
     @Schema(description = "게시글 상세 내용 요청")
-    BoardDetailRequest boardDetailRequest,
+    BoardDetailRequest_v2 boardDetailRequest,
 
     @Schema(description = "상품 정보 고시 요청")
-    ProductInfoNoticeRequest productInfoNoticeRequest
+    ProductInfoNoticeRequest_v2 productInfoNoticeRequest
 ) {
 
 }

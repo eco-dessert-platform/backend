@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.seller.store.board.controller.dto;
+package com.bbangle.bbangle.seller.store.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class ProductBoardRequest_v3 {
+public class ProductBoardRequest {
 
     public record ProductBoardSearchRequest(
         @NotBlank
