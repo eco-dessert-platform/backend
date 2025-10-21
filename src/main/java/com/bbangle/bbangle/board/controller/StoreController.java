@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
-import static com.bbangle.bbangle.board.seller.store.dto.StoreResponse.StoreDetail;
+import static com.bbangle.bbangle.store.dto.StoreResponse.StoreDetail;
 
 import com.bbangle.bbangle.board.controller.mapper.StoreMapper;
 import com.bbangle.bbangle.board.facade.StoreFacade;
