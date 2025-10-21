@@ -7,8 +7,10 @@ import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardRespo
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
 import com.bbangle.bbangle.board.seller.service.BoardUploadService_v2;
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.page.PaginatedResponse;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,7 @@ public class SellerBoardController implements SellerBoardApi {
 
     @Override
     @GetMapping("/{storeId}/boards")
-    public PaginatedResponse<SellerBoardSearchResponse> searchProductBoard(
+    public SingleResult<BbanglePageResponse<SellerBoardSearchResponse>> searchProductBoard(
         @Valid
         @PathVariable(name = "storeId")
         Long storeId,
@@ -56,14 +58,8 @@ public class SellerBoardController implements SellerBoardApi {
         Page<SellerBoardSearchResponse> resultPage = new PageImpl<>(new ArrayList<>(), pageable,
             0);
 
-        PaginatedResponse<SellerBoardSearchResponse> response = new PaginatedResponse<>();
-        response.setContent(resultPage.getContent());
-        response.setPageNumber(resultPage.getNumber());
-        response.setPageSize(resultPage.getSize());
-        response.setTotalPages(resultPage.getTotalPages());
-        response.setTotalElements(resultPage.getTotalElements());
-
-        return responseService.getPagingResult(response);
+        BbanglePageResponse<SellerBoardSearchResponse> res = BbanglePageResponse.of(resultPage);
+        return responseService.getSingleResult(res);
     }
 
     @Override

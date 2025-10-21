@@ -5,7 +5,8 @@ import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardReque
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.page.PaginatedResponse;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,7 +42,7 @@ public interface SellerBoardApi {
             responseCode = "200",
             description = "상품 게시글 조회 성공",
             content = @Content(
-                schema = @Schema(implementation = PaginatedResponse.class),
+                schema = @Schema(implementation = SingleResult.class),
                 examples = @ExampleObject(
                     name = "successResponse",
                     summary = "성공응답 예시",
@@ -94,7 +95,7 @@ public interface SellerBoardApi {
         @Parameter(name = "direction", description = "정렬 방향", schema = @Schema(allowableValues = {
             "ASC", "DESC"}), required = true)
     })
-    PaginatedResponse<SellerBoardSearchResponse> searchProductBoard(
+    SingleResult<BbanglePageResponse<SellerBoardSearchResponse>> searchProductBoard(
         Long storeId,
         @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
         @ParameterObject

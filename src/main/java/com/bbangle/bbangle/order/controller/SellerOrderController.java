@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.order.controller;
 
+import com.bbangle.bbangle.common.dto.ListResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
@@ -7,11 +11,6 @@ import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.Ord
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.controller.swagger.SellerOrderApi;
-import com.bbangle.bbangle.common.dto.ListResult;
-import com.bbangle.bbangle.common.dto.SingleResult;
-import com.bbangle.bbangle.common.page.BbanglePageResponse;
-import com.bbangle.bbangle.common.page.PaginatedResponse;
-import com.bbangle.bbangle.common.service.ResponseService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -117,7 +116,7 @@ public class SellerOrderController implements SellerOrderApi {
 
     @Override
     @GetMapping("/{sellerId}/orders")
-    public PaginatedResponse<OrderSearchResponse> searchOrders(
+    public SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
         @PathVariable(name = "sellerId")
         Long sellerId,
         @ModelAttribute OrderSearchRequest request) {
@@ -149,15 +148,8 @@ public class SellerOrderController implements SellerOrderApi {
         PageRequest pageable = PageRequest.of(request.page(), request.size());
         // 전체 아이템 개수는 480개로 가정
         Page<OrderSearchResponse> resultPage = new PageImpl<>(mockOrders, pageable, 480);
-
-        PaginatedResponse<OrderSearchResponse> response = new PaginatedResponse<>();
-        response.setContent(resultPage.getContent());
-        response.setPageNumber(resultPage.getNumber());
-        response.setPageSize(resultPage.getSize());
-        response.setTotalPages(resultPage.getTotalPages());
-        response.setTotalElements(resultPage.getTotalElements());
-
-        return responseService.getPagingResult(response);
+        BbanglePageResponse<OrderSearchResponse> res = BbanglePageResponse.of(resultPage);
+        return responseService.getSingleResult(res);
     }
 
 }

@@ -6,7 +6,6 @@ import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
-import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import java.util.Arrays;
 import java.util.List;
@@ -109,11 +108,6 @@ public record ResponseService(MessageSource messageSource) {
         result.setMessage(
             messageSource.getMessage(msg, null, msg, LocaleContextHolder.getLocale()));
         return result;
-    }
-
-    public <T> PaginatedResponse<T> getPagingResult(PaginatedResponse<T> paginatedResponse) {
-        setSuccessResult(paginatedResponse);
-        return paginatedResponse;
     }
 
     public CommonResult getError(BbangleErrorCode error) {

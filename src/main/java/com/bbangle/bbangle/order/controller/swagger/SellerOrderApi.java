@@ -9,7 +9,6 @@ import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSear
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
-import com.bbangle.bbangle.common.page.PaginatedResponse;
 import com.bbangle.bbangle.exception.ErrorResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import io.swagger.v3.oas.annotations.Operation;
@@ -113,13 +112,12 @@ public interface SellerOrderApi {
         summary = "주문 품목 조회",
         description = "페이징 처리된 판매자의 전체 주문 품목을 조회합니다."
     )
-
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
             description = "주문 품목 조회 성공",
             content = @Content(
-                schema = @Schema(implementation = PaginatedResponse.class),
+                schema = @Schema(implementation = SingleResult.class),
                 examples = @ExampleObject(
                     name = "successResponse",
                     summary = "성공응답 예시",
@@ -167,7 +165,7 @@ public interface SellerOrderApi {
             )
         )
     })
-    PaginatedResponse<OrderSearchResponse> searchOrders(
+    SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
         @Parameter(description = "판매자 ID", example = "1")
         Long sellerId,
         @Parameter(hidden = true)
