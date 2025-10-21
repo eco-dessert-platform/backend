@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.store.controller;
 
-import com.bbangle.bbangle.store.dto.StoreResponse.SearchResponse;
-import com.bbangle.bbangle.store.swagger.SellerStoreApi;
+import com.bbangle.bbangle.store.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import java.util.ArrayList;

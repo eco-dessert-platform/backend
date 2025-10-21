@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.store.swagger;
+package com.bbangle.bbangle.store.controller.swagger;
 
-import com.bbangle.bbangle.store.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.controller.dto.StoreResponse.SearchResponse;
 import com.bbangle.bbangle.common.dto.ListResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
