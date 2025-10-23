@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.domain.ProductInfoNotice;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "상품 정보 고시 요청 DTO")
-public record ProductInfoNoticeRequest_v2(
+public record ProductInfoNoticeRequest(
     @Schema(description = "제품명", example = "비건 쿠키 3종 모음")
     String productName,
 

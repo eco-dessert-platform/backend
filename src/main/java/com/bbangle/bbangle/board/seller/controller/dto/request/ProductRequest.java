@@ -10,7 +10,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "상품 등록 요청 DTO")
-public record ProductRequest_v2(
+public record ProductRequest(
     @Schema(description = "상품 카테고리")
     Category category,
 

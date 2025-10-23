@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductInfoNoticeRepository;
 import com.bbangle.bbangle.board.repository.StoreRepository;
-import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest_v2;
+import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest;
 import com.bbangle.bbangle.board.service.ProductImgService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class BoardUploadService_v2 {
+public class BoardUploadService {
 
     private final BoardRepository boardRepository;
     private final StoreRepository storeRepository;
@@ -28,21 +28,17 @@ public class BoardUploadService_v2 {
      * productImg - board 연결도 이 때 진행
      */
     @Transactional
-    public long upload(Long storeId, BoardUploadRequest_v2 request) {
+    public long upload(Long storeId, BoardUploadRequest request) {
         Store store = storeRepository.findById(storeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
 
-        Board board = saveBoardWithchildren(store, request);
+        Board board = request.toBoard(store);
+        boardRepository.save(board);
 
         productImgService.connectImagesToBoard(
             request.productImgIds(),
             board);
 
         return board.getId();
-    }
-
-    private Board saveBoardWithchildren(Store store, BoardUploadRequest_v2 request) {
-        Board board = request.toBoard(store);
-        return boardRepository.save(board);
     }
 }

@@ -1,16 +1,15 @@
 package com.bbangle.bbangle.board.seller.controller;
 
-import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest_v2;
+import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
-import com.bbangle.bbangle.board.seller.service.BoardUploadService_v2;
+import com.bbangle.bbangle.board.seller.service.BoardUploadService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class SellerBoardController implements SellerBoardApi {
 
     private final ResponseService responseService;
-    private final BoardUploadService_v2 boardUploadService;
+    private final BoardUploadService boardUploadService;
 
     @PostMapping("/board/{storeId}")
     @Override
-    public CommonResult upload(@PathVariable Long storeId,
-        @RequestBody BoardUploadRequest_v2 request) {
+    public CommonResult upload(
+        @PathVariable Long storeId,
+        @RequestBody BoardUploadRequest request) {
         boardUploadService.upload(storeId, request);
         return responseService.getSuccessResult();
     }

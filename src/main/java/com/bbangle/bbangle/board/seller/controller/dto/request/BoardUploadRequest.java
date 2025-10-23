@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(description = "게시글 업로드 요청 DTO v2")
-public record BoardUploadRequest_v2(
+public record BoardUploadRequest(
     @Schema(description = "게시글 제목", example = "맛있는 다이어트 도시락")
     String boardTitle,
 
@@ -46,13 +46,13 @@ public record BoardUploadRequest_v2(
     List<Long> productImgIds,
 
     @Schema(description = "상품 요청 목록")
-    List<ProductRequest_v2> productRequests,
+    List<ProductRequest> productRequests,
 
     @Schema(description = "게시글 상세 내용 요청")
-    BoardDetailRequest_v2 boardDetailRequest,
+    BoardDetailRequest boardDetailRequest,
 
     @Schema(description = "상품 정보 고시 요청")
-    ProductInfoNoticeRequest_v2 productInfoNoticeRequest
+    ProductInfoNoticeRequest productInfoNoticeRequest
 ) {
 
     public Board toBoard(Store store) {
