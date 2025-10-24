@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.controller.mapper;
 
-import com.bbangle.bbangle.board.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.controller.dto.StoreResponse;
 import com.bbangle.bbangle.board.service.dto.StoreInfo;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -13,6 +13,6 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface StoreMapper {
 
-        StoreResponse.StoreDetail toStoreDetailResponse(StoreInfo.StoreDetail storeDetail);
+    StoreResponse.StoreDetail toStoreDetailResponse(StoreInfo.StoreDetail storeDetail);
 
 }
