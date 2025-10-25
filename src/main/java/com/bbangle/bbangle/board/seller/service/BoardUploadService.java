@@ -1,12 +1,13 @@
-package com.bbangle.bbangle.board.service;
+package com.bbangle.bbangle.board.seller.service;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Store;
-import com.bbangle.bbangle.board.dto.BoardUploadRequest;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductInfoNoticeRepository;
 import com.bbangle.bbangle.board.repository.StoreRepository;
+import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest;
+import com.bbangle.bbangle.board.service.ProductImgService;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import lombok.RequiredArgsConstructor;
@@ -31,17 +32,13 @@ public class BoardUploadService {
         Store store = storeRepository.findById(storeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
 
-        Board board = saveBoardWithchildren(store, request);
+        Board board = request.toBoard(store);
+        boardRepository.save(board);
 
         productImgService.connectImagesToBoard(
-            request.getProductImgIds(),
+            request.productImgIds(),
             board);
 
         return board.getId();
-    }
-
-    private Board saveBoardWithchildren(Store store, BoardUploadRequest request) {
-        Board board = request.toBoard(store);
-        return boardRepository.save(board);
     }
 }
