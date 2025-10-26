@@ -1,20 +1,23 @@
 package com.bbangle.bbangle;
 
 import com.bbangle.bbangle.analytics.service.AnalyticsService;
+import com.bbangle.bbangle.board.customer.service.BoardDetailService;
+import com.bbangle.bbangle.board.customer.service.BoardService;
+import com.bbangle.bbangle.board.customer.service.ProductService;
+import com.bbangle.bbangle.board.customer.service.StoreService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.domain.ProductInfoNotice;
 import com.bbangle.bbangle.board.domain.RecommendationSimilarBoard;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardRepository;
-import com.bbangle.bbangle.board.service.BoardDetailService;
-import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.board.service.ProductService;
+import com.bbangle.bbangle.board.repository.StoreRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
@@ -30,9 +33,6 @@ import com.bbangle.bbangle.push.service.FcmService;
 import com.bbangle.bbangle.push.service.PushService;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import com.bbangle.bbangle.board.domain.Store;
-import com.bbangle.bbangle.board.repository.StoreRepository;
-import com.bbangle.bbangle.board.service.StoreService;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
@@ -166,13 +166,12 @@ public abstract class AbstractIntegrationTest {
      */
 
     /**
-     * 위시리스트 폴더 값 제어가 안 필요하면
-     * Member member = fixtureMember(emptyMap());
-     * member.getWishListFolder()로 사용하기
+     * 위시리스트 폴더 값 제어가 안 필요하면 Member member = fixtureMember(emptyMap()); member.getWishListFolder()로
+     * 사용하기
      */
     protected WishListFolder fixtureWishListFolder(Map<String, Object> params) {
         ArbitraryBuilder<WishListFolder> builder = fixtureMonkey.giveMeBuilder(
-                WishListFolder.class);
+            WishListFolder.class);
         setBuilderParams(params, builder);
 
         return builder.sample();
@@ -200,15 +199,16 @@ public abstract class AbstractIntegrationTest {
     protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
         ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
         setBuilderParams(params, builder);
-        builder.set("board", null); // fixtureBoard(Map.of("boardDetails", List.of(boardDetail))) 쓰도록 강제
+        builder.set("board",
+            null); // fixtureBoard(Map.of("boardDetails", List.of(boardDetail))) 쓰도록 강제
         return builder.sample();
     }
 
     /**
-     * 사용예시:
-     * ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url", TEST_URL)));
-     * BoardDetail boardDetail = fixtureBoardDetail(Map.of("imgIndex", productImg.getId().intValue(), "url", TEST_URL));
-     * targetBoard = boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
+     * 사용예시: ProductImg productImg = productImgRepository.save(fixtureBoardImage(Map.of("url",
+     * TEST_URL))); BoardDetail boardDetail = fixtureBoardDetail(Map.of("imgIndex",
+     * productImg.getId().intValue(), "url", TEST_URL)); targetBoard =
+     * boardRepository.save(fixtureBoard(Map.of("boardDetails", List.of(boardDetail))));
      * productImg.updateBoard(targetBoard);   // <- 트랜잭션환경이어야 함
      */
     protected ProductImg fixtureBoardImage(Map<String, Object> params) {
@@ -219,14 +219,13 @@ public abstract class AbstractIntegrationTest {
     }
 
     /**
-     * BoardStatistic의 값 제어 커스텀해서 사용하려면 아래와 같은 방법으로 BoardStatistic을 저장해야합니다.
-     * BoardStatistic boardStatistic = fixtureRanking(Map.of("boardReviewCount", 2L));
-     * Board board = fixtureBoard(Map.of("boardStatistic", boardStatistic));
-     * boardRepository.save(board);
+     * BoardStatistic의 값 제어 커스텀해서 사용하려면 아래와 같은 방법으로 BoardStatistic을 저장해야합니다. BoardStatistic
+     * boardStatistic = fixtureRanking(Map.of("boardReviewCount", 2L)); Board board =
+     * fixtureBoard(Map.of("boardStatistic", boardStatistic)); boardRepository.save(board);
      */
     protected BoardStatistic fixtureRanking(Map<String, Object> params) {
         ArbitraryBuilder<BoardStatistic> builder = fixtureMonkey.giveMeBuilder(
-                BoardStatistic.class);
+            BoardStatistic.class);
         builder.set("id", null);
         setBuilderParams(params, builder);
         builder.set("board", null); // // 위 예시처럼 사용하게 강제
@@ -248,7 +247,7 @@ public abstract class AbstractIntegrationTest {
 
     protected ProductInfoNotice fixtureProductInfoNotice(Map<String, Object> params) {
         ArbitraryBuilder<ProductInfoNotice> builder = fixtureMonkey.giveMeBuilder(
-                ProductInfoNotice.class);
+            ProductInfoNotice.class);
         setBuilderParams(params, builder);
 
         return builder.sample();
@@ -260,9 +259,10 @@ public abstract class AbstractIntegrationTest {
         return builder.sample();
     }
 
-    protected RecommendationSimilarBoard fixtureRecommendationSimilarBoard(Map<String, Object> params) {
+    protected RecommendationSimilarBoard fixtureRecommendationSimilarBoard(
+        Map<String, Object> params) {
         ArbitraryBuilder<RecommendationSimilarBoard> builder = fixtureMonkey.giveMeBuilder(
-                RecommendationSimilarBoard.class);
+            RecommendationSimilarBoard.class);
         setBuilderParams(params, builder);
 
         return builder.sample();
@@ -302,8 +302,8 @@ public abstract class AbstractIntegrationTest {
             for (Field field : objClass.getDeclaredFields()) {
                 // Skip final, static, and transient fields
                 if (Modifier.isFinal(field.getModifiers()) ||
-                        Modifier.isStatic(field.getModifiers()) ||
-                        Modifier.isTransient(field.getModifiers())) {
+                    Modifier.isStatic(field.getModifiers()) ||
+                    Modifier.isTransient(field.getModifiers())) {
                     continue;
                 }
 
@@ -324,14 +324,15 @@ public abstract class AbstractIntegrationTest {
                         if (fieldValue instanceof Collection<?> collection) {
                             for (Object child : collection) {
                                 if (child != null && isEntityClass(child.getClass()) &&
-                                        hasBidirectionalReference(child.getClass(), objClass)) {
+                                    hasBidirectionalReference(child.getClass(), objClass)) {
                                     return true;
                                 }
                             }
                         }
                     } catch (Exception e) {
                         System.err.println(
-                                "Error accessing OneToMany field " + field.getName() + ": " + e.getMessage());
+                            "Error accessing OneToMany field " + field.getName() + ": "
+                                + e.getMessage());
                     }
                 }
 
@@ -340,11 +341,13 @@ public abstract class AbstractIntegrationTest {
                     try {
                         Class<?> fieldType = field.getType();
                         if (isEntityClass(fieldType) &&
-                                hasBidirectionalReference(fieldType, objClass)) {
+                            hasBidirectionalReference(fieldType, objClass)) {
                             return true;
                         }
                     } catch (Exception e) {
-                        System.err.println("Error checking ManyToOne field " + field.getName() + ": " + e.getMessage());
+                        System.err.println(
+                            "Error checking ManyToOne field " + field.getName() + ": "
+                                + e.getMessage());
                     }
                 }
 
@@ -353,11 +356,12 @@ public abstract class AbstractIntegrationTest {
                     try {
                         Class<?> fieldType = field.getType();
                         if (isEntityClass(fieldType) &&
-                                hasBidirectionalReference(fieldType, objClass)) {
+                            hasBidirectionalReference(fieldType, objClass)) {
                             return true;
                         }
                     } catch (Exception e) {
-                        System.err.println("Error checking OneToOne field " + field.getName() + ": " + e.getMessage());
+                        System.err.println("Error checking OneToOne field " + field.getName() + ": "
+                            + e.getMessage());
                     }
                 }
 
@@ -368,14 +372,15 @@ public abstract class AbstractIntegrationTest {
                         if (fieldValue instanceof Collection<?> collection) {
                             for (Object child : collection) {
                                 if (child != null && isEntityClass(child.getClass()) &&
-                                        hasBidirectionalReference(child.getClass(), objClass)) {
+                                    hasBidirectionalReference(child.getClass(), objClass)) {
                                     return true;
                                 }
                             }
                         }
                     } catch (Exception e) {
                         System.err.println(
-                                "Error accessing ManyToMany field " + field.getName() + ": " + e.getMessage());
+                            "Error accessing ManyToMany field " + field.getName() + ": "
+                                + e.getMessage());
                     }
                 }
             }

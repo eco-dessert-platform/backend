@@ -1,52 +1,51 @@
 package com.bbangle.bbangle.review.repository;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
 import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.board.dto.AiLearningReviewDto;
-import com.bbangle.bbangle.board.dto.QAiLearningReviewDto;
+import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
+import com.bbangle.bbangle.board.customer.dto.AiLearningReviewDto;
+import com.bbangle.bbangle.board.customer.dto.QAiLearningReviewDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
 import com.bbangle.bbangle.image.domain.QImage;
+import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.image.dto.QImageDto;
+import com.bbangle.bbangle.member.domain.QMember;
 import com.bbangle.bbangle.review.dao.QReviewStatisticDao;
 import com.bbangle.bbangle.review.dao.ReviewStatisticDao;
 import com.bbangle.bbangle.review.domain.QReview;
+import com.bbangle.bbangle.review.domain.QReviewLike;
 import com.bbangle.bbangle.review.domain.ReviewCursor;
 import com.bbangle.bbangle.review.domain.ReviewLike;
-import com.bbangle.bbangle.review.domain.QReviewLike;
-import com.bbangle.bbangle.image.dto.ImageDto;
+import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.QReviewDto;
 import com.bbangle.bbangle.review.dto.QReviewSingleDto;
 import com.bbangle.bbangle.review.dto.ReviewBadgeDto;
+import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.dto.ReviewDto;
 import com.bbangle.bbangle.review.dto.ReviewSingleDto;
-import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
-import com.bbangle.bbangle.review.dto.QReviewCountPerBoardIdDto;
-import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
-import com.bbangle.bbangle.review.dto.QLikeCountPerReviewIdDto;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.DateTemplate;
-import com.querydsl.core.types.dsl.Expressions;
-import com.bbangle.bbangle.member.domain.QMember;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTemplate;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static java.util.stream.Collectors.toMap;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.search.dao;
 
-import com.bbangle.bbangle.board.dao.TagsDao;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.querydsl.core.annotations.QueryProjection;
 
 public record SearchBoardResponseDao(

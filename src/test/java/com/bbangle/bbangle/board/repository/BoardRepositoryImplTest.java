@@ -1,15 +1,15 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardPreferenceStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
-import com.bbangle.bbangle.board.domain.Store;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +25,7 @@ class BoardRepositoryImplTest extends AbstractIntegrationTest {
     private Product product3;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         Store store = StoreFixture.storeGenerator();
         store = storeRepository.save(store);
         board1 = BoardFixture.randomBoard(store);
@@ -51,23 +51,38 @@ class BoardRepositoryImplTest extends AbstractIntegrationTest {
         //then
         Assertions.assertThat(boardWithTagDaos).hasSize(3);
         Assertions.assertThat(boardWithTagDaos.get(0).boardId()).isEqualTo(board1.getId());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().glutenFreeTag()).isEqualTo(product1.isGlutenFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().ketogenicTag()).isEqualTo(product1.isKetogenicTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().sugarFreeTag()).isEqualTo(product1.isSugarFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().highProteinTag()).isEqualTo(product1.isHighProteinTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().veganTag()).isEqualTo(product1.isVeganTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().glutenFreeTag())
+            .isEqualTo(product1.isGlutenFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().ketogenicTag())
+            .isEqualTo(product1.isKetogenicTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().sugarFreeTag())
+            .isEqualTo(product1.isSugarFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().highProteinTag())
+            .isEqualTo(product1.isHighProteinTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().veganTag())
+            .isEqualTo(product1.isVeganTag());
         Assertions.assertThat(boardWithTagDaos.get(1).boardId()).isEqualTo(board1.getId());
-        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().glutenFreeTag()).isEqualTo(product2.isGlutenFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().ketogenicTag()).isEqualTo(product2.isKetogenicTag());
-        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().sugarFreeTag()).isEqualTo(product2.isSugarFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().highProteinTag()).isEqualTo(product2.isHighProteinTag());
-        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().veganTag()).isEqualTo(product2.isVeganTag());
+        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().glutenFreeTag())
+            .isEqualTo(product2.isGlutenFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().ketogenicTag())
+            .isEqualTo(product2.isKetogenicTag());
+        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().sugarFreeTag())
+            .isEqualTo(product2.isSugarFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().highProteinTag())
+            .isEqualTo(product2.isHighProteinTag());
+        Assertions.assertThat(boardWithTagDaos.get(1).tagsDao().veganTag())
+            .isEqualTo(product2.isVeganTag());
         Assertions.assertThat(boardWithTagDaos.get(2).boardId()).isEqualTo(board2.getId());
-        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().glutenFreeTag()).isEqualTo(product3.isGlutenFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().ketogenicTag()).isEqualTo(product3.isKetogenicTag());
-        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().sugarFreeTag()).isEqualTo(product3.isSugarFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().highProteinTag()).isEqualTo(product3.isHighProteinTag());
-        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().veganTag()).isEqualTo(product3.isVeganTag());
+        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().glutenFreeTag())
+            .isEqualTo(product3.isGlutenFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().ketogenicTag())
+            .isEqualTo(product3.isKetogenicTag());
+        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().sugarFreeTag())
+            .isEqualTo(product3.isSugarFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().highProteinTag())
+            .isEqualTo(product3.isHighProteinTag());
+        Assertions.assertThat(boardWithTagDaos.get(2).tagsDao().veganTag())
+            .isEqualTo(product3.isVeganTag());
     }
 
     @Test
@@ -84,11 +99,16 @@ class BoardRepositoryImplTest extends AbstractIntegrationTest {
         //then
         Assertions.assertThat(boardWithTagDaos).hasSize(1);
         Assertions.assertThat(boardWithTagDaos.get(0).boardId()).isEqualTo(board2.getId());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().glutenFreeTag()).isEqualTo(product3.isGlutenFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().ketogenicTag()).isEqualTo(product3.isKetogenicTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().sugarFreeTag()).isEqualTo(product3.isSugarFreeTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().highProteinTag()).isEqualTo(product3.isHighProteinTag());
-        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().veganTag()).isEqualTo(product3.isVeganTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().glutenFreeTag())
+            .isEqualTo(product3.isGlutenFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().ketogenicTag())
+            .isEqualTo(product3.isKetogenicTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().sugarFreeTag())
+            .isEqualTo(product3.isSugarFreeTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().highProteinTag())
+            .isEqualTo(product3.isHighProteinTag());
+        Assertions.assertThat(boardWithTagDaos.get(0).tagsDao().veganTag())
+            .isEqualTo(product3.isVeganTag());
     }
 
 }

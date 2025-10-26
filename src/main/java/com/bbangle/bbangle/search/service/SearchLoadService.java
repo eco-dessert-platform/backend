@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.search.service;
 
-import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.search.repository.SearchRepository;
 import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;

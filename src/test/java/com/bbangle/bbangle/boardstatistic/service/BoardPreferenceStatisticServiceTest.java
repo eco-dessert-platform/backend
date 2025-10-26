@@ -1,9 +1,10 @@
 package com.bbangle.bbangle.boardstatistic.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
@@ -11,16 +12,14 @@ import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.preference.domain.PreferenceType;
-import com.bbangle.bbangle.board.domain.Store;
+import java.util.ArrayList;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
 
@@ -36,7 +35,7 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("게시글에 매칭되는 boardId가 개인 선호 통계 테이블에 없을 때 업데이트")
-    class updatingNotGeneratedBoardPreference{
+    class updatingNotGeneratedBoardPreference {
 
         @BeforeEach
         void setup() {
@@ -79,7 +78,7 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("기본점수가 다른 선호 유형을 정상적으로 업데이트 한다")
-    class UpdatingBasicScoreFollowingBasicScoreInBoardStatistic{
+    class UpdatingBasicScoreFollowingBasicScoreInBoardStatistic {
 
         @BeforeEach
         void setup() {
@@ -91,8 +90,10 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
             board2 = boardRepository.save(board2);
             boardList.add(board1);
             boardList.add(board2);
-            BoardStatistic fixture1 = BoardStatisticFixture.newBoardStatisticWithBasicScore(board1, 3.0);
-            BoardStatistic fixture2 = BoardStatisticFixture.newBoardStatisticWithBasicScore(board2, 24.0);
+            BoardStatistic fixture1 = BoardStatisticFixture.newBoardStatisticWithBasicScore(board1,
+                3.0);
+            BoardStatistic fixture2 = BoardStatisticFixture.newBoardStatisticWithBasicScore(board2,
+                24.0);
             boardStatisticRepository.save(fixture1);
             boardStatisticRepository.save(fixture2);
 
@@ -111,7 +112,8 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
             //given
             preferenceStatisticService.updatingNonRankedBoards();
             List<BoardPreferenceStatistic> beforeUpdatingScore = preferenceStatisticRepository.findAll();
-            beforeUpdatingScore.forEach(preference -> Assertions.assertThat(preference.getBasicScore()).isZero());
+            beforeUpdatingScore.forEach(
+                preference -> Assertions.assertThat(preference.getBasicScore()).isZero());
 
             //when
             preferenceStatisticService.checkingBasicScoreAndUpdate();
@@ -119,11 +121,12 @@ class BoardPreferenceStatisticServiceTest extends AbstractIntegrationTest {
             List<BoardStatistic> basicStatisticList = boardStatisticRepository.findAll();
 
             //then
-            for(BoardPreferenceStatistic ps : afterUpdatingScore) {
-                for(BoardStatistic bs : basicStatisticList){
-                    if(ps.getBoardId().equals(bs.getBoard().getId())){
+            for (BoardPreferenceStatistic ps : afterUpdatingScore) {
+                for (BoardStatistic bs : basicStatisticList) {
+                    if (ps.getBoardId().equals(bs.getBoard().getId())) {
                         Assertions.assertThat(ps.getBasicScore()).isEqualTo(bs.getBasicScore());
-                        Assertions.assertThat(ps.getPreferenceScore()).isEqualTo(ps.getBasicScore() * ps.getPreferenceWeight());
+                        Assertions.assertThat(ps.getPreferenceScore())
+                            .isEqualTo(ps.getBasicScore() * ps.getPreferenceWeight());
                     }
                 }
             }

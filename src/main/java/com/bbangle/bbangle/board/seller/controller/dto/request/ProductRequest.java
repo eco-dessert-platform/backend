@@ -1,8 +1,5 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
-import com.bbangle.bbangle.board.controller.dto.AvailabilityRequest;
-import com.bbangle.bbangle.board.controller.dto.DietaryTagsRequest;
-import com.bbangle.bbangle.board.controller.dto.NutritionInfoRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Nutrition;

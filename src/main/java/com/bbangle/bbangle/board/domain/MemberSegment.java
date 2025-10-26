@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.domain;
 
 
-import com.bbangle.bbangle.board.constant.Segment;
+import com.bbangle.bbangle.board.customer.domain.constant.Segment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MemberSegment{
+public class MemberSegment {
 
     @Id
     @Column(name = "member_id")

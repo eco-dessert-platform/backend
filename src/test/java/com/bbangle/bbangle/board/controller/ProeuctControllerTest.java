@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.board.dto.orders.ProductResponse;
-import com.bbangle.bbangle.board.service.ProductService;
+import com.bbangle.bbangle.board.customer.dto.orders.ProductResponse;
+import com.bbangle.bbangle.board.customer.service.ProductService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +34,9 @@ class ProeuctControllerTest extends AbstractIntegrationTest {
             true
         );
 
-
         // Mocking 서비스 메서드 호출
-        when(productService.getProductResponseWithPush(anyLong(), anyLong())).thenReturn(productResponse);
+        when(productService.getProductResponseWithPush(anyLong(), anyLong())).thenReturn(
+            productResponse);
 
         // GET 요청 수행 및 검증
         mockMvc.perform(get("/api/v1/boards/1/product")

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.customer.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Store;
 import java.util.List;
 import java.util.Optional;

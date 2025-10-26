@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.wishlist.repository.sort.strategy;
 
-import com.bbangle.bbangle.board.constant.FolderBoardSortType;
+import com.bbangle.bbangle.board.customer.domain.constant.FolderBoardSortType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import java.util.List;

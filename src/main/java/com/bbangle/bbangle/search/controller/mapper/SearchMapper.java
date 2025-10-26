@@ -1,16 +1,19 @@
 package com.bbangle.bbangle.search.controller.mapper;
 
-import com.bbangle.bbangle.board.constant.SortType;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.customer.domain.constant.SortType;
+import com.bbangle.bbangle.board.customer.dto.FilterRequest;
 import com.bbangle.bbangle.search.service.dto.SearchCommand;
-import org.mapstruct.*;
-
 import java.util.Objects;
+import org.mapstruct.InjectionStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(
-        componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        unmappedTargetPolicy = ReportingPolicy.ERROR
+    componentModel = "spring",
+    injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+    unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface SearchMapper {
 
@@ -21,7 +24,8 @@ public interface SearchMapper {
     @Mapping(target = "filterRequest", source = "filterRequest")
     @Mapping(target = "cursorId", source = "cursorId")
     @Mapping(target = "memberId", source = "memberId")
-    SearchCommand.Main toSearchMain(FilterRequest filterRequest, SortType sort, String keyword, Long cursorId, Long memberId, Long limitSize);
+    SearchCommand.Main toSearchMain(FilterRequest filterRequest, SortType sort, String keyword,
+        Long cursorId, Long memberId, Long limitSize);
 
     @Named("isExcludedProduct")
     default Boolean isExcludedProduct(Long memberId, SortType sort) {

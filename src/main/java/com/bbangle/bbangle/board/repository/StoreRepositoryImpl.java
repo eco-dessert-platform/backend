@@ -6,9 +6,9 @@ import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
 import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 
+import com.bbangle.bbangle.board.customer.dto.AiLearningStoreDto;
+import com.bbangle.bbangle.board.customer.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.AiLearningStoreDto;
-import com.bbangle.bbangle.board.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Store;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;

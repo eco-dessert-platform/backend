@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.customer.service.RecommendAiBoardService;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.repository.RecommendAiBoardRepository;
@@ -23,8 +24,8 @@ class RecommendBoardCsvEntityServiceTest extends AbstractIntegrationTest {
     private RecommendationSimilarBoardMemoryRepository memoryRepository;
 
     @BeforeEach
-    void before () {
-        memoryRepository.delete(RecommendBoardConfig.create(0,0));
+    void before() {
+        memoryRepository.delete(RecommendBoardConfig.create(0, 0));
     }
 
     @Test

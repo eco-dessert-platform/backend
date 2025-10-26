@@ -1,16 +1,17 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.dao.BoardThumbnailDao;
-import com.bbangle.bbangle.board.dao.BoardWithTagDao;
+import com.bbangle.bbangle.board.customer.dto.BoardAndImageDto;
+import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.dto.BoardAndImageDto;
-import com.bbangle.bbangle.board.dto.TitleDto;
+import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.querydsl.core.types.OrderSpecifier;
 import java.util.List;
 
 public interface BoardQueryDSLRepository {
 
-    List<BoardThumbnailDao> getThumbnailBoardsByIds(List<Long> boardIds, OrderSpecifier<?>[] orderCondition, Long memberId);
+    List<BoardThumbnailDao> getThumbnailBoardsByIds(List<Long> boardIds,
+        OrderSpecifier<?>[] orderCondition, Long memberId);
 
     List<TitleDto> findAllTitle();
 

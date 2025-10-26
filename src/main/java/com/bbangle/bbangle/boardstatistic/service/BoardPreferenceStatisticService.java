@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.boardstatistic.service;
 
-import com.bbangle.bbangle.board.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRepository;
@@ -67,9 +67,9 @@ public class BoardPreferenceStatisticService {
             .toList();
         List<BoardStatistic> boardStatisticList = boardStatisticRepository.findAllByBoardIds(
             unmatchedIdList);
-        for(BoardPreferenceStatistic preferenceStatistic : unmatchedBasicScore) {
-            for(BoardStatistic basicStatistic : boardStatisticList){
-                if(preferenceStatistic.getBoardId().equals(basicStatistic.getBoard().getId())){
+        for (BoardPreferenceStatistic preferenceStatistic : unmatchedBasicScore) {
+            for (BoardStatistic basicStatistic : boardStatisticList) {
+                if (preferenceStatistic.getBoardId().equals(basicStatistic.getBoard().getId())) {
                     preferenceStatistic.updateToBasicBoardScore(basicStatistic.getBasicScore());
                     preferenceStatistic.updatePreferenceScore();
                 }

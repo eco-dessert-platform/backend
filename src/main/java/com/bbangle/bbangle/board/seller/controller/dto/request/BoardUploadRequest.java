@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
-import com.bbangle.bbangle.board.constant.DeliveryCompany;
-import com.bbangle.bbangle.board.constant.DeliveryCondition;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCompany;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCondition;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;

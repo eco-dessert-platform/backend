@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.dto.SimilarityBoardDto;
+import com.bbangle.bbangle.board.customer.dto.SimilarityBoardDto;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 

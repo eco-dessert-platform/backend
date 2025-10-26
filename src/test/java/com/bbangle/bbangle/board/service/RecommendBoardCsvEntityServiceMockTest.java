@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.customer.service.RecommendAiBoardService;
+import com.bbangle.bbangle.board.customer.service.RecommendBoardScheduler;
+import com.bbangle.bbangle.board.customer.service.component.RecommendBoardFileStorageComponent;
 import com.bbangle.bbangle.board.domain.RecommendBoardConfig;
 import com.bbangle.bbangle.board.domain.RedisKeyEnum;
 import com.bbangle.bbangle.board.repository.RecommendationSimilarBoardMemoryRepository;
-import com.bbangle.bbangle.board.service.component.RecommendBoardFileStorageComponent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,13 +33,14 @@ class RecommendBoardCsvEntityServiceMockTest extends AbstractIntegrationTest {
     private RecommendBoardScheduler recommendBoardScheduler;
 
     @AfterEach
-    void after () {
+    void after() {
         Mockito.reset(memoryRepository, fileStorageService);
-        memoryRepository.delete(RecommendBoardConfig.create(0,0));
+        memoryRepository.delete(RecommendBoardConfig.create(0, 0));
     }
+
     @BeforeEach
-    void before () {
-        memoryRepository.delete(RecommendBoardConfig.create(0,0));
+    void before() {
+        memoryRepository.delete(RecommendBoardConfig.create(0, 0));
     }
 
     @Test
