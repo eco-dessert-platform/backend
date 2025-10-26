@@ -8,7 +8,7 @@ import com.bbangle.bbangle.analytics.admin.dto.QAnalyticsCumulationResponseDto;
 import com.bbangle.bbangle.analytics.admin.dto.QDateAndCountDto;
 import com.bbangle.bbangle.board.customer.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.board.customer.dto.QAiLearningReviewDto;
-import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardGrade;
 import com.bbangle.bbangle.image.domain.QImage;
 import com.bbangle.bbangle.image.dto.ImageDto;
 import com.bbangle.bbangle.image.dto.QImageDto;

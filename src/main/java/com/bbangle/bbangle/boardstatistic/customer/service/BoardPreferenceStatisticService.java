@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.boardstatistic.service;
+package com.bbangle.bbangle.boardstatistic.customer.service;
 
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;

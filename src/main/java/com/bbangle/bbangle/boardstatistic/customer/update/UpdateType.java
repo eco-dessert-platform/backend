@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.boardstatistic.update;
+package com.bbangle.bbangle.boardstatistic.customer.update;
 
 public enum UpdateType {
     REVIEW,

@@ -4,7 +4,7 @@ import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
 import com.bbangle.bbangle.analytics.admin.dto.QDateAndCountDto;
-import com.bbangle.bbangle.boardstatistic.ranking.BoardWishCount;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardWishCount;
 import com.bbangle.bbangle.wishlist.dao.QWishListStatisticDao;
 import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;

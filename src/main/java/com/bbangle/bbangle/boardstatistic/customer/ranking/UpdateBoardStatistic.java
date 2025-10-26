@@ -1,8 +1,8 @@
-package com.bbangle.bbangle.boardstatistic.ranking;
+package com.bbangle.bbangle.boardstatistic.customer.ranking;
 
-import com.bbangle.bbangle.boardstatistic.service.BoardStatisticService;
-import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
-import com.bbangle.bbangle.boardstatistic.update.UpdateType;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.customer.update.UpdateType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +62,8 @@ public class UpdateBoardStatistic {
                 }
             }
         }
-        boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId, boardViewCountUpdate, allUpdateBoard);
+        boardStatisticService.updateInBatch(boardWishUpdateId, boardReviewUpdateId,
+            boardViewCountUpdate, allUpdateBoard);
         log.info("end update ranking");
 
 

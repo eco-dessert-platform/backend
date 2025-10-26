@@ -1,14 +1,16 @@
 package com.bbangle.bbangle.boardstatistic.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.boardstatistic.customer.ranking.UpdateBoardStatistic;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
+import com.bbangle.bbangle.boardstatistic.customer.update.StatisticUpdate;
+import com.bbangle.bbangle.boardstatistic.customer.update.UpdateType;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.boardstatistic.ranking.UpdateBoardStatistic;
-import com.bbangle.bbangle.boardstatistic.update.StatisticUpdate;
-import com.bbangle.bbangle.boardstatistic.update.UpdateType;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardPreferenceStatisticFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
@@ -16,7 +18,6 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.board.domain.Store;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         //then
         List<StatisticUpdate> list = new ArrayList<>();
-        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
             list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
@@ -118,7 +119,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         //then
         List<StatisticUpdate> list = new ArrayList<>();
-        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
             list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
@@ -144,7 +145,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         boardStatisticService.updateReview(board.getId());
 
         List<StatisticUpdate> list = new ArrayList<>();
-        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
             list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
@@ -166,7 +167,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         //then
         List<StatisticUpdate> list = new ArrayList<>();
-        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
             list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
@@ -189,7 +190,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
         //then
         List<StatisticUpdate> list = new ArrayList<>();
-        while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
             list.add((StatisticUpdate) updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST));
         }
 
@@ -203,7 +204,7 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
         );
     }
 
-    private BigDecimal getAvgScore(List<Review> reviews){
+    private BigDecimal getAvgScore(List<Review> reviews) {
         BigDecimal sum = reviews.stream()
             .map(Review::getRate)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -211,14 +212,14 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    class UpdateTest{
+    class UpdateTest {
 
         Board board;
         Board board2;
 
         @BeforeEach
-        void setup(){
-            while(updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0){
+        void setup() {
+            while (updateTemplate.opsForList().size(STATISTIC_UPDATE_LIST) > 0) {
                 updateTemplate.opsForList().leftPop(STATISTIC_UPDATE_LIST);
             }
             Store store = storeRepository.save(StoreFixture.storeGenerator());
@@ -229,16 +230,20 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
             boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board));
             boardStatisticRepository.save(BoardStatisticFixture.newBoardStatistic(board2));
-            preferenceStatisticRepository.saveAll(BoardPreferenceStatisticFixture.createBasicPreferenceStatistic(board.getId()));
-            preferenceStatisticRepository.saveAll(BoardPreferenceStatisticFixture.createBasicPreferenceStatistic(board2.getId()));
+            preferenceStatisticRepository.saveAll(
+                BoardPreferenceStatisticFixture.createBasicPreferenceStatistic(board.getId()));
+            preferenceStatisticRepository.saveAll(
+                BoardPreferenceStatisticFixture.createBasicPreferenceStatistic(board2.getId()));
         }
 
         @Test
         @DisplayName("정상적으로 게시글이 업데이트 된다.")
         void updateSuccess() {
             //given
-            BoardStatistic boardStatisticb = boardStatisticRepository.findByBoardId(board.getId()).orElseThrow();
-            BoardStatistic boardStatistic2b = boardStatisticRepository.findByBoardId(board2.getId()).orElseThrow();
+            BoardStatistic boardStatisticb = boardStatisticRepository.findByBoardId(board.getId())
+                .orElseThrow();
+            BoardStatistic boardStatistic2b = boardStatisticRepository.findByBoardId(board2.getId())
+                .orElseThrow();
             boardStatisticService.updateViewCount(board.getId());
             boardStatisticService.updateViewCount(board.getId());
             boardStatisticService.updateViewCount(board2.getId());
@@ -247,11 +252,14 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
 
             //when
             updateBoardStatistic.updateStatistic();
-            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId()).orElseThrow();
-            BoardStatistic boardStatistic2 = boardStatisticRepository.findByBoardId(board2.getId()).orElseThrow();
+            BoardStatistic boardStatistic = boardStatisticRepository.findByBoardId(board.getId())
+                .orElseThrow();
+            BoardStatistic boardStatistic2 = boardStatisticRepository.findByBoardId(board2.getId())
+                .orElseThrow();
             List<BoardPreferenceStatistic> boardPreference = preferenceStatisticRepository.findAllByBoardId(
                 board.getId());
-            List<BoardPreferenceStatistic> boardPreference2 = preferenceStatisticRepository.findAllByBoardId(board2.getId());
+            List<BoardPreferenceStatistic> boardPreference2 = preferenceStatisticRepository.findAllByBoardId(
+                board2.getId());
 
             //then
             Assertions.assertThat(boardStatistic.getBoardViewCount()).isEqualTo(2);
@@ -260,15 +268,19 @@ class BoardStatisticServiceTest extends AbstractIntegrationTest {
             Assertions.assertThat(boardStatistic2.getBasicScore()).isEqualTo(3);
             boardPreference.forEach(
                 preference -> {
-                    Assertions.assertThat(preference.getBasicScore()).isEqualTo(boardStatistic.getBasicScore());
-                    Assertions.assertThat(preference.getPreferenceScore()).isEqualTo(preference.getBasicScore() * preference.getPreferenceWeight());
+                    Assertions.assertThat(preference.getBasicScore())
+                        .isEqualTo(boardStatistic.getBasicScore());
+                    Assertions.assertThat(preference.getPreferenceScore())
+                        .isEqualTo(preference.getBasicScore() * preference.getPreferenceWeight());
                 }
             );
 
             boardPreference2.forEach(
                 preference -> {
-                    Assertions.assertThat(preference.getBasicScore()).isEqualTo(boardStatistic2.getBasicScore());
-                    Assertions.assertThat(preference.getPreferenceScore()).isEqualTo(preference.getBasicScore() * preference.getPreferenceWeight());
+                    Assertions.assertThat(preference.getBasicScore())
+                        .isEqualTo(boardStatistic2.getBasicScore());
+                    Assertions.assertThat(preference.getPreferenceScore())
+                        .isEqualTo(preference.getBasicScore() * preference.getPreferenceWeight());
                 }
             );
         }

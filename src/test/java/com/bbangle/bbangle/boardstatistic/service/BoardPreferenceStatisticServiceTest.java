@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
+import com.bbangle.bbangle.boardstatistic.customer.service.BoardPreferenceStatisticService;
 import com.bbangle.bbangle.boardstatistic.domain.BoardPreferenceStatistic;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.fixture.BoardFixture;
