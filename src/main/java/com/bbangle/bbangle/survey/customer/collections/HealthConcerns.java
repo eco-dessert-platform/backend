@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import com.bbangle.bbangle.survey.domain.HealthConcernInfo;
-import com.bbangle.bbangle.survey.enums.HealthConcern;
+import com.bbangle.bbangle.survey.domain.enums.HealthConcern;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,19 +11,19 @@ public record HealthConcerns(
 
     public static List<HealthConcern> of(HealthConcernInfo healthConcernInfo) {
         List<HealthConcern> healthConcernList = new ArrayList<>();
-        if(healthConcernInfo.getPimples()){
+        if (healthConcernInfo.getPimples()) {
             healthConcernList.add(HealthConcern.PIMPLES);
         }
-        if(healthConcernInfo.getBodyFat()){
+        if (healthConcernInfo.getBodyFat()) {
             healthConcernList.add(HealthConcern.BODY_FAT);
         }
-        if(healthConcernInfo.getCholesterol()){
+        if (healthConcernInfo.getCholesterol()) {
             healthConcernList.add(HealthConcern.CHOLESTEROL);
         }
-        if(healthConcernInfo.getNotApplicable()){
+        if (healthConcernInfo.getNotApplicable()) {
             healthConcernList.add(HealthConcern.NOT_APPLICABLE);
         }
-        if(healthConcernInfo.getDigestiveDisorder()){
+        if (healthConcernInfo.getDigestiveDisorder()) {
             healthConcernList.add(HealthConcern.DIGESTIVE_DISORDER);
         }
         return healthConcernList;
@@ -36,24 +36,24 @@ public record HealthConcerns(
         boolean digestiveDisorder = false;
         boolean notApplicable = false;
 
-        for(HealthConcern healthConcern : healthConcerns) {
-            if(healthConcern == HealthConcern.PIMPLES){
+        for (HealthConcern healthConcern : healthConcerns) {
+            if (healthConcern == HealthConcern.PIMPLES) {
                 pimples = true;
             }
 
-            if(healthConcern == HealthConcern.BODY_FAT){
+            if (healthConcern == HealthConcern.BODY_FAT) {
                 bodyFat = true;
             }
 
-            if(healthConcern == HealthConcern.CHOLESTEROL){
+            if (healthConcern == HealthConcern.CHOLESTEROL) {
                 cholesterol = true;
             }
 
-            if(healthConcern == HealthConcern.DIGESTIVE_DISORDER){
+            if (healthConcern == HealthConcern.DIGESTIVE_DISORDER) {
                 digestiveDisorder = true;
             }
 
-            if(healthConcern == HealthConcern.NOT_APPLICABLE){
+            if (healthConcern == HealthConcern.NOT_APPLICABLE) {
                 notApplicable = true;
             }
         }

@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import com.bbangle.bbangle.survey.domain.IsVegetarianInfo;
-import com.bbangle.bbangle.survey.enums.IsVegetarian;
+import com.bbangle.bbangle.survey.domain.enums.IsVegetarian;
 import java.util.ArrayList;
 import java.util.List;
 

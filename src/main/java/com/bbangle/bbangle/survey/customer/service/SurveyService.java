@@ -1,14 +1,14 @@
-package com.bbangle.bbangle.survey.service;
+package com.bbangle.bbangle.survey.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.survey.collections.SurveyInfo;
+import com.bbangle.bbangle.survey.customer.collections.SurveyInfo;
+import com.bbangle.bbangle.survey.customer.dto.request.RecommendationSurveyDto;
 import com.bbangle.bbangle.survey.domain.DietLimitationInfo;
 import com.bbangle.bbangle.survey.domain.FoodSurvey;
 import com.bbangle.bbangle.survey.domain.HealthConcernInfo;
 import com.bbangle.bbangle.survey.domain.IsVegetarianInfo;
 import com.bbangle.bbangle.survey.domain.UnmatchedIngredientsInfo;
-import com.bbangle.bbangle.survey.dto.request.RecommendationSurveyDto;
 import com.bbangle.bbangle.survey.repository.SurveyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

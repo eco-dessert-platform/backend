@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.survey.enums;
+package com.bbangle.bbangle.survey.domain.enums;
 
 import lombok.RequiredArgsConstructor;
 

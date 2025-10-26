@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.survey.collections;
+package com.bbangle.bbangle.survey.customer.collections;
 
 import com.bbangle.bbangle.survey.domain.UnmatchedIngredientsInfo;
-import com.bbangle.bbangle.survey.enums.UnmatchedIngredient;
+import com.bbangle.bbangle.survey.domain.enums.UnmatchedIngredient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,46 +11,46 @@ public record UnmatchedIngredients(
 
     public static List<UnmatchedIngredient> of(UnmatchedIngredientsInfo unmatchedIngredientsInfo) {
         List<UnmatchedIngredient> unmatchedIngredientList = new ArrayList<>();
-        if(unmatchedIngredientsInfo.getFlour()){
+        if (unmatchedIngredientsInfo.getFlour()) {
             unmatchedIngredientList.add(UnmatchedIngredient.FLOUR);
         }
-        if(unmatchedIngredientsInfo.getWhiteWheat()){
+        if (unmatchedIngredientsInfo.getWhiteWheat()) {
             unmatchedIngredientList.add(UnmatchedIngredient.WHOLE_WHEAT);
         }
-        if(unmatchedIngredientsInfo.getRice()){
+        if (unmatchedIngredientsInfo.getRice()) {
             unmatchedIngredientList.add(UnmatchedIngredient.RICE);
         }
-        if(unmatchedIngredientsInfo.getBean()){
+        if (unmatchedIngredientsInfo.getBean()) {
             unmatchedIngredientList.add(UnmatchedIngredient.BEAN);
         }
-        if(unmatchedIngredientsInfo.getMilk()){
+        if (unmatchedIngredientsInfo.getMilk()) {
             unmatchedIngredientList.add(UnmatchedIngredient.MILK);
         }
-        if(unmatchedIngredientsInfo.getSoyMilk()){
+        if (unmatchedIngredientsInfo.getSoyMilk()) {
             unmatchedIngredientList.add(UnmatchedIngredient.SOY_MILK);
         }
-        if(unmatchedIngredientsInfo.getSugar()){
+        if (unmatchedIngredientsInfo.getSugar()) {
             unmatchedIngredientList.add(UnmatchedIngredient.SUGAR);
         }
-        if(unmatchedIngredientsInfo.getEgg()){
+        if (unmatchedIngredientsInfo.getEgg()) {
             unmatchedIngredientList.add(UnmatchedIngredient.EGG);
         }
-        if(unmatchedIngredientsInfo.getPeanut()){
+        if (unmatchedIngredientsInfo.getPeanut()) {
             unmatchedIngredientList.add(UnmatchedIngredient.PEANUT);
         }
-        if(unmatchedIngredientsInfo.getWalnuts()){
+        if (unmatchedIngredientsInfo.getWalnuts()) {
             unmatchedIngredientList.add(UnmatchedIngredient.WALNUTS);
         }
-        if(unmatchedIngredientsInfo.getPineNuts()){
+        if (unmatchedIngredientsInfo.getPineNuts()) {
             unmatchedIngredientList.add(UnmatchedIngredient.PINE_NUTS);
         }
-        if(unmatchedIngredientsInfo.getPeach()){
+        if (unmatchedIngredientsInfo.getPeach()) {
             unmatchedIngredientList.add(UnmatchedIngredient.PEACH);
         }
-        if(unmatchedIngredientsInfo.getTomato()){
+        if (unmatchedIngredientsInfo.getTomato()) {
             unmatchedIngredientList.add(UnmatchedIngredient.TOMATO);
         }
-        if(unmatchedIngredientsInfo.getNotApplicable()){
+        if (unmatchedIngredientsInfo.getNotApplicable()) {
             unmatchedIngredientList.add(UnmatchedIngredient.NOT_APPLICABLE);
         }
 
