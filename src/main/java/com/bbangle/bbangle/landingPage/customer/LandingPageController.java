@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.landingPage;
+package com.bbangle.bbangle.landingPage.customer;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
