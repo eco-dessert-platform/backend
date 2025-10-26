@@ -3,12 +3,12 @@ package com.bbangle.bbangle.wishlist.repository;
 import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.wishlist.customer.dto.QWishListStoreResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreCustomPage;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.dto.QWishListStoreResponseDto;
-import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLRepository {
+
     private final JPAQueryFactory queryFactory;
     private static final QWishListStore wishListStore = QWishListStore.wishListStore;
     private static final Long PAGE_SIZE = 20L;
@@ -34,22 +35,23 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     }
 
     @Override
-    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoreResponse(Long memberId, Long cursorId) {
+    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoreResponse(
+        Long memberId, Long cursorId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId, memberId);
         List<WishListStoreResponseDto> responseDtos =
             queryFactory.select(
-                new QWishListStoreResponseDto(
-                    store.introduce,
-                    store.name.as("storeName"),
-                    store.id.as("storeId"),
-                    store.profile
-                ))
-            .from(wishListStore)
-            .leftJoin(wishListStore.store, store)
-            .where(cursorCondition)
-            .limit(PAGE_SIZE + 1)
-            .orderBy(wishListStore.modifiedAt.desc(),wishListStore.createdAt.desc())
-            .fetch();
+                    new QWishListStoreResponseDto(
+                        store.introduce,
+                        store.name.as("storeName"),
+                        store.id.as("storeId"),
+                        store.profile
+                    ))
+                .from(wishListStore)
+                .leftJoin(wishListStore.store, store)
+                .where(cursorCondition)
+                .limit(PAGE_SIZE + 1)
+                .orderBy(wishListStore.modifiedAt.desc(), wishListStore.createdAt.desc())
+                .fetch();
 
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();

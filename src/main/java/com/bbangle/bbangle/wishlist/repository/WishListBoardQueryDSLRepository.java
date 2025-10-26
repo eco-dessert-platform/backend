@@ -2,8 +2,8 @@ package com.bbangle.bbangle.wishlist.repository;
 
 import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
 import com.bbangle.bbangle.boardstatistic.customer.ranking.BoardWishCount;
-import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.repository.dao.WishListStatisticDao;
 import java.time.LocalDate;
 import java.util.List;
 

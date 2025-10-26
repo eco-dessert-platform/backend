@@ -1,14 +1,14 @@
-package com.bbangle.bbangle.wishlist.dao;
+package com.bbangle.bbangle.wishlist.repository.dao;
 
 import com.querydsl.core.annotations.QueryProjection;
 
-public record WishListStatisticDao (
+public record WishListStatisticDao(
     Long boardId,
     Long wishListCount
-){
+) {
 
     @QueryProjection
-    public WishListStatisticDao{
+    public WishListStatisticDao {
 
     }
 

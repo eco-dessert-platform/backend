@@ -11,8 +11,8 @@ import com.bbangle.bbangle.boardstatistic.repository.BoardPreferenceStatisticRep
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.review.repository.dao.ReviewStatisticDao;
-import com.bbangle.bbangle.wishlist.dao.WishListStatisticDao;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.dao.WishListStatisticDao;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

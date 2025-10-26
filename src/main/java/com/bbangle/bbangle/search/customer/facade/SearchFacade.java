@@ -5,7 +5,7 @@ import com.bbangle.bbangle.search.customer.service.SearchService;
 import com.bbangle.bbangle.search.customer.service.dto.SearchCommand.Main;
 import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
 import com.bbangle.bbangle.search.customer.service.dto.SearchInfo.Select;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

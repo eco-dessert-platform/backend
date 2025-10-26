@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.wishlist.service;
+package com.bbangle.bbangle.wishlist.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
-import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
-import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepositoryImpl;
 import java.util.List;
@@ -49,7 +49,8 @@ public class WishListFolderService {
 
     @Transactional
     public void delete(Long folderId, Long memberId) {
-       WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId, folderId)
+        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId,
+                folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
         validateIsDeleteAvailable(wishlistFolder);
@@ -59,7 +60,8 @@ public class WishListFolderService {
 
     @Transactional
     public void update(Long memberId, Long folderId, FolderUpdateDto updateDto) {
-        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId, folderId)
+        WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(memberId,
+                folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
         validateWishListFolder(wishlistFolder);
@@ -77,8 +79,8 @@ public class WishListFolderService {
     }
 
     private void validateWishListFolder(WishListFolder wishlistFolder) {
-        if(wishlistFolder.isDeleted()){
-           throw new BbangleException(BbangleErrorCode.CANNOT_UPDATE_ALREADY_DELETED_FOLDER);
+        if (wishlistFolder.isDeleted()) {
+            throw new BbangleException(BbangleErrorCode.CANNOT_UPDATE_ALREADY_DELETED_FOLDER);
         }
 
         if (wishlistFolder.getFolderName()

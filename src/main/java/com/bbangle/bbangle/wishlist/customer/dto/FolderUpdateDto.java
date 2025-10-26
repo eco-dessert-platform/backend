@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.wishlist.dto;
+package com.bbangle.bbangle.wishlist.customer.dto;
 
-import com.bbangle.bbangle.wishlist.validator.WishListFolderValidator;
+import com.bbangle.bbangle.wishlist.customer.validator.WishListFolderValidator;
 
 public record FolderUpdateDto(
     String title

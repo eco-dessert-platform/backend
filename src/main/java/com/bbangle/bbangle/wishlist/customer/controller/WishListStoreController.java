@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
-import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
-import com.bbangle.bbangle.wishlist.service.WishListStoreService;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreCustomPage;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.wishlist.customer.service.WishListStoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -33,10 +33,10 @@ public class WishListStoreController {
     @GetMapping("/stores")
     @Operation(summary = "위시리스트 상점 조회")
     public SingleResult<WishListStoreCustomPage<List<WishListStoreResponseDto>>> getWishListStores(
-            @RequestParam(required = false, value = "cursorId") Long cursorId) {
+        @RequestParam(required = false, value = "cursorId") Long cursorId) {
         Long memberId = SecurityUtils.getMemberId();
         return responseService.getSingleResult(
-                wishlistStoreService.getWishListStoresResponse(memberId, cursorId));
+            wishlistStoreService.getWishListStoresResponse(memberId, cursorId));
     }
 
     @PostMapping("/store/{storeId}")
@@ -45,8 +45,8 @@ public class WishListStoreController {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.save(memberId, storeId);
         return responseService.getSingleResult(MessageDto.builder()
-                .message(SAVE_WISHLIST_STORE)
-                .build());
+            .message(SAVE_WISHLIST_STORE)
+            .build());
     }
 
     @PatchMapping("/store/{storeId}")
@@ -55,7 +55,7 @@ public class WishListStoreController {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.deleteStore(memberId, storeId);
         return responseService.getSingleResult(MessageDto.builder()
-                .message(REMOVE_WISHLIST_STORE)
-                .build());
+            .message(REMOVE_WISHLIST_STORE)
+            .build());
     }
 }

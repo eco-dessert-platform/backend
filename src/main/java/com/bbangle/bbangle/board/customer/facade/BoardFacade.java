@@ -4,7 +4,7 @@ import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.search.customer.service.SearchService;
 import com.bbangle.bbangle.search.customer.service.dto.SearchCommand;
 import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

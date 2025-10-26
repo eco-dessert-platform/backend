@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
+import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,12 +23,12 @@ public class WishListBoardController {
 
     @PostMapping("/wish")
     public CommonResult wish(
-            @AuthenticationPrincipal
-            Long memberId,
-            @PathVariable("boardId")
-            Long boardId,
-            @RequestBody
-            WishListBoardRequest wishRequest
+        @AuthenticationPrincipal
+        Long memberId,
+        @PathVariable("boardId")
+        Long boardId,
+        @RequestBody
+        WishListBoardRequest wishRequest
     ) {
         wishListBoardService.wish(memberId, boardId, wishRequest);
         return responseService.getSuccessResult();
@@ -36,10 +36,10 @@ public class WishListBoardController {
 
     @DeleteMapping("/cancel")
     public CommonResult cancel(
-            @AuthenticationPrincipal
-            Long memberId,
-            @PathVariable("boardId")
-            Long boardId
+        @AuthenticationPrincipal
+        Long memberId,
+        @PathVariable("boardId")
+        Long boardId
     ) {
         wishListBoardService.cancel(memberId, boardId);
         return responseService.getSuccessResult();

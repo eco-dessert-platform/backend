@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.wishlist.controller;
+package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
-import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
-import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
-import com.bbangle.bbangle.wishlist.service.WishListFolderService;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderResponseDto;
+import com.bbangle.bbangle.wishlist.customer.dto.FolderUpdateDto;
+import com.bbangle.bbangle.wishlist.customer.service.WishListFolderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,10 +29,10 @@ public class WishListFolderController {
 
     @PostMapping
     public CommonResult make(
-            @RequestBody
-            FolderRequestDto requestDto,
-            @AuthenticationPrincipal
-            Long memberId
+        @RequestBody
+        FolderRequestDto requestDto,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         folderService.create(memberId, requestDto);
         return responseService.getSuccessResult();
@@ -40,20 +40,20 @@ public class WishListFolderController {
 
     @GetMapping
     public ListResult<FolderResponseDto> getList(
-            @AuthenticationPrincipal
-            Long memberId
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         return responseService.getListResult(folderService.getList(memberId));
     }
 
     @PatchMapping("/{folderId}")
     public CommonResult update(
-            @PathVariable
-            Long folderId,
-            @RequestBody
-            FolderUpdateDto updateDto,
-            @AuthenticationPrincipal
-            Long memberId
+        @PathVariable
+        Long folderId,
+        @RequestBody
+        FolderUpdateDto updateDto,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         folderService.update(memberId, folderId, updateDto);
         return responseService.getSuccessResult();
@@ -61,8 +61,8 @@ public class WishListFolderController {
 
     @DeleteMapping("/{folderId}")
     public CommonResult delete(
-            @PathVariable
-            Long folderId
+        @PathVariable
+        Long folderId
     ) {
         Long memberId = SecurityUtils.getMemberId();
         folderService.delete(folderId, memberId);

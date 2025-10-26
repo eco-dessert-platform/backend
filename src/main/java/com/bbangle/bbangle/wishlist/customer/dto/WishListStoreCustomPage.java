@@ -1,9 +1,10 @@
-package com.bbangle.bbangle.wishlist.dto;
+package com.bbangle.bbangle.wishlist.customer.dto;
 
 import com.bbangle.bbangle.common.page.CustomPage;
 import java.util.List;
 
 public class WishListStoreCustomPage<T> extends CustomPage {
+
     public WishListStoreCustomPage(T content, Long requestCursor, Boolean hasNext) {
         super(content, requestCursor, hasNext);
     }

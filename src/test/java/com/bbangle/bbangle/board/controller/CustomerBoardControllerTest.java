@@ -13,8 +13,8 @@ import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.Role;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
+import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -61,23 +61,23 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
         @DisplayName("순서나 필터링 조건이 없어도 정상적으로 조회한다.")
         void getBoardListSuccessWithoutAnyCondition() throws Exception {
             mockMvc.perform(get("/api/v1/boards"))
-                    .andExpect(status().isOk())
-                    .andDo(print());
+                .andExpect(status().isOk())
+                .andDo(print());
         }
 
         @ParameterizedTest
         @ValueSource(
-                strings = {
-                        "glutenFreeTag", "highProteinTag", "sugarFreeTag", "veganTag", "ketogenicTag"
-                }
+            strings = {
+                "glutenFreeTag", "highProteinTag", "sugarFreeTag", "veganTag", "ketogenicTag"
+            }
         )
         @DisplayName("순서가 없고 필터링 조건이 있어도 정상적으로 조회한다.")
         void getBoardListSuccessWithIngredientFilteringCondition(String ingredient)
-                throws Exception {
+            throws Exception {
             mockMvc.perform(get("/api/v1/boards")
-                            .param(ingredient, "true"))
-                    .andExpect(status().isOk())
-                    .andDo(print());
+                    .param(ingredient, "true"))
+                .andExpect(status().isOk())
+                .andDo(print());
         }
 
         @ParameterizedTest
@@ -85,16 +85,16 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
         @DisplayName("순서가 없고 카테고리 필터링 조건이 있어도 정상적으로 조회한다.")
         void getBoardListSuccessWithCategoryCondition(Category category) throws Exception {
             mockMvc.perform(get("/api/v1/boards")
-                            .param("category", category.name()))
-                    .andExpect(status().isOk())
-                    .andDo(print());
+                    .param("category", category.name()))
+                .andExpect(status().isOk())
+                .andDo(print());
         }
 
         @ParameterizedTest
         @EnumSource(Category.class)
         @DisplayName("순서가 없고 필터링 조건 둘 이상 있어도 정상적으로 조회한다.")
         void getBoardListSuccessWithCategoryAndIngredientCondition(Category category)
-                throws Exception {
+            throws Exception {
             // given
             MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
             info.add("ketogenicTag", "true");
@@ -104,9 +104,9 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
 
             // when, then
             mockMvc.perform(get("/api/v1/boards")
-                            .params(info))
-                    .andExpect(status().isOk())
-                    .andDo(print());
+                    .params(info))
+                .andExpect(status().isOk())
+                .andDo(print());
         }
 
         @ParameterizedTest
@@ -114,9 +114,9 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
         @DisplayName("잘못된 카테고리로 카테고리 필터링 검색을 하면 조회한다.")
         void getBoardListFailWithWrongCategory(String category) throws Exception {
             mockMvc.perform(get("/api/v1/boards")
-                            .param("category", category))
-                    .andExpect(status().isBadRequest())
-                    .andDo(print());
+                    .param("category", category))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
         }
 
         @Nested
@@ -128,16 +128,16 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
             void getProductInfo() throws Exception {
                 Long boardId = board.getId();
                 mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
-                        .andExpect(status().isOk())
-                        .andDo(print());
+                    .andExpect(status().isOk())
+                    .andDo(print());
             }
 
             @Test
             @DisplayName("유효하지 않은 boardId를 요청 시 400에 에러를 발생시킨다")
             void throwError() throws Exception {
                 mockMvc.perform(get("/api/v1/boards/9999/product"))
-                        .andExpect(status().is4xxClientError())
-                        .andDo(print());
+                    .andExpect(status().is4xxClientError())
+                    .andDo(print());
             }
         }
 
@@ -146,8 +146,8 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
         void getProductTest() throws Exception {
             Long boardId = board.getId();
             mockMvc.perform(get("/api/v1/boards/" + boardId + "/product"))
-                    .andExpect(status().isOk())
-                    .andDo(print());
+                .andExpect(status().isOk())
+                .andDo(print());
         }
     }
 
@@ -178,7 +178,7 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
             createdBoard = boardRepository.save(fixtureBoard(boardParams));
 
             wishListBoardService.wish(member.getId(), createdBoard.getId(),
-                    new WishListBoardRequest(wishListFolderId));
+                new WishListBoardRequest(wishListFolderId));
         }
 
         @Test
@@ -189,30 +189,37 @@ class CustomerBoardControllerTest extends AbstractIntegrationTest {
             String authentication = getAuthentication(memberId, role);
 
             mockMvc.perform(get("/api/v1/boards/folders/" + wishListFolderId)
-                            .header(HttpHeaders.AUTHORIZATION, authentication))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.code").value(0))
-                    .andExpect(jsonPath("$.message").value("SUCCESS"))
-                    .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
-                    .andExpect(jsonPath("$.result.content[0].storeId").value(createdBoard.getStore().getId()))
-                    .andExpect(jsonPath("$.result.content[0].storeName").value(createdBoard.getStore().getName()))
-                    .andExpect(jsonPath("$.result.content[0].thumbnail").value(createdBoard.getThumbnail()))
-                    .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
-                    .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
-                    .andExpect(jsonPath("$.result.content[0].isWished").value(true))
-                    .andExpect(jsonPath("$.result.content[0].isBundled").value(createdBoard.isBundled()))
-                    .andExpect(jsonPath("$.result.content[0].reviewRate").value(
-                            createdBoard.getBoardStatistic().getBoardReviewGrade()
-                                    .round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue()))
-                    .andExpect(jsonPath("$.result.content[0].reviewCount").value(
-                            createdBoard.getBoardStatistic().getBoardReviewCount()))
-                    .andExpect(jsonPath("$.result.content[0].isBbangcketing").value(createdBoard.isBbangketing()))
-                    .andExpect(jsonPath("$.result.content[0].isSoldOut").value(createdBoard.isSoldOut()))
-                    .andExpect(jsonPath("$.result.content[0].discountRate").value(createdBoard.getDiscountRate()))
-                    .andExpect(jsonPath("$.result.nextCursor").value(-1))
-                    .andExpect(jsonPath("$.result.hasNext").value(false));
+                    .header(HttpHeaders.AUTHORIZATION, authentication))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"))
+                .andExpect(jsonPath("$.result.content[0].boardId").value(createdBoard.getId()))
+                .andExpect(
+                    jsonPath("$.result.content[0].storeId").value(createdBoard.getStore().getId()))
+                .andExpect(jsonPath("$.result.content[0].storeName").value(
+                    createdBoard.getStore().getName()))
+                .andExpect(
+                    jsonPath("$.result.content[0].thumbnail").value(createdBoard.getThumbnail()))
+                .andExpect(jsonPath("$.result.content[0].title").value(createdBoard.getTitle()))
+                .andExpect(jsonPath("$.result.content[0].price").value(createdBoard.getPrice()))
+                .andExpect(jsonPath("$.result.content[0].isWished").value(true))
+                .andExpect(
+                    jsonPath("$.result.content[0].isBundled").value(createdBoard.isBundled()))
+                .andExpect(jsonPath("$.result.content[0].reviewRate").value(
+                    createdBoard.getBoardStatistic().getBoardReviewGrade()
+                        .round(new MathContext(2, RoundingMode.HALF_UP)).doubleValue()))
+                .andExpect(jsonPath("$.result.content[0].reviewCount").value(
+                    createdBoard.getBoardStatistic().getBoardReviewCount()))
+                .andExpect(jsonPath("$.result.content[0].isBbangcketing").value(
+                    createdBoard.isBbangketing()))
+                .andExpect(
+                    jsonPath("$.result.content[0].isSoldOut").value(createdBoard.isSoldOut()))
+                .andExpect(jsonPath("$.result.content[0].discountRate").value(
+                    createdBoard.getDiscountRate()))
+                .andExpect(jsonPath("$.result.nextCursor").value(-1))
+                .andExpect(jsonPath("$.result.hasNext").value(false));
         }
 
         private String getAuthentication(Long memberId, Role role) {
