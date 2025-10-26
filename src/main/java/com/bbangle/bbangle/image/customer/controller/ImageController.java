@@ -1,10 +1,9 @@
-package com.bbangle.bbangle.image.controller;
+package com.bbangle.bbangle.image.customer.controller;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.image.customer.service.ImageService;
 import com.bbangle.bbangle.image.domain.ImageCategory;
-import com.bbangle.bbangle.image.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class ImageController {
     @Operation(summary = "보드 이미지 이외의 이미지 저장")
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public SingleResult<String> saveImg(@RequestParam ImageCategory imageCategory,
-                                        @RequestParam MultipartFile file) {
+        @RequestParam MultipartFile file) {
         return responseService.getSingleResult(imageService.save(imageCategory, file, -1));
     }
 }

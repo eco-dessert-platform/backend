@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.service;
+package com.bbangle.bbangle.image.customer.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Repository
 @RequiredArgsConstructor
-class ObjectStorageRepositoryImpl {
+public class ObjectStorageRepositoryImpl {
 
     private final AmazonS3 s3;
 

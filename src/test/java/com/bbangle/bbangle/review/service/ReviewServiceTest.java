@@ -11,15 +11,15 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.fixture.ReviewFixture;
-import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
-import com.bbangle.bbangle.image.domain.Image;
-import com.bbangle.bbangle.image.domain.ImageCategory;
-import com.bbangle.bbangle.image.dto.ImageDto;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.page.ImageCustomPage;
 import com.bbangle.bbangle.common.page.ReviewCustomPage;
+import com.bbangle.bbangle.fixture.ReviewFixture;
+import com.bbangle.bbangle.fixturemonkey.FixtureMonkeyConfig;
+import com.bbangle.bbangle.image.customer.dto.ImageDto;
+import com.bbangle.bbangle.image.domain.Image;
+import com.bbangle.bbangle.image.domain.ImageCategory;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.QReview;
 import com.bbangle.bbangle.review.domain.Review;
@@ -89,7 +89,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     void testReviewSuccess() {
         //given
         Member member = createMember();
-        ReviewRequest reviewRequest = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(ReviewRequest.class);
+        ReviewRequest reviewRequest = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(
+            ReviewRequest.class);
 
         //when
         reviewService.makeReview(reviewRequest, member.getId());
@@ -105,10 +106,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         //given
         Member member = createMember();
         ReviewImageUploadRequest request = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(
-                ReviewImageUploadRequest.class);
+            ReviewImageUploadRequest.class);
 
         //when
-        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(request, member.getId());
+        ReviewImageUploadResponse reviewImageUploadResponse = reviewService.uploadReviewImage(
+            request, member.getId());
 
         //then
         assertThat(reviewImageUploadResponse.urls()).isNotEmpty();
@@ -136,10 +138,10 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
     private Review getTargetReview(Member member, Board board) {
         return queryFactory.select(QReview.review)
-                .from(QReview.review)
-                .where(QReview.review.boardId.eq(board.getId())
-                        .and(QReview.review.memberId.eq(member.getId())))
-                .fetchOne();
+            .from(QReview.review)
+            .where(QReview.review.boardId.eq(board.getId())
+                .and(QReview.review.memberId.eq(member.getId())))
+            .fetchOne();
     }
 
 
@@ -148,8 +150,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         List<String> photos = new ArrayList<>();
         photos.add("test");
         return new ReviewRequest(badges, DEFAULT_REVIEW_RATE, null,
-                boards.get(0)
-                        .getId(), photos);
+            boards.get(0)
+                .getId(), photos);
     }
 
     @DisplayName("평점이 포함된 리뷰 조회에 성공한다")
@@ -159,12 +161,12 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         Board board = createBoard();
         Long boardId = board.getId();
         Review review = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                .set("badgeBrix", SWEET)
-                .set("badgeTaste", GOOD)
-                .set("badgeTexture", SOFT)
-                .set("boardId", boardId)
-                .set("isDeleted", false)
-                .sample();
+            .set("badgeBrix", SWEET)
+            .set("badgeTaste", GOOD)
+            .set("badgeTexture", SOFT)
+            .set("boardId", boardId)
+            .set("isDeleted", false)
+            .sample();
         reviewRepository.save(review);
 
         //when
@@ -172,11 +174,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //then
         assertThat(reviewRate)
-                .extracting("taste", "brix", "texture")
-                .containsExactly(
-                        new TasteDto(1, 0),
-                        new BrixDto(1, 0),
-                        new TextureDto(1, 0));
+            .extracting("taste", "brix", "texture")
+            .containsExactly(
+                new TasteDto(1, 0),
+                new BrixDto(1, 0),
+                new TextureDto(1, 0));
     }
 
     @DisplayName("상세 리뷰 목록 조회에 성공한다")
@@ -190,14 +192,15 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         createReviewList(boardId, 5);
 
         //when
-        ReviewCustomPage<List<ReviewInfoResponse>> reviews = reviewService.getReviews(boardId, null, memberId);
+        ReviewCustomPage<List<ReviewInfoResponse>> reviews = reviewService.getReviews(boardId, null,
+            memberId);
 
         //then
         assertThat(reviews.getContent().get(0))
-                .extracting("tags", "like", "isLiked")
-                .containsExactly(
-                        List.of("맛있어요", "달아요", "부드러워요"), 1, false
-                );
+            .extracting("tags", "like", "isLiked")
+            .containsExactly(
+                List.of("맛있어요", "달아요", "부드러워요"), 1, false
+            );
         assertThat(reviews.getContent()).hasSize(5);
         assertThat(reviews.getHasNext()).isFalse();
     }
@@ -235,12 +238,12 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     void concurrentLike() {
         //given
         Member member = memberRepository.save(FixtureMonkeyConfig.fixtureMonkey
-                .giveMeOne(Member.class));
+            .giveMeOne(Member.class));
 
         Review review = reviewRepository.save(FixtureMonkeyConfig.fixtureMonkey
-                .giveMeBuilder(Review.class)
-                .set("memberId", member.getId())
-                .sample());
+            .giveMeBuilder(Review.class)
+            .set("memberId", member.getId())
+            .sample());
 
         final int threadCount = 2;
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -259,8 +262,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         //then
         Assertions.assertThatCode(() ->
-                        reviewLikeRepository.findByMemberIdAndReviewId(member.getId(), review.getId()))
-                .doesNotThrowAnyException();
+                reviewLikeRepository.findByMemberIdAndReviewId(member.getId(), review.getId()))
+            .doesNotThrowAnyException();
     }
 
     @DisplayName("리뷰 좋아요 해제에 성공한다")
@@ -293,9 +296,9 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         Long boardId = board.getId();
         createReviewList(boardId, 1);
         Long reviewId = reviewRepository.findAll().stream()
-                .findFirst()
-                .get()
-                .getId();
+            .findFirst()
+            .get()
+            .getId();
         // when
         ReviewInfoResponse reviewDetail = reviewService.getReviewDetail(reviewId, memberId);
 
@@ -345,14 +348,14 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         // when
         ImageCustomPage<List<ImageDto>> allImages =
-                reviewService.getAllImagesByBoardId(boardId, null);
+            reviewService.getAllImagesByBoardId(boardId, null);
 
         // then
         assertThat(allImages.getContent()).hasSize(4);
         assertThat(allImages.getHasNext()).isFalse();
         assertThat(allImages.getContent().get(0))
-                .extracting("url")
-                .isEqualTo(cdnDomain + "testPath");
+            .extracting("url")
+            .isEqualTo(cdnDomain + "testPath");
 
     }
 
@@ -364,7 +367,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         Board board = createBoard();
         Long boardId = board.getId();
         Long memberId = member.getId();
-        Review review = ReviewFixture.createReviewWithBoardIdAndRateAndMember(boardId, 4.0, memberId);
+        Review review = ReviewFixture.createReviewWithBoardIdAndRateAndMember(boardId, 4.0,
+            memberId);
         Review savedReview = reviewRepository.save(review);
         List<Badge> badges = new ArrayList<>();
         badges.add(BAD);
@@ -378,8 +382,8 @@ class ReviewServiceTest extends AbstractIntegrationTest {
 
         // then
         assertThat(updatedReview)
-                .extracting("badgeTaste", "badgeBrix", "badgeTexture")
-                .containsExactly(BAD, SWEET, DRY);
+            .extracting("badgeTaste", "badgeBrix", "badgeTexture")
+            .containsExactly(BAD, SWEET, DRY);
     }
 
     @DisplayName("리뷰 이미지 삭제에 성공한다")
@@ -404,11 +408,11 @@ class ReviewServiceTest extends AbstractIntegrationTest {
     private void createImageEntityList(int size, Long domainId) {
         for (int i = 0; i < size; i++) {
             Image image = Image.builder()
-                    .domainId(domainId)
-                    .imageCategory(ImageCategory.REVIEW)
-                    .order(i)
-                    .path("testPath")
-                    .build();
+                .domainId(domainId)
+                .imageCategory(ImageCategory.REVIEW)
+                .order(i)
+                .path("testPath")
+                .build();
             imageRepository.save(image);
         }
     }
@@ -428,16 +432,16 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             Board board = createBoard();
             Long boardId = board.getId();
             List<Review> goodReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("badgeTaste", Badge.GOOD)
-                    .set("isDeleted", false)
-                    .sampleList(3);
+                .set("boardId", boardId)
+                .set("badgeTaste", Badge.GOOD)
+                .set("isDeleted", false)
+                .sampleList(3);
             System.out.println("goodbaget size: " + goodReviews.size());
             List<Review> badReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("badgeTaste", Badge.BAD)
-                    .set("isDeleted", false)
-                    .sampleList(2);
+                .set("boardId", boardId)
+                .set("badgeTaste", Badge.BAD)
+                .set("isDeleted", false)
+                .sampleList(2);
             System.out.println("bad size: " + badReviews.size());
 
             reviewRepository.saveAll(goodReviews);
@@ -454,15 +458,15 @@ class ReviewServiceTest extends AbstractIntegrationTest {
             Board board = createBoard();
             Long boardId = board.getId();
             List<Review> goodReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("badgeTaste", Badge.GOOD)
-                    .set("isDeleted", false)
-                    .sampleList(2);
+                .set("boardId", boardId)
+                .set("badgeTaste", Badge.GOOD)
+                .set("isDeleted", false)
+                .sampleList(2);
             List<Review> badReviews = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("badgeTaste", Badge.BAD)
-                    .set("isDeleted", false)
-                    .sampleList(3);
+                .set("boardId", boardId)
+                .set("badgeTaste", Badge.BAD)
+                .set("isDeleted", false)
+                .sampleList(3);
             reviewRepository.saveAll(goodReviews);
             reviewRepository.saveAll(badReviews);
 
@@ -476,21 +480,21 @@ class ReviewServiceTest extends AbstractIntegrationTest {
         void getAvarageRatingScore() {
             //given
             BoardStatistic boardStatistic1 = fixtureRanking(
-                    Map.of("boardReviewGrade", BigDecimal.valueOf(4.25f), "boardReviewCount", 2L));
+                Map.of("boardReviewGrade", BigDecimal.valueOf(4.25f), "boardReviewCount", 2L));
             Board board = fixtureBoard(Map.of("boardStatistic", boardStatistic1));
             boardRepository.save(board);
             Long boardId = board.getId();
 
             Review review1 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("rate", BigDecimal.valueOf(5f))
-                    .set("isDeleted", false)
-                    .sample();
+                .set("boardId", boardId)
+                .set("rate", BigDecimal.valueOf(5f))
+                .set("isDeleted", false)
+                .sample();
             Review review2 = FixtureMonkeyConfig.fixtureMonkey.giveMeBuilder(Review.class)
-                    .set("boardId", boardId)
-                    .set("rate", BigDecimal.valueOf(3.5f))
-                    .set("isDeleted", false)
-                    .sample();
+                .set("boardId", boardId)
+                .set("rate", BigDecimal.valueOf(3.5f))
+                .set("isDeleted", false)
+                .sample();
             reviewRepository.save(review1);
             reviewRepository.save(review2);
 

@@ -1,14 +1,15 @@
-package com.bbangle.bbangle.image.dto;
+package com.bbangle.bbangle.image.customer.dto;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
 import lombok.Getter;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-
 @Getter
 public class ImageDto {
+
     @JsonInclude(NON_NULL)
     private final Long id;
     @JsonInclude(NON_NULL)

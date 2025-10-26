@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.image.service;
+package com.bbangle.bbangle.image.customer.service;
 
 import static java.util.Locale.ROOT;
 
@@ -8,8 +8,6 @@ import com.bbangle.bbangle.image.repository.ImageRepository;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,17 +31,16 @@ public class ImageService {
 
     /**
      *
-     * 도메인 id 없이 임시로 저장이 필요할 때가 있어서 만듬
-     * (추후 팀원들 논의 되면 리팩토링 예정)
+     * 도메인 id 없이 임시로 저장이 필요할 때가 있어서 만듬 (추후 팀원들 논의 되면 리팩토링 예정)
      */
     public List<String> saveAll(
         ImageCategory category,
         List<MultipartFile> images
-    ){
+    ) {
         return saveAll(category, images, -1);
     }
 
-    public void move(String fromPath, String toPath){
+    public void move(String fromPath, String toPath) {
         s3Service.copyImage(fromPath, toPath);
     }
 
@@ -87,7 +84,7 @@ public class ImageService {
             .toList();
     }
 
-    public void deleteImages(List<String> urls){
+    public void deleteImages(List<String> urls) {
         s3Service.deleteImages(urls);
     }
 

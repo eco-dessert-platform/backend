@@ -2,14 +2,14 @@ package com.bbangle.bbangle.image.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.image.customer.service.ObjectStorageRepositoryImpl;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 class ObjectStorageRepositoryTest extends AbstractIntegrationTest {
 

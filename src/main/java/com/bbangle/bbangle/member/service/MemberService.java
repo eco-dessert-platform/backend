@@ -2,7 +2,7 @@ package com.bbangle.bbangle.member.service;
 
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
-import com.bbangle.bbangle.image.service.ImageService;
+import com.bbangle.bbangle.image.customer.service.ImageService;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
@@ -53,18 +53,18 @@ public class MemberService {
     @PostConstruct
     public void initSetting() {
         memberRepository.findById(DEFAULT_MEMBER_ID)
-                .ifPresentOrElse(
-                        member -> log.info("Default member already exists"),
-                        () -> {
-                            memberRepository.save(Member.builder()
-                                    .id(DEFAULT_MEMBER_ID)
-                                    .name(DEFAULT_MEMBER_NAME)
-                                    .nickname(DEFAULT_MEMBER_NICKNAME)
-                                    .email(DEFAULT_MEMBER_EMAIL)
-                                    .build());
-                            log.info("Default member created");
-                        }
-                );
+            .ifPresentOrElse(
+                member -> log.info("Default member already exists"),
+                () -> {
+                    memberRepository.save(Member.builder()
+                        .id(DEFAULT_MEMBER_ID)
+                        .name(DEFAULT_MEMBER_NAME)
+                        .nickname(DEFAULT_MEMBER_NICKNAME)
+                        .email(DEFAULT_MEMBER_EMAIL)
+                        .build());
+                    log.info("Default member created");
+                }
+            );
     }
 
     public Member findById(Long id) {
@@ -73,9 +73,9 @@ public class MemberService {
 
     @Transactional
     public void updateMemberInfo(
-            MemberInfoRequest request,
-            Long memberId,
-            MultipartFile profileImg
+        MemberInfoRequest request,
+        Long memberId,
+        MultipartFile profileImg
     ) {
         Member loginedMember = findById(memberId);
         if (profileImg != null && !profileImg.isEmpty()) {
@@ -91,25 +91,25 @@ public class MemberService {
     private void saveConsent(MemberInfoRequest request, Member member) {
         List<SignatureAgreement> agreementList = new ArrayList<>();
         SignatureAgreement marketingAgreement = SignatureAgreement.builder()
-                .member(member)
-                .name(Agreement.ALLOWING_MARKETING)
-                .agreementStatus(request.isAllowingMarketing())
-                .dateOfSignature(LocalDateTime.now())
-                .build();
+            .member(member)
+            .name(Agreement.ALLOWING_MARKETING)
+            .agreementStatus(request.isAllowingMarketing())
+            .dateOfSignature(LocalDateTime.now())
+            .build();
         agreementList.add(marketingAgreement);
         SignatureAgreement serviceAgreement = SignatureAgreement.builder()
-                .member(member)
-                .name(Agreement.TERMS_OF_SERVICE)
-                .agreementStatus(request.isTermsOfServiceAccepted())
-                .dateOfSignature(LocalDateTime.now())
-                .build();
+            .member(member)
+            .name(Agreement.TERMS_OF_SERVICE)
+            .agreementStatus(request.isTermsOfServiceAccepted())
+            .dateOfSignature(LocalDateTime.now())
+            .build();
         agreementList.add(serviceAgreement);
         SignatureAgreement personalInfoAgreement = SignatureAgreement.builder()
-                .member(member)
-                .name(Agreement.PERSONAL_INFO)
-                .agreementStatus(request.isPersonalInfoConsented())
-                .dateOfSignature(LocalDateTime.now())
-                .build();
+            .member(member)
+            .name(Agreement.PERSONAL_INFO)
+            .agreementStatus(request.isPersonalInfoConsented())
+            .dateOfSignature(LocalDateTime.now())
+            .build();
         agreementList.add(personalInfoAgreement);
         signatureAgreementRepository.saveAll(agreementList);
     }
@@ -138,9 +138,9 @@ public class MemberService {
         String[] reasons = withdrawalRequestDto.getReasons().split(",");
         for (String reason : reasons) {
             withdrawalRepository.save(Withdrawal.builder()
-                    .reason(reason)
-                    .member(member)
-                    .build());
+                .reason(reason)
+                .member(member)
+                .build());
         }
     }
 

@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.customer.dto.ProductImgResponse;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
-import com.bbangle.bbangle.image.service.S3Service;
+import com.bbangle.bbangle.image.customer.service.S3Service;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
