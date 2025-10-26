@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.push.dto;
+package com.bbangle.bbangle.push.customer.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
 
@@ -11,6 +11,7 @@ public record PushResponse(
 ) {
 
     @QueryProjection
-    public PushResponse{}
+    public PushResponse {
+    }
 
 }

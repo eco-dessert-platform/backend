@@ -1,28 +1,27 @@
-package com.bbangle.bbangle.push.service;
+package com.bbangle.bbangle.push.customer.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.push.customer.dto.CreatePushRequest;
+import com.bbangle.bbangle.push.customer.dto.FcmPush;
+import com.bbangle.bbangle.push.customer.dto.FcmRequest;
+import com.bbangle.bbangle.push.customer.dto.PushRequest;
+import com.bbangle.bbangle.push.customer.dto.PushResponse;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.PushCategory;
 import com.bbangle.bbangle.push.domain.PushType;
-import com.bbangle.bbangle.push.dto.CreatePushRequest;
-import com.bbangle.bbangle.push.dto.FcmPush;
-import com.bbangle.bbangle.push.dto.FcmRequest;
-import com.bbangle.bbangle.push.dto.PushRequest;
-import com.bbangle.bbangle.push.dto.PushResponse;
 import com.bbangle.bbangle.push.repository.PushRepository;
 import io.micrometer.common.util.StringUtils;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,18 +36,18 @@ public class PushService {
         Push push = pushRepository.findPush(request.productId(), request.pushCategory(), memberId);
         if (Objects.isNull(push)) {
             Push newPush = Push.builder()
-                    .fcmToken(request.fcmToken())
-                    .memberId(memberId)
-                    .productId(request.productId())
-                    .pushType(request.pushType() != null ? request.pushType() : null)
-                    .days(isDaysNull(request) ? null : request.days())
-                    .pushCategory(request.pushCategory())
-                    .isActive(true)
-                    .build();
+                .fcmToken(request.fcmToken())
+                .memberId(memberId)
+                .productId(request.productId())
+                .pushType(request.pushType() != null ? request.pushType() : null)
+                .days(isDaysNull(request) ? null : request.days())
+                .pushCategory(request.pushCategory())
+                .isActive(true)
+                .build();
             pushRepository.save(newPush);
             return;
         }
-        if(!isDaysNull(request)){
+        if (!isDaysNull(request)) {
             push.updateDays(request.days());
         }
         push.updateActive(true);
@@ -94,13 +93,13 @@ public class PushService {
     private List<FcmRequest> getMustSendAllPushes() {
         List<FcmPush> activatedPushes = pushRepository.findPushList();
         Set<Long> targetProductIds = new HashSet<>(activatedPushes.stream()
-                .map(FcmPush::productId)
-                .toList());
+            .map(FcmPush::productId)
+            .toList());
 
         return activatedPushes.stream()
-                .filter(fcmPush -> shouldSendPush(fcmPush, targetProductIds))
-                .map(FcmRequest::new)
-                .toList();
+            .filter(fcmPush -> shouldSendPush(fcmPush, targetProductIds))
+            .map(FcmRequest::new)
+            .toList();
     }
 
 
@@ -108,11 +107,14 @@ public class PushService {
         for (FcmRequest request : requestList) {
             String title = "";
             String body = "";
-            if(!request.isSoldOut()){
-                title = String.format("%s님이 기다리던 상품이 %s되었어요! %s", request.getMemberName(), request.getPushCategory(), "\uD83D\uDE4C");
-                body = String.format("[%s] '%s' %n 곧 품절될 수 있으니 지금 확인해보세요.", request.getBoardTitle(), request.getProductTitle());
-            } else if (request.getPushType().equals(PushType.WEEK.getDescription())){
-                title = String.format("%s %s 상품이 빠르게 품절 되었어요!", "\uD83D\uDEAB", request.getProductTitle());
+            if (!request.isSoldOut()) {
+                title = String.format("%s님이 기다리던 상품이 %s되었어요! %s", request.getMemberName(),
+                    request.getPushCategory(), "\uD83D\uDE4C");
+                body = String.format("[%s] '%s' %n 곧 품절될 수 있으니 지금 확인해보세요.", request.getBoardTitle(),
+                    request.getProductTitle());
+            } else if (request.getPushType().equals(PushType.WEEK.getDescription())) {
+                title = String.format("%s %s 상품이 빠르게 품절 되었어요!", "\uD83D\uDEAB",
+                    request.getProductTitle());
                 body = "주문 가능한 다른 요일에 알림 신청을 해주세요";
             }
             request.editPushMessage(title, body);
@@ -121,12 +123,14 @@ public class PushService {
     }
 
     private boolean shouldSendPush(FcmPush fcmPush, Set<Long> targetProductIds) {
-        if(fcmPush.pushCategory() == PushCategory.RESTOCK){
+        if (fcmPush.pushCategory() == PushCategory.RESTOCK) {
             return true;
         } else if (fcmPush.pushType() == PushType.DATE) {
-            return targetProductIds.contains(fcmPush.productId()) && isEqualToday(fcmPush.date().toLocalDate());
+            return targetProductIds.contains(fcmPush.productId()) && isEqualToday(
+                fcmPush.date().toLocalDate());
         } else if (fcmPush.pushType() == PushType.WEEK) {
-            return targetProductIds.contains(fcmPush.productId()) && doDaysContainToday(fcmPush.days());
+            return targetProductIds.contains(fcmPush.productId()) && doDaysContainToday(
+                fcmPush.days());
         }
         return false;
     }

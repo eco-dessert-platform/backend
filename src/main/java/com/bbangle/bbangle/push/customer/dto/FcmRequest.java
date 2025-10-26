@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.push.dto;
+package com.bbangle.bbangle.push.customer.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 public class FcmRequest {
+
     private Long pushId;
     private String fcmToken;
     private String memberName;
