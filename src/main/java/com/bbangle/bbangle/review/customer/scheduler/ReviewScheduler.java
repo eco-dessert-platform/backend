@@ -1,24 +1,23 @@
-package com.bbangle.bbangle.review.scheduler;
+package com.bbangle.bbangle.review.customer.scheduler;
 
 import com.bbangle.bbangle.image.repository.ImageRepository;
-import com.bbangle.bbangle.review.dto.LikeCountPerReviewIdDto;
-import com.bbangle.bbangle.review.dto.ReviewCountPerBoardIdDto;
+import com.bbangle.bbangle.review.customer.dto.LikeCountPerReviewIdDto;
+import com.bbangle.bbangle.review.customer.dto.ReviewCountPerBoardIdDto;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class ReviewScheduler {
+
     private final ReviewRepository reviewRepository;
     private final ImageRepository imageRepository;
     private static final Long MINIMUM_BEST_REVIEW_STANDARD = 5L;
@@ -42,28 +41,30 @@ public class ReviewScheduler {
 
     public List<Long> getBestReviewIds() {
         List<ReviewCountPerBoardIdDto> reviewCounts = reviewRepository.getReviewCount();
-        List<LikeCountPerReviewIdDto> likeCounts = reviewRepository.getLikeCount(MINIMUM_BEST_REVIEW_STANDARD);
+        List<LikeCountPerReviewIdDto> likeCounts = reviewRepository.getLikeCount(
+            MINIMUM_BEST_REVIEW_STANDARD);
         Map<Long, Integer> bestReviewSizeMap = getBestReviewCount(reviewCounts);
         List<Long> candidateReviews = getCandidateReviews(likeCounts);
-        Map<Long, List<Long>> selectedReviewPerBoardIdMap = reviewRepository.getBestReview(candidateReviews);
+        Map<Long, List<Long>> selectedReviewPerBoardIdMap = reviewRepository.getBestReview(
+            candidateReviews);
         selectedReviewPerBoardIdMap.forEach(
-                (key, value) -> {
-                    List<Long> newValue = value.stream()
-                            .limit(bestReviewSizeMap.get(key))
-                            .toList();
-                    selectedReviewPerBoardIdMap.put(key, newValue);
-                }
+            (key, value) -> {
+                List<Long> newValue = value.stream()
+                    .limit(bestReviewSizeMap.get(key))
+                    .toList();
+                selectedReviewPerBoardIdMap.put(key, newValue);
+            }
         );
-        List<Long> bestReviewIds= new ArrayList<>();
+        List<Long> bestReviewIds = new ArrayList<>();
         selectedReviewPerBoardIdMap.forEach((key, value) ->
-                bestReviewIds.addAll(value)
-            );
+            bestReviewIds.addAll(value)
+        );
         return bestReviewIds;
     }
 
     private Map<Long, Integer> getBestReviewCount(List<ReviewCountPerBoardIdDto> reviewCounts) {
         Map<Long, Integer> bestReviewCountPerBoardId = new HashMap<>();
-        for(ReviewCountPerBoardIdDto reviewCount : reviewCounts){
+        for (ReviewCountPerBoardIdDto reviewCount : reviewCounts) {
             Long boardId = reviewCount.boardId();
             Long count = reviewCount.reviewCount();
             Integer bestReviewSize = (int) Math.ceil((double) count * 0.05);
@@ -72,11 +73,11 @@ public class ReviewScheduler {
         return bestReviewCountPerBoardId;
     }
 
-    private List<Long> getCandidateReviews(List<LikeCountPerReviewIdDto> likeCounts){
+    private List<Long> getCandidateReviews(List<LikeCountPerReviewIdDto> likeCounts) {
         return likeCounts.stream()
-                .map(
-                        LikeCountPerReviewIdDto::reviewId
-                )
-                .toList();
+            .map(
+                LikeCountPerReviewIdDto::reviewId
+            )
+            .toList();
     }
 }

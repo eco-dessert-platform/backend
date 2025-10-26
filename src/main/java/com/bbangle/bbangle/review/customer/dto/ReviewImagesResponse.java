@@ -1,8 +1,9 @@
-package com.bbangle.bbangle.review.dto;
+package com.bbangle.bbangle.review.customer.dto;
 
 import java.util.List;
 
 public record ReviewImagesResponse(
     List<String> previewImages
 ) {
+
 }

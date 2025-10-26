@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.review.dto;
+package com.bbangle.bbangle.review.customer.dto;
 
 import java.math.BigDecimal;
 import java.util.Collections;

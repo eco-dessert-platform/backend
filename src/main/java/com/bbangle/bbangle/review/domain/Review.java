@@ -2,12 +2,18 @@ package com.bbangle.bbangle.review.domain;
 
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
-import jakarta.persistence.*;
+import com.bbangle.bbangle.review.customer.dto.ReviewRequest;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -88,12 +94,12 @@ public class Review extends BaseEntity {
 
     public static Review of(ReviewRequest reviewRequest, Long memberId) {
         return Review.builder()
-                .content(reviewRequest.content())
-                .rate(reviewRequest.rate())
-                .memberId(memberId)
-                .boardId(reviewRequest.boardId())
-                .isBest(false)
-                .build();
+            .content(reviewRequest.content())
+            .rate(reviewRequest.rate())
+            .memberId(memberId)
+            .boardId(reviewRequest.boardId())
+            .isBest(false)
+            .build();
     }
 
 }

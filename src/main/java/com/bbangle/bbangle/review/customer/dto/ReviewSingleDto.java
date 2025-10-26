@@ -1,8 +1,7 @@
-package com.bbangle.bbangle.review.dto;
+package com.bbangle.bbangle.review.customer.dto;
 
 import com.bbangle.bbangle.review.domain.Badge;
 import com.querydsl.core.annotations.QueryProjection;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -19,6 +18,7 @@ public record ReviewSingleDto(
     Boolean isBest,
     Long boardId
 ) {
+
     @QueryProjection
     public ReviewSingleDto { // Noncompliant - method is empty
     }
