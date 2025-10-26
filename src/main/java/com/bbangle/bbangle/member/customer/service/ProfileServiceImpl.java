@@ -1,13 +1,13 @@
-package com.bbangle.bbangle.member.service;
+package com.bbangle.bbangle.member.customer.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.ImageService;
+import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.member.dto;
+package com.bbangle.bbangle.member.customer.dto;
 
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.Role;

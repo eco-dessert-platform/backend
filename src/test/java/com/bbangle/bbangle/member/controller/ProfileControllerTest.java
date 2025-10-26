@@ -10,8 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
-import com.bbangle.bbangle.member.service.ProfileService;
+import com.bbangle.bbangle.member.customer.controller.ProfileController;
+import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
+import com.bbangle.bbangle.member.customer.service.ProfileService;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;

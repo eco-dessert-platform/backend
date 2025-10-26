@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.member.exception;
+package com.bbangle.bbangle.member.customer.exception;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import java.text.ParseException;
