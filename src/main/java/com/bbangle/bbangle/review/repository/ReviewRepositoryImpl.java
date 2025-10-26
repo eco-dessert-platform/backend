@@ -2,10 +2,10 @@ package com.bbangle.bbangle.review.repository;
 
 import static java.util.stream.Collectors.toMap;
 
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.DateAndCountDto;
-import com.bbangle.bbangle.analytics.dto.QAnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.QDateAndCountDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.DateAndCountDto;
+import com.bbangle.bbangle.analytics.admin.dto.QAnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.QDateAndCountDto;
 import com.bbangle.bbangle.board.customer.dto.AiLearningReviewDto;
 import com.bbangle.bbangle.board.customer.dto.QAiLearningReviewDto;
 import com.bbangle.bbangle.boardstatistic.ranking.BoardGrade;

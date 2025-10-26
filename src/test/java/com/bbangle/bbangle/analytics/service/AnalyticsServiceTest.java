@@ -1,18 +1,26 @@
 package com.bbangle.bbangle.analytics.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCumulationResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsCreatedWithinPeriodResponseDto;
-import com.bbangle.bbangle.analytics.dto.AnalyticsMembersCountResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCreatedWithinPeriodResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsCumulationResponseDto;
+import com.bbangle.bbangle.analytics.admin.dto.AnalyticsMembersCountResponseDto;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +29,12 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class AnalyticsServiceTest extends AbstractIntegrationTest {
 
-    @Autowired PlatformTransactionManager tm;
-    @Autowired EntityManager em;
+    @Autowired
+    PlatformTransactionManager tm;
+    @Autowired
+    EntityManager em;
 
 
     @Test
@@ -65,7 +66,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         // then
         long membersCount = memberRepository.count();
-        AnalyticsMembersCountResponseDto result = analyticsService.countMembersByPeriod(startDate, endDate);
+        AnalyticsMembersCountResponseDto result = analyticsService.countMembersByPeriod(startDate,
+            endDate);
 
         // then
         assertThat(membersCount).isEqualTo(20);
@@ -87,7 +89,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
         Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         Long wishlistBoardsCount = wishListBoardRepository.count();
-        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeWishlistBoardByPeriod(startDate, endDate);
+        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeWishlistBoardByPeriod(
+            startDate, endDate);
 
         // then
         assertThat(wishlistBoardsCount).isEqualTo(20);
@@ -113,7 +116,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
         Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         long reviewsCount = reviewRepository.count();
-        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeReviewByPeriod(startDate, endDate);
+        AnalyticsCreatedWithinPeriodResponseDto result = analyticsService.analyzeReviewByPeriod(
+            startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);
@@ -139,8 +143,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         Optional<LocalDate> startDate = Optional.of(LocalDate.now().minusDays(10));
         Optional<LocalDate> endDate = Optional.of(LocalDate.now());
         long reviewsCount = reviewRepository.count();
-        List<AnalyticsCumulationResponseDto> results = analyticsService.countCumulatedReviewsByPeriod(startDate, endDate);
-
+        List<AnalyticsCumulationResponseDto> results = analyticsService.countCumulatedReviewsByPeriod(
+            startDate, endDate);
 
         // then
         assertThat(reviewsCount).isEqualTo(20);
@@ -156,21 +160,23 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 1; i <= 10; i++) {
                 Member member = Member.builder()
-                        .email("test" + i + "@email.com")
-                        .name("testUser" + i)
-                        .provider(OauthServerType.KAKAO)
-                        .isDeleted(false)
-                        .build();
+                    .email("test" + i + "@email.com")
+                    .name("testUser" + i)
+                    .provider(OauthServerType.KAKAO)
+                    .isDeleted(false)
+                    .build();
 
                 memberRepository.save(member);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE Member as m SET m.createdAt = :createdAt WHERE m.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE Member as m SET m.createdAt = :createdAt WHERE m.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", member.getId());
                 query.executeUpdate();
@@ -190,13 +196,13 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     private List<Member> createMembers() {
         List<Member> members = new ArrayList<>();
 
-        for(int i = 1; i <= 10; i++){
+        for (int i = 1; i <= 10; i++) {
             Member member = Member.builder()
-                    .email("test" + i + "@email.com")
-                    .name("testUser" + i)
-                    .provider(OauthServerType.KAKAO)
-                    .isDeleted(false)
-                    .build();
+                .email("test" + i + "@email.com")
+                .name("testUser" + i)
+                .provider(OauthServerType.KAKAO)
+                .isDeleted(false)
+                .build();
 
             members.add(member);
         }
@@ -208,25 +214,25 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     private void createWishListBoards(List<Member> members) {
         for (int i = 0; i < members.size(); i++) {
             Store store = Store.builder()
-                    .id((long) i + 1)
-                    .name("test" + i)
-                    .introduce("introduce" + i)
-                    .isDeleted(false)
-                    .build();
+                .id((long) i + 1)
+                .name("test" + i)
+                .introduce("introduce" + i)
+                .isDeleted(false)
+                .build();
             storeRepository.save(store);
 
             Board board = Board.builder()
-                    .id((long) i + 1)
-                    .store(store)
-                    .title("title" + i)
-                    .build();
+                .id((long) i + 1)
+                .store(store)
+                .title("title" + i)
+                .build();
             boardRepository.save(board);
 
             WishListBoard wishListBoard = WishListBoard.builder()
-                    .id((long) i + 1)
-                    .memberId(members.get(i).getId())
-                    .boardId(board.getId())
-                    .build();
+                .id((long) i + 1)
+                .memberId(members.get(i).getId())
+                .boardId(board.getId())
+                .build();
             wishListBoardRepository.save(wishListBoard);
         }
     }
@@ -237,18 +243,20 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 0; i < 10; i++) {
                 WishListBoard wishListBoard = WishListBoard.builder()
-                        .memberId(members.get(i).getId())
-                        .build();
+                    .memberId(members.get(i).getId())
+                    .build();
 
                 wishListBoardRepository.save(wishListBoard);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE WishListBoard as wb SET wb.createdAt = :createdAt WHERE wb.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE WishListBoard as wb SET wb.createdAt = :createdAt WHERE wb.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", wishListBoard.getId());
                 query.executeUpdate();
@@ -266,13 +274,13 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     private void createReviews(List<Member> members) {
         for (int i = 1; i <= members.size(); i++) {
             Review review = Review.builder()
-                    .memberId(members.get(i - 1).getId())
-                    .boardId((long) i)
-                    .badgeBrix(Badge.SWEET)
-                    .badgeTaste(Badge.GOOD)
-                    .badgeTexture(Badge.DRY)
-                    .rate(BigDecimal.valueOf(5))
-                    .build();
+                .memberId(members.get(i - 1).getId())
+                .boardId((long) i)
+                .badgeBrix(Badge.SWEET)
+                .badgeTaste(Badge.GOOD)
+                .badgeTexture(Badge.DRY)
+                .rate(BigDecimal.valueOf(5))
+                .build();
 
             reviewRepository.save(review);
         }
@@ -284,23 +292,25 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
 
         try {
             DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            transactionDefinition.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRED);
             status = tm.getTransaction(transactionDefinition);
 
             for (int i = 1; i <= 10; i++) {
                 Review review = Review.builder()
-                        .memberId(members.get(i - 1).getId())
-                        .boardId((long) i + 20)
-                        .badgeBrix(Badge.SWEET)
-                        .badgeTaste(Badge.GOOD)
-                        .badgeTexture(Badge.DRY)
-                        .rate(BigDecimal.valueOf(5))
-                        .build();
+                    .memberId(members.get(i - 1).getId())
+                    .boardId((long) i + 20)
+                    .badgeBrix(Badge.SWEET)
+                    .badgeTaste(Badge.GOOD)
+                    .badgeTexture(Badge.DRY)
+                    .rate(BigDecimal.valueOf(5))
+                    .build();
 
                 reviewRepository.save(review);
                 em.flush();
 
-                Query query = em.createQuery("UPDATE Review as r SET r.createdAt = :createdAt WHERE r.id = :id");
+                Query query = em.createQuery(
+                    "UPDATE Review as r SET r.createdAt = :createdAt WHERE r.id = :id");
                 query.setParameter("createdAt", createdAt);
                 query.setParameter("id", review.getId());
                 query.executeUpdate();

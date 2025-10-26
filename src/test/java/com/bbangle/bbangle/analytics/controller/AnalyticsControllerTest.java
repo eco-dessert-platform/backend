@@ -1,16 +1,25 @@
 package com.bbangle.bbangle.analytics.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.analytics.admin.controller.AnalyticsController;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.review.domain.Badge;
 import com.bbangle.bbangle.review.domain.Review;
-import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,15 +29,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AnalyticsControllerTest extends AbstractIntegrationTest {
 
@@ -73,25 +73,27 @@ class AnalyticsControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("기간 내 날짜 별 생성된 위시리스트 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
     void getWishlistBoardAnalytics() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/wishlistboards?startDate=2024-06-01&endDate=2024-06-08"))
-                .andExpect(status().isOk())
-                .andDo(print());
+        mockMvc.perform(
+                get("/api/v1/analytics/wishlistboards?startDate=2024-06-01&endDate=2024-06-08"))
+            .andExpect(status().isOk())
+            .andDo(print());
     }
 
     @Test
     @DisplayName("기간 내 날짜 별 생성된 리뷰 수, 총 데이터 수와 평균 값이 정상적으로 조회된다.")
     void getReviewAnalytics() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/reviews?startDate=2024-06-01&endDate=2024-06-08"))
-                .andExpect(status().isOk())
-                .andDo(print());
+            .andExpect(status().isOk())
+            .andDo(print());
     }
 
     @Test
     @DisplayName("기간 내 날짜 별 누적된 리뷰 수가 정상적으로 조회된다.")
     void getAccumulatedReviewsCount() throws Exception {
-        mockMvc.perform(get("/api/v1/analytics/accumulated-reviews/count?startDate=2024-06-01&endDate=2024-06-08"))
-                .andExpect(status().isOk())
-                .andDo(print());
+        mockMvc.perform(
+                get("/api/v1/analytics/accumulated-reviews/count?startDate=2024-06-01&endDate=2024-06-08"))
+            .andExpect(status().isOk())
+            .andDo(print());
     }
 
     private void create10DaysAgoMembers(LocalDateTime createdAt) {

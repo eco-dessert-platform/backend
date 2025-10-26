@@ -1,8 +1,7 @@
-package com.bbangle.bbangle.analytics.dto;
+package com.bbangle.bbangle.analytics.admin.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.annotations.QueryProjection;
-
 import java.sql.Date;
 
 public record AnalyticsCumulationResponseDto(
@@ -12,6 +11,7 @@ public record AnalyticsCumulationResponseDto(
 ) {
 
     @QueryProjection
-    public AnalyticsCumulationResponseDto{}
+    public AnalyticsCumulationResponseDto {
+    }
 
 }
