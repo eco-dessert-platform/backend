@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.preference.config;
+package com.bbangle.bbangle.preference.customer.config;
 
 import com.bbangle.bbangle.preference.domain.Preference;
 import com.bbangle.bbangle.preference.domain.PreferenceType;

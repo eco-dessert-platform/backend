@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.preference.controller;
+package com.bbangle.bbangle.preference.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
-import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
-import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
-import com.bbangle.bbangle.preference.service.PreferenceService;
+import com.bbangle.bbangle.preference.customer.dto.MemberPreferenceResponse;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceSelectRequest;
+import com.bbangle.bbangle.preference.customer.dto.PreferenceUpdateRequest;
+import com.bbangle.bbangle.preference.customer.service.PreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,10 +28,10 @@ public class PreferenceController {
     @PostMapping
     @Operation(summary = "사용자 취향 등록")
     public CommonResult select(
-            @RequestBody
-            PreferenceSelectRequest request,
-            @AuthenticationPrincipal
-            Long memberId
+        @RequestBody
+        PreferenceSelectRequest request,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         preferenceService.register(request, memberId);
         return responseService.getSuccessResult();
@@ -40,10 +40,10 @@ public class PreferenceController {
     @PutMapping
     @Operation(summary = "사용자 취향 수정")
     public CommonResult update(
-            @RequestBody
-            PreferenceUpdateRequest request,
-            @AuthenticationPrincipal
-            Long memberId
+        @RequestBody
+        PreferenceUpdateRequest request,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         preferenceService.update(request, memberId);
         return responseService.getSuccessResult();
@@ -52,8 +52,8 @@ public class PreferenceController {
     @GetMapping
     @Operation(summary = "사용자 취향 조회")
     public SingleResult<MemberPreferenceResponse> getPreference(
-            @AuthenticationPrincipal
-            Long memberId
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         MemberPreferenceResponse response = preferenceService.getPreference(memberId);
         return responseService.getSingleResult(response);

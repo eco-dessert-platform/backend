@@ -9,7 +9,7 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.Role;
-import com.bbangle.bbangle.preference.service.PreferenceService;
+import com.bbangle.bbangle.preference.customer.service.PreferenceService;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import java.time.Duration;
 import org.apache.http.HttpHeaders;
@@ -41,14 +41,14 @@ class MemberControllerTest extends AbstractIntegrationTest {
 
         //when, then
         mockMvc.perform(get("/api/v1/members/status")
-                        .header(HttpHeaders.AUTHORIZATION, authentication))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.message").value("SUCCESS"))
-                .andExpect(jsonPath("$.result.isFullyAssigned").value(false))
-                .andExpect(jsonPath("$.result.isPreferenceAssigned").value(false));
+                .header(HttpHeaders.AUTHORIZATION, authentication))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(0))
+            .andExpect(jsonPath("$.message").value("SUCCESS"))
+            .andExpect(jsonPath("$.result.isFullyAssigned").value(false))
+            .andExpect(jsonPath("$.result.isPreferenceAssigned").value(false));
 
     }
 
