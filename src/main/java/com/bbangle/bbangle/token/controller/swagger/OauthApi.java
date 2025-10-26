@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.token.swagger;
+package com.bbangle.bbangle.token.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;

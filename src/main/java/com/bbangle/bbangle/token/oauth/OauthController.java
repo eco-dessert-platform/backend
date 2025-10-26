@@ -2,9 +2,9 @@ package com.bbangle.bbangle.token.oauth;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.token.controller.swagger.OauthApi;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
-import com.bbangle.bbangle.token.swagger.OauthApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
