@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.validation;
+package com.bbangle.bbangle.search.customer.validation;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.EMPTY_KEYWORD;
 

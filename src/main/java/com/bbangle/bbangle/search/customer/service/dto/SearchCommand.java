@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.service.dto;
+package com.bbangle.bbangle.search.customer.service.dto;
 
 import com.bbangle.bbangle.board.customer.domain.constant.SortType;
 import com.bbangle.bbangle.board.customer.dto.FilterRequest;

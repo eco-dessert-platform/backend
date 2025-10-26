@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.search.dto.response;
+package com.bbangle.bbangle.search.customer.dto.response;
 
-import com.bbangle.bbangle.search.dto.SearchBoardResponseDto;
+import com.bbangle.bbangle.search.customer.dto.SearchBoardResponseDto;
 import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;

@@ -1,8 +1,8 @@
-package com.bbangle.bbangle.search.controller.mapper;
+package com.bbangle.bbangle.search.customer.controller.mapper;
 
 import com.bbangle.bbangle.board.customer.domain.constant.SortType;
 import com.bbangle.bbangle.board.customer.dto.FilterRequest;
-import com.bbangle.bbangle.search.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.customer.service.dto.SearchCommand;
 import java.util.Objects;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;

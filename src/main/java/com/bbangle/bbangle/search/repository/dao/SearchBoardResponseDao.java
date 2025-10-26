@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.dao;
+package com.bbangle.bbangle.search.repository.dao;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.repository.dao.TagsDao;

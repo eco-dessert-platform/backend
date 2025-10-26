@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.controller;
+package com.bbangle.bbangle.search.customer.controller;
 
 import com.bbangle.bbangle.board.customer.domain.constant.SortType;
 import com.bbangle.bbangle.board.customer.dto.FilterRequest;
@@ -7,12 +7,12 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.search.controller.mapper.SearchMapper;
-import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
-import com.bbangle.bbangle.search.facade.SearchFacade;
-import com.bbangle.bbangle.search.service.SearchService;
-import com.bbangle.bbangle.search.service.dto.SearchCommand;
-import com.bbangle.bbangle.search.service.dto.SearchInfo.Select;
+import com.bbangle.bbangle.search.customer.controller.mapper.SearchMapper;
+import com.bbangle.bbangle.search.customer.dto.response.RecencySearchResponse;
+import com.bbangle.bbangle.search.customer.facade.SearchFacade;
+import com.bbangle.bbangle.search.customer.service.SearchService;
+import com.bbangle.bbangle.search.customer.service.dto.SearchCommand;
+import com.bbangle.bbangle.search.customer.service.dto.SearchInfo.Select;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;

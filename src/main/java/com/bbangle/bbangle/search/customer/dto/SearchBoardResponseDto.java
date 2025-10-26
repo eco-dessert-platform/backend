@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.dto;
+package com.bbangle.bbangle.search.customer.dto;
 
 import com.bbangle.bbangle.board.domain.Board;
 import java.math.BigDecimal;

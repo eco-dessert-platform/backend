@@ -1,10 +1,10 @@
-package com.bbangle.bbangle.search.service;
+package com.bbangle.bbangle.search.customer.service;
 
 import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.search.customer.service.utils.AutoCompleteUtil;
+import com.bbangle.bbangle.search.customer.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
-import com.bbangle.bbangle.search.service.utils.KeywordUtil;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

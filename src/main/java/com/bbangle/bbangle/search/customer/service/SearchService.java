@@ -1,4 +1,6 @@
-package com.bbangle.bbangle.search.service;
+package com.bbangle.bbangle.search.customer.service;
+
+import static com.bbangle.bbangle.search.customer.validation.SearchValidation.checkNullOrEmptyKeyword;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.MemberSegment;
@@ -6,25 +8,22 @@ import com.bbangle.bbangle.board.repository.MemberSegmentRepository;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.search.customer.dto.KeywordDto;
+import com.bbangle.bbangle.search.customer.dto.response.RecencySearchResponse;
+import com.bbangle.bbangle.search.customer.service.dto.SearchCommand.Main;
+import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.customer.service.mapper.SearchInfoMapper;
+import com.bbangle.bbangle.search.customer.service.utils.AutoCompleteUtil;
+import com.bbangle.bbangle.search.customer.service.utils.KeywordUtil;
 import com.bbangle.bbangle.search.domain.Search;
-import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.search.service.dto.SearchCommand.Main;
-import com.bbangle.bbangle.search.service.dto.SearchInfo;
-import com.bbangle.bbangle.search.service.mapper.SearchInfoMapper;
-import com.bbangle.bbangle.search.service.utils.AutoCompleteUtil;
-import com.bbangle.bbangle.search.service.utils.KeywordUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.bbangle.bbangle.search.validation.SearchValidation.checkNullOrEmptyKeyword;
 
 @Slf4j
 @Service
@@ -46,9 +45,9 @@ public class SearchService {
 
         memberId = checkAnonymousId(memberId);
         Search search = Search.builder()
-                .memberId(memberId)
-                .keyword(keyword)
-                .build();
+            .memberId(memberId)
+            .keyword(keyword)
+            .build();
 
         // 캐싱하여 특정 시간에 저장하는게 좋을까?
         searchRepository.save(search);
@@ -65,39 +64,45 @@ public class SearchService {
     public SearchInfo.BoardsInfo getBoardList(Main command) {
 
         SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
-                searchRepository.getCursorCondition(command.cursorId()) :
-                SearchInfo.CursorCondition.empty();
+            searchRepository.getCursorCondition(command.cursorId()) :
+            SearchInfo.CursorCondition.empty();
 
         return command.isExcludedProduct() ?
-                getRecommendBoardList(command, cursorCondition) :
-                getDefaultBoardList(command, cursorCondition);
+            getRecommendBoardList(command, cursorCondition) :
+            getDefaultBoardList(command, cursorCondition);
     }
 
-    private SearchInfo.BoardsInfo getDefaultBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
+    private SearchInfo.BoardsInfo getDefaultBoardList(Main command,
+        SearchInfo.CursorCondition cursorCondition) {
         List<Board> boards = searchRepository.getBoards(command, cursorCondition);
         Long boardCount = searchRepository.getAllCount(command, cursorCondition);
         return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
     }
 
-    private SearchInfo.BoardsInfo getRecommendBoardList(Main command, SearchInfo.CursorCondition cursorCondition) {
+    private SearchInfo.BoardsInfo getRecommendBoardList(Main command,
+        SearchInfo.CursorCondition cursorCondition) {
         MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
-                .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
-        List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
-        Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
+        List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition,
+            memberSegment);
+        Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition,
+            memberSegment);
         return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
     }
 
-    public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
+    public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(
+        SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
 
         List<SearchInfo.Select> selects = boardsInfo.getBoards().stream()
-                .map(board -> searchInfoMapper.toSearchSelectInfo(board, boardWishedMap.getOrDefault(board.getId(), false)))
-                .toList();
+            .map(board -> searchInfoMapper.toSearchSelectInfo(board,
+                boardWishedMap.getOrDefault(board.getId(), false)))
+            .toList();
 
         return CursorPagination.of(
-                selects,
-                boardsInfo.getBoardLimitSize(),
-                boardsInfo.getBoardCount(),
-                SearchInfo.Select::getBoardId
+            selects,
+            boardsInfo.getBoardLimitSize(),
+            boardsInfo.getBoardCount(),
+            SearchInfo.Select::getBoardId
         );
     }
 

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.service.utils;
+package com.bbangle.bbangle.search.customer.service.utils;
 
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;

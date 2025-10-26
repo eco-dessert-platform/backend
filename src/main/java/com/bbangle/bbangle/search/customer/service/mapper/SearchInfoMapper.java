@@ -1,18 +1,17 @@
-package com.bbangle.bbangle.search.service.mapper;
+package com.bbangle.bbangle.search.customer.service.mapper;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.search.service.dto.SearchInfo;
+import com.bbangle.bbangle.search.customer.service.dto.SearchInfo;
+import java.util.List;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
-
 @Mapper(
-        componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        unmappedTargetPolicy = ReportingPolicy.ERROR
+    componentModel = "spring",
+    injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+    unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface SearchInfoMapper {
 

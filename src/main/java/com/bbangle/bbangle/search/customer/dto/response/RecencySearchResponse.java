@@ -1,9 +1,8 @@
-package com.bbangle.bbangle.search.dto.response;
+package com.bbangle.bbangle.search.customer.dto.response;
 
+import com.bbangle.bbangle.search.customer.dto.KeywordDto;
 import java.util.Collections;
 import java.util.List;
-
-import com.bbangle.bbangle.search.dto.KeywordDto;
 import lombok.Builder;
 
 @Builder

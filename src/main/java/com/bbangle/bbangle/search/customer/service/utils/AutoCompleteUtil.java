@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.search.service.utils;
+package com.bbangle.bbangle.search.customer.service.utils;
 
 import com.bbangle.bbangle.util.CharacterNode;
 import com.bbangle.bbangle.util.CustomQueue;

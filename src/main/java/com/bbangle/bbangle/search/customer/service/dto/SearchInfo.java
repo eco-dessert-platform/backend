@@ -1,22 +1,22 @@
-package com.bbangle.bbangle.search.service.dto;
+package com.bbangle.bbangle.search.customer.service.dto;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.mapstructure.Default;
 import com.querydsl.core.annotations.QueryProjection;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class SearchInfo {
 
     @Data
     public static class BoardsInfo {
+
         List<Board> boards;
         Long boardCount;
         int boardLimitSize;
@@ -24,8 +24,8 @@ public class SearchInfo {
 
         @Default
         public BoardsInfo(
-                List<Board> boards,
-                Long boardCount
+            List<Board> boards,
+            Long boardCount
         ) {
             this.boards = boards;
             this.boardCount = boardCount;
@@ -35,6 +35,7 @@ public class SearchInfo {
     @Data
     @AllArgsConstructor
     public static class Select {
+
         private Long boardId;
         private Long storeId;
         private String storeName;
@@ -54,6 +55,7 @@ public class SearchInfo {
     @Data
     @AllArgsConstructor
     public static class SearchBoardPage {
+
         private List<SearchInfo.Select> boards;
         private Long allItemCount;
     }
@@ -61,6 +63,7 @@ public class SearchInfo {
     @Data
     @NoArgsConstructor
     public static class CursorCondition {
+
         private Long cursorId;
         private Double boardBasicScore;
         private Integer price;
@@ -68,7 +71,8 @@ public class SearchInfo {
         private Long boardReviewCount;
 
         @QueryProjection
-        public CursorCondition(Long cursorId, Double boardBasicScore, Integer price, Long boardWishedCount, Long boardReviewCount) {
+        public CursorCondition(Long cursorId, Double boardBasicScore, Integer price,
+            Long boardWishedCount, Long boardReviewCount) {
             this.cursorId = cursorId;
             this.boardBasicScore = boardBasicScore;
             this.price = price;
