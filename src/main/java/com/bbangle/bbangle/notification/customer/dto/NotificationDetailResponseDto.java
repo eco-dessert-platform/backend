@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notification.dto;
+package com.bbangle.bbangle.notification.customer.dto;
 
 import com.bbangle.bbangle.notification.domain.Notice;
 import java.time.format.DateTimeFormatter;

@@ -2,7 +2,7 @@ package com.bbangle.bbangle.common.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,13 +16,13 @@ class NotificationCustomPageTest {
         // Given
         Long pageSize = 3L;
         List<NotificationResponse> responseList = List.of(
-                new NotificationResponse(1L, "title1", "content1", "2023-10-01 12:00"),
-                new NotificationResponse(2L, "title2", "content2", "2023-10-02 12:00")
+            new NotificationResponse(1L, "title1", "content1", "2023-10-01 12:00"),
+            new NotificationResponse(2L, "title2", "content2", "2023-10-02 12:00")
         );
 
         // When
         NotificationCustomPage<List<NotificationResponse>> result =
-                NotificationCustomPage.from(responseList, pageSize);
+            NotificationCustomPage.from(responseList, pageSize);
 
         // Then
         assertThat(result.getContent()).hasSize(2);
@@ -36,14 +36,14 @@ class NotificationCustomPageTest {
         // Given
         Long pageSize = 2L;
         List<NotificationResponse> responseList = List.of(
-                new NotificationResponse(1L, "title1", "content1", "2023-10-01 12:00"),
-                new NotificationResponse(2L, "title2", "content2", "2023-10-02 12:00"),
-                new NotificationResponse(3L, "title3", "content3", "2023-10-03 12:00")
+            new NotificationResponse(1L, "title1", "content1", "2023-10-01 12:00"),
+            new NotificationResponse(2L, "title2", "content2", "2023-10-02 12:00"),
+            new NotificationResponse(3L, "title3", "content3", "2023-10-03 12:00")
         );
 
         // When
         NotificationCustomPage<List<NotificationResponse>> result =
-                NotificationCustomPage.from(responseList, pageSize);
+            NotificationCustomPage.from(responseList, pageSize);
 
         // Then
         assertThat(result.getContent()).hasSize(2);
@@ -59,7 +59,7 @@ class NotificationCustomPageTest {
 
         // When
         NotificationCustomPage<List<NotificationResponse>> result =
-                NotificationCustomPage.from(List.of(), pageSize);
+            NotificationCustomPage.from(List.of(), pageSize);
 
         // Then
         assertThat(result.getContent()).isEmpty();

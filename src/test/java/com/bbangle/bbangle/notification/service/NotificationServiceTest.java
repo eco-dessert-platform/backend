@@ -10,10 +10,11 @@ import static org.mockito.Mockito.times;
 
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.notification.customer.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.customer.service.NotificationService;
 import com.bbangle.bbangle.notification.domain.Notice;
-import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,13 +45,13 @@ class NotificationServiceTest {
         Long curorId = 1L;
         Long pageSize = 2L;
         NotificationResponse notificationResponse = new NotificationResponse(
-                1L,
-                "title1",
-                "content1",
-                "2023-10-01 12:00"
+            1L,
+            "title1",
+            "content1",
+            "2023-10-01 12:00"
         );
         NotificationCustomPage<List<NotificationResponse>> expectedPage =
-                NotificationCustomPage.from(List.of(notificationResponse), pageSize);
+            NotificationCustomPage.from(List.of(notificationResponse), pageSize);
         given(notificationRepository.findNextCursorPage(curorId)).willReturn(expectedPage);
 
         // When
@@ -68,11 +69,11 @@ class NotificationServiceTest {
         // Given
         Long id = 1L;
         Notice notice = Notice.builder()
-                .id(id)
-                .title("title1")
-                .content("content1")
-                .createdAt(LocalDateTime.of(2023, 11, 12, 12, 0, 0))
-                .build();
+            .id(id)
+            .title("title1")
+            .content("content1")
+            .createdAt(LocalDateTime.of(2023, 11, 12, 12, 0, 0))
+            .build();
         given(notificationRepository.findById(id)).willReturn(Optional.of(notice));
 
         // When
@@ -85,7 +86,7 @@ class NotificationServiceTest {
         assertThat(result.title()).isEqualTo(notice.getTitle());
         assertThat(result.content()).isEqualTo(notice.getContent());
         assertThat(result.createdAt()).isEqualTo(
-                notice.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            notice.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
         );
     }
 
@@ -97,7 +98,8 @@ class NotificationServiceTest {
         given(notificationRepository.findById(nonExistingId)).willReturn(Optional.empty());
 
         // When
-        BbangleException result = assertThrows(BbangleException.class, () -> sut.getNoticeDetail(nonExistingId));
+        BbangleException result = assertThrows(BbangleException.class,
+            () -> sut.getNoticeDetail(nonExistingId));
 
         // Then
         then(notificationRepository).should(times(1)).findById(nonExistingId);
@@ -111,7 +113,8 @@ class NotificationServiceTest {
     void givenNotificationUploadRequest_whenUpload_thenSaveNotice() {
         // Given
         NotificationUploadRequest request = new NotificationUploadRequest("title1", "content1");
-        ArgumentCaptor<Notice> captor = ArgumentCaptor.forClass(Notice.class); // 메서드 인자를 검증하기 위해 캡처 사용
+        ArgumentCaptor<Notice> captor = ArgumentCaptor.forClass(
+            Notice.class); // 메서드 인자를 검증하기 위해 캡처 사용
 
         // When
         sut.upload(request);
