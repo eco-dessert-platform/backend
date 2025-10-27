@@ -35,7 +35,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @Transactional
-class BoardControllerTest extends AbstractIntegrationTest {
+class CustomerBoardControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     TokenProvider tokenProvider;
