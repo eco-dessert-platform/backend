@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.board.customer.facade;
+package com.bbangle.bbangle.store.customer.facade;
 
-import com.bbangle.bbangle.board.customer.service.StoreService;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.AllBoard;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.StoreDetail;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
+import com.bbangle.bbangle.store.customer.service.StoreService;
 import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import com.bbangle.bbangle.wishlist.customer.service.WishListStoreService;
 import java.util.List;

@@ -1,9 +1,9 @@
-package com.bbangle.bbangle.store.controller;
+package com.bbangle.bbangle.store.seller.controller;
 
-import com.bbangle.bbangle.store.controller.dto.StoreResponse.SearchResponse;
-import com.bbangle.bbangle.store.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

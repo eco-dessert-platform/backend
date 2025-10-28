@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.controller.dto;
+package com.bbangle.bbangle.store.seller.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

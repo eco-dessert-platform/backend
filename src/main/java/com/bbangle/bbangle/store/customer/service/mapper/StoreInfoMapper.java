@@ -1,8 +1,8 @@
-package com.bbangle.bbangle.board.customer.service.mapper;
+package com.bbangle.bbangle.store.customer.service.mapper;
 
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.store.domain.Store;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

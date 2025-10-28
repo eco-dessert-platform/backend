@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.board.customer.service;
+package com.bbangle.bbangle.store.customer.service;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
@@ -6,12 +6,12 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.StoreDetail;
-import com.bbangle.bbangle.board.customer.service.mapper.StoreInfoMapper;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Store;
-import com.bbangle.bbangle.board.repository.StoreRepository;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.customer.service.mapper.StoreInfoMapper;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

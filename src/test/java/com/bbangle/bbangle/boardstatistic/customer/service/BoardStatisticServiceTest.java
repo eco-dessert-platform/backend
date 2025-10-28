@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.boardstatistic.customer.ranking.UpdateBoardStatistic;
 import com.bbangle.bbangle.boardstatistic.customer.update.StatisticUpdate;
 import com.bbangle.bbangle.boardstatistic.customer.update.UpdateType;
@@ -17,6 +16,7 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.ReviewFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.review.domain.Review;
+import com.bbangle.bbangle.store.domain.Store;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;

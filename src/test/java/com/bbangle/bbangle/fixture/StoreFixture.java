@@ -1,13 +1,13 @@
 package com.bbangle.bbangle.fixture;
 
-import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.store.domain.Store;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StoreFixture {
 
-    public static  Store storeGenerator() {
+    public static Store storeGenerator() {
         String randomIdentifier = String.valueOf(CommonFaker.faker.random()
             .nextLong(0, 10_000_000));
 

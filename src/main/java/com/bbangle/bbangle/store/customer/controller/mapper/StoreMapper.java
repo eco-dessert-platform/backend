@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.board.customer.controller.mapper;
+package com.bbangle.bbangle.store.customer.controller.mapper;
 
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
-import com.bbangle.bbangle.store.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

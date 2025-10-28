@@ -3,9 +3,9 @@ package com.bbangle.bbangle.push.repository;
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
-import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.member.domain.QMember.member;
 import static com.bbangle.bbangle.push.domain.QPush.push;
+import static com.bbangle.bbangle.store.domain.QStore.store;
 
 import com.bbangle.bbangle.push.customer.dto.FcmPush;
 import com.bbangle.bbangle.push.customer.dto.PushResponse;

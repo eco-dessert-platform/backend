@@ -1,15 +1,15 @@
-package com.bbangle.bbangle.board.customer.controller;
+package com.bbangle.bbangle.store.customer.controller;
 
-import static com.bbangle.bbangle.store.controller.dto.StoreResponse.StoreDetail;
+import static com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreDetail;
 
-import com.bbangle.bbangle.board.customer.controller.mapper.StoreMapper;
-import com.bbangle.bbangle.board.customer.facade.StoreFacade;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.AllBoard;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.store.customer.controller.mapper.StoreMapper;
+import com.bbangle.bbangle.store.customer.facade.StoreFacade;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

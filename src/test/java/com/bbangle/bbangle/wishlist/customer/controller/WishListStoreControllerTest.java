@@ -6,8 +6,8 @@
 //import com.bbangle.bbangle.fixture.MemberFixture;
 //import com.bbangle.bbangle.member.domain.Member;
 //import com.bbangle.bbangle.member.repository.MemberRepository;
-//import com.bbangle.bbangle.board.domain.Store;
-//import com.bbangle.bbangle.board.repository.StoreRepository;
+//import com.bbangle.bbangle.store.customer.domain.Store;
+//import com.bbangle.bbangle.store.repository.StoreRepository;
 //import com.bbangle.bbangle.token.jwt.TokenProvider;
 //import com.bbangle.bbangle.wishlist.domain.WishListStore;
 //import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
@@ -26,8 +26,8 @@
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 //
-////TODO: 이 어노테이션을 사용하니 이 다음 차례의 test 클래스에서 DB가 아예 삭제되는 문제가 발생해 주석처리했습니다.
-////@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+/// /TODO: 이 어노테이션을 사용하니 이 다음 차례의 test 클래스에서 DB가 아예 삭제되는 문제가 발생해 주석처리했습니다.
+/// /@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 //class WishListStoreControllerTest extends AbstractIntegrationTest {
 //
 //    @Autowired
@@ -63,12 +63,9 @@
 //     * -> 이 부분은 테스트하다 변경한 내용이라 원상복구하셔도 됩니다!
 //     */
 //
-////    @BeforeEach
-////    void setUpMockMvc() {
-////        this.mockMvc = MockMvcBuilders.standaloneSetup(
-////                new WishListStoreController(wishListStoreService, responseService))
-////            .build();
-////    }
+/// /    @BeforeEach /    void setUpMockMvc() { /        this.mockMvc =
+/// MockMvcBuilders.standaloneSetup( /                new
+/// WishListStoreController(wishListStoreService, responseService)) /            .build(); /    }
 //
 //    Long memberId;
 //    Long firstSavedId;

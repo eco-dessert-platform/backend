@@ -16,7 +16,7 @@
 //import com.bbangle.bbangle.push.dto.FcmRequest;
 //import com.bbangle.bbangle.push.dto.PushRequest;
 //import com.bbangle.bbangle.push.dto.PushResponse;
-//import com.bbangle.bbangle.board.domain.Store;
+//import com.bbangle.bbangle.store.customer.domain.Store;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.MethodOrderer;
 //import org.junit.jupiter.api.Order;

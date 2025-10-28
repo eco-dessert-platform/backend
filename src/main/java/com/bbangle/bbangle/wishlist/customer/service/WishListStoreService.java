@@ -3,11 +3,11 @@ package com.bbangle.bbangle.wishlist.customer.service;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_WISH_INFO;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 
-import com.bbangle.bbangle.board.domain.Store;
-import com.bbangle.bbangle.board.repository.StoreRepository;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreCustomPage;
 import com.bbangle.bbangle.wishlist.customer.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;

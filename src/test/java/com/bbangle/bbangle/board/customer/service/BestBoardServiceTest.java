@@ -4,11 +4,11 @@ import static java.util.Collections.emptyMap;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Store;
 import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.BoardStatisticFixture;
 import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -16,7 +16,7 @@
 //import com.bbangle.bbangle.push.domain.PushType;
 //import com.bbangle.bbangle.push.dto.CreatePushRequest;
 //import com.bbangle.bbangle.push.dto.PushRequest;
-//import com.bbangle.bbangle.board.domain.Store;
+//import com.bbangle.bbangle.store.customer.domain.Store;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import org.jetbrains.annotations.NotNull;
 //import org.junit.jupiter.api.*;

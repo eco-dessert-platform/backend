@@ -5,8 +5,8 @@ import static com.bbangle.bbangle.board.domain.QBoardDetail.boardDetail;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
 import static com.bbangle.bbangle.board.domain.QRecommendationSimilarBoard.recommendationSimilarBoard;
-import static com.bbangle.bbangle.board.domain.QStore.store;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
+import static com.bbangle.bbangle.store.domain.QStore.store;
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
 import com.bbangle.bbangle.board.customer.dto.QSimilarityBoardDto;
