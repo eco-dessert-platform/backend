@@ -1,10 +1,10 @@
 package com.bbangle.bbangle.token.oauth;
 
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
+import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -33,32 +33,33 @@ public class OauthService {
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode) {
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
         MemberIdWithRoleDto memberIdWithRoleDto = memberRepository.findByProviderAndProviderId(
-                        oauthMember.getProvider(),
-                        oauthMember.getProviderId())
-                .orElseGet(() -> MemberIdWithRoleDto.from(memberService.getFirstJoinedMember(oauthMember)));
+                oauthMember.getProvider(),
+                oauthMember.getProviderId())
+            .orElseGet(
+                () -> MemberIdWithRoleDto.from(memberService.getFirstJoinedMember(oauthMember)));
 
         String refreshToken = tokenProvider.generateToken(memberIdWithRoleDto.getMemberId(),
-                memberIdWithRoleDto.getRole(),
-                REFRESH_TOKEN_DURATION);
+            memberIdWithRoleDto.getRole(),
+            REFRESH_TOKEN_DURATION);
         String accessToken = tokenProvider.generateToken(memberIdWithRoleDto.getMemberId(),
-                memberIdWithRoleDto.getRole(),
-                ACCESS_TOKEN_DURATION);
+            memberIdWithRoleDto.getRole(),
+            ACCESS_TOKEN_DURATION);
 
         Optional<RefreshToken> refreshTokenByMemberId =
-                refreshTokenRepository.findByMemberId(memberIdWithRoleDto.getMemberId());
+            refreshTokenRepository.findByMemberId(memberIdWithRoleDto.getMemberId());
 
         refreshTokenByMemberId.ifPresentOrElse(
-                token -> refreshTokenByMemberId.get().update(refreshToken),
-                () -> saveRefreshToken(refreshToken, memberIdWithRoleDto.getMemberId()));
+            token -> refreshTokenByMemberId.get().update(refreshToken),
+            () -> saveRefreshToken(refreshToken, memberIdWithRoleDto.getMemberId()));
 
         return new LoginTokenResponse(accessToken, refreshToken);
     }
 
     private void saveRefreshToken(String refreshToken, Long memberId) {
         RefreshToken saveToken = RefreshToken.builder()
-                .refreshToken(refreshToken)
-                .memberId(memberId)
-                .build();
+            .refreshToken(refreshToken)
+            .memberId(memberId)
+            .build();
 
         refreshTokenRepository.save(saveToken);
     }

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -63,28 +64,28 @@ public class SellerBoardController implements SellerBoardApi {
     }
 
     @Override
-    @PutMapping("{storeId}/boards/{boardId}")
+    @PutMapping("/{boardId}")
     public CommonResult changeProductBoard(
-        @PathVariable(name = "storeId") Long storeId,
         @PathVariable(name = "boardId") Long boardId,
+        @RequestParam(name = "storeId") Long storeId,
         @Valid @RequestBody ProductBoardUpdateRequest request) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSingleResult(request);
     }
 
     @Override
-    @PostMapping("{storeId}/boards/{boardId}")
+    @PostMapping("/{boardId}/copy")
     public CommonResult copyProductBoard(
-        @PathVariable(name = "storeId") Long storeId,
-        @PathVariable(name = "boardId") Long boardId) {
+        @PathVariable(name = "boardId") Long boardId,
+        @RequestParam(name = "storeId") Long storeId) {
         return responseService.getSuccessResult();
     }
 
 
     @Override
-    @PostMapping("/{storeId}/boards")
+    @PostMapping("/delete-boards")
     public CommonResult removeProductBoards(
-        @PathVariable(name = "storeId") Long storeId,
+        @RequestParam(name = "storeId") Long storeId,
         @RequestBody List<Long> boardIds) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSuccessResult();

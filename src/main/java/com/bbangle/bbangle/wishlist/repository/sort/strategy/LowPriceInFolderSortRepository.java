@@ -4,7 +4,7 @@ import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
-import com.bbangle.bbangle.board.constant.FolderBoardSortType;
+import com.bbangle.bbangle.board.customer.domain.constant.FolderBoardSortType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -23,15 +23,15 @@ public class LowPriceInFolderSortRepository implements BoardInFolderSortReposito
     @Override
     public List<Long> findBoardIds(Long cursorId, Long folderId) {
         return queryFactory
-                .select(board.id)
-                .from(board)
-                .join(wishListBoard)
-                .on(board.id.eq(wishListBoard.boardId)
-                        .and(wishListBoard.wishlistFolderId.eq(folderId)))
-                .where(getCursorCondition(cursorId))
-                .orderBy(getSortOrders())
-                .limit(BOARD_PAGE_SIZE + 1L)
-                .fetch();
+            .select(board.id)
+            .from(board)
+            .join(wishListBoard)
+            .on(board.id.eq(wishListBoard.boardId)
+                .and(wishListBoard.wishlistFolderId.eq(folderId)))
+            .where(getCursorCondition(cursorId))
+            .orderBy(getSortOrders())
+            .limit(BOARD_PAGE_SIZE + 1L)
+            .fetch();
     }
 
     @Override
@@ -42,12 +42,12 @@ public class LowPriceInFolderSortRepository implements BoardInFolderSortReposito
         }
 
         Integer price = queryFactory
-                .select(board.price)
-                .from(board)
-                .where(board.id.eq(cursorId))
-                .fetchOne();
+            .select(board.price)
+            .from(board)
+            .where(board.id.eq(cursorId))
+            .fetchOne();
         cursorBuilder.and(board.price.goe(price)
-                .and(board.id.loe(cursorId)));
+            .and(board.id.loe(cursorId)));
 
         return cursorBuilder;
     }

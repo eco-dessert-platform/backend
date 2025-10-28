@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
-import com.bbangle.bbangle.board.constant.DeliveryCompany;
-import com.bbangle.bbangle.board.constant.DeliveryCondition;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCompany;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;

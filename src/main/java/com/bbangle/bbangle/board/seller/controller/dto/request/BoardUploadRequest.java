@@ -1,11 +1,11 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
-import com.bbangle.bbangle.board.constant.DeliveryCompany;
-import com.bbangle.bbangle.board.constant.DeliveryCondition;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCompany;
+import com.bbangle.bbangle.board.customer.domain.constant.DeliveryCondition;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.store.domain.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;

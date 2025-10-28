@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.notification.domain;
 
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,7 +31,7 @@ public class Notice {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public static NotificationResponse makeNotificationResponse(Notice notice){
+    public static NotificationResponse makeNotificationResponse(Notice notice) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String formattedDateTime = notice.getCreatedAt().format(formatter);
         return new NotificationResponse(

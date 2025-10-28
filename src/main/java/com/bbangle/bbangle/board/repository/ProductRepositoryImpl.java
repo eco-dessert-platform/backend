@@ -1,14 +1,14 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.customer.dto.AiLearningProductDto;
+import com.bbangle.bbangle.board.customer.dto.QAiLearningProductDto;
+import com.bbangle.bbangle.board.customer.dto.QTitleDto;
+import com.bbangle.bbangle.board.customer.dto.TitleDto;
+import com.bbangle.bbangle.board.customer.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.AiLearningProductDto;
-import com.bbangle.bbangle.board.dto.QAiLearningProductDto;
-import com.bbangle.bbangle.board.dto.QTitleDto;
-import com.bbangle.bbangle.board.dto.TitleDto;
-import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.types.Projections;
@@ -16,14 +16,14 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.HashMap;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @Slf4j

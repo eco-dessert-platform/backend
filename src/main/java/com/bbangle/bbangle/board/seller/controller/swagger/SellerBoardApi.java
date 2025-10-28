@@ -22,7 +22,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Tag(name = "ProductBoards", description = "판매자 상품 게시글 관련 API")
+@Tag(name = "SellerBoards", description = "판매자 상품 게시글 관련 API")
 public interface SellerBoardApi {
 
     // TODO: v2

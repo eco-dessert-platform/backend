@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.wishlist.validator.WishListFolderValidator;
+import com.bbangle.bbangle.wishlist.customer.validator.WishListFolderValidator;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -45,7 +45,7 @@ public class WishListFolder extends BaseEntity {
         Member member,
         String folderName,
         boolean isDeleted
-    ){
+    ) {
         WishListFolderValidator.validateMember(member);
         WishListFolderValidator.validateTitle(folderName);
 

@@ -6,7 +6,7 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
 import static com.bbangle.bbangle.wishlist.domain.QWishListBoard.wishListBoard;
 
-import com.bbangle.bbangle.board.constant.FolderBoardSortType;
+import com.bbangle.bbangle.board.customer.domain.constant.FolderBoardSortType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.querydsl.core.BooleanBuilder;
@@ -28,18 +28,18 @@ public class PopularBoardInFolderSortRepository implements BoardInFolderSortRepo
     @Override
     public List<Long> findBoardIds(Long cursorId, Long folderId) {
         return queryFactory.select(board.id)
-                .distinct()
-                .from(product)
-                .join(board)
-                .on(product.board.id.eq(board.id))
-                .join(board.boardStatistic, boardStatistic)
-                .join(wishListBoard)
-                .on(board.id.eq(wishListBoard.boardId)
-                        .and(wishListBoard.wishlistFolderId.eq(folderId)))
-                .where(getCursorCondition(cursorId))
-                .orderBy(getSortOrders())
-                .limit(BOARD_PAGE_SIZE + 1)
-                .fetch();
+            .distinct()
+            .from(product)
+            .join(board)
+            .on(product.board.id.eq(board.id))
+            .join(board.boardStatistic, boardStatistic)
+            .join(wishListBoard)
+            .on(board.id.eq(wishListBoard.boardId)
+                .and(wishListBoard.wishlistFolderId.eq(folderId)))
+            .where(getCursorCondition(cursorId))
+            .orderBy(getSortOrders())
+            .limit(BOARD_PAGE_SIZE + 1)
+            .fetch();
     }
 
     @Override
@@ -52,16 +52,16 @@ public class PopularBoardInFolderSortRepository implements BoardInFolderSortRepo
         }
 
         Double targetScore = Optional.ofNullable(
-                queryFactory.select(CRITERIA_ATTRIBUTE)
-                        .from(boardStatistic)
-                        .join(boardStatistic.board, board)
-                        .where(board.id.eq(cursorId))
-                        .fetchOne()
+            queryFactory.select(CRITERIA_ATTRIBUTE)
+                .from(boardStatistic)
+                .join(boardStatistic.board, board)
+                .where(board.id.eq(cursorId))
+                .fetchOne()
         ).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
 
         cursorBuilder.and(CRITERIA_ATTRIBUTE.lt(targetScore))
-                .or(CRITERIA_ATTRIBUTE.eq(targetScore)
-                        .and(board.id.loe(cursorId)));
+            .or(CRITERIA_ATTRIBUTE.eq(targetScore)
+                .and(board.id.loe(cursorId)));
         return cursorBuilder;
     }
 

@@ -1,10 +1,10 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.customer.dto.AiLearningProductDto;
+import com.bbangle.bbangle.board.customer.dto.TitleDto;
+import com.bbangle.bbangle.board.customer.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.AiLearningProductDto;
-import com.bbangle.bbangle.board.dto.TitleDto;
-import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.push.domain.Push;
 import java.util.List;
 import java.util.Map;
