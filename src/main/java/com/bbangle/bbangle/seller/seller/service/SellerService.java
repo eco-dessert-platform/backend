@@ -1,8 +1,8 @@
-package com.bbangle.bbangle.seller.service;
+package com.bbangle.bbangle.seller.seller.service;
 
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

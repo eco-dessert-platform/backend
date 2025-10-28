@@ -1,12 +1,12 @@
-package com.bbangle.bbangle.seller.controller.swagger;
+package com.bbangle.bbangle.seller.seller.controller.swagger;
 
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerCreateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

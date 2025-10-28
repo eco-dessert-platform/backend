@@ -1,14 +1,14 @@
-package com.bbangle.bbangle.seller.controller;
+package com.bbangle.bbangle.seller.seller.controller;
 
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerCreateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
-import com.bbangle.bbangle.seller.controller.dto.SellerRequest.SellerUpdateRequest;
-import com.bbangle.bbangle.seller.controller.swagger.SellerApi;
-import com.bbangle.bbangle.seller.service.SellerService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
+import com.bbangle.bbangle.seller.seller.service.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

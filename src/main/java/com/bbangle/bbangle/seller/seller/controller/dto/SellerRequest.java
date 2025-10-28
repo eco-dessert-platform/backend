@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.controller.dto;
+package com.bbangle.bbangle.seller.seller.controller.dto;
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
