@@ -1,13 +1,13 @@
 package com.bbangle.bbangle.member.customer.service;
 
 import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
-import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
+import com.bbangle.bbangle.member.customer.service.dto.ProfileInfo;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ProfileService {
 
-    ProfileInfoResponseDto getProfileInfo(Long memberId);
+    ProfileInfo.DefaultProfile getProfileInfo(Long memberId);
 
     @Transactional
     void updateProfileInfo(
