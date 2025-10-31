@@ -174,6 +174,12 @@ dependencies {
     implementation 'net.ttddyy:datasource-proxy:1.10.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // 테스트 컨테이너 적용
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.8")) // 버전은 프로젝트 맞춤
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:mariadb") // MariaDB 컨테이너 사용
 }
 
 // Querydsl 설정부
