@@ -1,17 +1,11 @@
 package com.bbangle.bbangle.member.customer.controller;
 
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.customer.dto.ProfileInfoResponseDto;
+import com.bbangle.bbangle.member.customer.controller.mapper.ProfileMapper;
 import com.bbangle.bbangle.member.customer.service.ProfileService;
+import com.bbangle.bbangle.member.customer.service.dto.ProfileInfo;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
@@ -26,12 +20,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 class ProfileControllerTest extends AbstractIntegrationTest {
 
     @MockBean
     private ProfileService profileService;
     @Autowired
     private ResponseService responseService;
+    @Autowired
+    private ProfileMapper profileMapper;
     @Autowired
     private MockMvc mockMvc;
     private final FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
@@ -41,7 +44,7 @@ class ProfileControllerTest extends AbstractIntegrationTest {
     @BeforeEach
     void setUpMockMvc() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(
-            new ProfileController(profileService, responseService)
+            new ProfileController(profileService, responseService, profileMapper)
         ).build();
     }
 
@@ -81,7 +84,7 @@ class ProfileControllerTest extends AbstractIntegrationTest {
     @WithCustomMockUser
     void getProfile() throws Exception {
         //given
-        ProfileInfoResponseDto mockProfile = fixtureMonkey.giveMeOne(ProfileInfoResponseDto.class);
+        ProfileInfo.DefaultProfile mockProfile = fixtureMonkey.giveMeOne(ProfileInfo.DefaultProfile.class);
         when(profileService.getProfileInfo(any())).thenReturn(mockProfile);
         ResultActions result = mockMvc.perform(get("/api/v1/profile")
             .header("Authorization", String.format("%s %s", BEARER, AUTHORIZATION)));

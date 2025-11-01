@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.config.CdnConfig;
 import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.customer.exception.UserValidator;
@@ -178,6 +179,10 @@ public class Member extends BaseEntity implements UserDetails {
         this.nickname = "-";
         this.birth = "-";
         this.providerId = "-";
+    }
+
+    public String getProfile() {
+        return profile.contains("http") ? profile : String.format("%s/%s", CdnConfig.getCloudFrontUrl(), profile);
     }
 
 }
