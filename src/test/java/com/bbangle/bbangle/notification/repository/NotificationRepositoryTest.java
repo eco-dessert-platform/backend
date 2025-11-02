@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,6 +36,7 @@ import org.springframework.test.context.ActiveProfiles;
     SearchSort.class
 })
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class NotificationRepositoryTest {
 
     @Autowired
@@ -49,8 +51,11 @@ class NotificationRepositoryTest {
      * 테스트 전 auto increment 초기화
      */
     @BeforeEach
-    void resetAutoIncrement() {
-        em.createNativeQuery("ALTER TABLE notice ALTER COLUMN id RESTART WITH 1").executeUpdate();
+    void resetTable() {
+        em.flush(); // 대기 중인 SQL 먼저 반영
+        em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0").executeUpdate();
+        em.createNativeQuery("TRUNCATE TABLE notice").executeUpdate(); // AUTO_INCREMENT = 1로 재설정
+        em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate();
     }
 
     @DisplayName("cursorId가 null일 때, 첫 페이지 정상 조회")

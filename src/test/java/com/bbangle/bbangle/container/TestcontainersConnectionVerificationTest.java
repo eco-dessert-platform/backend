@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MariaDBContainer;
 
 
-@DataJpaTest
-@Import({QueryDslConfig.class, SearchFilter.class , SearchSort.class, TestContainersConfig.class}) // Import 필요한 설정 및 컴포넌트
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // JPA 테스트 시 실제 데이터소스 사용
+
+
 @ActiveProfiles("test")
-@DisplayName("🧪 테스트 컨테이너 연결 검증")
+@Import({
+    TestContainersConfig.class,
+    QueryDslConfig.class,
+    SearchFilter.class,
+    SearchSort.class
+}) // @DataJpaTest 사용시 필요한 구성 요소 임포트
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // JPA 테스트 시 실제 데이터소스 사용
+@DisplayName("테스트 컨테이너 연결 검증")
+@Slf4j
 public class TestcontainersConnectionVerificationTest {
 
     @Autowired
@@ -45,7 +54,7 @@ public class TestcontainersConnectionVerificationTest {
             assertThat(connection.isValid(5)).isTrue();
         }
 
-        System.out.println("✅ 컨테이너 실행 및 연결: 정상");
+        log.info("✅ 컨테이너 실행 및 연결: 정상");
     }
 
     @Test
@@ -67,9 +76,9 @@ public class TestcontainersConnectionVerificationTest {
             String collation = collationResult.getString("Value");
 
             assertThat(charset).isEqualTo("utf8mb4");
-            assertThat(collation).isEqualTo("utf8mb4_uca1400_ai_ci");
+            assertThat(collation).isEqualTo("utf8mb4_unicode_ci");
 
-            System.out.println("✅ Character Set: " + charset + ", Collation: " + collation);
+            log.info(" Character Set: " + charset + ", Collation: " + collation);
         }
     }
 
@@ -105,7 +114,8 @@ public class TestcontainersConnectionVerificationTest {
             // 정리
             statement.execute("DROP TABLE test_table");
 
-            System.out.println("✅ CRUD 작업: 정상");
+            log.info("CRUD 작업: 정상");
         }
     }
 }
+
