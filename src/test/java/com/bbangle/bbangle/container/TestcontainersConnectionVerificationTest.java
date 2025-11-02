@@ -2,10 +2,6 @@ package com.bbangle.bbangle.container;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.bbangle.bbangle.TestContainersConfig;
-import com.bbangle.bbangle.config.QueryDslConfig;
-import com.bbangle.bbangle.search.repository.component.SearchFilter;
-import com.bbangle.bbangle.search.repository.component.SearchSort;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MariaDBContainer;
 
@@ -25,14 +19,7 @@ import org.testcontainers.containers.MariaDBContainer;
 
 
 @ActiveProfiles("test")
-@Import({
-    TestContainersConfig.class,
-    QueryDslConfig.class,
-    SearchFilter.class,
-    SearchSort.class
-}) // @DataJpaTest 사용시 필요한 구성 요소 임포트
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // JPA 테스트 시 실제 데이터소스 사용
+@SpringBootTest
 @DisplayName("테스트 컨테이너 연결 검증")
 @Slf4j
 public class TestcontainersConnectionVerificationTest {
