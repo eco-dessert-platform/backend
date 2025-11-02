@@ -8,7 +8,7 @@ import com.bbangle.bbangle.fixture.FixtureConfig;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.SearchFixture;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.search.dto.KeywordDto;
+import com.bbangle.bbangle.search.customer.dto.KeywordDto;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;

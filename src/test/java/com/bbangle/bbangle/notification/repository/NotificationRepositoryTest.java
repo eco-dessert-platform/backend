@@ -8,8 +8,8 @@ import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.NoticeFixture;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import jakarta.persistence.EntityManager;
@@ -30,9 +30,9 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("[Repository] - NotificationRepository")
 @ActiveProfiles("test")
 @Import({
-        QueryDslConfig.class,
-        SearchFilter.class,
-        SearchSort.class
+    QueryDslConfig.class,
+    SearchFilter.class,
+    SearchSort.class
 })
 @DataJpaTest
 class NotificationRepositoryTest {
@@ -59,8 +59,8 @@ class NotificationRepositoryTest {
         // Given
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 10)
-                .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
-                .toList();
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .toList();
         sut.saveAll(notices);
 
         // When
@@ -80,8 +80,8 @@ class NotificationRepositoryTest {
         // Given
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-                .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
-                .toList();
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .toList();
         sut.saveAll(notices);
 
         // cursorId를 21로 가정 (21 ~ 2 조회)
@@ -89,7 +89,8 @@ class NotificationRepositoryTest {
         assertThat(cursorId).isEqualTo(21L);
 
         // When
-        NotificationCustomPage<List<NotificationResponse>> result = sut.findNextCursorPage(cursorId);
+        NotificationCustomPage<List<NotificationResponse>> result = sut.findNextCursorPage(
+            cursorId);
 
         // Then
         assertThat(result).isNotNull();
@@ -105,8 +106,8 @@ class NotificationRepositoryTest {
         // Given
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-                .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
-                .toList();
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .toList();
         sut.saveAll(notices);
 
         // cursorId를 6으로 가정 (6 ~ 1 조회)
@@ -114,7 +115,8 @@ class NotificationRepositoryTest {
         assertThat(cursorId).isEqualTo(6L);
 
         // When
-        NotificationCustomPage<List<NotificationResponse>> result = sut.findNextCursorPage(cursorId);
+        NotificationCustomPage<List<NotificationResponse>> result = sut.findNextCursorPage(
+            cursorId);
 
         // Then
         assertThat(result).isNotNull();
@@ -130,15 +132,15 @@ class NotificationRepositoryTest {
         // Given
         LocalDateTime now = LocalDateTime.now();
         sut.saveAll(List.of(
-                NoticeFixture.notice("title1", "content1", now.minusDays(3)),
-                NoticeFixture.notice("title2", "content2", now.minusDays(2))
+            NoticeFixture.notice("title1", "content1", now.minusDays(3)),
+            NoticeFixture.notice("title2", "content2", now.minusDays(2))
         ));
 
         Long invalidCursorId = 99999L;
 
         // When
         BbangleException exception = assertThrows(BbangleException.class,
-                () -> sut.findNextCursorPage(invalidCursorId));
+            () -> sut.findNextCursorPage(invalidCursorId));
 
         // Then
         assertThat(exception).isInstanceOf(BbangleException.class);
@@ -166,8 +168,8 @@ class NotificationRepositoryTest {
         // Given
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-                .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
-                .toList();
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .toList();
         sut.saveAll(notices);
 
         // When

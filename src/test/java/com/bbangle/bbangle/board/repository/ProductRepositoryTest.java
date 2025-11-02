@@ -4,10 +4,10 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.customer.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.push.domain.Push;
@@ -43,7 +43,7 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         @DisplayName("인기순이 높은 스토어 게시글을 순서대로 가져올 수 있다")
         void getPopularBoard() {
             Map<Long, Set<Category>> actualProducts = productRepository.getCategoryInfoByBoardId(
-                    List.of(board.getId()));
+                List.of(board.getId()));
 
             List<Product> expectedProducts = board.getProducts();
             List categories = new ArrayList<Category>();
@@ -72,12 +72,12 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
             testProducts = testBoard.getProducts();
 
             testPush = Push.builder()
-                    .productId(testProducts.get(0).getId())
-                    .memberId(testMember.getId())
-                    .pushType(PushType.DATE) // 실제 PushType 설정
-                    .days("Monday,Friday")
-                    .isActive(true)
-                    .build();
+                .productId(testProducts.get(0).getId())
+                .memberId(testMember.getId())
+                .pushType(PushType.DATE) // 실제 PushType 설정
+                .days("Monday,Friday")
+                .isActive(true)
+                .build();
 
             pushRepository.save(testPush);
         }
@@ -85,22 +85,26 @@ public class ProductRepositoryTest extends AbstractIntegrationTest {
         @Test
         void testFindProductDtoById() {
             // When: 실제 서비스 메서드를 호출합니다.
-            List<ProductDtoAtBoardDetail> result = productRepository.findProductDtoById(testMember.getId(),
-                    testBoard.getId());
+            List<ProductDtoAtBoardDetail> result = productRepository.findProductDtoById(
+                testMember.getId(),
+                testBoard.getId());
 
             // Then: 결과를 검증합니다.
             assertThat(result).isNotNull().isNotEmpty();
             assertThat(result).hasSize(testProducts.size());
             assertThat(result).extracting(ProductDtoAtBoardDetail::getTitle)
-                    .containsExactlyInAnyOrderElementsOf(testProducts.stream().map(Product::getTitle).toList());
+                .containsExactlyInAnyOrderElementsOf(
+                    testProducts.stream().map(Product::getTitle).toList());
             assertThat(result).extracting(ProductDtoAtBoardDetail::getPrice)
-                    .containsExactlyInAnyOrderElementsOf(testProducts.stream().map(Product::getPrice).toList());
+                .containsExactlyInAnyOrderElementsOf(
+                    testProducts.stream().map(Product::getPrice).toList());
             assertThat(result).extracting(ProductDtoAtBoardDetail::getGlutenFreeTag)
-                    .containsExactlyInAnyOrderElementsOf(testProducts.stream().map(Product::isGlutenFreeTag).toList());
+                .containsExactlyInAnyOrderElementsOf(
+                    testProducts.stream().map(Product::isGlutenFreeTag).toList());
             assertThat(result).extracting(ProductDtoAtBoardDetail::getPushType)
-                    .contains(PushType.DATE);
+                .contains(PushType.DATE);
             assertThat(result).extracting(ProductDtoAtBoardDetail::getIsActive)
-                    .contains(true);
+                .contains(true);
             // 필요한 다른 필드도 검증할 수 있습니다.
         }
     }

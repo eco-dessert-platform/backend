@@ -1,9 +1,10 @@
 package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
-import com.bbangle.bbangle.member.dto.MemberInfoRequest;
-import com.bbangle.bbangle.member.exception.UserValidator;
+import com.bbangle.bbangle.config.CdnConfig;
+import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.customer.exception.UserValidator;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
@@ -85,8 +86,8 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Builder
     public Member(
-            Long id, String email, String phone, String name, String nickname,
-            String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
+        Long id, String email, String phone, String name, String nickname,
+        String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
     ) {
         this.id = id;
         this.email = email;
@@ -178,6 +179,10 @@ public class Member extends BaseEntity implements UserDetails {
         this.nickname = "-";
         this.birth = "-";
         this.providerId = "-";
+    }
+
+    public String getProfile() {
+        return profile.contains("http") ? profile : String.format("%s/%s", CdnConfig.getCloudFrontUrl(), profile);
     }
 
 }

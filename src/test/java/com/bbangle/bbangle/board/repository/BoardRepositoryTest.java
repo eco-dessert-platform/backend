@@ -16,7 +16,7 @@
 //import com.bbangle.bbangle.fixture.ProductFixture;
 //import com.bbangle.bbangle.fixture.StoreFixture;
 //import com.bbangle.bbangle.member.domain.Member;
-//import com.bbangle.bbangle.board.domain.Store;
+//import com.bbangle.bbangle.store.customer.domain.Store;
 //import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 //import java.time.LocalDateTime;
 //import java.util.HashMap;
@@ -271,7 +271,7 @@
 //                    "products", List.of(ketogenicTagProduct, ketogenicTagProduct2)
 //            ));
 //
-////            boardRepository.saveAll(List.of(board1, board2, board3, board4, board5));
+/// /            boardRepository.saveAll(List.of(board1, board2, board3, board4, board5));
 //            boardStatisticRepository.saveAll(
 //                    List.of(BoardStatisticFixture.newBoardStatistic(board1),
 //                            BoardStatisticFixture.newBoardStatistic(board2),

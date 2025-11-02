@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.fixture;
 
+import com.bbangle.bbangle.review.customer.dto.ReviewRequest;
 import com.bbangle.bbangle.review.domain.Badge;
-import com.bbangle.bbangle.review.dto.ReviewRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AccessLevel;

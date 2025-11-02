@@ -2,11 +2,11 @@ package com.bbangle.bbangle.notification.repository;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
 
+import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.domain.QNotice;
-import com.bbangle.bbangle.notification.dto.NotificationResponse;
-import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

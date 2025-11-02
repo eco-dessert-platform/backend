@@ -114,7 +114,8 @@ public record ResponseService(MessageSource messageSource) {
         return getFailResult(error.getMessage(), error.getCode());
     }
 
-    public CommonResult getMethodArgumentNotValidExceptionResult(MethodArgumentNotValidException ex) {
+    public CommonResult getMethodArgumentNotValidExceptionResult(
+        MethodArgumentNotValidException ex) {
         CommonResult result = new CommonResult();
         result.setSuccess(false);
         CommonResult.FieldError[] fes = ex.getBindingResult()

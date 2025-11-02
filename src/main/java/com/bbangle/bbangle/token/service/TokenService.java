@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.token.service;
 
+import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class TokenService {
 
     public String createNewAccessToken(String refreshToken) {
         Long memberId = refreshTokenService.findByRefreshToken(refreshToken)
-                .getMemberId();
+            .getMemberId();
         Member member = memberService.findById(memberId);
         return tokenProvider.generateToken(member.getId(), member.getRole(), Duration.ofHours(2));
     }

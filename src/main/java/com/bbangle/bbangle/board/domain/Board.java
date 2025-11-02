@@ -4,6 +4,7 @@ import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -18,11 +19,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -98,7 +97,7 @@ public class Board extends BaseEntity {
     }
 
     public Board(Store store, String title, int price, int discountRate,
-                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
+        int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
         validate(price, discountRate, deliveryFee);
 
         this.store = store;
@@ -125,10 +124,10 @@ public class Board extends BaseEntity {
 
     public List<String> getTags() {
         return products.stream()
-                .map(Product::getTags)
-                .flatMap(List::stream)
-                .distinct()
-                .toList();
+            .map(Product::getTags)
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
     }
 
     public boolean isSoldOut() {
@@ -141,22 +140,22 @@ public class Board extends BaseEntity {
 
     public boolean isBundled() {
         return products.stream().map(Product::getCategory)
-                .distinct()
-                .count() > 1;
+            .distinct()
+            .count() > 1;
     }
 
     public String getThumbnail() {
         return productImgs.stream()
-                .filter(ProductImg::isThumbnail)
-                .findFirst()
-                .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_WITH_IMAGE_NOTFOUND))
-                .getUrl();
+            .filter(ProductImg::isThumbnail)
+            .findFirst()
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_WITH_IMAGE_NOTFOUND))
+            .getUrl();
     }
 
     public List<String> getSupportingImages() {
         return productImgs.stream()
-                .filter(img -> !img.isThumbnail())
-                .map(ProductImg::getUrl)
-                .toList();
+            .filter(img -> !img.isThumbnail())
+            .map(ProductImg::getUrl)
+            .toList();
     }
 }

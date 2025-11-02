@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.fixture;
 
-import com.bbangle.bbangle.board.dao.TagsDao;
+import com.bbangle.bbangle.board.repository.dao.TagsDao;
 
 public class TagDaoFixture {
 
@@ -44,7 +44,7 @@ public class TagDaoFixture {
             true);
     }
 
-    public static TagsDao getGlutenFreeTagAndHighProteinTagDao(){
+    public static TagsDao getGlutenFreeTagAndHighProteinTagDao() {
         return new TagsDao(true,
             true,
             false,
@@ -52,7 +52,7 @@ public class TagDaoFixture {
             false);
     }
 
-    public static TagsDao getSugarFreeAndVeganTagDao(){
+    public static TagsDao getSugarFreeAndVeganTagDao() {
         return new TagsDao(false,
             false,
             true,

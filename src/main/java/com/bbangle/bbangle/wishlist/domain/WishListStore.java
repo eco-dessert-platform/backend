@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -47,7 +47,7 @@ public class WishListStore extends BaseEntity {
         this.isDeleted = true;
     }
 
-    public void changeDeletedFalse(){
+    public void changeDeletedFalse() {
         this.isDeleted = false;
     }
 

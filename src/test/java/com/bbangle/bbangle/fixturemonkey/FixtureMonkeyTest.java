@@ -14,7 +14,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.board.domain.Store;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +54,8 @@ class FixtureMonkeyTest extends AbstractIntegrationTest {
     @DisplayName("양방향일 때 데이터 정합성을 맞춘다")
     void test2() {
         Member member = FixtureMonkeyConfig.fixtureMonkey.giveMeOne(Member.class);
-        assertThat(member.getWishListFolders().get(0).getMember().getId()).isEqualTo(member.getId());
+        assertThat(member.getWishListFolders().get(0).getMember().getId()).isEqualTo(
+            member.getId());
         assertThat(member.getWishListStores().get(0).getMember().getId()).isEqualTo(member.getId());
         assertThat(member.getWithdrawals().get(0).getMember().getId()).isEqualTo(member.getId());
     }
@@ -128,7 +129,8 @@ class FixtureMonkeyTest extends AbstractIntegrationTest {
 
         // then
         assertTrue(exception.getMessage()
-                .contains("identifier of an instance of com.bbangle.bbangle.board.domain.Product was altered"));
+            .contains(
+                "identifier of an instance of com.bbangle.bbangle.board.domain.Product was altered"));
     }
 
     @Test
@@ -151,9 +153,8 @@ class FixtureMonkeyTest extends AbstractIntegrationTest {
         Product product = fixtureProduct(Map.of("board", board));
 
         assertThatThrownBy(() -> boardRepository.save(board))
-                .isInstanceOf(JpaSystemException.class);
+            .isInstanceOf(JpaSystemException.class);
     }
-
 
 
 }
