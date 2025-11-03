@@ -177,9 +177,9 @@ dependencies {
 
     // 테스트 컨테이너 적용
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.8")) // 버전은 프로젝트 맞춤
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:mariadb") // MariaDB 컨테이너 사용
+    testImplementation "com.redis:testcontainers-redis:2.2.4"
 }
 
 // Querydsl 설정부
