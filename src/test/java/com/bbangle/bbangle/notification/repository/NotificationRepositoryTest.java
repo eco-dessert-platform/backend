@@ -4,6 +4,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FO
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.bbangle.bbangle.TestContainersConfig;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -31,6 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("[Repository] - NotificationRepository")
 @ActiveProfiles("test")
 @Import({
+    TestContainersConfig.class,
     QueryDslConfig.class,
     SearchFilter.class,
     SearchSort.class
