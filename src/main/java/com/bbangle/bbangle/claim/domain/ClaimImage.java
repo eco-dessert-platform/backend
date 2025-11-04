@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.claim.domain;
 
-import com.bbangle.bbangle.order.domain.OrderItem;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,5 +25,9 @@ public class ClaimImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id")
     private Claim claim;
+
+    private String url;
+
+    private int imgOrder;
 
 }
