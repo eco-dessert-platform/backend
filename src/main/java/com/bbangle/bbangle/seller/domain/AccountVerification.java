@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.seller.domain;
 
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,23 +12,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "sellers")
+@Table(name = "account_verifications")
 @Entity
-public class Seller {
+public class AccountVerification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
-    private Store store;
+    @JoinColumn(name = "seller_id")
+    private Seller seller;
 
 }
