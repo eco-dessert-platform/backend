@@ -15,9 +15,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "claim_delivery")
+@Table(name = "claim_image")
 @Entity
-public class ClaimDelivery {
+public class ClaimImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
