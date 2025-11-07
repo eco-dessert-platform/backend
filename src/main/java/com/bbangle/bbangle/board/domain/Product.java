@@ -4,15 +4,27 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.PushType;
 import com.google.firebase.database.annotations.NotNull;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "product")
 @Entity
@@ -26,35 +38,20 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter // board 에 product 세팅해서 저장해도 product 는 저장안되서 수기로 product 에서 board 세팅해줘야함...
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
-    @Column(name = "title")
+    @Column(name = "title", length = 50, columnDefinition = "varchar(50)", nullable = false)
     private String title;
 
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private int price;
 
-    @Column(name = "category", columnDefinition = "varchar")
     @Enumerated(EnumType.STRING)
+    @Column(name = "category", length = 20, nullable = false)
     private Category category;
-
-    @Column(name = "gluten_free_tag", columnDefinition = "tinyint")
-    private boolean glutenFreeTag;
-
-    @Column(name = "high_protein_tag", columnDefinition = "tinyint")
-    private boolean highProteinTag;
-
-    @Column(name = "sugar_free_tag", columnDefinition = "tinyint")
-    private boolean sugarFreeTag;
-
-    @Column(name = "vegan_tag", columnDefinition = "tinyint")
-    private boolean veganTag;
-
-    @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
-    private boolean ketogenicTag;
 
     @Column(name = "monday", columnDefinition = "tinyint")
     private boolean monday;
@@ -87,43 +84,12 @@ public class Product {
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
 
+    @Column(name = "stock")
     private int stock;
 
-    @Embedded
-    private Nutrition nutrition;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<SegmentIntolerance> segmentIntolerances = new ArrayList<>();
-
-    public Product(Board board, String title, int price, Category category, int stock,
-                   boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,
-                   boolean ketogenicTag, boolean monday, boolean tuesday, boolean wednesday,
-                   boolean thursday, boolean friday, boolean saturday, boolean sunday,
-                   Nutrition nutrition) {
-
-        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
-
-        this.board = board;
-        this.title = title;
-        this.price = price;
-        this.category = category;
-        this.stock = stock;
-        this.glutenFreeTag = glutenFreeTag;
-        this.highProteinTag = highProteinTag;
-        this.sugarFreeTag = sugarFreeTag;
-        this.veganTag = veganTag;
-        this.ketogenicTag = ketogenicTag;
-        this.monday = monday;
-        this.tuesday = tuesday;
-        this.wednesday = wednesday;
-        this.thursday = thursday;
-        this.friday = friday;
-        this.saturday = saturday;
-        this.sunday = sunday;
-        this.nutrition = nutrition;
-        this.soldout = false;
-    }
-
+    /**
+     * 유효성 검사
+     */
     private void validate(String title,
                           boolean monday, boolean tuesday, boolean wednesday,
                           boolean thursday, boolean friday, boolean saturday, boolean sunday) {
@@ -135,26 +101,32 @@ public class Product {
         }
     }
 
-    // True인 태그 스트링 리스트로 만들어 반환
-    public List<String> getTags() {
-        return Stream.of(
-                        Map.entry(glutenFreeTag, TagEnum.GLUTEN_FREE.label()),
-                        Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN.label()),
-                        Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE.label()),
-                        Map.entry(veganTag, TagEnum.VEGAN.label()),
-                        Map.entry(ketogenicTag, TagEnum.KETOGENIC.label())
-                )
-                .filter(Map.Entry::getKey)
-                .map(Map.Entry::getValue)
-                .toList();
+    public Product(Board board, String title, int price, Category category,
+                   boolean monday, boolean tuesday, boolean wednesday,
+                   boolean thursday, boolean friday, boolean saturday, boolean sunday,
+                   int stock) {
+
+        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
+
+        this.board = board;
+        this.title = title;
+        this.price = price;
+        this.category = category;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
+        this.stock = stock;
+        this.soldout = false;
     }
 
+    /**
+     * 주문 타입 결정
+     */
     public PushType getOrderType() {
-        if (Objects.nonNull(orderStartDate)) {
-            return PushType.DATE;
-        }
-
-        return PushType.WEEK;
+        return Objects.nonNull(orderStartDate) ? PushType.DATE : PushType.WEEK;
     }
-
 }

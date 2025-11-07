@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,4 +20,9 @@ public class HealthTag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "tag_name", columnDefinition = "varchar(50)", nullable = false)
+    private String tag_name;
+
+    @Column(name = "is_deleted", columnDefinition = "tinyint")
+    private boolean isDeleted;
 }

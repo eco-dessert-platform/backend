@@ -12,17 +12,27 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "courier")
+@Table(name = "category_flat")
 @Entity
-public class Courier {
+public class CategoryFlat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "company", columnDefinition = "varchar(50)", nullable = false)
-    private String company;
+    // 대분류 표시명
+    @Column(name = "top_name")
+    private String topName;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
+    // 대분류 코드
+    @Column(name = "top_code")
+    private String topCode;
+
+    // 중분류 표시명
+    @Column(name = "sub_name")
+    private String subName;
+
+    // 중분류 코드
+    @Column(name = "sub_code")
+    private String subCode;
 }

@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.board.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,5 +32,15 @@ public class ShippingPolicy {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "courier_id")
     private Courier courier;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "condition", columnDefinition = "varchar(20)")
+    private ShippingPolicyCondition condition;
+
+    @Column(name = "fee")
+    private int fee;
+
+    @Column(name = "free_min_price")
+    private int freeMinPrice;
 
 }
