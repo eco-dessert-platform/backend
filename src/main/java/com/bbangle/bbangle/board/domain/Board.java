@@ -44,39 +44,28 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "product_info_notice_id")
-    private ProductInfoNotice productInfoNotice;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private BoardDetail boardDetail;
-
-    @Column(name = "title", length = 50)
+    @Column(name = "title")
     private String title;
 
     @Column(name = "price")
     private int price;
 
-    @Column(name = "is_soldout", columnDefinition = "tinyint(1)")
-    private Boolean status;
-
-    @Column(name = "purchase_url", columnDefinition = "varchar(255)")
-    private String purchaseUrl;
-
-    @Column(name = "view")
-    private int view;
-
-    @Column(name = "wish_cnt")
-    private int wish_cnt;
-
     @Column(name = "discount_rate")
     private int discountRate;
 
-    @Column(name = "discount_price")
-    private Integer discountPrice;
+    @Column(name = "is_soldout", columnDefinition = "tinyint")
+    private Boolean status;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint(1)", nullable = false)
+    @Column(name = "purchase_url")
+    private String purchaseUrl;
+
+    @Column(name = "delivery_fee")
+    private Integer deliveryFee;
+
+    @Column(name = "free_shipping_conditions")
+    private Integer freeShippingConditions;
+
+    @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
@@ -84,6 +73,14 @@ public class Board extends BaseEntity {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<ProductImg> productImgs = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private BoardDetail boardDetail;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_info_notice_id")
+    private ProductInfoNotice productInfoNotice;
 
     @OneToOne(mappedBy = "board", cascade = CascadeType.ALL)
     // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
@@ -100,14 +97,15 @@ public class Board extends BaseEntity {
     }
 
     public Board(Store store, String title, int price, int discountRate,
-                 int discountPrice, ProductInfoNotice productInfoNotice) {
-//        validate(price, discountRate, deliveryFee);
+                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
+        validate(price, discountRate, deliveryFee);
 
         this.store = store;
         this.title = title;
         this.price = price;
         this.discountRate = discountRate;
-        this.discountPrice = discountPrice;
+        this.deliveryFee = deliveryFee;
+        this.freeShippingConditions = freeShippingConditions;
         this.isDeleted = false;
         this.productInfoNotice = productInfoNotice;
     }
@@ -124,13 +122,13 @@ public class Board extends BaseEntity {
         }
     }
 
-//    public List<String> getTags() {
-//        return products.stream()
-//            .map(Product::getTags)
-//            .flatMap(List::stream)
-//            .distinct()
-//            .toList();
-//    }
+    public List<String> getTags() {
+        return products.stream()
+            .map(Product::getTags)
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
+    }
 
     public boolean isSoldOut() {
         return products.stream().allMatch(Product::isSoldout);
