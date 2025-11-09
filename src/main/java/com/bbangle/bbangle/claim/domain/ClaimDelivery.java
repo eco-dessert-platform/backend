@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.domain;
 
 import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
+import com.bbangle.bbangle.claim.domain.constant.ClaimShippingStatus;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
@@ -48,6 +49,10 @@ public class ClaimDelivery extends BaseEntity {
 
     @Embedded
     private Shipping shipping;
+
+    @Column(name = "status", length = 30, columnDefinition = "varchar(30)")
+    @Enumerated(EnumType.STRING)
+    private ClaimShippingStatus status;
 
     private LocalDateTime collectedAt;
 

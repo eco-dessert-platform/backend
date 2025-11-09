@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.delivery.domain;
+package com.bbangle.bbangle.claim.domain.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ShippingStatus {
+public enum ClaimShippingStatus {
 
     READY("배송 준비중"),
     IN_TRANSIT("배송중"),
