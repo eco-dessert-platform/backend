@@ -41,8 +41,8 @@ public class OrderDelivery extends BaseEntity {
     private Shipping shipping;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_status", columnDefinition = "VARCHAR(20)")
-    private OrderDeliveryStatus orderDeliveryStatus;
+    @Column(name = "status", columnDefinition = "VARCHAR(20)")
+    private OrderDeliveryStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id")
