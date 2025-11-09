@@ -2,9 +2,12 @@ package com.bbangle.bbangle.seller.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,8 +47,9 @@ public class Seller extends BaseEntity {
     @Column(name = "profile", columnDefinition = "VARCHAR(255)")
     private String profile;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "VARCHAR(20)")
-    private String status;
+    private CertificationStatus certificationStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
