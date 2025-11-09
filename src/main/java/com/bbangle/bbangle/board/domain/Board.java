@@ -85,6 +85,9 @@ public class Board extends BaseEntity {
     @Column(name = "discount_price")
     private int discountPrice;
 
+    @Column(name = "courier")
+    private String courier;
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
