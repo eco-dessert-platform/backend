@@ -44,6 +44,14 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_info_notice_id")
+    private ProductInfoNotice productInfoNotice;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private BoardDetail boardDetail;
+
     @Column(name = "title")
     private String title;
 
@@ -68,19 +76,23 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    @Column(name = "view")
+    private int view;
+
+    @Column(name = "wish_cnt")
+    private int wishCnt;
+
+    @Column(name = "discount_price")
+    private int discountPrice;
+
+    @Column(name = "courier")
+    private String courier;
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<ProductImg> productImgs = new ArrayList<>();
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private BoardDetail boardDetail;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "product_info_notice_id")
-    private ProductInfoNotice productInfoNotice;
 
     @OneToOne(mappedBy = "board", cascade = CascadeType.ALL)
     // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
@@ -97,7 +109,7 @@ public class Board extends BaseEntity {
     }
 
     public Board(Store store, String title, int price, int discountRate,
-        int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
+                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
         validate(price, discountRate, deliveryFee);
 
         this.store = store;
