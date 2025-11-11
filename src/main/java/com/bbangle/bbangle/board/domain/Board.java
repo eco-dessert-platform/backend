@@ -79,9 +79,6 @@ public class Board extends BaseEntity {
     @Column(name = "view")
     private int view;
 
-    @Column(name = "wish_cnt")
-    private int wishCnt;
-
     @Column(name = "discount_price")
     private int discountPrice;
 
