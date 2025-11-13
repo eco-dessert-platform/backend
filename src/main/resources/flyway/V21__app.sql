@@ -21,7 +21,6 @@ CREATE TABLE sellers
     store_id              BIGINT,
     created_at            datetime(6) NOT NULL,
     modified_at           datetime(6) NOT NULL,
-    is_deleted            TINYINT(1) DEFAULT 0,
     INDEX (member_id),
     INDEX (store_id)
 );
@@ -36,7 +35,6 @@ CREATE TABLE account_verifications
     seller_id      BIGINT,
     created_at     datetime(6) NOT NULL,
     modified_at    datetime(6) NOT NULL,
-    is_deleted     TINYINT(1) DEFAULT 0,
     INDEX (seller_id)
 );
 
@@ -49,7 +47,6 @@ CREATE TABLE seller_documents
     status      VARCHAR(30),
     created_at  datetime(6) NOT NULL,
     modified_at datetime(6) NOT NULL,
-    is_deleted  TINYINT(1) DEFAULT 0,
     INDEX (seller_id)
 );
 
@@ -66,7 +63,6 @@ CREATE TABLE orders
     member_id       BIGINT,
     created_at      datetime(6) NOT NULL,
     modified_at     datetime(6) NOT NULL,
-    is_deleted      TINYINT(1) DEFAULT 0,
     INDEX (member_id)
 );
 
@@ -83,7 +79,6 @@ CREATE TABLE order_item
     product_id      BIGINT,
     created_at      datetime(6) NOT NULL,
     modified_at     datetime(6) NOT NULL,
-    is_deleted      TINYINT(1) DEFAULT 0,
     INDEX (order_id),
     INDEX (product_id)
 );

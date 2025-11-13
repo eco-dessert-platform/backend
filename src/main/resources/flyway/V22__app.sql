@@ -12,10 +12,8 @@ CREATE TABLE daily_settlement (
                                   with_holding_payment DECIMAL(15,2),            -- 지급보류
                                   settlement_method VARCHAR(20),                 -- 정산 방식
                                   created_at DATETIME(6) NOT NULL,
-                                  modified_at DATETIME(6) NOT NULL,
-                                  is_deleted TINYINT(1) DEFAULT 0
+                                  modified_at DATETIME(6) NOT NULL
 );
-
 
 CREATE TABLE settlement_item (
                                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -30,7 +28,6 @@ CREATE TABLE settlement_item (
                                  order_item_id BIGINT,                          -- FK: 주문상품
                                  created_at DATETIME(6) NOT NULL,
                                  modified_at DATETIME(6) NOT NULL,
-                                 is_deleted TINYINT(1) DEFAULT 0,
                                  CONSTRAINT fk_settlement_item_daily_settlement FOREIGN KEY (daily_settlement_id)
                                      REFERENCES daily_settlement (id),
                                  CONSTRAINT fk_settlement_item_order_item FOREIGN KEY (order_item_id)
