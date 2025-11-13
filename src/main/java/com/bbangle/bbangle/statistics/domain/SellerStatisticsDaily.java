@@ -3,10 +3,8 @@ package com.bbangle.bbangle.statistics.domain;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.seller.domain.Seller;
 import jakarta.persistence.Column;
-import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -55,6 +53,6 @@ public class SellerStatisticsDaily extends BaseEntity {
     private BigDecimal refundRate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "seller_id")
     private Seller seller;
 }
