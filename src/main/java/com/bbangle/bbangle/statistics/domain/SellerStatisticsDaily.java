@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +31,7 @@ public class SellerStatisticsDaily extends BaseEntity {
     private Long id;
 
     @Column(name = "stat_date")
-    private LocalDate statDate;
+    private LocalDateTime statDate;
 
     @Column(name = "weekday")
     private Integer weekday;
