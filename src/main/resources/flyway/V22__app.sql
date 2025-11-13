@@ -55,6 +55,6 @@ CREATE TABLE seller_statistics_daily (
                                  created_at DATETIME(6) NOT NULL,
                                  modified_at DATETIME(6) NOT NULL,
 
-                                 CONSTRAINT fk_seller_statistics_daily_seller FOREIGN KEY (seller_id)
-                                     REFERENCES seller (id)
+                                 CONSTRAINT fk_seller_statistics_daily_sellers FOREIGN KEY (seller_id)
+                                     REFERENCES sellers (id)
 );
