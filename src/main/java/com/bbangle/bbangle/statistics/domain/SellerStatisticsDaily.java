@@ -34,8 +34,8 @@ public class SellerStatisticsDaily extends BaseEntity {
     @Column(name = "weekday")
     private Integer weekday;
 
-    @Column(name = "total_amount")
-    private Long totalAmount;
+    @Column(name = "total_amount", precision = 15, scale = 2)
+    private BigDecimal totalAmount;
 
     @Column(name = "total_orders")
     private Integer totalOrders;
@@ -43,8 +43,8 @@ public class SellerStatisticsDaily extends BaseEntity {
     @Column(name = "total_buyers")
     private Integer totalBuyers;
 
-    @Column(name = "refund_amount")
-    private Long refundAmount;
+    @Column(name = "refund_amount", precision = 15, scale = 2)
+    private BigDecimal refundAmount;
 
     @Column(name = "refund_count")
     private Integer refundCount;

@@ -43,10 +43,10 @@ CREATE TABLE seller_statistics_daily (
                                  seller_id BIGINT,
                                  stat_date DATETIME(6),             -- 통계일자
                                  weekday INT,                       -- 요일 (0~6)
-                                 total_amount BIGINT,               -- 총 결제금액
+                                 total_amount DECIMAL(15,2),               -- 총 결제금액
                                  total_orders INT,                  -- 총 주문건수
                                  total_buyers INT,                  -- 총 구매자 수
-                                 refund_amount BIGINT,              -- 환불 금액
+                                 refund_amount DECIMAL(15,2),              -- 환불 금액
                                  refund_count INT,                  -- 환불 건수
                                  refund_rate DECIMAL(5,2),          -- 환불율 (%)
                                  created_at DATETIME(6) NOT NULL,
