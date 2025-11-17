@@ -55,3 +55,10 @@ CREATE TABLE seller_statistics_daily (
                                  CONSTRAINT fk_seller_statistics_daily_sellers FOREIGN KEY (seller_id)
                                      REFERENCES sellers (id)
 );
+
+-- is_deleted 컬럼 삭제
+ALTER TABLE sellers DROP COLUMN is_deleted;
+ALTER TABLE account_verifications DROP COLUMN is_deleted;
+ALTER TABLE seller_documents DROP COLUMN is_deleted;
+ALTER TABLE orders DROP COLUMN is_deleted;
+ALTER TABLE order_item DROP COLUMN is_deleted;
