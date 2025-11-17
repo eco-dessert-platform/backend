@@ -119,11 +119,6 @@ public class SellerRequest {
             @Email(message = "올바른 이메일 형식이 아닙니다.")
             String email,
 
-            @Schema(description = "인증번호(6자리)", example = "123456")
-            @NotNull
-            @Min(value = 100000) @Max(value = 999999) // 6자리 숫자 범위 강제
-            Long verificationNumber,
-
             @Schema(description = "판매자 주소", example = "(우편번호) 성남시 금광동 222-31")
             @NotBlank
             String originAddress,
@@ -140,7 +135,6 @@ public class SellerRequest {
                     .phoneNumber(phoneNumber)
                     .subPhoneNumber(subPhoneNumber)
                     .email(email)
-                    .verificationNumber(verificationNumber)
                     .originAddress(originAddress)
                     .originAddressDetail(originAddressDetail)
                     .build();
