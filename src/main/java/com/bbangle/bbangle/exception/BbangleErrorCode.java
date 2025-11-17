@@ -86,7 +86,16 @@ public enum BbangleErrorCode {
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_INITIALIZATION_ERROR(-997, "Firebase 초기화 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Seller Error (700~799)
+    INVALID_PHONE_NUMBER(-700,"유효하지 않은 핸드폰 번호 입니다.", BAD_REQUEST),
+    INVALID_EMAIL(-702,"유효하지 않은 이메일 형식 입니다.", BAD_REQUEST),
+    INVALID_ADDRESS(-703,"유효하지 않은 주소 입니다.", BAD_REQUEST),
+    INVALID_DETAIL_ADDRESS(-704,"유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
+    INVALID_CERTIFICATION_STATUS(-705,"승인 상태가 비어 있습니다.", BAD_REQUEST ),
+    INVALID_PROFILE(-706, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST);
+
 
     private final int code;
     private final String message;

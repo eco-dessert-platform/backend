@@ -8,7 +8,6 @@ public record SellerCreateCommand(
         String phoneNumber,
         String subPhoneNumber,
         String email,
-        Long verificationNumber,
         String originAddress,
         String originAddressDetail
 ) {
