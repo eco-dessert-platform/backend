@@ -105,4 +105,6 @@ public class StoreRepositoryTest {
             .isInstanceOf(NonUniqueResultException.class);
     }
 
+
+
 }

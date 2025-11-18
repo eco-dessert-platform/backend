@@ -37,6 +37,7 @@ public class Store extends BaseEntity {
     @Column(name = "identifier")
     private String identifier;
 
+    // 컬럼에 unique 제약조건을 지정할 예정
     @Column(name = "name")
     private String name;
 

@@ -1,6 +1,10 @@
 package com.bbangle.bbangle.store.seller.controller.dto;
 
+import com.bbangle.bbangle.store.domain.StoreStatus;
+import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import lombok.Builder;
 
 public class StoreResponse {
 
@@ -22,5 +26,37 @@ public class StoreResponse {
     ) {
 
     }
+
+
+    @Schema(description = "중복 검사 응답 DTO")
+    public record StoreNameCheckResponse(
+        Long id,
+        String name,
+        boolean isDeleted,
+        StoreStatus status
+    ) {
+
+        @Builder
+        public StoreNameCheckResponse {
+        }
+
+        public static StoreNameCheckResponse from(
+            StoreInfo storeInfo) {
+            return StoreNameCheckResponse.builder()
+                .id(storeInfo.id())
+                .name(storeInfo.name())
+                .isDeleted(storeInfo.isDeleted())
+                .status(storeInfo.status())
+                .build();
+        }
+
+        public static List<StoreNameCheckResponse> fromList(List<StoreInfo> infoList) {
+            return infoList.stream()
+                .map(StoreNameCheckResponse::from)
+                .toList();
+        }
+
+    }
+
 
 }
