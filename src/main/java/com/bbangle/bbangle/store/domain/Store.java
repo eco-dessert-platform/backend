@@ -2,8 +2,12 @@ package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,7 +49,27 @@ public class Store extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private StoreStatus status;
+
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
+
+    public static Store createForSeller(String name) {
+        Store store = Store.builder()
+            .name(name)
+            .isDeleted(false)
+            .status(StoreStatus.NONE)
+            .build();
+        store.validateField();
+        return store;
+    }
+
+    private void validateField(){
+        if (this.name == null || this.name.isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
+    }
 
 }
