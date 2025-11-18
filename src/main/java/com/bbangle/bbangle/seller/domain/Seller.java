@@ -73,7 +73,8 @@ public class Seller extends BaseEntity {
         String originAddressLine,
         String originAddressDetail,
         String profile,
-        CertificationStatus certificationStatus
+        CertificationStatus certificationStatus,
+        Store store
     ) {
         this.phone = phone;
         this.subPhone = subPhone;
@@ -82,6 +83,7 @@ public class Seller extends BaseEntity {
         this.originAddressDetail = originAddressDetail;
         this.profile = profile;
         this.certificationStatus = certificationStatus;
+        this.store = store;
         validateField();
     }
 
@@ -92,7 +94,8 @@ public class Seller extends BaseEntity {
         String originAddressLine,
         String originAddressDetail,
         String profile,
-        CertificationStatus certificationStatus
+        CertificationStatus certificationStatus,
+        Store store
     ) {
         return Seller.builder()
             .phone(phone)
@@ -102,6 +105,7 @@ public class Seller extends BaseEntity {
             .originAddressDetail(originAddressDetail)
             .profile(profile)
             .certificationStatus(certificationStatus)
+            .store(store)
             .build();
     }
 
@@ -124,6 +128,10 @@ public class Seller extends BaseEntity {
 
         if (this.certificationStatus == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_CERTIFICATION_STATUS);
+        }
+
+        if (this.store == null) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE);
         }
     }
 
