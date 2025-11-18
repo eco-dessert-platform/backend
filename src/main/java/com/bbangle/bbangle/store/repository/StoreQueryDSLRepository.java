@@ -16,4 +16,8 @@ public interface StoreQueryDSLRepository {
 
     List<Board> findBoards(Long storeId, Long boardIdAsCursorId);
 
+    Optional<Store> findByStoreName(String storeName);
+
+    List<Store> findByNameContaining(String name);
+
 }

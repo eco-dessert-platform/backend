@@ -80,4 +80,18 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetch();
     }
 
+
+    @Override
+    public Optional<Store> findByStoreName(String storeName) {
+        return Optional.ofNullable(queryFactory.selectFrom(store)
+            .where(store.name.eq(storeName))
+            .fetchOne());
+    }
+
+
+    @Override
+    public List<Store> findByNameContaining(String storeName) {
+        return queryFactory.selectFrom(store)
+            .where(store.name.like("%" + storeName + "%")).fetch();
+    }
 }
