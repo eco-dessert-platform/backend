@@ -33,14 +33,14 @@ public class SellerController implements SellerApi {
     private final SellerService sellerService;
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Override
     public CommonResult registerDocuments(
         @ModelAttribute SellerDocumentsRegisterRequest request,
         @AuthenticationPrincipal Long memberId
     ) {
-        // TODO: 구현 필요
+        sellerService.registerDocuments(memberId, request);
         return responseService.getSuccessResult();
     }
-
 
     @PutMapping
     @Override

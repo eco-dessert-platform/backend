@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,5 +51,20 @@ public class SellerDocument extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "VARCHAR(30)")
     private CertificationStatus status;
+
+    public void updateUrl(String url) {
+        this.url = url;
+    }
+
+    private SellerDocument(Seller seller, DocumentType documentType, String url, CertificationStatus status) {
+        this.seller = seller;
+        this.type = documentType;
+        this.url = url;
+        this.status = status;
+    }
+
+    public static SellerDocument register(Seller seller, DocumentType documentType, String businessLicenseS3Path) {
+        return new SellerDocument(seller, documentType, businessLicenseS3Path, CertificationStatus.PENDING);
+    }
 
 }

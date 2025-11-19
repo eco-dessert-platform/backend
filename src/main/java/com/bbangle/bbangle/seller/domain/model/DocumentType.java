@@ -11,17 +11,19 @@ public enum DocumentType {
     // TODO : 각 문서 형식을 이해하기 쉽게 주석 추가
 
     // 사업자등록증
-    BUSINESS_REGISTRATION_CERTIFICATE("Business Registration Certificate"),
+    BUSINESS_REGISTRATION_CERTIFICATE("Business Registration Certificate", "business-license"),
     // 통신판매업신고증
-    MAIL_ORDER_SALES_REPORT("Mail Order Sales Report"),
+    MAIL_ORDER_SALES_REPORT("Mail Order Sales Report", "mailOrder-license"),
     // 즉석식품제조가공업등록증
     INSTANT_FOOD_MANUFACTURING_PROCESSING_REGISTRATION(
-        "Instant Food Manufacturing Processing Registration"),
+        "Instant Food Manufacturing Processing Registration",
+        "food_manufacture_license"
+    ),
     // 통장사본
-    BANKBOOK_COPY("Bankbook Copy");
+    BANKBOOK_COPY("Bankbook Copy", "bankbook-copy");
 
     private final String description;
-
+    private final String folderName;
 
     public static DocumentType fromDescription(String desc) {
         return Arrays.stream(values())
