@@ -1,9 +1,12 @@
 package com.bbangle.bbangle.store.seller.service;
 
+import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,5 +32,17 @@ public class SellerStoreService {
         // 신규 스토어 생성(이름이 중복되지 않는 경우)
         return storeRepository.save(Store.createForSeller(storeName));
     }
+
+    @Transactional
+    public StoreCustomPage<List<StoreInfo>> selectStoreNameForSeller(String storeName, Long cursorId){
+        // 1. 스토어 명이 중복이라면 사용할 수 없다
+        if (storeRepository.findByStoreName(storeName).isPresent()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
+        // 2. 스토어 명이 중복이 아니라면 사용 가능하다
+        // 검색 결과를 리턴해준다.
+         return storeRepository.findNextCursorPage(cursorId, storeName);
+    }
+
 
 }
