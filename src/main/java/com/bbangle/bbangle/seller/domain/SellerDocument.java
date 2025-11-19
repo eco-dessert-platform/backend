@@ -20,7 +20,15 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "seller_documents")
+@Table(
+    name = "seller_documents",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uq_seller_documents_seller_id_type",
+            columnNames = {"seller_id", "type"}
+        )
+    }
+)
 @Entity
 public class SellerDocument extends BaseEntity {
 
@@ -33,7 +41,7 @@ public class SellerDocument extends BaseEntity {
     private Seller seller;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", columnDefinition = "VARCHAR(30)")
+    @Column(name = "type", columnDefinition = "VARCHAR(100)")
     private DocumentType type;
 
     @Column(name = "url", columnDefinition = "VARCHAR(255)")
