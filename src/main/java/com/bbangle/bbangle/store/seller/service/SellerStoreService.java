@@ -35,14 +35,20 @@ public class SellerStoreService {
 
     @Transactional
     public StoreCustomPage<List<StoreInfo>> selectStoreNameForSeller(String storeName, Long cursorId){
-        // 1. 스토어 명이 중복이라면 사용할 수 없다
-        if (storeRepository.findByStoreName(storeName).isPresent()) {
+        String normalizedStoreName = normalize(storeName);
+        // 1. 스토어명이 중복이라면 사용할 수없다.
+        if (storeRepository.findByStoreName(normalizedStoreName).isPresent()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
         // 2. 스토어 명이 중복이 아니라면 사용 가능하다
-        // 검색 결과를 리턴해준다.
-         return storeRepository.findNextCursorPage(cursorId, storeName);
+         return storeRepository.findNextCursorPage(cursorId, normalizedStoreName);
     }
 
+    private String normalize(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        // → "   " 같은 공백-only 문자열이면 null로 간주
+        return trimmed.isEmpty() ? null : trimmed;
+    }
 
 }
