@@ -39,10 +39,10 @@ public class SellerStoreController implements SellerStoreApi {
     @Override
     @GetMapping("/check-name-duplicate")
     public SingleResult<StoreCustomPage<List<StoreNameCheckResponse>>> checkStoreNameDuplicate(
-        String storeName) {
+        @RequestParam String storeName) {
 
         StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = sellerStoreService.selectStoreNameForSeller(
-            storeName, null);
+            storeName, null); // 페이징 처리를 위해 null 전달
 
         StoreCustomPage<List<StoreNameCheckResponse>> mapped =
             result.map(StoreNameCheckResponse::fromList);

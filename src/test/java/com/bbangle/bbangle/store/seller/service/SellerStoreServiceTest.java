@@ -3,7 +3,6 @@ package com.bbangle.bbangle.store.seller.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
@@ -11,7 +10,6 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +35,6 @@ public class SellerStoreServiceTest {
     @Autowired
     private EntityManager em;
 
-    private static final int TOTAL_STORES = 25;
 
     @BeforeEach
     void setUp() {
@@ -123,5 +120,19 @@ public class SellerStoreServiceTest {
         assertThat(result.getContent()).isEmpty();
     }
 
+
+    @Test
+    @DisplayName("공백있는 문자열이 넘어오면 이를 제거한다")
+    void selectStoreNameForSellerWithWhitespace() {
+        // given
+        String keyword = "  빵  ";
+
+        // when
+        var result = sellerStoreService.selectStoreNameForSeller(keyword, null);
+
+        // then
+        assertThat(result.getContent())
+            .allMatch(info -> info.name().contains("빵"));
+    }
 
 }
