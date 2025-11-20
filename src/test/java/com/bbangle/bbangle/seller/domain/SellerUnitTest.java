@@ -94,7 +94,7 @@ public class SellerUnitTest {
 
 
     @Test
-    @DisplayName("판매자 정보 생성시 비어 있는 상세 주소로 인해 실한다")
+    @DisplayName("판매자 정보 생성시 비어 있는 상세 주소로 인해 실패한다")
     void fail_create_seller_with_invalid_detail_address() {
         assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
             "경기도 수원시 팔달구","", "test/s3/seller", CertificationStatus.APPROVED ,store)

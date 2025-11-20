@@ -41,8 +41,17 @@ class SellerServiceTest {
     void createSeller_withNewStore() {
         // given
         Long storeId = null;
-        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지",storeId);
+
+        SellerCreateCommand command = SellerCreateCommand.builder()
+            .storeName("빵그리 상점1123")
+            .phoneNumber("01012345678")
+            .subPhoneNumber("01012345678")
+            .email("test@gmail.com")
+            .originAddress("경기도 수원시 팔달구")
+            .originAddressDetail("화성행궁 12번지")
+            .storeId(1L)
+            .build();
+
         String profileImagePath = "path/to/image.jpg";
 
 
@@ -70,8 +79,15 @@ class SellerServiceTest {
         // given
         Store existingStore = storeRepository.save(Store.builder().name("기존 스토어").build());
         Long storeId = existingStore.getId();
-        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지",storeId);
+        SellerCreateCommand command = SellerCreateCommand.builder()
+            .storeName("빵그리 상점1123")
+            .phoneNumber("01012345678")
+            .subPhoneNumber("01012345678")
+            .email("test@gmail.com")
+            .originAddress("경기도 수원시 팔달구")
+            .originAddressDetail("화성행궁 12번지")
+            .storeId(storeId)
+            .build();
         String profileImagePath = "path/to/image.jpg";
 
         // when

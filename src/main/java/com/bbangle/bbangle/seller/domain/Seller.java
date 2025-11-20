@@ -8,6 +8,7 @@ import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.domain.model.EmailVO;
 import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -76,6 +77,8 @@ public class Seller extends BaseEntity {
         CertificationStatus certificationStatus,
         Store store
     ) {
+        validateField(phone, subPhone, email, originAddressLine, originAddressDetail, profile, certificationStatus, store);
+        store.changeStatus(StoreStatus.RESERVED);
         this.phone = phone;
         this.subPhone = subPhone;
         this.email = email;
@@ -84,7 +87,6 @@ public class Seller extends BaseEntity {
         this.profile = profile;
         this.certificationStatus = certificationStatus;
         this.store = store;
-        validateField();
     }
 
     public static Seller create(
@@ -109,28 +111,36 @@ public class Seller extends BaseEntity {
             .build();
     }
 
+    private void validateField(
+        String phone,
+        String subPhone,
+        String email,
+        String originAddressLine,
+        String originAddressDetail,
+        String profile,
+        CertificationStatus certificationStatus,
+        Store store
+    ) {
+        PhoneNumberVO.of(phone, subPhone);
+        EmailVO.of(email);
 
-    private void validateField() {
-
-        PhoneNumberVO.of(this.phone, this.subPhone);
-        EmailVO.of(this.email);
-        if (this.originAddressLine == null || this.originAddressLine.isEmpty()) {
+        if (originAddressLine == null || originAddressLine.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_ADDRESS);
         }
 
-        if(this.originAddressDetail == null || this.originAddressDetail.isEmpty()) {
+        if(originAddressDetail == null || originAddressDetail.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_DETAIL_ADDRESS);
         }
 
-        if(this.profile == null || this.profile.isEmpty()) {
+        if(profile == null || profile.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
         }
 
-        if (this.certificationStatus == null) {
+        if (certificationStatus == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_CERTIFICATION_STATUS);
         }
 
-        if (this.store == null) {
+        if (store == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE);
         }
     }
