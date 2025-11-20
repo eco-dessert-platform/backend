@@ -37,7 +37,6 @@ public class Store extends BaseEntity {
     @Column(name = "identifier")
     private String identifier;
 
-    // 컬럼에 unique 제약조건을 지정할 예정
     @Column(name = "name")
     private String name;
 
@@ -58,17 +57,23 @@ public class Store extends BaseEntity {
     List<Board> boards = new ArrayList<>();
 
     public static Store createForSeller(String name) {
-        Store store = Store.builder()
-            .name(name)
-            .isDeleted(false)
-            .status(StoreStatus.NONE)
-            .build();
-        store.validateField();
-        return store;
+       return new Store(name,"00000",false, StoreStatus.NONE);
     }
 
-    private void validateField(){
-        if (this.name == null || this.name.isEmpty()) {
+    private Store (String name, String identifier,boolean isDeleted, StoreStatus status) {
+        validateField(name);
+        this.name = name;
+        this.identifier = identifier;
+        this.isDeleted = isDeleted;
+        this.status = status;
+    }
+
+    public void changeStatus(StoreStatus status) {
+        this.status = status;
+    }
+
+    private void validateField(String name){
+        if (name == null || name.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
     }

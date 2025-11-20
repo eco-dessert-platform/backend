@@ -21,7 +21,6 @@ public class SellerFacadeTest extends S3IntegrationTestSupport {
 
     @Autowired
     private SellerFacade sellerFacade;
-
     @Autowired
     private SellerRepository sellerRepository;
     @Autowired
@@ -32,8 +31,15 @@ public class SellerFacadeTest extends S3IntegrationTestSupport {
     void success_registerSeller_withOut_storeId() {
         // arrange
         Long storeId = null;
-        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지", storeId);
+        SellerCreateCommand command = SellerCreateCommand.builder()
+            .storeName("빵그리 상점1123")
+            .phoneNumber("01012345678")
+            .subPhoneNumber("01012345678")
+            .email("test@gmail.com")
+            .originAddress("경기도 수원시 팔달구")
+            .originAddressDetail("화성행궁 12번지")
+            .storeId(storeId)
+            .build();
         MockMultipartFile mockFile = new MockMultipartFile(
             "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
             "test-image.png",           // 파일명
@@ -65,11 +71,17 @@ public class SellerFacadeTest extends S3IntegrationTestSupport {
     @DisplayName("유효한 정보가 주어지면 판매자 등록에 성공한다 - 스토어 아이디가 존재하는 경우.")
     void success_registerSeller_existed_storeId() {
         // arrange
-        Long storeId = 1L;
         Store registStore = storeRepository.saveAndFlush(Store.createForSeller("기존 상점"));
 
-        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지", storeId);
+        SellerCreateCommand command = SellerCreateCommand.builder()
+            .storeName("빵그리 상점1123")
+            .phoneNumber("01012345678")
+            .subPhoneNumber("01012345678")
+            .email("test@gmail.com")
+            .originAddress("경기도 수원시 팔달구")
+            .originAddressDetail("화성행궁 12번지")
+            .storeId(registStore.getId())
+            .build();
         MockMultipartFile mockFile = new MockMultipartFile(
             "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
             "test-image.png",           // 파일명

@@ -96,6 +96,7 @@ public enum BbangleErrorCode {
     INVALID_DETAIL_ADDRESS(-704, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
     INVALID_CERTIFICATION_STATUS(-705, "승인 상태가 비어 있습니다.", BAD_REQUEST),
     INVALID_PROFILE(-706, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST),
+    SELLER_CREATION_FAILED(-708, "Seller 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
