@@ -11,6 +11,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class SellerService {
 
     }
 
+    @Transactional
     public void createSeller(SellerCreateCommand command, String profileImagePath, Long storeId) {
         // 스토어 객체 생성
         Store store = sellerStoreService.registerStoreForSeller(storeId, command.storeName());

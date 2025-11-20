@@ -8,6 +8,7 @@ import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocu
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
+import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class SellerController implements SellerApi {
 
     private final ResponseService responseService;
     private final SellerService sellerService;
+    private final SellerFacade sellerFacade;
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
@@ -80,6 +82,7 @@ public class SellerController implements SellerApi {
         @Valid @RequestPart("request") SellerCreateRequest request,
         @RequestPart("profileImage") MultipartFile profileImage
     ) {
+        sellerFacade.registerSeller(request.toCommand(), profileImage, request.storeId());
         return responseService.getSuccessResult();
     }
 

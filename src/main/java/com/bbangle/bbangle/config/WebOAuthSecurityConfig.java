@@ -32,10 +32,10 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class WebOAuthSecurityConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
-            "http://localhost:3000",
-            "https://www.bbanggree.com",
-            "https://api.bbanggree.com",
-            "https://develop.bbanggree.com"
+        "http://localhost:3000",
+        "https://www.bbanggree.com",
+        "https://api.bbanggree.com",
+        "https://develop.bbanggree.com"
     };
     private final TokenProvider tokenProvider;
 
@@ -47,43 +47,45 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(ALLOWED_ORIGINS)
-                .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), PATCH.name())
-                .allowCredentials(true)
-                .exposedHeaders("*");
+            .allowedOrigins(ALLOWED_ORIGINS)
+            .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), PATCH.name())
+            .allowCredentials(true)
+            .exposedHeaders("*");
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(tokenAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers("/api/v1/token").permitAll()
-                                .requestMatchers("/api/v1/oauth/**").permitAll()
-                                .requestMatchers("/api/v1/search/**").permitAll()
-                                .requestMatchers("/api/v1/landingpage").permitAll()
-                                .requestMatchers("/api/v1/store/**").permitAll()
-                                .requestMatchers("/api/v1/stores/**").permitAll()
-                                .requestMatchers("/api/v1/health/**").permitAll()
-                                .requestMatchers("/api/v1/push/**").permitAll()
-                                .requestMatchers(GET, "/api/v1/boards/**").permitAll()
-                                .requestMatchers(PATCH, "/api/v1/boards/**").permitAll()
-                                .requestMatchers(GET, "/api/v1/notification/**").permitAll()
-                                //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
-                                .requestMatchers(GET, "/api/v1/boards/notification/**").permitAll()
-                                .requestMatchers(GET, "/api/v1/review/**").permitAll()
-                                .requestMatchers(GET, "/api/v1/analytics/**").permitAll()
-                                .requestMatchers(GET, "/api/v1/boards/folders/**").authenticated()
-                                .requestMatchers("/api/**").authenticated()
-                                .anyRequest().permitAll())
-                .logout(logout -> logout.logoutSuccessUrl("/login"))
-                .exceptionHandling(exp ->
-                        exp.defaultAuthenticationEntryPointFor(
-                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                new AntPathRequestMatcher("/api/**"))
-                );
+            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(tokenAuthenticationFilter(),
+                UsernamePasswordAuthenticationFilter.class)
+            .authorizeHttpRequests(authorize ->
+                authorize.requestMatchers("/api/v1/token").permitAll()
+                    .requestMatchers("/api/v1/oauth/**").permitAll()
+                    .requestMatchers("/api/v1/search/**").permitAll()
+                    .requestMatchers("/api/v1/landingpage").permitAll()
+                    .requestMatchers("/api/v1/store/**").permitAll()
+                    .requestMatchers("/api/v1/stores/**").permitAll()
+                    .requestMatchers("/api/v1/health/**").permitAll()
+                    .requestMatchers("/api/v1/push/**").permitAll()
+                    .requestMatchers(GET, "/api/v1/boards/**").permitAll()
+                    .requestMatchers(PATCH, "/api/v1/boards/**").permitAll()
+                    .requestMatchers(GET, "/api/v1/notification/**").permitAll()
+                    //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
+                    .requestMatchers(GET, "/api/v1/boards/notification/**").permitAll()
+                    .requestMatchers(GET, "/api/v1/review/**").permitAll()
+                    .requestMatchers(GET, "/api/v1/analytics/**").permitAll()
+                    .requestMatchers(GET, "/api/v1/boards/folders/**").authenticated()
+                    .requestMatchers("/api/v1/seller/sellers/**").authenticated()
+                    .requestMatchers("/api/v1/seller/stores/**").authenticated()
+                    .requestMatchers("/api/**").authenticated()
+                    .anyRequest().permitAll())
+            .logout(logout -> logout.logoutSuccessUrl("/login"))
+            .exceptionHandling(exp ->
+                exp.defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    new AntPathRequestMatcher("/api/**"))
+            );
 
         return http.build();
     }

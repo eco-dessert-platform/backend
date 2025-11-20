@@ -40,10 +40,11 @@ class SellerServiceTest {
     @DisplayName("신규 스토어와 함께 판매자를 생성한다")
     void createSeller_withNewStore() {
         // given
-        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지");
-        String profileImagePath = "path/to/image.jpg";
         Long storeId = null;
+        SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
+            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지",storeId);
+        String profileImagePath = "path/to/image.jpg";
+
 
         // when
         sellerService.createSeller(command, profileImagePath, storeId);
@@ -70,7 +71,7 @@ class SellerServiceTest {
         Store existingStore = storeRepository.save(Store.builder().name("기존 스토어").build());
         Long storeId = existingStore.getId();
         SellerCreateCommand command = new SellerCreateCommand("빵그리 상점1123", "01012345678",
-            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지");
+            "01012345678", "test@gmail.com", "경기도 수원시 팔달구", "화성행궁 12번지",storeId);
         String profileImagePath = "path/to/image.jpg";
 
         // when

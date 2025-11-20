@@ -73,7 +73,7 @@ public enum BbangleErrorCode {
     CSV_NOT_CONVERT_ERROR(-57, "CSV 파일을 리스트로 변환 도중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_VALID_INDEX(-58, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INPUT_STREAM_NOT_CLOSE(-59, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  
+
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_CLIENT_ERROR(-601, "AWS SDK 클라이언트 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -82,21 +82,26 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
-    GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
+        HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_INITIALIZATION_ERROR(-997, "Firebase 초기화 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
-    // Seller Error (700~799)
-    INVALID_PHONE_NUMBER(-700,"유효하지 않은 핸드폰 번호 입니다.", BAD_REQUEST),
-    INVALID_EMAIL(-702,"유효하지 않은 이메일 형식 입니다.", BAD_REQUEST),
-    INVALID_ADDRESS(-703,"유효하지 않은 주소 입니다.", BAD_REQUEST),
-    INVALID_DETAIL_ADDRESS(-704,"유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
-    INVALID_CERTIFICATION_STATUS(-705,"승인 상태가 비어 있습니다.", BAD_REQUEST ),
+    // Seller Error (700~720)
+    INVALID_PHONE_NUMBER(-700, "유효하지 않은 핸드폰 번호 입니다.", BAD_REQUEST),
+    INVALID_EMAIL(-702, "유효하지 않은 이메일 형식 입니다.", BAD_REQUEST),
+    INVALID_ADDRESS(-703, "유효하지 않은 주소 입니다.", BAD_REQUEST),
+    INVALID_DETAIL_ADDRESS(-704, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
+    INVALID_CERTIFICATION_STATUS(-705, "승인 상태가 비어 있습니다.", BAD_REQUEST),
     INVALID_PROFILE(-706, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST),
-    INVALID_STORE(-707, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
-    INVALID_STORE_NAME(-708, "유효하지 않은 스토어 이름입니다.", BAD_REQUEST );
+    SELLER_CREATION_FAILED(-708, "Seller 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Store Error (721~740)
+    INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
+    INVALID_STORE_NAME(-722, "유효하지 않은 스토어 이름입니다.", BAD_REQUEST),
+    INVALID_STORE_ID(-723, "유효하지 않은 스토어 아이디 입니다", BAD_REQUEST);
 
     private final int code;
     private final String message;

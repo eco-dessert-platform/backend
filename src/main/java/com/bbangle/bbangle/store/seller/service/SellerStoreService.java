@@ -19,7 +19,7 @@ public class SellerStoreService {
 
     @Transactional
     public Store registerStoreForSeller(Long storeId, String storeName) {
-        // 기존 스토어를 사용하는 경우
+        // 1. 크롤링된 스토어 사용하는 경우
         if (storeId != null) {
             return storeRepository.findById(storeId)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
@@ -29,7 +29,7 @@ public class SellerStoreService {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
 
-        // 신규 스토어 생성(이름이 중복되지 않는 경우)
+        // 2. 새로운 스토어 생성하는 경우
         return storeRepository.save(Store.createForSeller(storeName));
     }
 
