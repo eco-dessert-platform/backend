@@ -100,45 +100,49 @@ public class SellerRequest {
 
     // TODO: v3
     public record SellerCreateRequest(
-            @Schema(description = "스토어명", example = "빵그리의 오븐 1호점")
-            @NotBlank(message = "스토어명은 필수입니다.")
-            @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
-            String storeName,
+        @Schema(description = "스토어명", example = "빵그리의 오븐 1호점")
+        @NotBlank(message = "스토어명은 필수입니다.")
+        @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
+        String storeName,
 
-            @Schema(description = "연락처", example = "01012345678")
-            @NotBlank
-            @Pattern(regexp = "^\\d{1,11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
-            String phoneNumber,
+        @Schema(description = "연락처", example = "01012345678")
+        @NotBlank
+        @Pattern(regexp = "^\\d{1,11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
+        String phoneNumber,
 
-            @Schema(description = "서브 연락처", example = "01012345678")
-            @NotBlank
-            @Pattern(regexp = "^\\d{1,11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
-            String subPhoneNumber,
+        @Schema(description = "서브 연락처", example = "01012345678")
+        @NotBlank
+        @Pattern(regexp = "^\\d{1,11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
+        String subPhoneNumber,
 
-            @Schema(description = "이메일", example = "user@example.com", format = "email")
-            @Email(message = "올바른 이메일 형식이 아닙니다.")
-            String email,
+        @Schema(description = "이메일", example = "user@example.com", format = "email")
+        @Email(message = "올바른 이메일 형식이 아닙니다.")
+        String email,
 
-            @Schema(description = "판매자 주소", example = "(우편번호) 성남시 금광동 222-31")
-            @NotBlank
-            String originAddress,
+        @Schema(description = "판매자 주소", example = "(우편번호) 성남시 금광동 222-31")
+        @NotBlank
+        String originAddress,
 
-            @Schema(description = "판매자 상세 주소", example = "나동 202호")
-            @NotBlank
-            @Size(max = 50, message = "상세 주소는 50자까지 입력 가능합니다.") // 주석 반영
-            String originAddressDetail
+        @Schema(description = "판매자 상세 주소", example = "나동 202호")
+        @NotBlank
+        @Size(max = 50, message = "상세 주소는 50자까지 입력 가능합니다.") // 주석 반영
+        String originAddressDetail,
+
+        @Schema(description = "중복검사 후 선택한 스토어의 아이디값", example = "1" )
+        Long storeId
     ) {
 
-       public SellerCreateCommand toCommand(){
+        public SellerCreateCommand toCommand() {
             return SellerCreateCommand.builder()
-                    .storeName(storeName)
-                    .phoneNumber(phoneNumber)
-                    .subPhoneNumber(subPhoneNumber)
-                    .email(email)
-                    .originAddress(originAddress)
-                    .originAddressDetail(originAddressDetail)
-                    .build();
-       }
+                .storeName(storeName)
+                .phoneNumber(phoneNumber)
+                .subPhoneNumber(subPhoneNumber)
+                .email(email)
+                .originAddress(originAddress)
+                .originAddressDetail(originAddressDetail)
+                .storeId(storeId)
+                .build();
+        }
     }
 
 

@@ -10,18 +10,20 @@ public record SellerCreateCommand(
         String subPhoneNumber,
         String email,
         String originAddress,
-        String originAddressDetail
+        String originAddressDetail,
+        Long storeId
 ) {
 
     @Builder
     public SellerCreateCommand(String storeName, String phoneNumber, String subPhoneNumber,
-        String email, String originAddress, String originAddressDetail) {
+        String email, String originAddress, String originAddressDetail, Long storeId) {
         this.storeName = storeName;
         this.phoneNumber = phoneNumber;
         this.subPhoneNumber = subPhoneNumber;
         this.email = email;
         this.originAddress = originAddress;
         this.originAddressDetail = originAddressDetail;
+        this.storeId =  storeId;
         validate();
     }
 
@@ -44,7 +46,9 @@ public record SellerCreateCommand(
         if(originAddressDetail == null || originAddressDetail.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_DETAIL_ADDRESS);
         }
+        if(storeId != null) {
+            if(storeId <= 0)  throw new BbangleException(BbangleErrorCode.INVALID_STORE_ID);
+        }
     }
-
 
 }
