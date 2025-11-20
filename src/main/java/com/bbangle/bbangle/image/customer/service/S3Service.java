@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class S3Service {
 
     private final AmazonS3 amazonS3;
@@ -48,6 +50,7 @@ public class S3Service {
     @Transactional
     public String saveAndReturnWithCdn(String folderName, MultipartFile image) {
         String imagePath = saveImage(image, folderName);
+        log.debug("Show image path: {}", imagePath);
         imagePath = removeBucketDomainInFolder(imagePath);
         return addCdnDomain(imagePath);
     }
@@ -86,6 +89,8 @@ public class S3Service {
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType("image/" + ext.substring(1));
+        // [추가] 파일 크기 명시 (메모리 효율 및 WARN 해결)
+        metadata.setContentLength(image.getSize());
 
         try {
             amazonS3.putObject(new PutObjectRequest(
@@ -106,10 +111,25 @@ public class S3Service {
     }
 
     public @NotNull String removeBucketDomainInFolder(String imagePath) {
+        String path = imagePath.replace(bucketDomain, "");
+        if (path.startsWith("/")) {
+            return path.substring(1); // 맨 앞 슬래시 제거
+        }
         return imagePath.replace(bucketDomain, "");
     }
 
     public String addCdnDomain(String url) {
-        return cdnDomain + url;
+        // cdnDomain이 '/'로 끝나는지 확인
+        boolean cdnHasSlash = cdnDomain.endsWith("/");
+        // url이 '/'로 시작하는지 확인
+        boolean urlHasSlash = url.startsWith("/");
+
+        if (cdnHasSlash && urlHasSlash) {
+            return cdnDomain + url.substring(1); // 둘 다 있으면 하나 제거
+        } else if (!cdnHasSlash && !urlHasSlash) {
+            return cdnDomain + "/" + url; // 둘 다 없으면 하나 추가
+        } else {
+            return cdnDomain + url; // 하나만 있으면 그냥 결합
+        }
     }
 }
