@@ -180,6 +180,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:mariadb") // MariaDB 컨테이너 사용
     testImplementation "com.redis:testcontainers-redis:2.2.4"
+    testImplementation 'org.testcontainers:localstack:1.19.3' // s3 테스트 컨테이너
 
     // --- test 에서도 QueryDSL 쓰고 싶다면 (선택) ---
     testImplementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
