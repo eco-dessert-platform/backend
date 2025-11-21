@@ -25,6 +25,7 @@ public class SellerUnitTest {
     void success_create_seller() {
         // arrange
         String phone = "01012346789";
+        String subPhone = "01098765432";
         String email = "test1234@gmail.com";
         String address = "경기도 수원시 팔달구";
         String detailAddress = "화성행궁 12번지";
@@ -32,14 +33,14 @@ public class SellerUnitTest {
 
 
         // act
-        Seller seller = Seller.create(phone, phone, email,
+        Seller seller = Seller.create(phone, subPhone, email,
             address, detailAddress, profile, CertificationStatus.APPROVED, store);
 
         // assert
         assertThat(seller).isNotNull();
-        assertThat(seller.getPhone()).isEqualTo(phone);
-        assertThat(seller.getSubPhone()).isEqualTo(phone);
-        assertThat(seller.getEmail()).isEqualTo(email);
+        assertThat(seller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(phone);
+        assertThat(seller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(subPhone);
+        assertThat(seller.getEmailVO().getEmail()).isEqualTo(email);
         assertThat(seller.getOriginAddressLine()).isEqualTo(address);
         assertThat(seller.getOriginAddressDetail()).isEqualTo(detailAddress);
         assertThat(seller.getProfile()).isEqualTo(profile);

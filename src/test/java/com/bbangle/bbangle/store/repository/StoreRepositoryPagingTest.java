@@ -11,7 +11,9 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +49,18 @@ public class StoreRepositoryPagingTest {
     @Autowired
     private EntityManager em;
 
+    // 시간을 조작할 변수 (static으로 공유)
+    static LocalDateTime mockTime = LocalDateTime.now().minusDays(1);
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public DateTimeProvider dateTimeProvider() {
+            // 항상 mockTime 변수의 값을 현재 시간으로 반환
+            return () -> Optional.of(mockTime);
+        }
+    }
+
     private static final int TOTAL_STORES = 25;
     private static final long PAGE_SIZE = 20L;
 
@@ -57,16 +74,14 @@ public class StoreRepositoryPagingTest {
 
         // 데이터 생성
         IntStream.rangeClosed(1, TOTAL_STORES).forEach(i -> {
+            mockTime = mockTime.plusSeconds(1);
+            
             storeRepository.save(Store.builder()
                 .name("Store " + i)
                 .isDeleted(false)
                 .status(StoreStatus.NONE)
                 .build());
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+
         });
         em.flush();
         em.clear();

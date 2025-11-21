@@ -56,11 +56,13 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
 
+    private static final String DEFAULT_IDENTIFIER = "00000";
+
     public static Store createForSeller(String name) {
-       return new Store(name,"00000",false, StoreStatus.NONE);
+        return new Store(name, DEFAULT_IDENTIFIER, false, StoreStatus.NONE);
     }
 
-    private Store (String name, String identifier,boolean isDeleted, StoreStatus status) {
+    private Store(String name, String identifier, boolean isDeleted, StoreStatus status) {
         validateField(name);
         this.name = name;
         this.identifier = identifier;
@@ -72,7 +74,7 @@ public class Store extends BaseEntity {
         this.status = status;
     }
 
-    private void validateField(String name){
+    private void validateField(String name) {
         if (name == null || name.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }

@@ -65,7 +65,8 @@ class SellerServiceTest {
         Store savedStore = storeRepository.findAll().get(0);
 
         assertThat(savedSeller).isNotNull();
-        assertThat(savedSeller.getPhone()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(command.subPhoneNumber());
         assertThat(savedSeller.getProfile()).isEqualTo(profileImagePath);
         assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
         assertThat(savedStore).isNotNull();
@@ -99,7 +100,8 @@ class SellerServiceTest {
         Seller savedSeller = sellerRepository.findAll().get(0);
 
         assertThat(savedSeller).isNotNull();
-        assertThat(savedSeller.getPhone()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(command.subPhoneNumber());
         assertThat(savedSeller.getStore().getId()).isEqualTo(storeId);
         assertThat(savedSeller.getStore().getName()).isEqualTo(
             "기존 스토어"); // command의 storeName이 아닌 기존 스토어 이름을 따라야 함

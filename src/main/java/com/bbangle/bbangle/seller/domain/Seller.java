@@ -9,7 +9,10 @@ import com.bbangle.bbangle.seller.domain.model.EmailVO;
 import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -35,14 +38,12 @@ public class Seller extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone", columnDefinition = "VARCHAR(20)")
-    private String phone;
+    @Embedded
+    private PhoneNumberVO phoneNumberVO; // phone + subPhone을 포함
 
-    @Column(name = "sub_phone", columnDefinition = "VARCHAR(20)")
-    private String subPhone;
-
+    @Embedded
     @Column(name = "email", columnDefinition = "VARCHAR(100)")
-    private String email;
+    private EmailVO emailVO;
 
     @Column(name = "origin_address_line", columnDefinition = "VARCHAR(255)")
     private String originAddressLine;
@@ -68,20 +69,18 @@ public class Seller extends BaseEntity {
     // 판매자 등록을 위한 생성자
     @Builder(access = AccessLevel.PRIVATE)
     private Seller(
-        String phone,
-        String subPhone,
-        String email,
+        PhoneNumberVO phoneNumberVO,
+        EmailVO emailVO,
         String originAddressLine,
         String originAddressDetail,
         String profile,
         CertificationStatus certificationStatus,
         Store store
     ) {
-        validateField(phone, subPhone, email, originAddressLine, originAddressDetail, profile, certificationStatus, store);
-        store.changeStatus(StoreStatus.RESERVED);
-        this.phone = phone;
-        this.subPhone = subPhone;
-        this.email = email;
+
+        validateField(originAddressLine, originAddressDetail, profile, certificationStatus, store);
+        this.phoneNumberVO = phoneNumberVO;
+        this.emailVO = emailVO;
         this.originAddressLine = originAddressLine;
         this.originAddressDetail = originAddressDetail;
         this.profile = profile;
@@ -99,10 +98,13 @@ public class Seller extends BaseEntity {
         CertificationStatus certificationStatus,
         Store store
     ) {
+        if(store == null)  throw new BbangleException(BbangleErrorCode.INVALID_STORE);
+
+        store.changeStatus(StoreStatus.RESERVED);
+
         return Seller.builder()
-            .phone(phone)
-            .subPhone(subPhone)
-            .email(email)
+            .phoneNumberVO(PhoneNumberVO.of(phone,subPhone))
+            .emailVO(EmailVO.of(email))
             .originAddressLine(originAddressLine)
             .originAddressDetail(originAddressDetail)
             .profile(profile)
@@ -112,17 +114,13 @@ public class Seller extends BaseEntity {
     }
 
     private void validateField(
-        String phone,
-        String subPhone,
-        String email,
         String originAddressLine,
         String originAddressDetail,
         String profile,
         CertificationStatus certificationStatus,
         Store store
     ) {
-        PhoneNumberVO.of(phone, subPhone);
-        EmailVO.of(email);
+
 
         if (originAddressLine == null || originAddressLine.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_ADDRESS);

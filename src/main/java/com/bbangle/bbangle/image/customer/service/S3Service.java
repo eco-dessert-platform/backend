@@ -148,7 +148,7 @@ public class S3Service {
         if (path.startsWith("/")) {
             return path.substring(1); // 맨 앞 슬래시 제거
         }
-        return imagePath.replace(bucketDomain, "");
+        return path;
     }
 
     public String addCdnDomain(String url) {

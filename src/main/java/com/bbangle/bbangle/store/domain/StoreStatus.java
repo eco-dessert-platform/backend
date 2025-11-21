@@ -20,7 +20,7 @@ public enum StoreStatus {
         return Arrays.stream(values())
             .filter(s -> s.getDescription().equals(desc))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Unknown document type: " + desc));
+            .orElseThrow(() -> new IllegalArgumentException("Unknown store status: " + desc));
     }
 
 

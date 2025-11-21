@@ -58,9 +58,9 @@ public class SellerFacadeTest extends S3IntegrationTestSupport {
         assertThat(savedStore).isNotNull();
 
         assertThat(savedStore.getName()).isEqualTo(command.storeName());
-        assertThat(savedSeller.getPhone()).isEqualTo(command.phoneNumber());
-        assertThat(savedSeller.getSubPhone()).isEqualTo(command.subPhoneNumber());
-        assertThat(savedSeller.getEmail()).isEqualTo(command.email());
+        assertThat(savedSeller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(command.subPhoneNumber());
+        assertThat(savedSeller.getEmailVO().getEmail()).isEqualTo(command.email());
         assertThat(savedSeller.getOriginAddressLine()).isEqualTo(command.originAddress());
         assertThat(savedSeller.getOriginAddressDetail()).isEqualTo(command.originAddressDetail());
         assertThat(savedSeller.getProfile()).isNotBlank();
@@ -100,9 +100,9 @@ public class SellerFacadeTest extends S3IntegrationTestSupport {
         assertThat(findStore).isNotNull();
 
         assertThat(findStore.getName()).isEqualTo(registStore.getName());
-        assertThat(savedSeller.getPhone()).isEqualTo(command.phoneNumber());
-        assertThat(savedSeller.getSubPhone()).isEqualTo(command.subPhoneNumber());
-        assertThat(savedSeller.getEmail()).isEqualTo(command.email());
+        assertThat(savedSeller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(command.phoneNumber());
+        assertThat(savedSeller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(command.subPhoneNumber());
+        assertThat(savedSeller.getEmailVO().getEmail()).isEqualTo(command.email());
         assertThat(savedSeller.getOriginAddressLine()).isEqualTo(command.originAddress());
         assertThat(savedSeller.getOriginAddressDetail()).isEqualTo(command.originAddressDetail());
         assertThat(savedSeller.getProfile()).isNotBlank();

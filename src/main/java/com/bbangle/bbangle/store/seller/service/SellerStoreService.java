@@ -33,9 +33,12 @@ public class SellerStoreService {
         return storeRepository.save(Store.createForSeller(storeName));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public StoreCustomPage<List<StoreInfo>> selectStoreNameForSeller(String storeName, Long cursorId){
         String normalizedStoreName = normalize(storeName);
+        if (normalizedStoreName == null) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
         // 1. 스토어명이 중복이라면 사용할 수없다.
         if (storeRepository.findByStoreName(normalizedStoreName).isPresent()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
