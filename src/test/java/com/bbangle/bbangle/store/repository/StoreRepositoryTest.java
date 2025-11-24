@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DisplayName("[Repository] - StoreRepository - 슬라이스 테스트")
+@DisplayName("[슬라이스 테스트] StoreRepository")
 @ActiveProfiles("test")
 @Import({
     TestContainersConfig.class,

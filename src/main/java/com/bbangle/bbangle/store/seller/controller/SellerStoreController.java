@@ -2,10 +2,10 @@ package com.bbangle.bbangle.store.seller.controller;
 
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheckResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
@@ -38,15 +38,12 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @GetMapping("/check-name-duplicate")
-    public SingleResult<StoreCustomPage<List<StoreNameCheckResponse>>> checkStoreNameDuplicate(
+    public SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> checkStoreNameDuplicate(
         @RequestParam String storeName) {
 
-        StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = sellerStoreService.selectStoreNameForSeller(
-            storeName, null); // 페이징 처리를 위해 null 전달
+        CursorPagination<SellerStoreInfo.StoreInfo> result = sellerStoreService.selectStoreNameForSeller(
+            storeName);
 
-        StoreCustomPage<List<StoreNameCheckResponse>> mapped =
-            result.map(StoreNameCheckResponse::fromList);
-
-        return responseService.getSingleResult(mapped);
+        return responseService.getSingleResult(result);
     }
 }

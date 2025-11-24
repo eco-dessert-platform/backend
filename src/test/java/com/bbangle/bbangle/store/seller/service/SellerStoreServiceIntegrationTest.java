@@ -3,7 +3,7 @@ package com.bbangle.bbangle.store.seller.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.common.page.StoreCustomPage;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class SellerStoreServiceTest {
+public class SellerStoreServiceIntegrationTest {
 
 
     @Autowired
@@ -95,11 +95,10 @@ public class SellerStoreServiceTest {
     @DisplayName("가게 이름 일부를 입력하면 해당하는 가게 이름 목록을 10개 반환한다")
     void selectStoreNameForSeller() {
         // given
-        Long cursorId = null;
         String keyword = "빵";
         // when
-        StoreCustomPage<List<StoreInfo>> result =
-            sellerStoreService.selectStoreNameForSeller(keyword, cursorId);
+        CursorPagination<StoreInfo> result =
+            sellerStoreService.selectStoreNameForSeller(keyword);
         // then
         assertThat(result.getContent().size()).isLessThanOrEqualTo(10);
 
@@ -114,7 +113,7 @@ public class SellerStoreServiceTest {
         String keyword = "NonExistent";
 
         // when
-        var result = sellerStoreService.selectStoreNameForSeller(keyword, null);
+        var result = sellerStoreService.selectStoreNameForSeller(keyword);
 
         // then
         assertThat(result.getContent()).isEmpty();
@@ -128,7 +127,7 @@ public class SellerStoreServiceTest {
         String keyword = "  빵  ";
 
         // when
-        var result = sellerStoreService.selectStoreNameForSeller(keyword, null);
+        var result = sellerStoreService.selectStoreNameForSeller(keyword);
 
         // then
         assertThat(result.getContent())

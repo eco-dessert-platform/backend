@@ -10,6 +10,7 @@ import static com.bbangle.bbangle.store.domain.QStore.store;
 import com.bbangle.bbangle.board.customer.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.customer.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
@@ -17,8 +18,10 @@ import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,7 +32,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
-    private static final Long PAGE_SIZE = 20L;
+    private static final Integer PAGE_SIZE = 20;
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -98,19 +101,15 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
 
     @Override
-    public StoreCustomPage<List<SellerStoreInfo.StoreInfo>> findNextCursorPage(Long cursorId, String searchName) {
-        BooleanBuilder whereCondition = getCursorCondition(cursorId);
+    public CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds) {
 
-        if (searchName != null && !searchName.isBlank()) {
-            // contains는 SQL의 like '%searchName%' 과 같습니다.
-            whereCondition.and(store.name.contains(searchName));
+        if (storeIds == null || storeIds.isEmpty()) {
+            return CursorPagination.of(Collections.emptyList(), PAGE_SIZE, 0L, SellerStoreInfo.StoreInfo::id);
         }
-
-        whereCondition.and(store.isDeleted.eq(false).and(store.status.eq(StoreStatus.NONE)));
-
+        ///  추출한 아이디를 통해 조회
         List<Store> stores = queryFactory
             .selectFrom(store)
-            .where(whereCondition)
+            .where(store.id.in(storeIds))
             .limit(PAGE_SIZE + 1) // PAGE_SIZE는 상수값 20 고정
             .orderBy(store.createdAt.desc(), store.id.desc())
             .fetch();
@@ -119,31 +118,21 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .map(StoreInfo::from)
             .toList();
 
-        return StoreCustomPage.from(response, PAGE_SIZE);
+
+        return CursorPagination.of(response, PAGE_SIZE, null, SellerStoreInfo.StoreInfo::id);
     }
 
 
-    private BooleanBuilder getCursorCondition(Long cursorId) {
-        BooleanBuilder booleanBuilder = new BooleanBuilder();
-        if (Objects.isNull(cursorId)) {
-            return booleanBuilder;
-        }
-        Long startId = checkingNotificationExistence(cursorId);
+    ///  페이징 처리를 위한 스토어 이름 검색 메서드
+    @Override
+    public List<Store> getStoreByStoreName(String storeName) {
 
-        booleanBuilder.and(store.id.lt(startId));
-        return booleanBuilder;
-    }
-
-    private Long checkingNotificationExistence(Long cursorId) {
-        Long checkingId = queryFactory.select(store.id)
-            .from(store)
-            .where(store.id.eq(cursorId))
-            .fetchOne();
-
-        if (Objects.isNull(checkingId)) {
-            throw new BbangleException(STORE_NOT_FOUND);
-        }
-
-        return cursorId;
+        return queryFactory.selectFrom(store)
+            .where(store.name.contains(storeName)
+                .and(store.isDeleted.eq(false))
+                .and(store.status.eq(StoreStatus.NONE)))
+            .limit(PAGE_SIZE + 1)
+            .orderBy(store.createdAt.desc(), store.id.desc())
+            .stream().toList();
     }
 }

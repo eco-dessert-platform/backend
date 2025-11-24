@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.store.seller.service;
 
+import com.bbangle.bbangle.common.page.CursorPagination;
+import com.bbangle.bbangle.common.page.CustomPage;
 import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -34,7 +36,7 @@ public class SellerStoreService {
     }
 
     @Transactional(readOnly = true)
-    public StoreCustomPage<List<StoreInfo>> selectStoreNameForSeller(String storeName, Long cursorId){
+    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName){
         String normalizedStoreName = normalize(storeName);
         if (normalizedStoreName == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
@@ -43,8 +45,13 @@ public class SellerStoreService {
         if (storeRepository.findByStoreName(normalizedStoreName).isPresent()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
+
+        /// 페이징 처리를 위한 +1 조회 진행
+        ///중복되지 않은 스토어명들을 조회하고 id 값을 List로 모아 페이징 처리 로직으로 전달
+        List<Long> storeIds = storeRepository.getStoreByStoreName(normalizedStoreName).stream().map(Store::getId).toList();
+
         // 2. 스토어 명이 중복이 아니라면 사용 가능하다
-         return storeRepository.findNextCursorPage(cursorId, normalizedStoreName);
+         return storeRepository.findNextCursorPage(storeIds);
     }
 
     private String normalize(String value) {

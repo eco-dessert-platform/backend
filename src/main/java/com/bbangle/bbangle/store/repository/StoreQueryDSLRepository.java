@@ -2,7 +2,7 @@ package com.bbangle.bbangle.store.repository;
 
 import com.bbangle.bbangle.board.customer.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.page.StoreCustomPage;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.List;
@@ -20,5 +20,7 @@ public interface StoreQueryDSLRepository {
 
     Optional<Store> findByStoreName(String storeName);
 
-    StoreCustomPage<List<StoreInfo>> findNextCursorPage(Long cursorId , String searchName);
+    List<Store> getStoreByStoreName(String storeName);
+
+    CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds);
 }

@@ -3,13 +3,13 @@ package com.bbangle.bbangle.store.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.TestContainersConfig;
-import com.bbangle.bbangle.common.page.StoreCustomPage;
+import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
-import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
+import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +29,7 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-@DisplayName("[Repository] - StoreRepository - 슬라이스 테스트")
+@DisplayName("[슬라이스 테스트] StoreRepository - 페이징 조회")
 @ActiveProfiles("test")
 @Import({
     TestContainersConfig.class,
@@ -91,8 +91,11 @@ public class StoreRepositoryPagingTest {
     @Test
     @DisplayName("첫 페이지를 정상적으로 조회한다")
     void findNextCursorPage_firstPage_success() {
+        List<Long> storeIds = storeRepository.findAll().stream()
+            .map(Store::getId)
+            .toList();
         // when
-        StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = storeRepository.findNextCursorPage(null, null);
+        CursorPagination<StoreInfo> result = storeRepository.findNextCursorPage(storeIds);
 
         // then
         assertThat(result.getContent()).hasSize((int) PAGE_SIZE);
@@ -102,63 +105,4 @@ public class StoreRepositoryPagingTest {
         assertThat(result.getContent().get(19).name()).isEqualTo("Store 6");
     }
 
-    @Test
-    @DisplayName("두번째 페이지를 커서를 사용하여 정상적으로 조회한다")
-    void findNextCursorPage_secondPage_success() {
-        // given
-        // First, get the first page to find the cursor
-        List<Store> allStores = storeRepository.findAll();
-        Long cursorId = allStores.stream()
-            .filter(s -> s.getName().equals("Store 6"))
-            .findFirst()
-            .get()
-            .getId();
-
-
-        // when
-        StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = storeRepository.findNextCursorPage(cursorId, null);
-
-        // then
-        assertThat(result.getContent()).hasSize(5);
-        assertThat(result.getHasNext()).isFalse();
-        assertThat(result.getContent().get(0).name()).isEqualTo("Store 5");
-        assertThat(result.getContent().get(1).name()).isEqualTo("Store 4");
-        assertThat(result.getContent().get(2).name()).isEqualTo("Store 3");
-        assertThat(result.getContent().get(3).name()).isEqualTo("Store 2");
-        assertThat(result.getContent().get(4).name()).isEqualTo("Store 1");
-
-        assertThat(result.getContent().get(0).id()).isEqualTo(5);
-        assertThat(result.getContent().get(1).id()).isEqualTo(4);
-        assertThat(result.getContent().get(2).id()).isEqualTo(3);
-        assertThat(result.getContent().get(3).id()).isEqualTo(2);
-        assertThat(result.getContent().get(4).id()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("검색어를 사용하여 스토어를 정상적으로 조회한다")
-    void findNextCursorPage_withSearchName_success() {
-        // given
-        String searchName = "Store";
-        // when
-        StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = storeRepository.findNextCursorPage(null, searchName);
-
-        // then
-        assertThat(result.getContent()).hasSize(20);
-        assertThat(result.getHasNext()).isTrue();
-        assertThat(result.getContent().stream().allMatch(s -> s.name().contains(searchName))).isTrue();
-    }
-
-    @Test
-    @DisplayName("결과가 없는 검색어로 조회하면 빈 리스트를 반환한다")
-    void findNextCursorPage_withNonexistentSearchName_returnsEmpty() {
-        // given
-        String searchName = "Nonexistent Store";
-
-        // when
-        StoreCustomPage<List<SellerStoreInfo.StoreInfo>> result = storeRepository.findNextCursorPage(null, searchName);
-
-        // then
-        assertThat(result.getContent()).isEmpty();
-        assertThat(result.getHasNext()).isFalse();
-    }
 }
