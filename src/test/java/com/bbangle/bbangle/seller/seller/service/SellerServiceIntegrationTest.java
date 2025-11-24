@@ -17,11 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@DisplayName("[통합테스트] SellerIntegrationTest")
+@DisplayName("[통합테스트] SellerServiceIntegrationTest")
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class SellerServiceTest {
+class SellerServiceIntegrationTest {
 
     @Autowired
     private SellerService sellerService;

@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DisplayName("[단위 테스트] Seller")
 @ExtendWith(MockitoExtension.class)
 public class SellerUnitTest {
 

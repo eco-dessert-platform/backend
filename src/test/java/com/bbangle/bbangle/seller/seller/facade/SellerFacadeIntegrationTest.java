@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @DisplayName("[통합테스트] SellerFacade")
 @Transactional
-public class SellerFacadeTest extends S3IntegrationTestSupport {
+public class SellerFacadeIntegrationTest extends S3IntegrationTestSupport {
 
     @Autowired
     private SellerFacade sellerFacade;
