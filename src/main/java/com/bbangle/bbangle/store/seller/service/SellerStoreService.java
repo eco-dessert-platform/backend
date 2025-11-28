@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.store.seller.service;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
-import com.bbangle.bbangle.common.page.CustomPage;
-import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
@@ -27,7 +25,7 @@ public class SellerStoreService {
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
         }
         // 중복검사 진행
-        if (storeRepository.findByStoreName(storeName).isPresent()) {
+        if (storeRepository.existsByStoreName(storeName)) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
 
@@ -42,7 +40,7 @@ public class SellerStoreService {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
         // 1. 스토어명이 중복이라면 사용할 수없다.
-        if (storeRepository.findByStoreName(normalizedStoreName).isPresent()) {
+        if (storeRepository.existsByStoreName((normalizedStoreName))){
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
 

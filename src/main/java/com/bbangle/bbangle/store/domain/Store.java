@@ -16,6 +16,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,7 +57,8 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
 
-    private static final String DEFAULT_IDENTIFIER = "00000";
+    private static final String DEFAULT_IDENTIFIER =
+        String.valueOf((Math.abs(UUID.randomUUID().getLeastSignificantBits()) % 90000) + 10000);
 
     public static Store createForSeller(String name) {
         return new Store(name, DEFAULT_IDENTIFIER, false, StoreStatus.NONE);

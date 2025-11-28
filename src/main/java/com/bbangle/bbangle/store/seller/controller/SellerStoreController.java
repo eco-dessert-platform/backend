@@ -3,7 +3,6 @@ package com.bbangle.bbangle.store.seller.controller;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
-import com.bbangle.bbangle.common.page.StoreCustomPage;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;

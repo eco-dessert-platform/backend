@@ -4,21 +4,16 @@ import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.board.domain.QProductImg.productImg;
 import static com.bbangle.bbangle.boardstatistic.domain.QBoardStatistic.boardStatistic;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 import static com.bbangle.bbangle.store.domain.QStore.store;
 
 import com.bbangle.bbangle.board.customer.dto.AiLearningStoreDto;
 import com.bbangle.bbangle.board.customer.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.page.CursorPagination;
-import com.bbangle.bbangle.common.page.StoreCustomPage;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
@@ -91,6 +86,14 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetch();
     }
 
+    @Override
+    public boolean existsByStoreName(String name) {
+        Integer count = queryFactory.selectOne()
+            .from(store)
+            .where(store.name.eq(name))
+            .fetchFirst();
+        return count != null;
+    }
 
     @Override
     public Optional<Store> findByStoreName(String storeName) {
