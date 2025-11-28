@@ -18,7 +18,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @RequiredArgsConstructor
 public class RealSlackAdaptor implements SlackAdaptor {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
     @Value("${slack.webhook-url}")
     private String WEB_HOOK_URL;
 
@@ -42,7 +43,7 @@ public class RealSlackAdaptor implements SlackAdaptor {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(APPLICATION_JSON);
 
-            title = String.format("** 개발서버알림 **\n- url: %s \n", title);
+            title = String.format("** 운영서버알림 **\n- url: %s \n", title);
             content = String.format("- message: %s", content);
             SlackMessage slackMessage = SlackMessage.fromText(title, content);
 
