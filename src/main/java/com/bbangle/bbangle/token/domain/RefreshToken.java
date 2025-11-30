@@ -25,8 +25,11 @@ public class RefreshToken {
     @Column(name = "id", updatable = false)
     private Long id;
 
-    @Column(name = "member_id", nullable = false, unique = true)
+    @Column(name = "member_id", unique = true)
     private Long memberId;
+
+    @Column(name = "admin_id", unique = true)
+    private Long adminId;
 
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;

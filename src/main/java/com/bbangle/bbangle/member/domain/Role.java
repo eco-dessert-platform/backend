@@ -8,7 +8,7 @@ public enum Role {
 
     ROLE_USER("ROLE_USER", "사용자"),
     ROLE_SELLER("ROLE_SELLER", "판매자"),
-    ROLE_ADMIN("ROLE_ADMIN", "빵그리오븐관리자");
+    ROLE_ADMIN("ADMIN", "빵그리오븐관리자"); // prefix 제거
 
     private final String role;
     private final String description;
