@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.io.InputStream;
  * firbase Admin SDK 사용시 필요
  * But, 현재는 FCMToken만 쓰므로 필요하지 않음
  */
+@Profile("!test")
 @Configuration
 @Slf4j
 public class FirebaseConfig {
