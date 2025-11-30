@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.CdnConfig;
 import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;

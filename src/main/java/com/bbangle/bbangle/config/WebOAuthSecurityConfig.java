@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.config;
 
+import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
@@ -61,6 +62,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                 UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize ->
                 authorize.requestMatchers("/api/v1/token").permitAll()
+                    .requestMatchers("/api/v1/admin/login").permitAll()
+                    .requestMatchers("/api/v1/admin/logout").authenticated()
                     .requestMatchers("/api/v1/oauth/**").permitAll()
                     .requestMatchers("/api/v1/search/**").permitAll()
                     .requestMatchers("/api/v1/landingpage").permitAll()
@@ -71,13 +74,13 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                     .requestMatchers(GET, "/api/v1/boards/**").permitAll()
                     .requestMatchers(PATCH, "/api/v1/boards/**").permitAll()
                     .requestMatchers(GET, "/api/v1/notification/**").permitAll()
-                    //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
                     .requestMatchers(GET, "/api/v1/boards/notification/**").permitAll()
                     .requestMatchers(GET, "/api/v1/review/**").permitAll()
                     .requestMatchers(GET, "/api/v1/analytics/**").permitAll()
                     .requestMatchers(GET, "/api/v1/boards/folders/**").authenticated()
                     .requestMatchers("/api/v1/seller/sellers/**").authenticated()
                     .requestMatchers("/api/v1/seller/stores/**").authenticated()
+                    .requestMatchers("/api/v1/admin/**").hasAuthority(Role.ROLE_ADMIN.getRole())
                     .requestMatchers("/api/**").authenticated()
                     .anyRequest().permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/login"))

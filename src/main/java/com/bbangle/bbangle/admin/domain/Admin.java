@@ -1,11 +1,8 @@
 package com.bbangle.bbangle.admin.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.member.domain.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,16 +31,11 @@ public class Admin extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "role", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
     @Builder
     public Admin(String accountId, String password, String name) {
         this.accountId = accountId;
         this.password = password;
         this.name = name;
-        this.role = Role.ROLE_ADMIN;
     }
 
 }

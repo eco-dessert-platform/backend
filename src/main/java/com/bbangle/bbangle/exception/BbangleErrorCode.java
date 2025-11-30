@@ -101,7 +101,14 @@ public enum BbangleErrorCode {
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
     INVALID_STORE_NAME(-722, "유효하지 않은 스토어 이름입니다.", BAD_REQUEST),
-    INVALID_STORE_ID(-723, "유효하지 않은 스토어 아이디 입니다", BAD_REQUEST);
+    INVALID_STORE_ID(-723, "유효하지 않은 스토어 아이디 입니다", BAD_REQUEST),
+
+
+    // Adimin Error (741~ 760)
+    INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
+    ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
+    ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST);
+
 
     private final int code;
     private final String message;

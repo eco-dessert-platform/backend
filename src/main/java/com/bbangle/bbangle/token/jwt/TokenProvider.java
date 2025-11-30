@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.token.jwt;
 
-import com.bbangle.bbangle.member.domain.Role;
+import com.bbangle.bbangle.common.role.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
