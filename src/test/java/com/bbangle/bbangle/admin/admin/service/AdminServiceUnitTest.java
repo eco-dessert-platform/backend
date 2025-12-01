@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.admin.service;
+package com.bbangle.bbangle.admin.admin.service;
 
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.admin.dto.AdminRequest;
@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+@DisplayName("[단위 테스트] AdminService 단위 테스트")
 @ExtendWith(MockitoExtension.class)
 class AdminServiceUnitTest {
 

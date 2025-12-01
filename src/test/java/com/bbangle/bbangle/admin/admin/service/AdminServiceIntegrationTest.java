@@ -1,0 +1,61 @@
+package com.bbangle.bbangle.admin.admin.service;
+
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import com.bbangle.bbangle.admin.admin.dto.AdminLoginResponse;
+import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
+import com.bbangle.bbangle.admin.domain.Admin;
+import com.bbangle.bbangle.admin.repository.AdminRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+@DisplayName("[통합테스트] AdminServiceIntegrationTest")
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+public class AdminServiceIntegrationTest {
+
+    @Autowired
+    private AdminService adminService;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Test
+    @DisplayName("로그인에 성공한다.")
+    void login_success() {
+
+        // arrange
+        String rawPassword = "password";
+        String encoded = passwordEncoder.encode(rawPassword);
+
+        Admin admin = Admin.builder()
+            .accountId("admin")
+            .password(encoded) // 인코딩 진행한값
+            .name("Admin")
+            .build();
+
+        adminRepository.saveAndFlush(admin);
+
+        AdminLoginRequest request = new AdminLoginRequest("admin", rawPassword);
+        // act
+        AdminLoginResponse response = adminService.login(request);
+
+        // assert
+        assertThat(adminRepository.findByAccountId("admin")).isPresent();
+        assertThat(response.getRefreshToken()).isNotNull();
+        assertThat(response.getAccessToken()).isNotNull();
+    }
+
+}
