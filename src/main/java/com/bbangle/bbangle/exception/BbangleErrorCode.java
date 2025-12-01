@@ -107,7 +107,8 @@ public enum BbangleErrorCode {
     // Adimin Error (741~ 760)
     INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
-    ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST);
+    ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
+    REFRESH_TOKEN_NOT_FOUND(-743,  "존재하지 않는 리프레시 토큰입니다.", BAD_REQUEST);
 
 
     private final int code;

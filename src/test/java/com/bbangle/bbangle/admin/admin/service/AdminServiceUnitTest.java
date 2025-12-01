@@ -110,4 +110,19 @@ class AdminServiceUnitTest {
                 .isInstanceOf(BbangleException.class)
                 .hasMessage("비밀번호가 일치하지 않습니다.");
     }
+
+
+    @Test
+    @DisplayName("로그아웃시 리프레시 토큰이 제거된다.")
+    void logoutSuccess() {
+        // given
+        Long adminId = 1L;
+        given(refreshTokenRepository.deleteByAdminId(adminId)).willReturn(1);
+
+        // when
+        adminService.logout(adminId);
+
+        // then
+        verify(refreshTokenRepository, times(1)).deleteByAdminId(adminId);
+    }
 }

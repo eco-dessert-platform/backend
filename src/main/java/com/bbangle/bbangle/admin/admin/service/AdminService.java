@@ -63,6 +63,9 @@ public class AdminService {
 
     @Transactional
     public void logout(Long adminId) {
-        refreshTokenRepository.deleteByAdminId(adminId);
+        int deletedCount = refreshTokenRepository.deleteByAdminId(adminId);
+        if (deletedCount == 0) {
+            throw new BbangleException(BbangleErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        }
     }
 }
