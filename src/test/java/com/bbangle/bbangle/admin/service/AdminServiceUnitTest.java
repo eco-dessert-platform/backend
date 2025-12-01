@@ -7,6 +7,7 @@ import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.admin.admin.service.AdminService;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,10 +25,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.bbangle.bbangle.admin.admin.service.AdminService.ACCESS_TOKEN_DURATION;
+import static com.bbangle.bbangle.admin.admin.service.AdminService.REFRESH_TOKEN_DURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,13 +45,13 @@ class AdminServiceUnitTest {
     private AdminRepository adminRepository;
 
     @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Mock
     private TokenProvider tokenProvider;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private RefreshTokenRepository refreshTokenRepository;
 
     private Admin admin;
 
@@ -82,7 +88,7 @@ class AdminServiceUnitTest {
     @DisplayName("존재하지 않는 아이디로 로그인 시 예외가 발생한다")
     void loginFail_NotFound() {
         // given
-        AdminRequest.AdminLoginRequest request = new AdminLoginRequest("unknown", "password");
+        AdminLoginRequest request = new AdminLoginRequest("unknown", "password");
         given(adminRepository.findByAccountId("unknown")).willReturn(Optional.empty());
 
         // when & then
@@ -91,14 +97,14 @@ class AdminServiceUnitTest {
                 .hasMessage("존재하지 않는 관리자입니다.");
     }
 
+
     @Test
-    @DisplayName("비밀번호 불일치 시 예외가 발생한다")
+    @DisplayName("비밀번호가 일치하지 않으면 예외가 발생한다")
     void loginFail_InvalidPassword() {
         // given
-        AdminRequest.AdminLoginRequest request = new AdminLoginRequest("admin", "wrongPassword");
+        AdminLoginRequest request = new AdminLoginRequest("admin", "wrongPassword");
         given(adminRepository.findByAccountId("admin")).willReturn(Optional.of(admin));
         given(passwordEncoder.matches("wrongPassword", "encodedPassword")).willReturn(false);
-
         // when & then
         assertThatThrownBy(() -> adminService.login(request))
                 .isInstanceOf(BbangleException.class)

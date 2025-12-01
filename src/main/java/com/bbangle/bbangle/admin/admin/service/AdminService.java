@@ -13,6 +13,7 @@ import com.bbangle.bbangle.token.jwt.TokenProvider;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,19 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminService {
 
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(10);
 
     private final AdminRepository adminRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public AdminLoginResponse login(AdminRequest.AdminLoginRequest request) {
         Admin admin = adminRepository.findByAccountId(request.accountId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
 
-        if (!request.password().equals(admin.getPassword())) {
-            log.info("request {} , admin {}",request.password(), admin.getPassword());
+        if(!passwordEncoder.matches(request.password(), admin.getPassword())) {
             throw new BbangleException(BbangleErrorCode.ADMIN_INVALID_PASSWORD);
         }
 
