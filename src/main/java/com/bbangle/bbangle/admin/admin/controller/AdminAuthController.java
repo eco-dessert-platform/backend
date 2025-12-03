@@ -3,7 +3,7 @@ package com.bbangle.bbangle.admin.admin.controller;
 import com.bbangle.bbangle.admin.admin.controller.swagger.AdminApi;
 import com.bbangle.bbangle.admin.admin.dto.AdminLoginResponse;
 import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
-import com.bbangle.bbangle.admin.admin.service.AdminService;
+import com.bbangle.bbangle.admin.admin.service.AdminAuthService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -17,21 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
-public class AdminController implements AdminApi {
+public class AdminAuthController implements AdminApi {
 
-    private final AdminService adminService;
+    private final AdminAuthService adminAuthService;
     private final ResponseService responseService;
 
     @Override
     @PostMapping("/login")
     public SingleResult<AdminLoginResponse> login(@RequestBody AdminLoginRequest request) {
-        return responseService.getSingleResult(adminService.login(request));
+        return responseService.getSingleResult(adminAuthService.login(request));
     }
 
     @Override
     @PostMapping("/logout")
     public CommonResult logout(@AuthenticationPrincipal Long adminId) {
-        adminService.logout(adminId);
+        adminAuthService.logout(adminId);
         return responseService.getSuccessResult();
     }
 }

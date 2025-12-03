@@ -5,9 +5,7 @@ import com.bbangle.bbangle.admin.admin.dto.AdminRequest;
 import com.bbangle.bbangle.admin.admin.dto.AdminLoginResponse;
 import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
-import com.bbangle.bbangle.admin.admin.service.AdminService;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
-import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
@@ -15,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,8 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.bbangle.bbangle.admin.admin.service.AdminService.ACCESS_TOKEN_DURATION;
-import static com.bbangle.bbangle.admin.admin.service.AdminService.REFRESH_TOKEN_DURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,10 +31,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 @DisplayName("[단위 테스트] AdminService 단위 테스트")
 @ExtendWith(MockitoExtension.class)
-class AdminServiceUnitTest {
+class AdminAuthServiceUnitTest {
 
     @InjectMocks
-    private AdminService adminService;
+    private AdminAuthService adminAuthService;
 
     @Mock
     private AdminRepository adminRepository;
@@ -76,7 +71,7 @@ class AdminServiceUnitTest {
         given(refreshTokenRepository.findByAdminId(any())).willReturn(Optional.empty());
 
         // when
-        AdminLoginResponse response = adminService.login(request);
+        AdminLoginResponse response = adminAuthService.login(request);
 
         // then
         assertThat(response.getAccessToken()).isEqualTo("accessToken");
@@ -92,7 +87,7 @@ class AdminServiceUnitTest {
         given(adminRepository.findByAccountId("unknown")).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> adminService.login(request))
+        assertThatThrownBy(() -> adminAuthService.login(request))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage("존재하지 않는 관리자입니다.");
     }
@@ -106,7 +101,7 @@ class AdminServiceUnitTest {
         given(adminRepository.findByAccountId("admin")).willReturn(Optional.of(admin));
         given(passwordEncoder.matches("wrongPassword", "encodedPassword")).willReturn(false);
         // when & then
-        assertThatThrownBy(() -> adminService.login(request))
+        assertThatThrownBy(() -> adminAuthService.login(request))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage("비밀번호가 일치하지 않습니다.");
     }
@@ -120,7 +115,7 @@ class AdminServiceUnitTest {
         given(refreshTokenRepository.deleteByAdminId(adminId)).willReturn(1);
 
         // when
-        adminService.logout(adminId);
+        adminAuthService.logout(adminId);
 
         // then
         verify(refreshTokenRepository, times(1)).deleteByAdminId(adminId);
