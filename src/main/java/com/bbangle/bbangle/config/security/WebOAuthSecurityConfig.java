@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config;
+package com.bbangle.bbangle.config.security;
 
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
@@ -20,6 +20,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import static com.bbangle.bbangle.common.role.Role.*;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
@@ -60,29 +61,15 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(tokenAuthenticationFilter(),
                 UsernamePasswordAuthenticationFilter.class)
-            .authorizeHttpRequests(authorize ->
-                authorize.requestMatchers("/api/v1/token").permitAll()
-                    .requestMatchers("/api/v1/admin/login").permitAll()
-                    .requestMatchers("/api/v1/admin/logout").authenticated()
-                    .requestMatchers("/api/v1/oauth/**").permitAll()
-                    .requestMatchers("/api/v1/search/**").permitAll()
-                    .requestMatchers("/api/v1/landingpage").permitAll()
-                    .requestMatchers("/api/v1/store/**").permitAll()
-                    .requestMatchers("/api/v1/stores/**").permitAll()
-                    .requestMatchers("/api/v1/health/**").permitAll()
-                    .requestMatchers("/api/v1/push/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/boards/**").permitAll()
-                    .requestMatchers(PATCH, "/api/v1/boards/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/notification/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/boards/notification/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/review/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/analytics/**").permitAll()
-                    .requestMatchers(GET, "/api/v1/boards/folders/**").authenticated()
-                    .requestMatchers("/api/v1/seller/sellers/**").authenticated()
-                    .requestMatchers("/api/v1/seller/stores/**").authenticated()
-                    .requestMatchers("/api/v1/admin/**").hasAuthority(Role.ROLE_ADMIN.getRole())
-                    .requestMatchers("/api/**").authenticated()
-                    .anyRequest().permitAll())
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
+                .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
+                .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
+                .requestMatchers(CustomerApiPath.ANY_METHOD).hasAuthority(ROLE_USER.getRole()) // Customer API
+                .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
+                .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
+                .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
+                .anyRequest().permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/login"))
             .exceptionHandling(exp ->
                 exp.defaultAuthenticationEntryPointFor(
