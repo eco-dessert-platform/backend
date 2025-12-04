@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Admin", description = "관리자 API")
-public interface AdminApi {
+@Tag(name = "AdminAuth", description = "관리자 Auth API")
+public interface AdminAuthApi {
 
     @Operation(summary = "관리자 로그인", description = "관리자 계정으로 로그인합니다.")
     SingleResult<AdminLoginResponse> login(

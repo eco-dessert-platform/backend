@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.admin.admin.controller;
 
-import com.bbangle.bbangle.admin.admin.controller.swagger.AdminApi;
+import com.bbangle.bbangle.admin.admin.controller.swagger.AdminAuthApi;
 import com.bbangle.bbangle.admin.admin.dto.AdminLoginResponse;
 import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
 import com.bbangle.bbangle.admin.admin.service.AdminAuthService;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
-public class AdminAuthController implements AdminApi {
+public class AdminAuthController implements AdminAuthApi {
 
     private final AdminAuthService adminAuthService;
     private final ResponseService responseService;
