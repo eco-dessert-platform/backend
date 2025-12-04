@@ -20,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class AdminServiceIntegrationTest {
+public class AdminAuthServiceIntegrationTest {
 
     @Autowired
-    private AdminService adminService;
+    private AdminAuthService adminAuthService;
 
     @Autowired
     private AdminRepository adminRepository;
@@ -52,7 +52,7 @@ public class AdminServiceIntegrationTest {
 
         AdminLoginRequest request = new AdminLoginRequest("admin", rawPassword);
         // act
-        AdminLoginResponse response = adminService.login(request);
+        AdminLoginResponse response = adminAuthService.login(request);
 
         // assert
         assertThat(adminRepository.findByAccountId("admin")).isPresent();
@@ -78,10 +78,10 @@ public class AdminServiceIntegrationTest {
         Long adminId = admin.getId();
         AdminLoginRequest request = new AdminLoginRequest("admin", rawPassword);
 
-        adminService.login(request);
+        adminAuthService.login(request);
 
         // act
-        adminService.logout(adminId);
+        adminAuthService.logout(adminId);
 
         // assert
         assertThat(refreshTokenRepository.findByAdminId(adminId)).isEmpty();
