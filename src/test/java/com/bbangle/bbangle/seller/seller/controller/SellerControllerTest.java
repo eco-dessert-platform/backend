@@ -55,7 +55,7 @@ public class SellerControllerTest {
 
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "SELLER")
     @DisplayName("신규 판매자를 정상적으로 생성한다")
         // -> 테스트 결과 리포트에 표시될 이름입니다.
     void createSeller_Succeeds_WithValidInput() throws Exception {
@@ -111,7 +111,7 @@ public class SellerControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "SELLER")
     @DisplayName("스토어명이 비어있으면 판매자 생성에 실패한다")
     void createSeller_Fails_WithBlankStoreName() throws Exception {
         // given
