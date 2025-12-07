@@ -2,7 +2,6 @@ package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.CdnConfig;
 import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
@@ -20,22 +19,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Table(name = "member")
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Member extends BaseEntity implements UserDetails {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,10 +65,6 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(name = "provider_id")
     private String providerId;
 
-    @Column(name = "member_role")
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
@@ -101,42 +92,6 @@ public class Member extends BaseEntity implements UserDetails {
         this.profile = profile;
         this.providerId = providerId;
         this.provider = provider;
-        this.role = Role.ROLE_USER; // 초기 유저는 무조건 USER 권한
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.getRole()));
-    }
-
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return name;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 
     public void updateFirst(MemberInfoRequest request) {

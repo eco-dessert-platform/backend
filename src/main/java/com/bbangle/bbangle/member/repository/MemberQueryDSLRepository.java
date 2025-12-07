@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.member.repository;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.member.domain.Member;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -14,7 +13,7 @@ public interface MemberQueryDSLRepository {
 
     Long countMembersCreatedBetweenPeriod(LocalDate startLocalDate, LocalDate endLocalDate);
 
-    Optional<MemberIdWithRoleDto> findByProviderAndProviderId(OauthServerType provider,
-                                                              String providerId);
+    Optional<Long> findByProviderAndProviderId(OauthServerType provider,
+                                               String providerId);
 
 }

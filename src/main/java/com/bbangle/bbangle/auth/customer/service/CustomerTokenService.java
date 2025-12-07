@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.auth.customer.service;
 
+import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
@@ -19,7 +20,7 @@ public class CustomerTokenService {
         Long memberId = customerRefreshTokenService.findByRefreshToken(refreshToken)
                 .getMemberId();
         Member member = memberService.findById(memberId);
-        return tokenProvider.generateToken(member.getId(), member.getRole(), Duration.ofHours(2));
+        return tokenProvider.generateToken(member.getId(), Role.ROLE_USER, Duration.ofHours(2));
     }
 
 }

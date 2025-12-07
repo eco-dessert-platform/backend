@@ -4,10 +4,8 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.member.customer.dto.MemberIdWithRoleDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -59,21 +57,17 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository {
     }
 
     @Override
-    public Optional<MemberIdWithRoleDto> findByProviderAndProviderId(OauthServerType provider,
-                                                                     String providerId) {
-        return Optional.ofNullable(
-                queryFactory.select(Projections.constructor(
-                                MemberIdWithRoleDto.class,
-                                member.id,
-                                member.role))
-                        .from(member)
-                        .where(member.provider.eq(provider)
-                                .and(member.providerId.eq(providerId))
-                                .and(member.isDeleted.isFalse()))
-                        .fetchOne()
-        );
-    }
+    public Optional<Long> findByProviderAndProviderId(OauthServerType provider, String providerId) {
+        Long memberId = queryFactory
+                .select(member.id)
+                .from(member)
+                .where(member.provider.eq(provider)
+                        .and(member.providerId.eq(providerId))
+                        .and(member.isDeleted.isFalse()))
+                .fetchOne();
 
+        return Optional.ofNullable(memberId);
+    }
 
     private static DateTemplate<Date> getCreatedAtDate() {
         return Expressions.dateTemplate(Date.class, "DATE({0})", member.createdAt);
