@@ -1,8 +1,17 @@
 package com.bbangle.bbangle.config.security;
 
-import com.bbangle.bbangle.common.role.Role;
-import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
-import com.bbangle.bbangle.token.jwt.TokenProvider;
+import static com.bbangle.bbangle.common.role.Role.ROLE_ADMIN;
+import static com.bbangle.bbangle.common.role.Role.ROLE_SELLER;
+import static com.bbangle.bbangle.common.role.Role.ROLE_USER;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
+import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,24 +29,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static com.bbangle.bbangle.common.role.Role.*;
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.PATCH;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
 public class WebOAuthSecurityConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
-        "http://localhost:3000",
-        "https://www.bbanggree.com",
-        "https://api.bbanggree.com",
-        "https://develop.bbanggree.com"
+            "http://localhost:3000",
+            "https://www.bbanggree.com",
+            "https://api.bbanggree.com",
+            "https://develop.bbanggree.com"
     };
     private final TokenProvider tokenProvider;
 
@@ -49,33 +50,33 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins(ALLOWED_ORIGINS)
-            .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), PATCH.name())
-            .allowCredentials(true)
-            .exposedHeaders("*");
+                .allowedOrigins(ALLOWED_ORIGINS)
+                .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), PATCH.name())
+                .allowCredentials(true)
+                .exposedHeaders("*");
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-            .csrf(AbstractHttpConfigurer::disable)
-            .addFilterBefore(tokenAuthenticationFilter(),
-                UsernamePasswordAuthenticationFilter.class)
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
-                .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
-                .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
-                .requestMatchers(CustomerApiPath.ANY_METHOD).hasAuthority(ROLE_USER.getRole()) // Customer API
-                .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
-                .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
-                .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
-                .anyRequest().permitAll())
-            .logout(logout -> logout.logoutSuccessUrl("/login"))
-            .exceptionHandling(exp ->
-                exp.defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                    new AntPathRequestMatcher("/api/**"))
-            );
+                .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(tokenAuthenticationFilter(),
+                        UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
+                        .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
+                        .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
+                        .requestMatchers(CustomerApiPath.ANY_METHOD).hasAuthority(ROLE_USER.getRole()) // Customer API
+                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
+                        .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
+                        .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
+                        .anyRequest().permitAll())
+                .logout(logout -> logout.logoutSuccessUrl("/login"))
+                .exceptionHandling(exp ->
+                        exp.defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                new AntPathRequestMatcher("/api/**"))
+                );
 
         return http.build();
     }

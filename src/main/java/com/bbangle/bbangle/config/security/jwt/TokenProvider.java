@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.token.jwt;
+package com.bbangle.bbangle.config.security.jwt;
 
 import com.bbangle.bbangle.common.role.Role;
 import io.jsonwebtoken.Claims;

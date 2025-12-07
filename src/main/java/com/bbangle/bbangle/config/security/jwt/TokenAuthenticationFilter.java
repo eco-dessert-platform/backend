@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.token.jwt;
+package com.bbangle.bbangle.config.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

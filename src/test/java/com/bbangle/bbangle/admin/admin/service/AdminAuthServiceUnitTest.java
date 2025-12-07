@@ -1,14 +1,23 @@
 package com.bbangle.bbangle.admin.admin.service;
 
-import com.bbangle.bbangle.admin.domain.Admin;
-import com.bbangle.bbangle.admin.admin.dto.AdminRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.bbangle.bbangle.admin.admin.dto.AdminLoginResponse;
+import com.bbangle.bbangle.admin.admin.dto.AdminRequest;
 import com.bbangle.bbangle.admin.admin.dto.AdminRequest.AdminLoginRequest;
+import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.token.domain.RefreshToken;
-import com.bbangle.bbangle.token.jwt.TokenProvider;
+import java.time.Duration;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,16 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 @DisplayName("[단위 테스트] AdminService 단위 테스트")
 @ExtendWith(MockitoExtension.class)
 class AdminAuthServiceUnitTest {

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.token.jwt;
+package com.bbangle.bbangle.config.security.jwt;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
