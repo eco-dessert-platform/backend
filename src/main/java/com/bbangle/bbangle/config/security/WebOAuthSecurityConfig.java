@@ -10,9 +10,9 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
-import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

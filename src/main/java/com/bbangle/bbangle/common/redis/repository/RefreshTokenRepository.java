@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.common.redis.repository;
 
 
-import com.bbangle.bbangle.token.domain.RefreshToken;
+import com.bbangle.bbangle.auth.domain.RefreshToken;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
