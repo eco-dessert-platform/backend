@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.config.security.jwt;
 
 import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class TokenProvider {
-    private static final String MEMBER_KEY = "id";
+    private static final String USER_KEY = "id";
     private static final String ROLE_KEY = "role";
     private final JwtProperties jwtProperties;
 
@@ -27,7 +28,7 @@ public class TokenProvider {
         return makeToken(new Date(now.getTime() + expiredAt.toMillis()), memberId, role);
     }
 
-    private String makeToken(Date expiry, Long memberId, Role role) {
+    private String makeToken(Date expiry, Long userId, Role role) {
         Date now = new Date();
 
         return Jwts.builder()
@@ -35,7 +36,7 @@ public class TokenProvider {
                 .setIssuer(jwtProperties.getIssuer())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .claim(MEMBER_KEY, memberId)
+                .claim(USER_KEY, userId)
                 .claim(ROLE_KEY, role.getRole())
                 // 서명 : 비밀값과 함께 해시값을 HS256 방식으로 암호화
                 .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
@@ -55,11 +56,12 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
-        Long memberId = Long.valueOf((Integer) claims.get(MEMBER_KEY));
+        Long memberId = Long.valueOf((Integer) claims.get(USER_KEY));
         Role role = Role.from((String) claims.get(ROLE_KEY));
+        BbangleUserPrincipal principal = BbangleUserPrincipal.of(memberId, role);
         Set<SimpleGrantedAuthority> authorities = Collections.singleton(
                 new SimpleGrantedAuthority(role.getRole()));
-        return new UsernamePasswordAuthenticationToken(memberId, token, authorities);
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
     private Claims getClaims(String token) {

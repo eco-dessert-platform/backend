@@ -8,6 +8,7 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.store.customer.controller.mapper.StoreMapper;
 import com.bbangle.bbangle.store.customer.facade.StoreFacade;
 import java.util.List;
@@ -30,40 +31,31 @@ public class StoreController {
 
     @GetMapping("/{storeId}")
     public SingleResult<StoreDetail> getPopularBoardResponse(
-        @PathVariable("storeId")
-        Long storeId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable("storeId") Long storeId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        StoreInfo.StoreDetail storeDetail = storeFacade.getStoreDetail(memberId, storeId);
-        StoreDetail storeDetailResponse = storeMapper.toStoreDetailResponse(
-            storeDetail);
+        StoreInfo.StoreDetail storeDetail = storeFacade.getStoreDetail(userPrincipal.getId(), storeId);
+        StoreDetail storeDetailResponse = storeMapper.toStoreDetailResponse(storeDetail);
         return responseService.getSingleResult(storeDetailResponse);
     }
 
     @GetMapping("/{storeId}/boards/best")
     public ListResult<StoreInfo.BestBoard> getPopularBoardResponses(
-        @PathVariable("storeId")
-        Long storeId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable("storeId") Long storeId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        List<StoreInfo.BestBoard> popularBoardResponses = storeFacade.getBestBoards(
-            memberId, storeId);
+        List<StoreInfo.BestBoard> popularBoardResponses = storeFacade.getBestBoards(userPrincipal.getId(), storeId);
         return responseService.getListResult(popularBoardResponses);
     }
 
     @GetMapping("/{storeId}/boards")
     public SingleResult<CursorPageResponse<AllBoard>> getStoreAllBoard(
-        @PathVariable("storeId")
-        Long storeId,
-        @RequestParam(value = "cursorId", required = false)
-        Long boardIdAsCursorId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable("storeId") Long storeId,
+            @RequestParam(value = "cursorId", required = false) Long boardIdAsCursorId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId,
-            boardIdAsCursorId);
+        CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(userPrincipal.getId(), storeId,
+                boardIdAsCursorId);
         return responseService.getSingleResult(response);
     }
 
