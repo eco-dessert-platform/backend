@@ -8,6 +8,7 @@ import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.auth.admin.dto.AdminLoginResponse;
 import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminLoginRequest;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.common.role.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class AdminAuthServiceIntegrationTest {
         adminAuthService.logout(adminId);
 
         // assert
-        assertThat(refreshTokenRepository.findByAdminId(adminId)).isEmpty();
+        assertThat(refreshTokenRepository.findByUserIdAndUserRole(adminId, Role.ROLE_ADMIN)).isEmpty();
     }
 
 }

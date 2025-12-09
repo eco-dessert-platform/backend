@@ -83,7 +83,7 @@ public enum BbangleErrorCode {
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
-        HttpStatus.INTERNAL_SERVER_ERROR),
+            HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_INITIALIZATION_ERROR(-997, "Firebase 초기화 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -104,11 +104,11 @@ public enum BbangleErrorCode {
     INVALID_STORE_ID(-723, "유효하지 않은 스토어 아이디 입니다", BAD_REQUEST),
 
 
-    // Adimin Error (741~ 760)
-    INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
+    // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
+    INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
     ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
-    REFRESH_TOKEN_NOT_FOUND(-743,  "존재하지 않는 리프레시 토큰입니다.", BAD_REQUEST);
+    INVALID_REFRESH_TOKEN(-743, "존재하지 않는 리프레시 토큰입니다.", BAD_REQUEST);
 
 
     private final int code;
@@ -117,17 +117,17 @@ public enum BbangleErrorCode {
 
     public static BbangleErrorCode of(int code) {
         return Stream.of(BbangleErrorCode.values())
-            .filter(message -> message.getCode() == code)
-            .findFirst()
-            .orElseThrow(BbangleException::new);
+                .filter(message -> message.getCode() == code)
+                .findFirst()
+                .orElseThrow(BbangleException::new);
     }
 
     public static BbangleErrorCode of(String message) {
         return Stream.of(BbangleErrorCode.values())
-            .filter(error -> error.getMessage()
-                .equals(message))
-            .findFirst()
-            .orElseThrow(BbangleException::new);
+                .filter(error -> error.getMessage()
+                        .equals(message))
+                .findFirst()
+                .orElseThrow(BbangleException::new);
     }
 
 

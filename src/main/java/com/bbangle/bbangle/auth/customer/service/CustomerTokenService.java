@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.auth.customer.service;
 
+import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
 import java.time.Duration;
@@ -17,10 +20,12 @@ public class CustomerTokenService {
     private final MemberService memberService;
 
     public String createNewAccessToken(String refreshToken) {
-        Long memberId = customerRefreshTokenService.findByRefreshToken(refreshToken)
-                .getMemberId();
-        Member member = memberService.findById(memberId);
-        return tokenProvider.generateToken(member.getId(), Role.ROLE_USER, Duration.ofHours(2));
+        RefreshToken refreshTokenEntity = customerRefreshTokenService.findByRefreshToken(refreshToken);
+        if (!refreshTokenEntity.isCustomer()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_REFRESH_TOKEN);
+        }
+        Member member = memberService.findById(refreshTokenEntity.getId());
+        return tokenProvider.generateToken(member.getId(), Role.ROLE_CUSTOMER, Duration.ofHours(2));
     }
 
 }

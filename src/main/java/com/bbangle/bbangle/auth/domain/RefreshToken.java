@@ -1,22 +1,32 @@
 package com.bbangle.bbangle.auth.domain;
 
+import com.bbangle.bbangle.common.role.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "refresh_token")
+@Table(
+        name = "refresh_token",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_id_user_role",
+                        columnNames = {"user_id", "user_role"}
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RefreshToken {
 
@@ -25,22 +35,40 @@ public class RefreshToken {
     @Column(name = "id", updatable = false)
     private Long id;
 
-    @Column(name = "member_id", unique = true)
-    private Long memberId;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(name = "admin_id", unique = true)
-    private Long adminId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private Role userRole;
 
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;
 
-    public RefreshToken(Long memberId, String refreshToken) {
-        this.memberId = memberId;
+    private RefreshToken(Long userId, Role userRole, String refreshToken) {
+        this.userId = userId;
+        this.userRole = userRole;
         this.refreshToken = refreshToken;
+    }
+
+    public static RefreshToken create(Long userId, Role role, String refreshToken) {
+        return new RefreshToken(userId, role, refreshToken);
     }
 
     public void update(String newRefreshToken) {
         this.refreshToken = newRefreshToken;
+    }
+
+    public boolean isAdmin() {
+        return this.userRole == Role.ROLE_ADMIN;
+    }
+
+    public boolean isCustomer() {
+        return this.userRole == Role.ROLE_CUSTOMER;
+    }
+
+    public boolean isSeller() {
+        return this.userRole == Role.ROLE_SELLER;
     }
 
 }

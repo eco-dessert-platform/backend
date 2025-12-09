@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public enum Role {
 
-    ROLE_USER("ROLE_USER", "사용자"),
+    ROLE_CUSTOMER("ROLE_CUSTOMER", "고객"),
     ROLE_SELLER("ROLE_SELLER", "판매자"),
     ROLE_ADMIN("ROLE_ADMIN", "빵그리오븐관리자");
 
@@ -22,7 +22,7 @@ public enum Role {
         return Arrays.stream(Role.values())
                 .filter(r -> r.getRole().equals(role))
                 .findFirst()
-                .orElse(ROLE_USER);
+                .orElse(ROLE_CUSTOMER);
     }
 
 }

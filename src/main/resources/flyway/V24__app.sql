@@ -9,13 +9,18 @@ CREATE TABLE admin (
                        PRIMARY KEY (id)
 );
 
--- Add admin_id column to refresh_token table
-ALTER TABLE refresh_token
-    ADD COLUMN admin_id BIGINT UNIQUE;
+ALTER TABLE bakery.refresh_token
+    -- 1) 기존 단일 유니크 제약 삭제
+    DROP INDEX member_id,
 
--- member id null 값 허용
-ALTER TABLE refresh_token
-    MODIFY member_id BIGINT NULL;
+    -- 2) member_id → user_id 로 컬럼명 변경
+    CHANGE COLUMN member_id user_id BIGINT NOT NULL,
+
+    -- 3) user_role 컬럼 추가
+    ADD COLUMN user_role VARCHAR(50) NOT NULL AFTER user_id,
+
+    -- 4) 복합 유니크 인덱스 생성
+    ADD UNIQUE KEY uk_user_id_user_role (user_id, user_role);
 
 ALTER TABLE member
 DROP COLUMN member_role;

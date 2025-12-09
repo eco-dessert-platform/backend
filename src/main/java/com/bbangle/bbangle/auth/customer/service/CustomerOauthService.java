@@ -36,11 +36,11 @@ public class CustomerOauthService {
                         oauthMember.getProviderId())
                 .orElseGet(() -> memberService.getFirstJoinedMember(oauthMember).getId());
 
-        String refreshToken = tokenProvider.generateToken(memberId, Role.ROLE_USER, REFRESH_TOKEN_DURATION);
-        String accessToken = tokenProvider.generateToken(memberId, Role.ROLE_USER, ACCESS_TOKEN_DURATION);
+        String refreshToken = tokenProvider.generateToken(memberId, Role.ROLE_CUSTOMER, REFRESH_TOKEN_DURATION);
+        String accessToken = tokenProvider.generateToken(memberId, Role.ROLE_CUSTOMER, ACCESS_TOKEN_DURATION);
 
         Optional<RefreshToken> refreshTokenByMemberId =
-                refreshTokenRepository.findByMemberId(memberId);
+                refreshTokenRepository.findByUserIdAndUserRole(memberId, Role.ROLE_CUSTOMER);
 
         refreshTokenByMemberId.ifPresentOrElse(token -> refreshTokenByMemberId.get().update(refreshToken),
                 () -> saveRefreshToken(refreshToken, memberId));
@@ -49,11 +49,7 @@ public class CustomerOauthService {
     }
 
     private void saveRefreshToken(String refreshToken, Long memberId) {
-        RefreshToken saveToken = RefreshToken.builder()
-                .refreshToken(refreshToken)
-                .memberId(memberId)
-                .build();
-
+        RefreshToken saveToken = RefreshToken.create(memberId, Role.ROLE_CUSTOMER, refreshToken);
         refreshTokenRepository.save(saveToken);
     }
 

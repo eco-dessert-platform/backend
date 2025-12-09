@@ -44,11 +44,8 @@ public class AdminAuthService {
         String refreshTokenVal = tokenProvider.generateToken(admin.getId(), Role.ROLE_ADMIN,
                 REFRESH_TOKEN_DURATION);
 
-        RefreshToken refreshToken = refreshTokenRepository.findByAdminId(admin.getId())
-                .orElse(RefreshToken.builder()
-                        .adminId(admin.getId())
-                        .refreshToken(refreshTokenVal)
-                        .build());
+        RefreshToken refreshToken = refreshTokenRepository.findByUserIdAndUserRole(admin.getId(), Role.ROLE_ADMIN)
+                .orElse(RefreshToken.create(admin.getId(), Role.ROLE_ADMIN, refreshTokenVal));
 
         // upsert 방식
         // 매 로그인마다 refresh token 갱신
@@ -63,9 +60,6 @@ public class AdminAuthService {
 
     @Transactional
     public void logout(Long adminId) {
-        int deletedCount = refreshTokenRepository.deleteByAdminId(adminId);
-        if (deletedCount == 0) {
-            throw new BbangleException(BbangleErrorCode.REFRESH_TOKEN_NOT_FOUND);
-        }
+        refreshTokenRepository.deleteByUserIdAndUserRole(adminId, Role.ROLE_ADMIN);
     }
 }

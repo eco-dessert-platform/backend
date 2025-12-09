@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.config.security;
 
 import static com.bbangle.bbangle.common.role.Role.ROLE_ADMIN;
+import static com.bbangle.bbangle.common.role.Role.ROLE_CUSTOMER;
 import static com.bbangle.bbangle.common.role.Role.ROLE_SELLER;
-import static com.bbangle.bbangle.common.role.Role.ROLE_USER;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
@@ -66,7 +66,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
                         .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
                         .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
-                        .requestMatchers(CustomerApiPath.ANY_METHOD).hasAuthority(ROLE_USER.getRole()) // Customer API
+                        .requestMatchers(CustomerApiPath.ANY_METHOD)
+                        .hasAuthority(ROLE_CUSTOMER.getRole()) // Customer API
                         .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요

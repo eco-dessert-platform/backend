@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -14,6 +15,7 @@ import com.bbangle.bbangle.auth.admin.dto.AdminRequest;
 import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminLoginRequest;
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.time.Duration;
@@ -67,7 +69,7 @@ class AdminAuthServiceUnitTest {
         given(adminRepository.findByAccountId("admin")).willReturn(Optional.of(admin));
         given(passwordEncoder.matches("password", "encodedPassword")).willReturn(true);
         given(tokenProvider.generateToken(any(), any(), any(Duration.class))).willReturn("accessToken");
-        given(refreshTokenRepository.findByAdminId(any())).willReturn(Optional.empty());
+        given(refreshTokenRepository.findByUserIdAndUserRole(any(), any())).willReturn(Optional.empty());
 
         // when
         AdminLoginResponse response = adminAuthService.login(request);
@@ -111,12 +113,12 @@ class AdminAuthServiceUnitTest {
     void logoutSuccess() {
         // given
         Long adminId = 1L;
-        given(refreshTokenRepository.deleteByAdminId(adminId)).willReturn(1);
+        willDoNothing().given(refreshTokenRepository).deleteByUserIdAndUserRole(adminId, Role.ROLE_ADMIN);
 
         // when
         adminAuthService.logout(adminId);
 
         // then
-        verify(refreshTokenRepository, times(1)).deleteByAdminId(adminId);
+        verify(refreshTokenRepository, times(1)).deleteByUserIdAndUserRole(adminId, Role.ROLE_ADMIN);
     }
 }
