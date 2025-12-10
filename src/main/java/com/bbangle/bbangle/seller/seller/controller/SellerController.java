@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
@@ -36,8 +37,8 @@ public class SellerController implements SellerApi {
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
-        @ModelAttribute SellerDocumentsRegisterRequest request,
-        @AuthenticationPrincipal Long memberId
+            @ModelAttribute SellerDocumentsRegisterRequest request,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
         // TODO: 구현 필요
         return responseService.getSuccessResult();
@@ -47,30 +48,30 @@ public class SellerController implements SellerApi {
     @PutMapping
     @Override
     public CommonResult updateSeller(
-        @RequestBody @Validated SellerUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
+            @RequestBody @Validated SellerUpdateRequest request,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        sellerService.updateSeller(request, sellerId);
+        sellerService.updateSeller(request, userPrincipal.getId());
         return responseService.getSuccessResult();
     }
 
     @PatchMapping("/store-name")
     @Override
     public CommonResult updateStoreName(
-        @RequestBody @Validated SellerStoreNameUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
+            @RequestBody @Validated SellerStoreNameUpdateRequest request,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        sellerService.updateStoreName(request, sellerId);
+        sellerService.updateStoreName(request, userPrincipal.getId());
         return responseService.getSuccessResult();
     }
 
     @PatchMapping("/account")
     @Override
     public CommonResult updateAccount(
-        @RequestBody @Validated SellerAccountUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
+            @RequestBody @Validated SellerAccountUpdateRequest request,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        sellerService.updateAccount(request, sellerId);
+        sellerService.updateAccount(request, userPrincipal.getId());
         return responseService.getSuccessResult();
     }
 
@@ -79,8 +80,8 @@ public class SellerController implements SellerApi {
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult createSeller(
-        @Valid @RequestPart("request") SellerCreateRequest request,
-        @RequestPart("profileImage") MultipartFile profileImage
+            @Valid @RequestPart("request") SellerCreateRequest request,
+            @RequestPart("profileImage") MultipartFile profileImage
     ) {
         sellerFacade.registerSeller(request.toCommand(), profileImage, request.storeId());
         return responseService.getSuccessResult();

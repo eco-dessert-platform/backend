@@ -2,6 +2,7 @@ package com.bbangle.bbangle.wishlist.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.wishlist.customer.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.customer.service.WishListBoardService;
 import lombok.RequiredArgsConstructor;
@@ -23,25 +24,23 @@ public class WishListBoardController {
 
     @PostMapping("/wish")
     public CommonResult wish(
-        @AuthenticationPrincipal
-        Long memberId,
-        @PathVariable("boardId")
-        Long boardId,
-        @RequestBody
-        WishListBoardRequest wishRequest
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
+            @PathVariable("boardId")
+            Long boardId,
+            @RequestBody
+            WishListBoardRequest wishRequest
     ) {
-        wishListBoardService.wish(memberId, boardId, wishRequest);
+        wishListBoardService.wish(userPrincipal.getId(), boardId, wishRequest);
         return responseService.getSuccessResult();
     }
 
     @DeleteMapping("/cancel")
     public CommonResult cancel(
-        @AuthenticationPrincipal
-        Long memberId,
-        @PathVariable("boardId")
-        Long boardId
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
+            @PathVariable("boardId")
+            Long boardId
     ) {
-        wishListBoardService.cancel(memberId, boardId);
+        wishListBoardService.cancel(userPrincipal.getId(), boardId);
         return responseService.getSuccessResult();
     }
 

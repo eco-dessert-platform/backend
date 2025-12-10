@@ -1,0 +1,24 @@
+package com.bbangle.bbangle.auth.seller.controller.swagger;
+
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Tag(name = "Seller Oauth Login", description = "(판매자) 로그인 Oauth API")
+public interface SellerOauthApi {
+
+    @Operation(summary = "판매자 Oauth 로그인")
+    CommonResult sellerLogin(
+            @Parameter(description = "Oauth 서비스 종류", example = "KAKAO, GOOGLE")
+            @PathVariable("oauthServerType")
+            OauthServerType oauthServerType,
+            @Parameter(description = "Oauth 토큰")
+            @RequestParam("token")
+            String token
+    );
+
+}

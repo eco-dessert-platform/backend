@@ -3,6 +3,7 @@ package com.bbangle.bbangle.wishlist.customer.controller;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.util.SecurityUtils;
 import com.bbangle.bbangle.wishlist.customer.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.customer.dto.FolderResponseDto;
@@ -29,40 +30,37 @@ public class WishListFolderController {
 
     @PostMapping
     public CommonResult make(
-        @RequestBody
-        FolderRequestDto requestDto,
-        @AuthenticationPrincipal
-        Long memberId
+            @RequestBody
+            FolderRequestDto requestDto,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        folderService.create(memberId, requestDto);
+        folderService.create(userPrincipal.getId(), requestDto);
         return responseService.getSuccessResult();
     }
 
     @GetMapping
     public ListResult<FolderResponseDto> getList(
-        @AuthenticationPrincipal
-        Long memberId
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        return responseService.getListResult(folderService.getList(memberId));
+        return responseService.getListResult(folderService.getList(userPrincipal.getId()));
     }
 
     @PatchMapping("/{folderId}")
     public CommonResult update(
-        @PathVariable
-        Long folderId,
-        @RequestBody
-        FolderUpdateDto updateDto,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable
+            Long folderId,
+            @RequestBody
+            FolderUpdateDto updateDto,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        folderService.update(memberId, folderId, updateDto);
+        folderService.update(userPrincipal.getId(), folderId, updateDto);
         return responseService.getSuccessResult();
     }
 
     @DeleteMapping("/{folderId}")
     public CommonResult delete(
-        @PathVariable
-        Long folderId
+            @PathVariable
+            Long folderId
     ) {
         Long memberId = SecurityUtils.getMemberId();
         folderService.delete(folderId, memberId);

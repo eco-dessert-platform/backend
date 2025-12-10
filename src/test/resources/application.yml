@@ -57,3 +57,7 @@ logging:
     org.testcontainers: INFO
     com.zaxxer.hikari: INFO
     com.zaxxer.hikari.HikariConfig: INFO
+
+jwt:
+  issuer: testStore53525
+  secret_key: testKey123443555

@@ -12,6 +12,7 @@ import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.Store;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.review.customer.dto.SummarizedReviewResponse;
 import com.bbangle.bbangle.review.customer.service.ReviewService;
 import com.bbangle.bbangle.store.customer.facade.StoreFacade;
@@ -46,14 +47,13 @@ public class BoardDetailController {
     @Operation(summary = "게시판 조회")
     @GetMapping("/{boardId}")
     public SingleResult<BoardImageDetailResponse> getBoardDetailResponse(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId,
-        HttpServletRequest httpServletRequest
+            @PathVariable("boardId")
+            Long boardId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
+            HttpServletRequest httpServletRequest
     ) {
-        BoardImageDetailResponse response = boardDetailService.getBoardDtos(memberId, boardId,
-            httpServletRequest.getRemoteAddr());
+        BoardImageDetailResponse response = boardDetailService.getBoardDtos(userPrincipal.getId(), boardId,
+                httpServletRequest.getRemoteAddr());
         return responseService.getSingleResult(response);
     }
 
@@ -61,24 +61,20 @@ public class BoardDetailController {
     @Operation(summary = "스토어 조회")
     @GetMapping("/{boardId}/store")
     public SingleResult<Store> getStoreInfoInBoardDetail(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable("boardId") Long boardId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        StoreInfo.Store storeInfo = storeFacade.getStoreInfo(memberId, boardId);
+        StoreInfo.Store storeInfo = storeFacade.getStoreInfo(userPrincipal.getId(), boardId);
         return responseService.getSingleResult(storeInfo);
     }
 
     @GetMapping("/{boardId}/similar_board")
     public SingleResult<List<SimilarityBoardResponse>> getCount(
-        @PathVariable(value = "boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable(value = "boardId") Long boardId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
         List<SimilarityBoardResponse> similarityBoardResponses = boardDetailService.getSimilarityBoardResponses(
-            memberId, boardId);
+                userPrincipal.getId(), boardId);
         return responseService.getSingleResult(similarityBoardResponses);
     }
 
@@ -86,14 +82,11 @@ public class BoardDetailController {
     @Operation(summary = "상품 조회")
     @GetMapping("/{boardId}/product")
     public SingleResult<ProductResponse> getProductResponse(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId
+            @PathVariable("boardId") Long boardId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
     ) {
-        if (Objects.nonNull(memberId)) {
-            ProductResponse productResponse = productService.getProductResponseWithPush(memberId,
-                boardId);
+        if (Objects.nonNull(userPrincipal.getId())) {
+            ProductResponse productResponse = productService.getProductResponseWithPush(userPrincipal.getId(), boardId);
             return responseService.getSingleResult(productResponse);
         }
 
@@ -104,8 +97,7 @@ public class BoardDetailController {
     @Operation(summary = "리뷰 조회")
     @GetMapping("/{boardId}/review")
     public SingleResult<SummarizedReviewResponse> getReviewResponse(
-        @PathVariable("boardId")
-        Long boardId) {
+            @PathVariable("boardId") Long boardId) {
         SummarizedReviewResponse response = reviewService.getSummarizedReview(boardId);
 
         return responseService.getSingleResult(response);
@@ -114,13 +106,11 @@ public class BoardDetailController {
     @Operation(summary = "게시판 조회(new)")
     @GetMapping("/{boardId}/new")
     public SingleResult<Main> getBoardDetail(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId,
-        HttpServletRequest httpServletRequest
+            @PathVariable("boardId") Long boardId,
+            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
+            HttpServletRequest httpServletRequest
     ) {
-        var command = boardDetailMapper.toBoardDetailMain(boardId, memberId, httpServletRequest);
+        var command = boardDetailMapper.toBoardDetailMain(boardId, userPrincipal.getId(), httpServletRequest);
         var info = boardDetailFacade.getBoardDetail(command);
         var response = boardDetailMapper.toBoardDetailMainResponse(info);
         return responseService.getSingleResult(response);
