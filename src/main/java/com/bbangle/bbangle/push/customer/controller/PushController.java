@@ -2,7 +2,6 @@ package com.bbangle.bbangle.push.customer.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.push.customer.dto.CreatePushRequest;
 import com.bbangle.bbangle.push.customer.dto.FcmRequest;
 import com.bbangle.bbangle.push.customer.dto.FcmTestDto;
@@ -40,37 +39,37 @@ public class PushController {
 
     @PostMapping
     public CommonResult createPush(
-            @Validated @RequestBody CreatePushRequest request,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @Validated @RequestBody CreatePushRequest request,
+        @AuthenticationPrincipal Long memberId
     ) {
-        pushService.createPush(request, userPrincipal.getId());
+        pushService.createPush(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @PatchMapping
     public CommonResult cancelPush(
-            @Validated @RequestBody PushRequest request,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @Validated @RequestBody PushRequest request,
+        @AuthenticationPrincipal Long memberId
     ) {
-        pushService.cancelPush(request, userPrincipal.getId());
+        pushService.cancelPush(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @DeleteMapping
     public CommonResult deletePush(
-            @Validated @RequestBody PushRequest request,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @Validated @RequestBody PushRequest request,
+        @AuthenticationPrincipal Long memberId
     ) {
-        pushService.deletePush(request, userPrincipal.getId());
+        pushService.deletePush(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @GetMapping
     public CommonResult getPushes(
-            @RequestParam(value = "pushCategory") @Schema(description = "푸시 카테고리 타입") PushCategory pushCategory,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestParam(value = "pushCategory") @Schema(description = "푸시 카테고리 타입") PushCategory pushCategory,
+        @AuthenticationPrincipal Long memberId
     ) {
-        return responseService.getListResult(pushService.getPushes(pushCategory, userPrincipal.getId()));
+        return responseService.getListResult(pushService.getPushes(pushCategory, memberId));
     }
 
     @GetMapping("/test")
@@ -83,7 +82,7 @@ public class PushController {
     @PostMapping("/test")
     @Operation(summary = "알림 테스트 용 API (테스트 완료 후 삭제 예정)")
     public CommonResult sendPush(
-            @RequestBody FcmTestDto fcmTestDto
+        @RequestBody FcmTestDto fcmTestDto
     ) {
         fcmService.sendTest(fcmTestDto);
         return responseService.getSuccessResult();

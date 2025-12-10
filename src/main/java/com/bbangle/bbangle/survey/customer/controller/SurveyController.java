@@ -3,7 +3,6 @@ package com.bbangle.bbangle.survey.customer.controller;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.survey.customer.collections.DietLimitations;
 import com.bbangle.bbangle.survey.customer.collections.HealthConcerns;
 import com.bbangle.bbangle.survey.customer.collections.IsVegetarians;
@@ -30,44 +29,44 @@ public class SurveyController {
 
     @PostMapping("/recommendation")
     public CommonResult survey(
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
-            @RequestBody
-            RecommendationSurveyDto surveyRequest
+        @AuthenticationPrincipal Long memberId,
+        @RequestBody
+        RecommendationSurveyDto surveyRequest
     ) {
-        surveyService.recordSurvey(userPrincipal.getId(),
-                SurveyInfo.builder()
-                        .dietLimitations(new DietLimitations(surveyRequest.dietLimitation()))
-                        .unmatchedIngredients(
-                                new UnmatchedIngredients(surveyRequest.unmatchedIngredientList()))
-                        .healthConcerns(new HealthConcerns(surveyRequest.healthConcerns()))
-                        .isVegetarians(new IsVegetarians(surveyRequest.isVegetarians()))
-                        .build());
+        surveyService.recordSurvey(memberId,
+            SurveyInfo.builder()
+                .dietLimitations(new DietLimitations(surveyRequest.dietLimitation()))
+                .unmatchedIngredients(
+                    new UnmatchedIngredients(surveyRequest.unmatchedIngredientList()))
+                .healthConcerns(new HealthConcerns(surveyRequest.healthConcerns()))
+                .isVegetarians(new IsVegetarians(surveyRequest.isVegetarians()))
+                .build());
         return responseService.getSuccessResult();
     }
 
     @PutMapping("/recommendation")
     public CommonResult surveyFix(
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal,
-            @RequestBody
-            RecommendationSurveyDto surveyRequest
+        @AuthenticationPrincipal Long memberId,
+        @RequestBody
+        RecommendationSurveyDto surveyRequest
     ) {
         surveyService.updateSurvey(
-                userPrincipal.getId(),
-                SurveyInfo.builder()
-                        .dietLimitations(new DietLimitations(surveyRequest.dietLimitation()))
-                        .unmatchedIngredients(
-                                new UnmatchedIngredients(surveyRequest.unmatchedIngredientList()))
-                        .healthConcerns(new HealthConcerns(surveyRequest.healthConcerns()))
-                        .isVegetarians(new IsVegetarians(surveyRequest.isVegetarians()))
-                        .build());
+            memberId,
+            SurveyInfo.builder()
+                .dietLimitations(new DietLimitations(surveyRequest.dietLimitation()))
+                .unmatchedIngredients(
+                    new UnmatchedIngredients(surveyRequest.unmatchedIngredientList()))
+                .healthConcerns(new HealthConcerns(surveyRequest.healthConcerns()))
+                .isVegetarians(new IsVegetarians(surveyRequest.isVegetarians()))
+                .build());
         return responseService.getSuccessResult();
     }
 
     @GetMapping("/recommendation")
     public SingleResult<RecommendationSurveyDto> getSurvey(
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @AuthenticationPrincipal Long memberId
     ) {
-        RecommendationSurveyDto response = surveyService.getSurveyInfo(userPrincipal.getId());
+        RecommendationSurveyDto response = surveyService.getSurveyInfo(memberId);
         return responseService.getSingleResult(response);
     }
 }

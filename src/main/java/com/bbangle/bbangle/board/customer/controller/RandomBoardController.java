@@ -6,7 +6,6 @@ import com.bbangle.bbangle.board.customer.service.RedisService;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,15 +26,13 @@ public class RandomBoardController {
 
     @GetMapping("/boards-random")
     public SingleResult<CursorPageResponse<BoardResponse>> getList(
-            @RequestParam(required = false, value = "cursorId")
-            Long cursorId,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestParam(required = false, value = "cursorId")
+        Long cursorId,
+        @AuthenticationPrincipal Long memberId
     ) {
-        Integer setNumber = redisService.getSetNumber(userPrincipal.getId());
-        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(
-                cursorId,
-                userPrincipal.getId(),
-                setNumber);
+        Integer setNumber = redisService.getSetNumber(memberId);
+        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(cursorId, memberId,
+            setNumber);
         return responseService.getSingleResult(boardResponseList);
     }
 }

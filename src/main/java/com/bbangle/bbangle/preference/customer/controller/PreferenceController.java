@@ -3,7 +3,6 @@ package com.bbangle.bbangle.preference.customer.controller;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.preference.customer.dto.MemberPreferenceResponse;
 import com.bbangle.bbangle.preference.customer.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.customer.dto.PreferenceUpdateRequest;
@@ -29,31 +28,31 @@ public class PreferenceController {
     @PostMapping
     @Operation(summary = "사용자 취향 등록")
     public CommonResult select(
-            @RequestBody
-            PreferenceSelectRequest request,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestBody
+        PreferenceSelectRequest request,
+        @AuthenticationPrincipal Long memberId
     ) {
-        preferenceService.register(request, userPrincipal.getId());
+        preferenceService.register(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @PutMapping
     @Operation(summary = "사용자 취향 수정")
     public CommonResult update(
-            @RequestBody
-            PreferenceUpdateRequest request,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestBody
+        PreferenceUpdateRequest request,
+        @AuthenticationPrincipal Long memberId
     ) {
-        preferenceService.update(request, userPrincipal.getId());
+        preferenceService.update(request, memberId);
         return responseService.getSuccessResult();
     }
 
     @GetMapping
     @Operation(summary = "사용자 취향 조회")
     public SingleResult<MemberPreferenceResponse> getPreference(
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @AuthenticationPrincipal Long memberId
     ) {
-        MemberPreferenceResponse response = preferenceService.getPreference(userPrincipal.getId());
+        MemberPreferenceResponse response = preferenceService.getPreference(memberId);
         return responseService.getSingleResult(response);
     }
 }

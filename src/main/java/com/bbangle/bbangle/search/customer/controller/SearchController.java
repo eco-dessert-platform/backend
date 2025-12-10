@@ -7,7 +7,6 @@ import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.security.BbangleUserPrincipal;
 import com.bbangle.bbangle.search.customer.controller.mapper.SearchMapper;
 import com.bbangle.bbangle.search.customer.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.customer.facade.SearchFacade;
@@ -41,26 +40,26 @@ public class SearchController {
 
     @GetMapping("/boards")
     public SingleResult<CursorPagination<Select>> getList(
-            @ParameterObject
-            FilterRequest filterRequest,
-            @RequestParam(required = false, defaultValue = "RECOMMEND", value = "sort")
-            SortType sort,
-            @RequestParam(required = false, value = "keyword")
-            @Schema(name = "검색어")
-            String keyword,
-            @RequestParam(required = false, value = "cursorId")
-            Long cursorId,
-            @Parameter(
-                    description = "최대 30까지 입력 가능합니다.",
-                    schema = @Schema(defaultValue = "30", maximum = "30")
-            )
-            @RequestParam(required = false, defaultValue = "30")
-            @Schema(name = "검색 조회 개수 제한")
-            Long limitSize,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @ParameterObject
+        FilterRequest filterRequest,
+        @RequestParam(required = false, defaultValue = "RECOMMEND", value = "sort")
+        SortType sort,
+        @RequestParam(required = false, value = "keyword")
+        @Schema(name = "검색어")
+        String keyword,
+        @RequestParam(required = false, value = "cursorId")
+        Long cursorId,
+        @Parameter(
+            description = "최대 30까지 입력 가능합니다.",
+            schema = @Schema(defaultValue = "30", maximum = "30")
+        )
+        @RequestParam(required = false, defaultValue = "30")
+        @Schema(name = "검색 조회 개수 제한")
+        Long limitSize,
+        @AuthenticationPrincipal Long memberId
     ) {
         SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword,
-                cursorId, userPrincipal.getId(), limitSize);
+            cursorId, memberId, limitSize);
         CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
         return responseService.getSingleResult(searchBoardPage);
     }
@@ -68,31 +67,31 @@ public class SearchController {
 
     @PostMapping
     public CommonResult saveKeyword(
-            @RequestParam("keyword")
-            @Schema(name = "검색어")
-            String keyword,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestParam("keyword")
+        @Schema(name = "검색어")
+        String keyword,
+        @AuthenticationPrincipal Long memberId
     ) {
-        searchService.saveKeyword(userPrincipal.getId(), keyword);
+        searchService.saveKeyword(memberId, keyword);
         return responseService.getSuccessResult();
     }
 
     @GetMapping("/recency")
     public SingleResult<RecencySearchResponse> getRecencyKeyword(
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @AuthenticationPrincipal Long memberId
     ) {
-        RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(userPrincipal.getId());
+        RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
         return responseService.getSingleResult(recencyKeyword);
     }
 
     @DeleteMapping("/recency")
     public CommonResult deleteRecencyKeyword(
-            @RequestParam(value = "keyword")
-            @Schema(name = "검색어")
-            String keyword,
-            @AuthenticationPrincipal BbangleUserPrincipal userPrincipal
+        @RequestParam(value = "keyword")
+        @Schema(name = "검색어")
+        String keyword,
+        @AuthenticationPrincipal Long memberId
     ) {
-        searchService.deleteRecencyKeyword(keyword, userPrincipal.getId());
+        searchService.deleteRecencyKeyword(keyword, memberId);
 
         return responseService.getSuccessResult();
     }
@@ -105,9 +104,9 @@ public class SearchController {
 
     @GetMapping("/auto-keyword")
     public ListResult<String> getAutoKeyword(
-            @RequestParam("keyword")
-            @Schema(name = "검색어")
-            String keyword
+        @RequestParam("keyword")
+        @Schema(name = "검색어")
+        String keyword
     ) {
         List<String> autoKeywords = searchService.getAutoKeyword(keyword);
         return responseService.getListResult(autoKeywords);
