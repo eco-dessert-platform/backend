@@ -10,6 +10,7 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/seller/boards")
+@RequestMapping(SellerApiPath.PREFIX + "/boards")
 public class SellerBoardController implements SellerBoardApi {
 
     private final ResponseService responseService;

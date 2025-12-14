@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
@@ -27,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/seller/sellers")
+@RequestMapping(SellerApiPath.PREFIX + "/sellers")
 public class SellerController implements SellerApi {
 
     private final ResponseService responseService;
