@@ -4,8 +4,8 @@ public class PublicApiPath {
 
     public static final String[] ANY_METHOD = {
         "/api/v1/token",
-        "/api/v1/admin/login",
-        "/api/v1/admin/logout",
+        AdminApiPath.PREFIX + "/login",
+        AdminApiPath.PREFIX + "/logout",
         "/api/v1/oauth/**",
         "/api/v1/search/**",
         "/api/v1/landingpage",

@@ -4,6 +4,7 @@ import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.seller.controller.swagger.SellerOauthApi;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,12 +18,12 @@ public class SellerOauthController implements SellerOauthApi {
     private final ResponseService responseService;
 
     @Override
-    @GetMapping("/api/v1/oauth/seller/login/{oauthServerType}")
+    @GetMapping(SellerApiPath.PREFIX + "/oauth/login/{oauthServerType}")
     public CommonResult sellerLogin(
-            @PathVariable("oauthServerType")
-            OauthServerType oauthServerType,
-            @RequestParam("token")
-            String token
+        @PathVariable("oauthServerType")
+        OauthServerType oauthServerType,
+        @RequestParam("token")
+        String token
     ) {
         // TODO: 개발 필요
         return responseService.getSuccessResult();
