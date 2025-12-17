@@ -1,4 +1,4 @@
-### dev 설정파일
+### production 설정파일
 
 server:
   port: ${SERVER_PORT}
