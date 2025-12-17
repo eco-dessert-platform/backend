@@ -76,3 +76,7 @@ fcm:
   google-authentication-url: ${FCM_GOOGLE_AUTHENTICATION_URL}
 slack:
   webhook-url: ${SLACK_WEBHOOK_URL}
+
+app:
+  cookie:
+    domain: ${COOKIE_DOMAIN}
