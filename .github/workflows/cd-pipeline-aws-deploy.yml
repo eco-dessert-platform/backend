@@ -21,12 +21,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: application.yml 정보 넣기
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.PROD_APPLICATION_YML }}" | base64 --decode > src/main/resources/application-production.yml
-          find src
-
       - name: FcmKey 정보 넣기
         run: |
           mkdir -p src/main/resources/firebase
