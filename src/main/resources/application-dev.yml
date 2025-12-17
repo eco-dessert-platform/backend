@@ -1,0 +1,84 @@
+### dev 설정파일
+
+server:
+  port: ${SERVER_PORT}
+  forward-headers-strategy: framework
+spring:
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE}
+      maxRequestSize: ${MAX_REQUEST_SIZE}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    #전송 쿼리 생성
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+        default_batch_fetch_size: 200
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      max-lifetime: 10780000
+      maximum-pool-size: 5
+      minimum-idle: 5
+  flyway:
+    locations: classpath:/flyway
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 5
+    fail-on-missing-locations: true
+
+logging:
+  level:
+    com.bbangle: DEBUG
+    com.zaxxer.hikari: DEBUG
+jwt:
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET}
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET}
+      end-point: ${S3_ENDPOINT}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ${AWS_REGION}
+      auto: false
+    stack:
+      auto: false
+    file-path:
+      recommend-board-data-file-url: ${RECOMMEND_BOARD_DATA_FILE_URL}
+      recommend-board-resource-data-url: ${RECOMMEND_BOARD_RESOURCE_DATA_URL}
+
+bucket:
+  domain: ${BUCKET_DOMAIN}
+cdn:
+  domain: ${CDN_DOMAIN}
+fcm:
+  key-path: ${FCM_KEY_PATH}
+  api-url: ${FCM_API_URL}
+  google-authentication-url: ${FCM_GOOGLE_AUTHENTICATION_URL}
+slack:
+  webhook-url: ${SLACK_WEBHOOK_URL}
+
+springdoc:
+  swagger-ui:
+    config-url: ${SWAGGER_CONFIG_URL}
+    url: ${SWAGGER_URL}
+
+app:
+  cookie:
+    domain: ${COOKIE_DOMAIN}

@@ -1,3 +1,5 @@
+### local 설정 파일
+
 server:
   port: ${SERVER_PORT}
 spring:
@@ -28,7 +30,6 @@ spring:
       max-lifetime: 10780000
       maximum-pool-size: 5
       minimum-idle: 5
-
   devtools:
     livereload:
       enabled: false
@@ -75,7 +76,3 @@ fcm:
   google-authentication-url: ${FCM_GOOGLE_AUTHENTICATION_URL}
 slack:
   webhook-url: ${SLACK_WEBHOOK_URL}
-
-app:
-  cookie:
-    domain: localhost
