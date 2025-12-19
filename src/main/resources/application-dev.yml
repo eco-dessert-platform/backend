@@ -4,6 +4,8 @@ server:
   port: ${SERVER_PORT}
   forward-headers-strategy: framework
 spring:
+  config:
+    import: optional:classpath:.env[.properties]
   servlet:
     multipart:
       max-file-size: ${MAX_FILE_SIZE}
