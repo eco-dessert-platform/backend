@@ -28,6 +28,10 @@ jobs:
           find src/main/resources
           cat src/main/resources/firebase/firebase_service_key.json
 
+      - name: env 파일 주입
+        run: |
+          echo "${{ secrets.DEV_ENV }}" > src/main/resources/.env
+
       - name: Gradle Caching
         uses: actions/cache@v3
         with:
