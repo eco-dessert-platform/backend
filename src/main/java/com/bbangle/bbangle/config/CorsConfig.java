@@ -13,29 +13,29 @@ public class CorsConfig implements WebMvcConfigurer {
     private static final int ONE_HOUR = 60 * 60 * 1000;
 
     @Bean
-    @Profile({"dev", "default"})
+    @Profile({"dev", "local"})
     public WebMvcConfigurer devCorsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns(
-                                "http://localhost:5000",
-                                "http://localhost:3000",
-                                "http://localhost:63342",
-                                "http://localhost:8001",
-                                "http://localhost:8000",
-                                "http://dev.bbanggree.com",
-                                "https://dev.bbanggree.com",
-                                "http://develop.bbanggree.com",
-                                "https://develop.bbanggree.com",
-                                "http://local.bbanggree.com:3000"
-                        )
-                        .allowedHeaders("*")
-                        .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
-                        .maxAge(ONE_HOUR)
-                        .allowCredentials(true);
+                    .allowedOriginPatterns(
+                        "http://localhost:5000",
+                        "http://localhost:3000",
+                        "http://localhost:63342",
+                        "http://localhost:8001",
+                        "http://localhost:8000",
+                        "http://dev.bbanggree.com",
+                        "https://dev.bbanggree.com",
+                        "http://develop.bbanggree.com",
+                        "https://develop.bbanggree.com",
+                        "http://local.bbanggree.com:3000"
+                    )
+                    .allowedHeaders("*")
+                    .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
+                    .maxAge(ONE_HOUR)
+                    .allowCredentials(true);
             }
         };
     }
@@ -47,16 +47,16 @@ public class CorsConfig implements WebMvcConfigurer {
             @Override
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns(
-                                "https://www.bbanggree.com",
-                                "https://api.bbanggree.com",
-                                "https://master.d2xvuesi0d3ssg.amplifyapp.com"
-                        )
-                        .allowedHeaders("*")
-                        .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
-                        .maxAge(ONE_HOUR)
-                        .allowCredentials(true);
+                    .allowedOriginPatterns(
+                        "https://www.bbanggree.com",
+                        "https://api.bbanggree.com",
+                        "https://master.d2xvuesi0d3ssg.amplifyapp.com"
+                    )
+                    .allowedHeaders("*")
+                    .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
+                    .maxAge(ONE_HOUR)
+                    .allowCredentials(true);
             }
         };
     }
