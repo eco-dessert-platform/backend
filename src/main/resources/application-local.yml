@@ -66,7 +66,7 @@ cloud:
 logging:
   level:
     com.bbangle: DEBUG
-    com.zaxxer.hikari: DEBUG
+    com.zaxxer.hikari: INFO
 
 bucket:
   domain: ${BUCKET_DOMAIN}
