@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="bbangle-backend"/>
+
+    <!-- ============================================ -->
+    <!-- Console Appender -->
+    <!-- ============================================ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- File Appender - 모든 환경 공통 -->
+    <!-- ============================================ -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 고정된 현재 로그 파일명 -->
+        <file>./logs/application.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 롤링된 파일에만 날짜 패턴 적용 -->
+            <fileNamePattern>./logs/application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <!-- ============================================ -->
+    <!-- Async File Appender - prod 환경 성능 최적화 -->
+    <!-- ============================================ -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Logstash TCP Appender - local 환경 전용 -->
+    <!-- ============================================ -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>localhost:5001</destination>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"${APP_NAME}","environment":"local"}</customFields>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+        <reconnectionDelay>1 second</reconnectionDelay>
+        <connectionTimeout>5 seconds</connectionTimeout>
+        <writeTimeout>1 minute</writeTimeout>
+        <ringBufferSize>8192</ringBufferSize>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Async Logstash Appender - local 환경 전용 -->
+    <!-- ============================================ -->
+    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOGSTASH"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- 환경별 설정 -->
+    <!-- ============================================ -->
+
+    <!-- LOCAL 환경: Console + File + Logstash (ELK 스택) -->
+    <springProfile name="local">
+        <logger name="com.bbangle" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ASYNC_LOGSTASH"/>
+        </logger>
+
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+        <logger name="com.zaxxer.hikari" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ASYNC_LOGSTASH"/>
+        </root>
+    </springProfile>
+
+    <!-- DEV 환경: Console + File (디버깅 편의성) -->
+    <springProfile name="dev">
+        <logger name="com.bbangle" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="DEBUG"/>
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+        <logger name="org.springframework.web" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- PROD 환경: Async File만 (성능 최적화) -->
+    <springProfile name="prod">
+        <logger name="com.bbangle" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_FILE"/>
+        </logger>
+
+        <logger name="org.hibernate.SQL" level="INFO"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="INFO"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.springframework.web" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ============================================ -->
+    <!-- Default 설정 (프로파일 미지정 시) -->
+    <!-- ============================================ -->
+    <springProfile name="default">
+        <logger name="com.bbangle" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <logger name="org.hibernate.SQL" level="INFO"/>
+        <logger name="org.springframework" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>
