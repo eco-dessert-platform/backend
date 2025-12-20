@@ -67,6 +67,8 @@ logging:
   level:
     com.bbangle: DEBUG
     com.zaxxer.hikari: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
 
 bucket:
   domain: ${BUCKET_DOMAIN}
