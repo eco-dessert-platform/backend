@@ -35,9 +35,18 @@ public class WebConfig implements WebMvcConfigurer {
     converters.add(octetStreamReadMsgConverter);
   }
 
+  // 불필요한 swagger 로그 찍히는 부분 설정
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(requestTimeInterceptor);
+    registry.addInterceptor(requestTimeInterceptor)
+        .addPathPatterns("/**") // 모든 경로에 적용하되
+        .excludePathPatterns(
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/favicon.ico",
+            "/error"
+        );
   }
 
 }
