@@ -1,0 +1,63 @@
+server:
+  port: 8080
+
+spring:
+  cache:
+    type: none
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        jdbc.time_zone: UTC
+        default_batch_fetch_size: 100
+  datasource:
+    url: jdbc:h2:mem:bakery;MODE=MariaDB;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: never
+
+cloud:
+  aws:
+    s3:
+      bucket: "test"
+      end-point: "test"
+    credentials:
+      access-key: "test"
+      secret-key: "test"
+    region:
+      static: "test"
+    file-path:
+      recommend-board-data-file-url: "test"
+      recommend-board-resource-data-url: "test"
+
+bucket:
+  domain: "https://test.com/"
+cdn:
+  domain: "https://test.com/"
+slack:
+  webhook-url: http://localhost/dummy
+
+logging:
+  level:
+    root: INFO
+    com.bbangle.bbangle: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.jdbc.core: DEBUG
+    org.testcontainers: INFO
+    com.zaxxer.hikari: INFO
+    com.zaxxer.hikari.HikariConfig: INFO
+
+jwt:
+  issuer: testStore53525
+  secret_key: testKey123443555

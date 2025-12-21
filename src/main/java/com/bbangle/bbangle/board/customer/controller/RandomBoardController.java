@@ -28,13 +28,10 @@ public class RandomBoardController {
     public SingleResult<CursorPageResponse<BoardResponse>> getList(
         @RequestParam(required = false, value = "cursorId")
         Long cursorId,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         Integer setNumber = redisService.getSetNumber(memberId);
-        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(
-            cursorId,
-            memberId,
+        CursorPageResponse<BoardResponse> boardResponseList = randomBoardService.getRandomBoardList(cursorId, memberId,
             setNumber);
         return responseService.getSingleResult(boardResponseList);
     }

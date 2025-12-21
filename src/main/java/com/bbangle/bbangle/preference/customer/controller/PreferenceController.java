@@ -30,8 +30,7 @@ public class PreferenceController {
     public CommonResult select(
         @RequestBody
         PreferenceSelectRequest request,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         preferenceService.register(request, memberId);
         return responseService.getSuccessResult();
@@ -42,8 +41,7 @@ public class PreferenceController {
     public CommonResult update(
         @RequestBody
         PreferenceUpdateRequest request,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         preferenceService.update(request, memberId);
         return responseService.getSuccessResult();
@@ -52,8 +50,7 @@ public class PreferenceController {
     @GetMapping
     @Operation(summary = "사용자 취향 조회")
     public SingleResult<MemberPreferenceResponse> getPreference(
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         MemberPreferenceResponse response = preferenceService.getPreference(memberId);
         return responseService.getSingleResult(response);

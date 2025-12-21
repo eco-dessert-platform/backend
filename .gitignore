@@ -4,7 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-*.yml
 *.json
 
 ### STS ###
@@ -21,7 +20,7 @@ bin/
 !**/src/test/**/bin/
 
 ### dotenv ###
-.env
+**.env**
 
 ### Intellij+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

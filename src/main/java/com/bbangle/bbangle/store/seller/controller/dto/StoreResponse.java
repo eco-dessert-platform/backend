@@ -1,6 +1,10 @@
 package com.bbangle.bbangle.store.seller.controller.dto;
 
+import com.bbangle.bbangle.store.domain.StoreStatus;
+import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import lombok.Builder;
 
 public class StoreResponse {
 

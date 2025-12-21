@@ -24,7 +24,7 @@ public interface SellerApi {
     @Operation(summary = "(판매자) 판매자 서류 등록")
     CommonResult registerDocuments(
         SellerDocumentsRegisterRequest request,
-        Long memberId
+        Long sellerId
     );
 
     // TODO: v2

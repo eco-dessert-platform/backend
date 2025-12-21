@@ -31,8 +31,7 @@ public class WishListFolderController {
     public CommonResult make(
         @RequestBody
         FolderRequestDto requestDto,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         folderService.create(memberId, requestDto);
         return responseService.getSuccessResult();
@@ -40,8 +39,7 @@ public class WishListFolderController {
 
     @GetMapping
     public ListResult<FolderResponseDto> getList(
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         return responseService.getListResult(folderService.getList(memberId));
     }
@@ -52,8 +50,7 @@ public class WishListFolderController {
         Long folderId,
         @RequestBody
         FolderUpdateDto updateDto,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         folderService.update(memberId, folderId, updateDto);
         return responseService.getSuccessResult();

@@ -122,8 +122,7 @@ public class ReviewController {
     public CommonResult insertLike(
         @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
         Long reviewId,
-        @AuthenticationPrincipal
-        Long memberId) {
+        @AuthenticationPrincipal Long memberId) {
         reviewService.insertLike(reviewId, memberId);
         return responseService.getSuccessResult();
     }
@@ -133,8 +132,7 @@ public class ReviewController {
     public CommonResult removeLike(
         @PathVariable("reviewId") @Parameter(description = "리뷰 ID", example = "1")
         Long reviewId,
-        @AuthenticationPrincipal
-        Long memberId) {
+        @AuthenticationPrincipal Long memberId) {
         reviewService.removeLike(reviewId, memberId);
         return responseService.getSuccessResult();
     }

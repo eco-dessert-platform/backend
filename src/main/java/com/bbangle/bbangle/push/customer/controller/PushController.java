@@ -66,9 +66,7 @@ public class PushController {
 
     @GetMapping
     public CommonResult getPushes(
-        @RequestParam(value = "pushCategory")
-        @Schema(description = "푸시 카테고리 타입")
-        PushCategory pushCategory,
+        @RequestParam(value = "pushCategory") @Schema(description = "푸시 카테고리 타입") PushCategory pushCategory,
         @AuthenticationPrincipal Long memberId
     ) {
         return responseService.getListResult(pushService.getPushes(pushCategory, memberId));

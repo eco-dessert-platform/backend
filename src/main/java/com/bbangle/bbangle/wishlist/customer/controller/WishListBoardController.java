@@ -23,8 +23,7 @@ public class WishListBoardController {
 
     @PostMapping("/wish")
     public CommonResult wish(
-        @AuthenticationPrincipal
-        Long memberId,
+        @AuthenticationPrincipal Long memberId,
         @PathVariable("boardId")
         Long boardId,
         @RequestBody
@@ -36,8 +35,7 @@ public class WishListBoardController {
 
     @DeleteMapping("/cancel")
     public CommonResult cancel(
-        @AuthenticationPrincipal
-        Long memberId,
+        @AuthenticationPrincipal Long memberId,
         @PathVariable("boardId")
         Long boardId
     ) {

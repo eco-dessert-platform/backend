@@ -30,37 +30,28 @@ public class StoreController {
 
     @GetMapping("/{storeId}")
     public SingleResult<StoreDetail> getPopularBoardResponse(
-        @PathVariable("storeId")
-        Long storeId,
-        @AuthenticationPrincipal
-        Long memberId
+        @PathVariable("storeId") Long storeId,
+        @AuthenticationPrincipal Long memberId
     ) {
         StoreInfo.StoreDetail storeDetail = storeFacade.getStoreDetail(memberId, storeId);
-        StoreDetail storeDetailResponse = storeMapper.toStoreDetailResponse(
-            storeDetail);
+        StoreDetail storeDetailResponse = storeMapper.toStoreDetailResponse(storeDetail);
         return responseService.getSingleResult(storeDetailResponse);
     }
 
     @GetMapping("/{storeId}/boards/best")
     public ListResult<StoreInfo.BestBoard> getPopularBoardResponses(
-        @PathVariable("storeId")
-        Long storeId,
-        @AuthenticationPrincipal
-        Long memberId
+        @PathVariable("storeId") Long storeId,
+        @AuthenticationPrincipal Long memberId
     ) {
-        List<StoreInfo.BestBoard> popularBoardResponses = storeFacade.getBestBoards(
-            memberId, storeId);
+        List<StoreInfo.BestBoard> popularBoardResponses = storeFacade.getBestBoards(memberId, storeId);
         return responseService.getListResult(popularBoardResponses);
     }
 
     @GetMapping("/{storeId}/boards")
     public SingleResult<CursorPageResponse<AllBoard>> getStoreAllBoard(
-        @PathVariable("storeId")
-        Long storeId,
-        @RequestParam(value = "cursorId", required = false)
-        Long boardIdAsCursorId,
-        @AuthenticationPrincipal
-        Long memberId
+        @PathVariable("storeId") Long storeId,
+        @RequestParam(value = "cursorId", required = false) Long boardIdAsCursorId,
+        @AuthenticationPrincipal Long memberId
     ) {
         CursorPageResponse<AllBoard> response = storeFacade.getAllBoard(memberId, storeId,
             boardIdAsCursorId);

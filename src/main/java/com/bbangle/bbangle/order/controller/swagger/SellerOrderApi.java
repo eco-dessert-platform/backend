@@ -1,16 +1,16 @@
 package com.bbangle.bbangle.order.controller.swagger;
 
+import com.bbangle.bbangle.common.dto.ListResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
+import com.bbangle.bbangle.exception.ErrorResponse;
+import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.request.OrderRequest;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
 import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
-import com.bbangle.bbangle.common.dto.ListResult;
-import com.bbangle.bbangle.common.dto.SingleResult;
-import com.bbangle.bbangle.common.page.BbanglePageResponse;
-import com.bbangle.bbangle.exception.ErrorResponse;
-import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,13 +31,13 @@ public interface SellerOrderApi {
     SingleResult<BbanglePageResponse<OrderSummary>> getCompletedOrders(
         @ParameterObject Pageable pageable,
         @ParameterObject CompletedOrderFilter filter,
-        Long memberId
+        Long sellerId
     );
 
     @Operation(summary = "(판매자) 주문 상세 조회")
     ListResult<OrderDetail> getCompletedOrders(
         List<Long> orderItemIds,
-        Long memberId
+        Long sellerId
     );
 
     // TODO: v3

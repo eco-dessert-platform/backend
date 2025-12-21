@@ -56,12 +56,10 @@ public class SearchController {
         @RequestParam(required = false, defaultValue = "30")
         @Schema(name = "검색 조회 개수 제한")
         Long limitSize,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         SearchCommand.Main command = searchMapper.toSearchMain(filterRequest, sort, keyword,
-            cursorId, memberId,
-            limitSize);
+            cursorId, memberId, limitSize);
         CursorPagination<Select> searchBoardPage = searchFacade.getBoardList(command);
         return responseService.getSingleResult(searchBoardPage);
     }
@@ -72,8 +70,7 @@ public class SearchController {
         @RequestParam("keyword")
         @Schema(name = "검색어")
         String keyword,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         searchService.saveKeyword(memberId, keyword);
         return responseService.getSuccessResult();
@@ -81,8 +78,7 @@ public class SearchController {
 
     @GetMapping("/recency")
     public SingleResult<RecencySearchResponse> getRecencyKeyword(
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
         return responseService.getSingleResult(recencyKeyword);
@@ -93,8 +89,7 @@ public class SearchController {
         @RequestParam(value = "keyword")
         @Schema(name = "검색어")
         String keyword,
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         searchService.deleteRecencyKeyword(keyword, memberId);
 

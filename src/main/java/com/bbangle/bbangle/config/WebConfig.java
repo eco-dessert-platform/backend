@@ -6,6 +6,8 @@ import com.bbangle.bbangle.common.service.RequestTimeInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -21,6 +23,11 @@ public class WebConfig implements WebMvcConfigurer {
       RequestTimeInterceptor requestTimeInterceptor) {
     this.octetStreamReadMsgConverter = octetStreamReadMsgConverter;
     this.requestTimeInterceptor = requestTimeInterceptor;
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
   @Override

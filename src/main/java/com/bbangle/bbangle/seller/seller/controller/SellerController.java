@@ -2,12 +2,14 @@ package com.bbangle.bbangle.seller.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
+import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +28,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/seller/sellers")
+@RequestMapping(SellerApiPath.PREFIX + "/sellers")
 public class SellerController implements SellerApi {
 
     private final ResponseService responseService;
     private final SellerService sellerService;
+    private final SellerFacade sellerFacade;
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
         @ModelAttribute SellerDocumentsRegisterRequest request,
-        @AuthenticationPrincipal Long memberId
+        @AuthenticationPrincipal Long sellerId
     ) {
         // TODO: 구현 필요
         return responseService.getSuccessResult();
@@ -80,6 +83,7 @@ public class SellerController implements SellerApi {
         @Valid @RequestPart("request") SellerCreateRequest request,
         @RequestPart("profileImage") MultipartFile profileImage
     ) {
+        sellerFacade.registerSeller(request.toCommand(), profileImage, request.storeId());
         return responseService.getSuccessResult();
     }
 

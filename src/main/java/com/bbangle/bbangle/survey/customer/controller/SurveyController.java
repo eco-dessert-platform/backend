@@ -29,13 +29,11 @@ public class SurveyController {
 
     @PostMapping("/recommendation")
     public CommonResult survey(
-        @AuthenticationPrincipal
-        Long memberId,
+        @AuthenticationPrincipal Long memberId,
         @RequestBody
         RecommendationSurveyDto surveyRequest
     ) {
-        surveyService.recordSurvey(
-            memberId,
+        surveyService.recordSurvey(memberId,
             SurveyInfo.builder()
                 .dietLimitations(new DietLimitations(surveyRequest.dietLimitation()))
                 .unmatchedIngredients(
@@ -48,8 +46,7 @@ public class SurveyController {
 
     @PutMapping("/recommendation")
     public CommonResult surveyFix(
-        @AuthenticationPrincipal
-        Long memberId,
+        @AuthenticationPrincipal Long memberId,
         @RequestBody
         RecommendationSurveyDto surveyRequest
     ) {
@@ -67,8 +64,7 @@ public class SurveyController {
 
     @GetMapping("/recommendation")
     public SingleResult<RecommendationSurveyDto> getSurvey(
-        @AuthenticationPrincipal
-        Long memberId
+        @AuthenticationPrincipal Long memberId
     ) {
         RecommendationSurveyDto response = surveyService.getSurveyInfo(memberId);
         return responseService.getSingleResult(response);
