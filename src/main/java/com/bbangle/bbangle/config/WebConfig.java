@@ -1,13 +1,10 @@
 package com.bbangle.bbangle.config;
 
-import java.util.List;
-
 import com.bbangle.bbangle.common.service.RequestTimeInterceptor;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -39,7 +36,7 @@ public class WebConfig implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(requestTimeInterceptor)
-        .addPathPatterns("/**") // 모든 경로에 적용하되
+        .addPathPatterns("/**") 
         .excludePathPatterns(
             "/swagger-ui/**",
             "/v3/api-docs/**",
