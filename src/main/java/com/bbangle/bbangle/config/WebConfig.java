@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.config;
 import com.bbangle.bbangle.common.service.RequestTimeInterceptor;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -20,6 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
     this.requestTimeInterceptor = requestTimeInterceptor;
   }
 
+
   @Override
   public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
     converters.add(octetStreamReadMsgConverter);
@@ -29,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(requestTimeInterceptor)
-        .addPathPatterns("/**")
+        .addPathPatterns("/**") 
         .excludePathPatterns(
             "/swagger-ui/**",
             "/v3/api-docs/**",
