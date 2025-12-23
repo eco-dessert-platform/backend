@@ -2,7 +2,6 @@
 <configuration>
     <include resource="logback/base.xml"/>
 
-    <!-- DEV 환경: Console -->
     <logger name="com.bbangle" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
