@@ -232,4 +232,4 @@ redis/data/dump.rdb
 src/main/resources/docker/
 
 ### log ###
-/logs/application.log
+/logs/

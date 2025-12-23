@@ -2,9 +2,8 @@
 <configuration>
     <include resource="logback/base.xml"/>
 
-    <!-- PROD 환경: Async File만 (성능 최적화) -->
     <logger name="com.bbangle" level="INFO" additivity="false">
-        <appender-ref ref="ASYNC_FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <logger name="org.hibernate.SQL" level="INFO"/>
@@ -14,7 +13,7 @@
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.springframework.web" level="INFO"/>
 
-    <root level="INFO">
-        <appender-ref ref="ASYNC_FILE"/>
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

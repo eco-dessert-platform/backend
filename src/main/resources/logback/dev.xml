@@ -2,10 +2,9 @@
 <configuration>
     <include resource="logback/base.xml"/>
 
-    <!-- DEV 환경: Console + File (디버깅 편의성) -->
+    <!-- DEV 환경: Console -->
     <logger name="com.bbangle" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
     </logger>
 
     <logger name="org.hibernate.SQL" level="DEBUG"/>
@@ -16,6 +15,5 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
     </root>
 </configuration>
