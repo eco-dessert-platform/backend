@@ -25,17 +25,20 @@ public class CustomQueryLoggingListener implements QueryExecutionListener {
             String sql = query.getQuery();
 
             List<List<String>> allParams = query.getParametersList().stream()
-                    .map(params -> params.stream()
-                            .map(p -> String.valueOf(p.getArgs()[1]))
-                            .toList())
-                    .toList();
+                .map(params -> params.stream()
+                    .map(p -> String.valueOf(p.getArgs()[1]))
+                    .toList())
+                .toList();
+
+            // 파라미터 리스트가 한개라면 내부 리스트만 출력 , 아니면 전체 출력
+            Object paramToLog = allParams.size() == 1 ? allParams.get(0) : allParams;
 
             log.debug("""
-                    
-                    - 쿼리문      : {}
-                    - 쿼리파라미터 : {}
-                    - 성공여부    : {}
-                    - 처리시간    : {}ms""", sql, allParams, success, time);
+                
+                - 쿼리문      : {}
+                - 쿼리파라미터 : {}
+                - 성공여부    : {}
+                - 처리시간    : {}ms""", sql, paramToLog, success, time);
         }
     }
 }
