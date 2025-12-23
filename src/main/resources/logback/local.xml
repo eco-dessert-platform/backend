@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="logback/base.xml"/>
+
+    <!-- LOCAL 환경: Console + File + Logstash (ELK 스택) -->
+    <logger name="com.bbangle" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
+    </logger>
+
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="org.hibernate.tool.schema.extract.spi.DdlTypeRegistry" level="WARN" />
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
+    </root>
+</configuration>

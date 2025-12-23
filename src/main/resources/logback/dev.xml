@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="logback/base.xml"/>
+
+    <!-- DEV 환경: Console + File (디버깅 편의성) -->
+    <logger name="com.bbangle" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.tool.schema.extract.spi.DdlTypeRegistry" level="WARN" />
+    <logger name="org.hibernate.type.descriptor.sql" level="DEBUG"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="org.springframework.web" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

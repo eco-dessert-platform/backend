@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="logback/base.xml"/>
+
+    <!-- PROD 환경: Async File만 (성능 최적화) -->
+    <logger name="com.bbangle" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_FILE"/>
+    </logger>
+
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="org.hibernate.tool.schema.extract.spi.DdlTypeRegistry" level="WARN" />
+    <logger name="org.hibernate.type.descriptor.sql" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC_FILE"/>
+    </root>
+</configuration>
