@@ -64,11 +64,12 @@ cloud:
       recommend-board-data-file-url: ${RECOMMEND_BOARD_DATA_FILE_URL}
       recommend-board-resource-data-url: ${RECOMMEND_BOARD_RESOURCE_DATA_URL}
 logging:
-  level:
-    com.bbangle: DEBUG
-    com.zaxxer.hikari: INFO
-    org.hibernate.SQL: OFF
-    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+  config: classpath:logback/local.xml
+  file:
+    path: ./logs
+
+logstash:
+  destination: ${LOGSTASH_DESTINATION}
 
 bucket:
   domain: ${BUCKET_DOMAIN}

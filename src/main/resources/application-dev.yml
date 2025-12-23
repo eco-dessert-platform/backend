@@ -42,9 +42,9 @@ spring:
     fail-on-missing-locations: true
 
 logging:
-  level:
-    com.bbangle: DEBUG
-    com.zaxxer.hikari: DEBUG
+  config: classpath:logback/dev.xml
+  file:
+    path: /var/log/bbangle
 jwt:
   issuer: ${JWT_ISSUER}
   secret_key: ${JWT_SECRET}
