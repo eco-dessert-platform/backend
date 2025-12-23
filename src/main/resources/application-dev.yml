@@ -43,8 +43,7 @@ spring:
 
 logging:
   config: classpath:logback/dev.xml
-  file:
-    path: /var/log/bbangle
+
 jwt:
   issuer: ${JWT_ISSUER}
   secret_key: ${JWT_SECRET}

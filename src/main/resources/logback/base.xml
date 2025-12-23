@@ -1,74 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="bbangle-backend"/>
 
-    <!-- ============================================ -->
-    <!-- Console Appender -->
-    <!-- ============================================ -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
         </encoder>
     </appender>
-
-    <!-- ============================================ -->
-    <!-- Spring Property: 환경별 로그 경로 -->
-    <!-- ============================================ -->
-    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
-
-    <!-- ============================================ -->
-    <!-- File Appender - 모든 환경 공통 -->
-    <!-- ============================================ -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 고정된 현재 로그 파일명 -->
-        <file>${LOG_PATH}/application.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!-- 롤링된 파일에만 날짜 패턴 적용 -->
-            <fileNamePattern>${LOG_PATH}/application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- ============================================ -->
-    <!-- Logstash TCP Appender - local 환경 전용 -->
-    <!-- ============================================ -->
-    <springProperty scope="context" name="LOGSTASH_DESTINATION" source="logstash.destination"/>
-
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${LOGSTASH_DESTINATION}</destination>
-
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app_name":"${APP_NAME}","environment":"local"}</customFields>
-            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                <maxDepthPerThrowable>30</maxDepthPerThrowable>
-                <maxLength>2048</maxLength>
-                <shortenedClassNameLength>20</shortenedClassNameLength>
-                <rootCauseFirst>true</rootCauseFirst>
-            </throwableConverter>
-        </encoder>
-
-        <keepAliveDuration>5 minutes</keepAliveDuration>
-        <reconnectionDelay>1 second</reconnectionDelay>
-        <connectionTimeout>5 seconds</connectionTimeout>
-        <writeTimeout>1 minute</writeTimeout>
-        <ringBufferSize>8192</ringBufferSize>
-    </appender>
-
-    <!-- ============================================ -->
-    <!-- Async Logstash Appender - local 환경 전용 -->
-    <!-- ============================================ -->
-    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="LOGSTASH"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>true</includeCallerData>
-        <neverBlock>true</neverBlock>
-    </appender>
-
 </included>
