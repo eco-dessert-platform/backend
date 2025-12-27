@@ -2,8 +2,8 @@
 <configuration>
     <include resource="logback/base.xml"/>
 
-    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
-    <springProperty scope="context" name="LOGSTASH_DESTINATION" source="logstash.destination" defaultValue="localhost:5000"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path"/>
+    <springProperty scope="context" name="LOGSTASH_DESTINATION" source="logstash.destination"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/application.log</file>

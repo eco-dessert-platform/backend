@@ -43,6 +43,8 @@ spring:
 
 logging:
   config: classpath:logback/dev.xml
+  file:
+    path: /home/ubuntu/bbangle/logs
 
 jwt:
   issuer: ${JWT_ISSUER}
