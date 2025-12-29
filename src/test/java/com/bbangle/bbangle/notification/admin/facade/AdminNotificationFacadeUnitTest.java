@@ -145,7 +145,7 @@ class AdminNotificationFacadeUnitTest {
         then(adminNotificationService).should(times(1))
             .createAdminNotification(any(AdminNoticeCreateCommand.class));
         then(s3Service).should(times(1))
-            .deleteImages(eq(uploadedImageLinks));
+            .deleteImagesCdn(eq(uploadedImageLinks));
     }
 
     @Test
@@ -183,7 +183,7 @@ class AdminNotificationFacadeUnitTest {
             .hasMessage(BbangleErrorCode.ADMIN_NOTICE_CREATION_FAILED.getMessage());
 
         then(s3Service).should(times(1))
-            .deleteImages(eq(uploadedImageLinks));
+            .deleteImagesCdn(eq(uploadedImageLinks));
     }
 
     @Test
@@ -225,7 +225,7 @@ class AdminNotificationFacadeUnitTest {
         then(adminNotificationService).should(times(1))
             .createAdminNotification(any(AdminNoticeCreateCommand.class));
         then(s3Service).should(times(1))
-            .deleteImages(eq(uploadedImageLinks));
+            .deleteImagesCdn(eq(uploadedImageLinks));
     }
 
     @Test
