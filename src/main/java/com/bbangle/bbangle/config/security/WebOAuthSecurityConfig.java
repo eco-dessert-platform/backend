@@ -70,7 +70,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
                         .requestMatchers(CustomerApiPath.ANY_METHOD)
                         .hasAuthority(ROLE_CUSTOMER.getRole()) // Customer API
-                        .requestMatchers(SellerApiPath.ANY_METHOD).permitAll()  // Seller API
+                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole()) // Seller API
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                         .anyRequest().permitAll())
