@@ -121,4 +121,12 @@ class AdminAuthServiceUnitTest {
         // then
         verify(refreshTokenRepository, times(1)).deleteByUserIdAndUserRole(adminId, Role.ROLE_ADMIN);
     }
+
+    @Test
+    @DisplayName("관리자 비밀번호 생성 테스트")
+    void getEncodedPassword() {
+        String rawPassword = "your_password"; // 사용하고 싶은 실제 비밀번호
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        System.out.println("Encoded Password: " + encodedPassword);
+    }
 }

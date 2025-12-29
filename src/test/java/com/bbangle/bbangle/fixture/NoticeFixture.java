@@ -10,24 +10,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoticeFixture {
 
-    private static final Admin TEST_ADMIN = Admin.builder()
-        .accountId("test-admin")
-        .password("test-password")
-        .name("테스트 관리자")
-        .build();
-
-    public static Notice notice(String title, String content) {
-        return new Notice(title, content, null, null, TEST_ADMIN);
+    public static Admin createTestAdmin() {
+        return Admin.builder()
+            .accountId("test-admin")
+            .password("test-password")
+            .name("테스트 관리자")
+            .build();
     }
 
-    public static Notice notice(String title, String content, LocalDateTime createdAt) {
-        Notice notice = new Notice(title, content, null, null, TEST_ADMIN);
+    public static Notice notice(String title, String content, Admin admin) {
+        return new Notice(title, content, null, null, admin);
+    }
+
+    public static Notice notice(String title, String content, LocalDateTime createdAt, Admin admin) {
+        Notice notice = new Notice(title, content, null, null, admin);
         setCreatedAt(notice, createdAt);
         return notice;
     }
 
-    public static Notice noticeWithIdAndCreatedAt(Long id, String title, String content, LocalDateTime createdAt) {
-        Notice notice = new Notice(title, content, null, null, TEST_ADMIN);
+    public static Notice noticeWithIdAndCreatedAt(Long id, String title, String content, LocalDateTime createdAt, Admin admin) {
+        Notice notice = new Notice(title, content, null, null, admin);
         setId(notice, id);
         setCreatedAt(notice, createdAt);
         return notice;
