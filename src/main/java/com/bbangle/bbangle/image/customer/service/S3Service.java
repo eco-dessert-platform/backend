@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -41,7 +40,6 @@ public class S3Service {
     @Value("${cdn.domain}")
     private String cdnDomain;
 
-    @Transactional
     public String saveImage(MultipartFile request) {
         validateImage(request);
 
@@ -51,7 +49,6 @@ public class S3Service {
         return uploadImage(request, ext, changedImageName);
     }
 
-    @Transactional
     public String saveAndReturnWithCdn(String folderName, MultipartFile image) {
         String imagePath = saveImage(image, folderName);
         log.debug("Show image path: {}", imagePath);
@@ -59,7 +56,12 @@ public class S3Service {
         return addCdnDomain(imagePath);
     }
 
-    @Transactional
+    public List<String> saveMultipleAndReturnWithCdn(String folderName, List<MultipartFile> images) {
+        return images.stream()
+            .map(image -> saveAndReturnWithCdn(folderName, image))
+            .toList();
+    }
+
     public String saveImage(MultipartFile request, String folder) {
         validateImage(request);
 
@@ -83,6 +85,10 @@ public class S3Service {
 
     public void deleteImages(List<String> urls) {
         urls.forEach(url -> amazonS3.deleteObject(bucket, url));
+    }
+
+    public void deleteImagesCdn(List<String> urls) {
+       urls.forEach(this::deleteImage);
     }
 
     public void deleteImage(String url) {
