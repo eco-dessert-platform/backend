@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.common.redis.repository;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,6 +70,13 @@ public class RedisRepositoryImpl implements RedisRepository {
         String multiKey = namespace + ":" + key;
         redisTemplate.opsForValue()
             .set(multiKey, value);
+    }
+
+    @Override
+    public void setFromString(String namespace, String key, String value, Duration ttl) {
+        String multiKey = namespace + ":" + key;
+        redisTemplate.opsForValue()
+                .set(multiKey, value, ttl);
     }
 
     @Override
