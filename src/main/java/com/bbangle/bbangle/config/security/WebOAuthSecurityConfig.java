@@ -63,12 +63,14 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                 .addFilterBefore(tokenAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/.well-known/**").permitAll() // Chrome DevTools 및 well-known URI
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Swagger
                         .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
                         .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
                         .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
                         .requestMatchers(CustomerApiPath.ANY_METHOD)
                         .hasAuthority(ROLE_CUSTOMER.getRole()) // Customer API
-                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
+                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole()) // Seller API
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                         .anyRequest().permitAll())
