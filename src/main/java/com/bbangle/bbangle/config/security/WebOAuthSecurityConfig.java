@@ -11,6 +11,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
+import com.bbangle.bbangle.auth.oauth.service.OAuth2UserService;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +58,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2UserService oAuth2UserService) throws Exception {
         http.sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(tokenAuthenticationFilter(),
@@ -72,6 +73,13 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                         .anyRequest().permitAll())
+                .oauth2Login((oauth2) -> oauth2
+                        .authorizationEndpoint(endpoint -> endpoint
+                                .baseUri( SellerApiPath.PREFIX + "/oauth2/authorization"))
+                        .userInfoEndpoint(config -> config.userService(oAuth2UserService))  // 인증 후 유저 정보 조회
+                        //.successHandler(customSuccesshandler)   // OAuth2 인증 성공 시 처리
+                        //.failureHandler(customFailuerHandler)   // OAuth2 인증 실패 시 처리
+                )
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(exp ->
                         exp.defaultAuthenticationEntryPointFor(
