@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.common.redis.repository;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public interface RedisRepository {
     void setStringList(String namespace, Map<String, List<String>> values);
 
     void setFromString(String namespace, String key, String value);
+
+    void setFromString(String namespace, String key, String value, Duration ttl);
 
     void delete(String namespace, String key);
 
