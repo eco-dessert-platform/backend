@@ -11,6 +11,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
+import com.bbangle.bbangle.auth.oauth.handler.CustomFailureHandler;
 import com.bbangle.bbangle.auth.oauth.handler.CustomSuccessHandler;
 import com.bbangle.bbangle.auth.oauth.service.OAuth2UserService;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
@@ -44,6 +45,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     };
     private final TokenProvider tokenProvider;
     private final CustomSuccessHandler customSuccessHandler;
+    private final CustomFailureHandler customFailureHandler;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -82,7 +84,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                                 .baseUri( SellerApiPath.PREFIX + "/oauth2/authorization"))
                         .userInfoEndpoint(config -> config.userService(oAuth2UserService))  // 인증 후 유저 정보 조회
                         .successHandler(customSuccessHandler)   // OAuth2 인증 성공 시 처리
-                        //.failureHandler(customFailuerHandler)   // OAuth2 인증 실패 시 처리
+                        .failureHandler(customFailureHandler)   // OAuth2 인증 실패 시 처리
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(exp ->

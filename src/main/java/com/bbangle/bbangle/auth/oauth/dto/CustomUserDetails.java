@@ -18,7 +18,7 @@ public record CustomUserDetails (
 
     @Override
     public Map<String, Object> getAttributes() {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
