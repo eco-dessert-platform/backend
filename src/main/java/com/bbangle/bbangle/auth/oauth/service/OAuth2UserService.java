@@ -4,7 +4,8 @@ import com.bbangle.bbangle.auth.oauth.dto.CustomUserDetails;
 import com.bbangle.bbangle.auth.oauth.dto.KakaoResponse;
 import com.bbangle.bbangle.auth.oauth.dto.OAuth2Response;
 import com.bbangle.bbangle.common.role.Role;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.OAuth2Exception;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -30,27 +31,34 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(request);
         String registrationId = request.getClientRegistration().getRegistrationId();
 
+        // TODO : 제거하기
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         System.out.println("OAuth2User = " + gson.toJson(oAuth2User.getAttributes()));
 
         OAuth2Response oAuth2Response = null;
         switch (registrationId) {
             case "kakao" -> oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+            
+            // TODO : Google 로그인 구현
+            case "google" -> throw new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
 
-            case "google" -> throw new BbangleException("구글 로그인 구현 전");
-
-            default -> throw new BbangleException("지원하지 않는 소셜 로그인 타입입니다.");
+            default -> throw new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
         }
 
-        OAuth2Response finalOAuth2Response = oAuth2Response;
-        Long memberId = memberRepository.findByProviderAndProviderId(oAuth2Response.getProvider(), oAuth2Response.getProviderId())
-                .orElseGet(() -> memberService.getFirstJoinedMember(createMember(finalOAuth2Response)).getId());
+        try {
+            OAuth2Response finalOAuth2Response = oAuth2Response;
+            // TODO : 트랜잭션 추가하기
+            Long memberId = memberRepository.findByProviderAndProviderId(oAuth2Response.getProvider(), oAuth2Response.getProviderId())
+                    .orElseGet(() -> memberService.getFirstJoinedMember(createMember(finalOAuth2Response)).getId());
 
-        return CustomUserDetails.builder()
-                .id(memberId)
-                .role(Role.ROLE_SELLER)
-                .name(oAuth2Response.getNickname())
-                .build();
+            return CustomUserDetails.builder()
+                    .id(memberId)
+                    .role(Role.ROLE_SELLER)
+                    .name(oAuth2Response.getNickname())
+                    .build();
+        } catch (Exception e) {
+            throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
+        }
     }
 
     // TODO : 추후에 Seller 엔티티로 변경
