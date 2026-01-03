@@ -9,8 +9,6 @@ import com.bbangle.bbangle.seller.domain.model.EmailVO;
 import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
