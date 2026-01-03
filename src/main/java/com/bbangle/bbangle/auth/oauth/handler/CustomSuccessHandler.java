@@ -16,12 +16,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+// TODO : Test
 @Component
 @RequiredArgsConstructor
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration REFRESH_TOKEN_TTL = Duration.ofMinutes(5);
+    // TODO : .env 환경변수로 분리
+    public static final String REDIRECT_URL = "http://localhost:8000/callback/social";
 
     private final TokenProvider tokenProvider;
     private final RedisRepository redisRepository;
@@ -48,7 +51,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
         }
 
-        // TODO : 리다이렉트 URL 변경하기
-        response.sendRedirect("http://localhost:8000/callback/social?generateToken=" + uuid);
+        response.sendRedirect(createRedirectUrl(uuid));
+    }
+
+    String createRedirectUrl(UUID uuid) {
+        return REDIRECT_URL + "?generateToken=" + uuid;
     }
 }

@@ -12,12 +12,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
+// TODO : Test
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class CustomFailureHandler implements AuthenticationFailureHandler {
 
-    public static final String REDIRECT_ERROR_URL = "http://localhost:8000/callback/social?error=";
+    // TODO : .env 환경변수로 분리
+    public static final String REDIRECT_URL = "http://localhost:8000/callback/social";
 
     @Override
     public void onAuthenticationFailure(
@@ -35,11 +37,16 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
                 log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
             }
 
-            response.sendRedirect(REDIRECT_ERROR_URL + code + "&code=" + code.getCode());
+            response.sendRedirect(createRedirectUrl(code));
             return;
         }
 
         log.warn("Unknown authentication error", exception);
-        response.sendRedirect(REDIRECT_ERROR_URL + "UNKNOWN_ERROR");
+        response.sendRedirect(createRedirectUrl(null));
+    }
+
+    String createRedirectUrl(BbangleErrorCode code) {
+        if (code == null) return REDIRECT_URL + "?error=" + "UNKNOWN_ERROR";
+        return REDIRECT_URL + "?error=" + code + "&code=" + code.getCode();
     }
 }

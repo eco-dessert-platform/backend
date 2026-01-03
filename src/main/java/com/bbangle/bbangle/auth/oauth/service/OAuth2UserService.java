@@ -6,9 +6,9 @@ import com.bbangle.bbangle.auth.oauth.dto.OAuth2Response;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import com.bbangle.bbangle.member.customer.service.MemberService;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.repository.OAuth2SellerRepository;
+import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,13 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+// TODO : Test
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
 
-    private final MemberRepository memberRepository;
-    private final MemberService memberService;
+    private final OAuth2SellerService oAuth2SellerService;
+    private final OAuth2SellerRepository oAuth2SellerRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
@@ -47,28 +48,16 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         try {
             OAuth2Response finalOAuth2Response = oAuth2Response;
-            // TODO : 트랜잭션 추가하기
-            Long memberId = memberRepository.findByProviderAndProviderId(oAuth2Response.getProvider(), oAuth2Response.getProviderId())
-                    .orElseGet(() -> memberService.getFirstJoinedMember(createMember(finalOAuth2Response)).getId());
+            OAuth2Seller seller = oAuth2SellerRepository.findByProviderAndProviderId(oAuth2Response.getProvider(), oAuth2Response.getProviderId())
+                    .orElseGet(() -> oAuth2SellerService.createOAuth2Seller(finalOAuth2Response));
 
             return CustomUserDetails.builder()
-                    .id(memberId)
+                    .id(seller.getId())
                     .role(Role.ROLE_SELLER)
                     .name(oAuth2Response.getNickname())
                     .build();
         } catch (Exception e) {
             throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
         }
-    }
-
-    // TODO : 추후에 Seller 엔티티로 변경
-    private Member createMember(OAuth2Response oAuth2Response) {
-        return Member.builder()
-                .providerId(oAuth2Response.getProviderId())
-                .provider(oAuth2Response.getProvider())
-                .email(oAuth2Response.getEmail())
-                .nickname(oAuth2Response.getNickname())
-                .profile(oAuth2Response.getProfile())
-                .build();
     }
 }
