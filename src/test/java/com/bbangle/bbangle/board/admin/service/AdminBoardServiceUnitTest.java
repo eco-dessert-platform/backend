@@ -40,7 +40,7 @@ class AdminBoardServiceUnitTest {
         Board board = BoardFixture.defaultBoard();
         Page<Board> boardPage = new PageImpl<>(List.of(board), pageable, 1);
 
-        given(boardRepository.findAll(pageable)).willReturn(boardPage);
+        given(boardRepository.findByIsCrawlingTrueAndIsDeletedFalse(pageable)).willReturn(boardPage);
 
         // when
         Page<AdminProductResponse> result = sut.getAdminBoards(pageable);
@@ -57,7 +57,7 @@ class AdminBoardServiceUnitTest {
         assertThat(result.getNumber()).isEqualTo(page);
         assertThat(result.getSize()).isEqualTo(size);
         assertThat(result.getTotalElements()).isEqualTo(1);
-        then(boardRepository).should().findAll(pageable);
+        then(boardRepository).should().findByIsCrawlingTrueAndIsDeletedFalse(pageable);
     }
 
     @Test
@@ -67,7 +67,7 @@ class AdminBoardServiceUnitTest {
         Pageable pageable = PageRequest.of(0, 20);
         Page<Board> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        given(boardRepository.findAll(pageable)).willReturn(emptyPage);
+        given(boardRepository.findByIsCrawlingTrueAndIsDeletedFalse(pageable)).willReturn(emptyPage);
 
         // when
         Page<AdminProductResponse> result = sut.getAdminBoards(pageable);
@@ -75,7 +75,7 @@ class AdminBoardServiceUnitTest {
         // then
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
-        then(boardRepository).should().findAll(pageable);
+        then(boardRepository).should().findByIsCrawlingTrueAndIsDeletedFalse(pageable);
     }
 
 }

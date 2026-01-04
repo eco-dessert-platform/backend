@@ -82,6 +82,9 @@ public class Board extends SoftDeleteBaseEntity {
     @Column(name = "courier")
     private String courier;
 
+    @Column(name = "is_crawling", columnDefinition = "tinyint")
+    private boolean isCrawling;
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 

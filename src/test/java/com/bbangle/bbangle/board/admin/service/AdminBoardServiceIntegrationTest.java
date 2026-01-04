@@ -9,6 +9,7 @@ import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +36,17 @@ class AdminBoardServiceIntegrationTest {
     private StoreRepository storeRepository;
 
     @Test
-    @DisplayName("상품이 존재하면 관리자 상품 목록을 페이징 형태로 조회한다")
-    void getAdminBoards_success() {
+    @DisplayName("관리자 상품 목록은 크롤링되고 삭제되지 않은 상품만 조회된다")
+    void getAdminBoards_filtersByCrawlingAndDeleted() {
         // given
         Store store = storeRepository.save(StoreFixture.defaultStore());
-        Board board1 = BoardFixture.defaultBoard(store, "상품1");
-        Board board2 = BoardFixture.defaultBoard(store, "상품2");
 
-        boardRepository.saveAndFlush(board1);
-        boardRepository.saveAndFlush(board2);
+        Board valid1 = BoardFixture.crawlingActiveBoard(store, "정상상품1");
+        Board valid2 = BoardFixture.crawlingActiveBoard(store, "정상상품2");
+        Board deleted = BoardFixture.crawlingDeletedBoard(store, "삭제상품");
+        Board nonCrawling = BoardFixture.nonCrawlingActiveBoard(store, "비크롤링상품");
+
+        boardRepository.saveAll(List.of(valid1, valid2, deleted, nonCrawling));
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -52,23 +55,24 @@ class AdminBoardServiceIntegrationTest {
             adminBoardService.getAdminBoards(pageable);
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent())
+            .hasSize(2)
+            .extracting(AdminProductResponse::productName)
+            .containsExactlyInAnyOrder("정상상품1", "정상상품2");
+
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getTotalPages()).isEqualTo(1);
-
-        AdminProductResponse response = result.getContent().get(0);
-        assertThat(response.productId()).isNotNull();
-        assertThat(response.productName()).isNotBlank();
     }
 
     @Test
-    @DisplayName("page가 범위를 초과하면 빈 목록을 반환한다")
-    void getAdminBoards_outOfRangePage_returnsEmpty() {
+    @DisplayName("페이지 범위를 초과하면 content는 비어 있고 total 정보는 유지된다")
+    void getAdminBoards_outOfRangePage_returnsEmptyContent() {
         // given
         Store store = storeRepository.save(StoreFixture.defaultStore());
-        Board board = BoardFixture.defaultBoard(store, "상품1");
-        boardRepository.saveAndFlush(board);
+
+        boardRepository.save(
+            BoardFixture.crawlingActiveBoard(store, "정상상품")
+        );
 
         Pageable pageable = PageRequest.of(10, 10); // 범위 초과
 
@@ -83,19 +87,29 @@ class AdminBoardServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("상품이 하나도 없으면 빈 페이지를 반환한다")
-    void getAdminBoards_emptyDatabase() {
+    @DisplayName("조회 대상이 되는 상품이 하나도 없으면 빈 페이지를 반환한다")
+    void getAdminBoards_noValidBoards_returnsEmptyPage() {
         // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        boardRepository.saveAll(
+            List.of(
+                BoardFixture.crawlingDeletedBoard(store, "삭제상품"),
+                BoardFixture.nonCrawlingActiveBoard(store, "비크롤링상품"),
+                BoardFixture.nonCrawlingDeletedBoard(store, "완전제외상품")
+            )
+        );
+
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Page<AdminProductResponse> result = adminBoardService.getAdminBoards(pageable);
+        Page<AdminProductResponse> result =
+            adminBoardService.getAdminBoards(pageable);
 
         // then
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
         assertThat(result.getTotalPages()).isZero();
     }
-
 
 }

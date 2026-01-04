@@ -13,6 +13,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     Optional<Board> findById(Long boardId);
 
     @EntityGraph(attributePaths = {"boardStatistic"})
-    Page<Board> findAll(Pageable pageable);
+    Page<Board> findByIsCrawlingTrueAndIsDeletedFalse(Pageable pageable);
 
 }

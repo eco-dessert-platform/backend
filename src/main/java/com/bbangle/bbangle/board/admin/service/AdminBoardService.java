@@ -17,7 +17,7 @@ public class AdminBoardService {
     private final BoardRepository boardRepository;
 
     public Page<AdminProductResponse> getAdminBoards(Pageable pageable) {
-        Page<Board> boards = boardRepository.findAll(pageable);
+        Page<Board> boards = boardRepository.findByIsCrawlingTrueAndIsDeletedFalse(pageable);
         return boards.map(AdminProductResponse::fromEntity);
     }
 
