@@ -4,9 +4,10 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
+
 @Getter
 @MappedSuperclass
-public class CreatedAtBaseEntity {
+public abstract class CreatedAtBaseEntity {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
