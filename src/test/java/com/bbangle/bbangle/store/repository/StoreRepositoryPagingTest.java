@@ -75,10 +75,9 @@ public class StoreRepositoryPagingTest {
         // 데이터 생성
         IntStream.rangeClosed(1, TOTAL_STORES).forEach(i -> {
             mockTime = mockTime.plusSeconds(1);
-            
+
             storeRepository.save(Store.builder()
                 .name("Store " + i)
-                .isDeleted(false)
                 .status(StoreStatus.NONE)
                 .build());
 

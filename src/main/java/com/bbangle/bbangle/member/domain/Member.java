@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.config.CdnConfig;
 import com.bbangle.bbangle.member.customer.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Member extends BaseEntity {
+public class Member extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,9 +65,6 @@ public class Member extends BaseEntity {
     @Column(name = "provider_id")
     private String providerId;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<Withdrawal> withdrawals = new ArrayList<>();
 
@@ -79,8 +76,8 @@ public class Member extends BaseEntity {
 
     @Builder
     public Member(
-            Long id, String email, String phone, String name, String nickname,
-            String birth, boolean isDeleted, String profile, OauthServerType provider, String providerId
+        Long id, String email, String phone, String name, String nickname,
+        String birth, String profile, OauthServerType provider, String providerId
     ) {
         this.id = id;
         this.email = email;
@@ -88,7 +85,6 @@ public class Member extends BaseEntity {
         this.name = name;
         this.nickname = nickname;
         this.birth = birth;
-        this.isDeleted = isDeleted;
         this.profile = profile;
         this.providerId = providerId;
         this.provider = provider;
@@ -128,8 +124,9 @@ public class Member extends BaseEntity {
         }
     }
 
+    @Override
     public void delete() {
-        this.isDeleted = true;
+        super.delete();
         this.email = "-";
         this.phone = "-";
         this.name = "-";

@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.store.repository;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.bbangle.bbangle.TestContainersConfig;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
@@ -16,8 +19,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("[슬라이스 테스트] StoreRepository")
 @ActiveProfiles("test")
@@ -45,7 +46,6 @@ public class StoreRepositoryTest {
             .name("testStore")
             .introduce("This is a test store.")
             .profile("profile.png")
-            .isDeleted(false)
             .build();
         storeRepository.save(store);
         // act
@@ -66,7 +66,6 @@ public class StoreRepositoryTest {
             .name("testStore")
             .introduce("This is a test store.")
             .profile("profile.png")
-            .isDeleted(false)
             .build();
         storeRepository.save(store);
         // act
@@ -85,7 +84,6 @@ public class StoreRepositoryTest {
             .name("Bbanggle")
             .introduce("This is a test store.")
             .profile("profile.png")
-            .isDeleted(false)
             .build();
         storeRepository.save(store1);
 
@@ -94,7 +92,6 @@ public class StoreRepositoryTest {
             .name("Bbanggle")
             .introduce("This is a test store.")
             .profile("profile.png")
-            .isDeleted(false)
             .build();
         storeRepository.save(store2);
 
@@ -104,7 +101,6 @@ public class StoreRepositoryTest {
         assertThatThrownBy(() -> storeRepository.findByStoreName(searchKeyword))
             .isInstanceOf(NonUniqueResultException.class);
     }
-
 
 
 }

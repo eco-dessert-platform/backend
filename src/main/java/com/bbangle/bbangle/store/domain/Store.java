@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Store extends BaseEntity {
+public class Store extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,9 +47,6 @@ public class Store extends BaseEntity {
     @Column(name = "profile")
     private String profile;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private StoreStatus status;
@@ -61,14 +58,13 @@ public class Store extends BaseEntity {
         String.valueOf((Math.abs(UUID.randomUUID().getLeastSignificantBits()) % 90000) + 10000);
 
     public static Store createForSeller(String name) {
-        return new Store(name, DEFAULT_IDENTIFIER, false, StoreStatus.NONE);
+        return new Store(name, DEFAULT_IDENTIFIER, StoreStatus.NONE);
     }
 
-    private Store(String name, String identifier, boolean isDeleted, StoreStatus status) {
+    private Store(String name, String identifier, StoreStatus status) {
         validateField(name);
         this.name = name;
         this.identifier = identifier;
-        this.isDeleted = isDeleted;
         this.status = status;
     }
 

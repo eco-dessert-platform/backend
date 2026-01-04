@@ -50,7 +50,7 @@ public class WishListStoreService {
             .orElseThrow(() -> new BbangleException(STORE_NOT_FOUND));
         Member member = memberRepository.findMemberById(memberId);
         wishListStoreRepository.findWishListStore(memberId, storeId)
-            .ifPresentOrElse(WishListStore::changeDeletedFalse,
+            .ifPresentOrElse(WishListStore::restore,
                 () -> wishListStoreRepository.save(WishListStore.builder()
                     .member(member)
                     .store(store)

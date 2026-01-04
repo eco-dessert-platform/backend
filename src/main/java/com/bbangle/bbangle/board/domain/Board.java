@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.board.domain;
 
 import com.bbangle.bbangle.boardstatistic.domain.BoardStatistic;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
-public class Board extends BaseEntity {
+public class Board extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,9 +72,6 @@ public class Board extends BaseEntity {
 
     @Column(name = "free_shipping_conditions")
     private Integer freeShippingConditions;
-
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
 
     @Column(name = "view")
     private int view;
@@ -115,7 +112,6 @@ public class Board extends BaseEntity {
         this.discountRate = discountRate;
         this.deliveryFee = deliveryFee;
         this.freeShippingConditions = freeShippingConditions;
-        this.isDeleted = false;
         this.productInfoNotice = productInfoNotice;
     }
 

@@ -75,7 +75,6 @@ public class SellerStoreServiceIntegrationTest {
             .forEach(name -> {
                 storeRepository.save(Store.builder()
                     .name(name)
-                    .isDeleted(false)
                     .status(StoreStatus.NONE)
                     .build());
 
