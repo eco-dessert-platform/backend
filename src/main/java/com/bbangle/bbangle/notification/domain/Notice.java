@@ -38,8 +38,6 @@ public class Notice extends BaseEntity {
     private String title;
     private String content;
     @Column(columnDefinition = "JSON")
-    private String links;
-    @Column(columnDefinition = "JSON")
     private String imageLinks;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,15 +55,14 @@ public class Notice extends BaseEntity {
         );
     }
 
-    public static Notice createNoticeForAdmin(String title, String content, String links , String imageLinks, Admin admin) {
-        return new Notice(title, content, links, imageLinks, admin);
+    public static Notice createNoticeForAdmin(String title, String content, String imageLinks, Admin admin) {
+        return new Notice(title, content, imageLinks, admin);
     }
 
-    public Notice(String title, String content, String links , String imageLinks, Admin admin) {
+    public Notice(String title, String content, String imageLinks, Admin admin) {
         validateField(title, content, admin);
         this.title = title;
         this.content = content;
-        this.links = links;
         this.imageLinks = imageLinks;
         this.admin = admin;
     }
