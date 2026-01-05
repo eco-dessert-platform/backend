@@ -1,10 +1,24 @@
 package com.bbangle.bbangle.boardstatistic.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
-import jakarta.persistence.*;
-import lombok.*;
-
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "board_statistic")
@@ -12,7 +26,7 @@ import java.math.BigDecimal;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BoardStatistic {
+public class BoardStatistic extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +72,7 @@ public class BoardStatistic {
     }
 
     public void updateReviewCount(Long reviewCount) {
-       this.boardViewCount = reviewCount;
+        this.boardViewCount = reviewCount;
     }
 
     public void updateReviewGrade(BigDecimal reviewGrade) {

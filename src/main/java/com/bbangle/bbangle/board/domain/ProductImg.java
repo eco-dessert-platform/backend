@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductImg {
+public class ProductImg extends SoftDeleteBaseEntity {
 
     private static final int THUMBNAIL_ORDER = 0;
     @Id
