@@ -15,18 +15,15 @@ public class AdminNotificationRequest {
         String title,
         @Schema(description = "공지사항 본문")
         @NotBlank(message = "공지사항 본문은 필수입니다.")
-        String content,
-        @Schema(description = "링크 목록")
-        List<LinkDto> links
+        String content
     ) {
 
-        public AdminNoticeCreateCommand toCreateCommand(Long adminId, List<String> imageLinks) {
+        public AdminNoticeCreateCommand toCreateCommand(Long adminId, String convertContext ,List<String> imageLinks) {
             return AdminNoticeCreateCommand.builder()
                 .adminId(adminId)
                 .title(title)
-                .content(content)
-                .links(links)
-                .imageLinks(imageLinks)
+                .content(convertContext)
+                .cdnImageLinks(imageLinks)
                 .build();
         }
     }
