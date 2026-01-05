@@ -26,17 +26,15 @@ public class NoticeUnitTest {
         // arrange
         String title = "공지사항 제목";
         String content = "공지사항 내용";
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://example.com\"]";
 
         // act
-        Notice notice = Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN);
+        Notice notice = Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN);
 
         // assert
         assertThat(notice).isNotNull();
         assertThat(notice.getTitle()).isEqualTo(title);
         assertThat(notice.getContent()).isEqualTo(content);
-        assertThat(notice.getLinks()).isEqualTo(links);
         assertThat(notice.getImageLinks()).isEqualTo(imageLinks);
     }
 
@@ -46,11 +44,10 @@ public class NoticeUnitTest {
         // arrange
         String title = null;
         String content = "공지사항 내용";
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://example.com\"]";
 
         // act & assert
-        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN))
+        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.TITLE_IS_EMPTY.getMessage());
     }
@@ -61,11 +58,10 @@ public class NoticeUnitTest {
         // arrange
         String title = "";
         String content = "공지사항 내용";
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://image.example.com\"]";
 
         // act & assert
-        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN))
+        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.TITLE_IS_EMPTY.getMessage());
     }
@@ -76,11 +72,10 @@ public class NoticeUnitTest {
         // arrange
         String title = "공지사항 제목";
         String content = null;
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://image.example.com\"]";
 
         // act & assert
-        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN))
+        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.CONTENT_IS_EMPTY.getMessage());
     }
@@ -91,33 +86,12 @@ public class NoticeUnitTest {
         // arrange
         String title = "공지사항 제목";
         String content = "";
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://image.example.com\"]";
 
         // act & assert
-        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN))
+        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.CONTENT_IS_EMPTY.getMessage());
-    }
-
-    @Test
-    @DisplayName("links가 null이어도 공지사항 생성에 성공한다.")
-    void success_create_notice_when_links_is_null() {
-        // arrange
-        String title = "공지사항 제목";
-        String content = "공지사항 내용";
-        String links = null;
-        String imageLinks = "[\"https://image.example.com\"]";
-
-        // act
-        Notice notice = Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN);
-
-        // assert
-        assertThat(notice).isNotNull();
-        assertThat(notice.getTitle()).isEqualTo(title);
-        assertThat(notice.getContent()).isEqualTo(content);
-        assertThat(notice.getLinks()).isNull();
-        assertThat(notice.getImageLinks()).isEqualTo(imageLinks);
     }
 
     @Test
@@ -126,17 +100,15 @@ public class NoticeUnitTest {
         // arrange
         String title = "공지사항 제목";
         String content = "공지사항 내용";
-        String links = "[\"https://example.com\"]";
         String imageLinks = null;
 
         // act
-        Notice notice = Notice.createNoticeForAdmin(title, content, links, imageLinks, TEST_ADMIN);
+        Notice notice = Notice.createNoticeForAdmin(title, content, imageLinks, TEST_ADMIN);
 
         // assert
         assertThat(notice).isNotNull();
         assertThat(notice.getTitle()).isEqualTo(title);
         assertThat(notice.getContent()).isEqualTo(content);
-        assertThat(notice.getLinks()).isEqualTo(links);
         assertThat(notice.getImageLinks()).isNull();
     }
 
@@ -146,12 +118,11 @@ public class NoticeUnitTest {
         // arrange
         String title = "공지사항 제목";
         String content = "공지사항 내용";
-        String links = "[\"https://example.com\"]";
         String imageLinks = "[\"https://image.example.com\"]";
         Admin admin = null;
 
         // act & assert
-        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, links, imageLinks, admin))
+        assertThatThrownBy(() -> Notice.createNoticeForAdmin(title, content, imageLinks, admin))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.ADMIN_NOT_FOUND.getMessage());
     }
