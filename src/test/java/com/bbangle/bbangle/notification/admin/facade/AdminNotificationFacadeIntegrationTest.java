@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,7 +16,6 @@ import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
-import com.bbangle.bbangle.notification.admin.controller.dto.LinkDto;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,42 +82,36 @@ public class AdminNotificationFacadeIntegrationTest {
     @Test
     @DisplayName("관리자 공지사항 생성에 성공한다")
     void success_create_notification_with_images() {
-        // given
-        List<LinkDto> links = List.of(
-            new LinkDto("https://example.com", "더보기"),
-            new LinkDto("https://example2.com", "상세보기")
-        );
-
         // MockMultipartFile을 사용하여 이미지 파일 생성
         MockMultipartFile image1 = new MockMultipartFile(
             "images",                       // 파라미터 이름
-            "image1.jpg",                   // 원본 파일명
+            "uuid-1",                       // uuid 파일명
             MediaType.IMAGE_JPEG_VALUE,     // 컨텐츠 타입
             "image1 content".getBytes()     // 파일 내용
         );
 
         MockMultipartFile image2 = new MockMultipartFile(
             "images",
-            "image2.jpg",
+            "uuid-2",
             MediaType.IMAGE_JPEG_VALUE,
             "image2 content".getBytes()
         );
 
         List<MultipartFile> images = List.of(image1, image2);
 
+        String htmlContent = "<div><img src=\"uuid-1\"><img src=\"uuid-2\"></div>";
         AdminNotificationCreateRequest request = new AdminNotificationCreateRequest(
             "공지사항 제목",
-            "공지사항 내용",
-            links
+            htmlContent
         );
 
-        // S3Service Mock 설정: 이미지 업로드 성공
-        List<String> mockImageUrls = List.of(
-            "https://cdn.example.com/image1.jpg",
-            "https://cdn.example.com/image2.jpg"
-        );
-        when(s3Service.saveMultipleAndReturnWithCdn(anyString(), anyList()))
-            .thenReturn(mockImageUrls);
+        // S3Service Mock 설정: 각 이미지 업로드 성공
+        String mockImageUrl1 = "https://cdn.example.com/image1.jpg";
+        String mockImageUrl2 = "https://cdn.example.com/image2.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(image1)))
+            .thenReturn(mockImageUrl1);
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(image2)))
+            .thenReturn(mockImageUrl2);
 
         // when
         NoticeInfo noticeInfo = adminNotificationFacade.createNotice(testAdminId, request, images);
@@ -126,19 +120,12 @@ public class AdminNotificationFacadeIntegrationTest {
         assertThat(noticeInfo).isNotNull();
         assertThat(noticeInfo.id()).isNotNull();
         assertThat(noticeInfo.title()).isEqualTo("공지사항 제목");
-        assertThat(noticeInfo.content()).isEqualTo("공지사항 내용");
-        assertThat(noticeInfo.links()).hasSize(2);
         assertThat(noticeInfo.imageLinks()).hasSize(2);
-        assertThat(noticeInfo.imageLinks()).containsExactlyElementsOf(mockImageUrls);
-
-        // 링크 검증
-        assertThat(noticeInfo.links().get(0).url()).isEqualTo("https://example.com");
-        assertThat(noticeInfo.links().get(0).linkText()).isEqualTo("더보기");
-        assertThat(noticeInfo.links().get(1).url()).isEqualTo("https://example2.com");
-        assertThat(noticeInfo.links().get(1).linkText()).isEqualTo("상세보기");
+        assertThat(noticeInfo.imageLinks()).containsExactly(mockImageUrl1, mockImageUrl2);
 
         // S3Service 호출 검증
-        verify(s3Service, times(1)).saveMultipleAndReturnWithCdn(anyString(), anyList());
+        verify(s3Service, times(1)).saveAndReturnWithCdn(eq("admin-notice-images"), eq(image1));
+        verify(s3Service, times(1)).saveAndReturnWithCdn(eq("admin-notice-images"), eq(image2));
     }
 
     @Test
@@ -148,31 +135,26 @@ public class AdminNotificationFacadeIntegrationTest {
         // 존재하지 않는 adminId 사용 -> FK 제약조건 위반 발생
         Long invalidAdminId = 99999L;
 
-        List<LinkDto> links = List.of(
-            new LinkDto("https://example.com", "더보기")
-        );
-
         MockMultipartFile image1 = new MockMultipartFile(
             "images",
-            "image1.jpg",
+            "uuid-1",
             MediaType.IMAGE_JPEG_VALUE,
             "image1 content".getBytes()
         );
 
         List<MultipartFile> images = List.of(image1);
 
+        String htmlContent = "<div><img src=\"uuid-1\"></div>";
         AdminNotificationCreateRequest request = new AdminNotificationCreateRequest(
             "공지사항 제목",
-            "공지사항 내용",
-            links
+            htmlContent
         );
 
         // S3Service Mock 설정: 이미지 업로드는 성공
-        List<String> uploadedImageUrls = List.of(
-            "https://cdn.example.com/image1.jpg"
-        );
-        when(s3Service.saveMultipleAndReturnWithCdn(anyString(), anyList()))
-            .thenReturn(uploadedImageUrls);
+        String uploadedImageUrl = "https://cdn.example.com/image1.jpg";
+        List<String> uploadedImageUrls = List.of(uploadedImageUrl);
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(image1)))
+            .thenReturn(uploadedImageUrl);
 
         // when & then
         assertThatThrownBy(() ->
@@ -181,9 +163,83 @@ public class AdminNotificationFacadeIntegrationTest {
             .isInstanceOf(BbangleException.class);
 
         // 이미지 업로드는 호출되었지만
-        verify(s3Service, times(1)).saveMultipleAndReturnWithCdn(anyString(), anyList());
+        verify(s3Service, times(1)).saveAndReturnWithCdn(eq("admin-notice-images"), eq(image1));
 
         // 공지사항 생성 실패로 인해 이미지 삭제도 호출되어야 함
         verify(s3Service, times(1)).deleteImagesCdn(uploadedImageUrls);
+    }
+
+    @Test
+    @DisplayName("복수 이미지 업로드 중 첫 번째 이미지만 성공할 때 첫 번째 이미지만 삭제된다")
+    void rollback_first_image_when_second_image_fails() {
+        // given
+        MockMultipartFile image1 = new MockMultipartFile(
+            "images",
+            "uuid-1",
+            MediaType.IMAGE_JPEG_VALUE,
+            "image1 content".getBytes()
+        );
+
+        MockMultipartFile image2 = new MockMultipartFile(
+            "images",
+            "uuid-2",
+            MediaType.IMAGE_JPEG_VALUE,
+            "image2 content".getBytes()
+        );
+
+        List<MultipartFile> images = List.of(image1, image2);
+
+        String htmlContent = "<div><img src=\"uuid-1\"><img src=\"uuid-2\"></div>";
+        AdminNotificationCreateRequest request = new AdminNotificationCreateRequest(
+            "공지사항 제목",
+            htmlContent
+        );
+
+        // 첫 번째 이미지는 성공
+        String uploadedImageUrl1 = "https://cdn.example.com/image1.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(image1)))
+            .thenReturn(uploadedImageUrl1);
+
+        // 두 번째 이미지는 실패
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(image2)))
+            .thenThrow(new RuntimeException("S3 upload failed for second image"));
+
+        // when & then
+        assertThatThrownBy(() ->
+            adminNotificationFacade.createNotice(testAdminId, request, images)
+        )
+            .isInstanceOf(BbangleException.class);
+
+        // 첫 번째 이미지만 삭제되어야 함
+        verify(s3Service, times(1)).deleteImagesCdn(List.of(uploadedImageUrl1));
+    }
+
+    @Test
+    @DisplayName("이미지 없이 공지사항 생성에 성공한다")
+    void success_create_notification_without_images() {
+        // given
+        MockMultipartFile noImages = new MockMultipartFile(
+            "images",
+            "".getBytes()
+        );
+
+        List<MultipartFile> emptyImages = List.of();
+
+        String htmlContent = "<div>텍스트만 있는 공지사항</div>";
+        AdminNotificationCreateRequest request = new AdminNotificationCreateRequest(
+            "공지사항 제목",
+            htmlContent
+        );
+
+        // when
+        NoticeInfo noticeInfo = adminNotificationFacade.createNotice(testAdminId, request, emptyImages);
+
+        // then
+        assertThat(noticeInfo).isNotNull();
+        assertThat(noticeInfo.title()).isEqualTo("공지사항 제목");
+        assertThat(noticeInfo.imageLinks()).isEmpty();
+
+        // S3Service는 호출되지 않아야 함
+        verify(s3Service, times(0)).saveAndReturnWithCdn(anyString(), any());
     }
 }
