@@ -3,6 +3,7 @@ package com.bbangle.bbangle.notification.admin.service;
 
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
+import com.bbangle.bbangle.common.service.HtmlContentProcessor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeCreateCommand;
@@ -22,6 +23,7 @@ public class AdminNotificationService {
     private final NotificationRepository notificationRepository;
     private final AdminRepository adminRepository;
     private final ObjectMapper objectMapper;
+    private final HtmlContentProcessor htmlContentProcessor;
 
     @Transactional
     public NoticeInfo createAdminNotification(AdminNoticeCreateCommand command) {
@@ -29,17 +31,15 @@ public class AdminNotificationService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
 
         try {
-            String linksJson = objectMapper.writeValueAsString(command.links());
-            String imageLinksJson = objectMapper.writeValueAsString(command.imageLinks());
 
-            Notice notice = Notice.createNoticeForAdmin(command.title(), command.content(), linksJson, imageLinksJson, admin);
+            String imageLinksJson = objectMapper.writeValueAsString(command.cdnImageLinks());
+
+            Notice notice = Notice.createNoticeForAdmin(command.title(), command.content(), imageLinksJson, admin);
             Notice savedNotice = notificationRepository.save(notice);
 
             return NoticeInfo.from(savedNotice, objectMapper);
         } catch (JsonProcessingException e) {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
-        } catch (Exception e) {
-            throw e;
         }
     }
 
