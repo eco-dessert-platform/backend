@@ -233,3 +233,6 @@ src/main/resources/docker/
 
 ### log ###
 /logs/
+
+### claude ###
+.claude/
