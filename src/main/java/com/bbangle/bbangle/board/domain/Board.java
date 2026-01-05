@@ -44,7 +44,7 @@ public class Board extends SoftDeleteBaseEntity {
     @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "product_info_notice_id")
     private ProductInfoNotice productInfoNotice;
 
@@ -85,10 +85,10 @@ public class Board extends SoftDeleteBaseEntity {
     @Column(name = "is_crawling", columnDefinition = "tinyint")
     private boolean isCrawling;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
     private List<Product> products = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
     private List<ProductImg> productImgs = new ArrayList<>();
 
     @OneToOne(mappedBy = "board", cascade = CascadeType.ALL)
