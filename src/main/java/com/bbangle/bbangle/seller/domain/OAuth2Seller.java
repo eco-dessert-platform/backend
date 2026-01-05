@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.seller.domain;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
@@ -19,31 +20,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO : Test
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "seller")
 @Entity
-public class OAuth2Seller {
+public class OAuth2Seller extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "VARCHAR(15)")
     private String name;
-
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "profile", columnDefinition = "VARCHAR(255)")
-    private String profile;
 
     @Column(name = "provider", columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private OauthServerType provider;
 
-    @Column(name = "provider_id")
+    @Column(name = "provider_id", columnDefinition = "VARCHAR(50)", unique = true)
     private String providerId;
 
     @Enumerated(EnumType.STRING)
@@ -61,8 +55,6 @@ public class OAuth2Seller {
     @Builder
     public OAuth2Seller(
             String name,
-            String email,
-            String profile,
             OauthServerType provider,
             String providerId,
             CertificationStatus certificationStatus,
@@ -70,8 +62,6 @@ public class OAuth2Seller {
             Store store
     ) {
         this.name = name;
-        this.email = email;
-        this.profile = profile;
         this.provider = provider;
         this.providerId = providerId;
         this.certificationStatus = certificationStatus;
@@ -81,15 +71,11 @@ public class OAuth2Seller {
 
     public static OAuth2Seller create(
             String name,
-            String email,
-            String profile,
             OauthServerType provider,
             String providerId
     ) {
         return OAuth2Seller.builder()
                 .name(name)
-                .email(email)
-                .profile(profile)
                 .provider(provider)
                 .providerId(providerId)
                 .certificationStatus(CertificationStatus.PENDING)
