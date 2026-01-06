@@ -8,7 +8,7 @@ import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.NoticeFixture;
+import com.bbangle.bbangle.fixture.notification.domain.NoticeFixture;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
@@ -95,7 +95,7 @@ class NotificationServiceIntegrationTest {
         Long invalidCursorId = 99999L;
 
         // When
-        assertThatThrownBy((()-> sut.getList(invalidCursorId)))
+        assertThatThrownBy((() -> sut.getList(invalidCursorId)))
             .isInstanceOf(BbangleException.class)
             .hasMessage(NOTIFICATION_NOT_FOUND.getMessage());
 

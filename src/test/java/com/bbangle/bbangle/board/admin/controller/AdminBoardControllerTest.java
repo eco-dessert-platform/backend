@@ -19,7 +19,7 @@ import com.bbangle.bbangle.config.JsonDataEncoder;
 import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
-import com.bbangle.bbangle.fixture.AdminProductResponseFixture;
+import com.bbangle.bbangle.fixture.board.admin.controller.dto.AdminProductResponseFixture;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

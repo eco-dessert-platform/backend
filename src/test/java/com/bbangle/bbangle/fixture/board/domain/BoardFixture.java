@@ -2,7 +2,7 @@ package com.bbangle.bbangle.fixture.board.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
-import com.bbangle.bbangle.fixture.StoreFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
 import org.springframework.test.util.ReflectionTestUtils;
