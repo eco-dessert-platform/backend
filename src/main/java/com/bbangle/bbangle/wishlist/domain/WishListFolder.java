@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.wishlist.domain;
 
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.wishlist.customer.validator.WishListFolderValidator;
 import jakarta.persistence.Column;
@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WishListFolder extends BaseEntity {
+public class WishListFolder extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,15 +36,11 @@ public class WishListFolder extends BaseEntity {
     @Column(name = "folder_name")
     private String folderName;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
     @Builder
     private WishListFolder(
         Long id,
         Member member,
-        String folderName,
-        boolean isDeleted
+        String folderName
     ) {
         WishListFolderValidator.validateMember(member);
         WishListFolderValidator.validateTitle(folderName);
@@ -52,16 +48,11 @@ public class WishListFolder extends BaseEntity {
         this.id = id;
         this.member = member;
         this.folderName = folderName;
-        this.isDeleted = isDeleted;
     }
 
     public void updateTitle(String title) {
         WishListFolderValidator.validateTitle(folderName);
         this.folderName = title;
-    }
-
-    public void delete() {
-        this.isDeleted = true;
     }
 
 }

@@ -7,7 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @MappedSuperclass
-public class BaseEntity extends CreatedAtBaseEntity {
+public abstract class BaseEntity extends CreatedAtBaseEntity {
 
     @UpdateTimestamp
     private LocalDateTime modifiedAt;

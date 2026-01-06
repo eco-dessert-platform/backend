@@ -9,8 +9,6 @@ import com.bbangle.bbangle.seller.domain.model.EmailVO;
 import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -98,12 +96,14 @@ public class Seller extends BaseEntity {
         CertificationStatus certificationStatus,
         Store store
     ) {
-        if(store == null)  throw new BbangleException(BbangleErrorCode.INVALID_STORE);
+        if (store == null) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE);
+        }
 
         store.changeStatus(StoreStatus.RESERVED);
 
         return Seller.builder()
-            .phoneNumberVO(PhoneNumberVO.of(phone,subPhone))
+            .phoneNumberVO(PhoneNumberVO.of(phone, subPhone))
             .emailVO(EmailVO.of(email))
             .originAddressLine(originAddressLine)
             .originAddressDetail(originAddressDetail)
@@ -121,16 +121,15 @@ public class Seller extends BaseEntity {
         Store store
     ) {
 
-
         if (originAddressLine == null || originAddressLine.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_ADDRESS);
         }
 
-        if(originAddressDetail == null || originAddressDetail.isEmpty()) {
+        if (originAddressDetail == null || originAddressDetail.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_DETAIL_ADDRESS);
         }
 
-        if(profile == null || profile.isEmpty()) {
+        if (profile == null || profile.isEmpty()) {
             throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
         }
 
