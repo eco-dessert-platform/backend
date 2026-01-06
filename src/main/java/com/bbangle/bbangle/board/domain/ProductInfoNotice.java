@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,6 +35,7 @@ public class ProductInfoNotice extends SoftDeleteBaseEntity {
     private String customerWarning;
     private String importFood;
 
+    @Builder
     public ProductInfoNotice(String productName, String foodType, String manufacturer, String originLocation,
                              String manufactureDate, String expirationDate, String storageGuide,
                              String packagingQuantityUnit, String rawMaterialName, String nutritionInfo,
