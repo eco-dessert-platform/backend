@@ -6,8 +6,13 @@ import static org.mockito.BDDMockito.then;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.board.repository.ProductImgRepository;
+import com.bbangle.bbangle.board.repository.ProductInfoNoticeRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +34,21 @@ class AdminBoardServiceUnitTest {
 
     @Mock
     private BoardRepository boardRepository;
+
+    @Mock
+    private ProductRepository productRepository;
+
+    @Mock
+    private ProductImgRepository productImgRepository;
+
+    @Mock
+    private BoardDetailRepository boardDetailRepository;
+
+    @Mock
+    private BoardStatisticRepository boardStatisticRepository;
+
+    @Mock
+    private ProductInfoNoticeRepository productInfoNoticeRepository;
 
     @Test
     @DisplayName("관리자 상품 목록을 페이징 형태로 조회한다")
@@ -76,6 +96,24 @@ class AdminBoardServiceUnitTest {
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
         then(boardRepository).should().findByIsCrawlingTrueAndIsDeletedFalse(pageable);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 시 연관된 모든 엔티티를 soft delete 처리한다")
+    void deleteBoards_success() {
+        // given
+        List<Long> boardIds = List.of(1L, 2L, 3L);
+
+        // when
+        sut.deleteBoards(boardIds);
+
+        // then
+        then(boardRepository).should().softDeleteByIds(boardIds);
+        then(productRepository).should().softDeleteByBoardIds(boardIds);
+        then(productImgRepository).should().softDeleteByBoardIds(boardIds);
+        then(boardDetailRepository).should().softDeleteByBoardIds(boardIds);
+        then(boardStatisticRepository).should().softDeleteByBoardIds(boardIds);
+        then(productInfoNoticeRepository).should().softDeleteByBoardIds(boardIds);
     }
 
 }
