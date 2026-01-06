@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.auth.oauth.handler;
 
-import com.bbangle.bbangle.auth.oauth.dto.CustomUserDetails;
+import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
