@@ -9,6 +9,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2Seller seller;
         try {
-            seller = oAuth2SellerFacade.login(oAuth2Response);
+            seller = oAuth2SellerFacade.login(OAuth2ResponseCreateCommand.from(oAuth2Response));
         } catch (BbangleException e) {
             throw new OAuth2Exception(e.getBbangleErrorCode(), e);
         } catch (Exception e) {

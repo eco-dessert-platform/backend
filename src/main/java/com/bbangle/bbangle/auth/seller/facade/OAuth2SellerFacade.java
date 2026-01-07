@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Response;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
@@ -15,18 +14,18 @@ public class OAuth2SellerFacade {
 
     private final OAuth2SellerService oAuth2SellerService;
 
-    public OAuth2Seller login(OAuth2Response response) {
+    public OAuth2Seller login(OAuth2ResponseCreateCommand response) {
         try {
             return oAuth2SellerService.findByProviderAndProviderId(
-                    response.getProvider(),
-                    response.getProviderId()
+                    response.provider(),
+                    response.providerId()
             ).orElseGet(() ->
-                    oAuth2SellerService.createOAuth2Seller(OAuth2ResponseCreateCommand.from(response))
+                    oAuth2SellerService.createOAuth2Seller(response)
             );
         } catch (DataIntegrityViolationException e) {   // UNIQUE(providerId) 충돌 시 한번 더 조회
             return oAuth2SellerService.findByProviderAndProviderId(
-                    response.getProvider(),
-                    response.getProviderId()
+                    response.provider(),
+                    response.providerId()
             ).orElseThrow(() -> e);
         }
     }
