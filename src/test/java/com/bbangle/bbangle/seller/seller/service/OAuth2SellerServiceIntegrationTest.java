@@ -9,6 +9,7 @@ import com.bbangle.bbangle.seller.repository.OAuth2SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,41 @@ class OAuth2SellerServiceIntegrationTest {
 
     @Autowired
     EntityManager em;
+
+    @Test
+    @DisplayName("provider + providerId로 판매자 계정을 조회한다.")
+    void success_findByProviderAndProviderId() {
+
+        // given
+        OAuth2Seller seller = OAuth2Seller.create(
+                "test",
+                OauthServerType.KAKAO,
+                "12345"
+        );
+        oAuth2SellerRepository.save(seller);
+        em.flush();
+        em.clear();
+
+        // when
+        Optional<OAuth2Seller> result = oAuth2SellerService.findByProviderAndProviderId(OauthServerType.KAKAO, "12345");
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo(seller.getName());
+        assertThat(result.get().getProvider()).isEqualTo(seller.getProvider());
+        assertThat(result.get().getProviderId()).isEqualTo(seller.getProviderId());
+    }
+
+    @Test
+    @DisplayName("provider + providerId로 존재하지 않는 판매자 계정을 조회한다.")
+    void success_findByProviderAndProviderId_empty() {
+
+        // when
+        Optional<OAuth2Seller> result = oAuth2SellerService.findByProviderAndProviderId(OauthServerType.KAKAO, "NOT_EXIST");
+
+        // then
+        assertThat(result).isNotPresent();
+    }
 
     @Test
     @DisplayName("Name이 있을 경우 Name을 사용해 OAuth2 판매자를 생성한다.")
