@@ -12,20 +12,19 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-// TODO : Test
 @Component
 @RequiredArgsConstructor
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration REFRESH_TOKEN_TTL = Duration.ofMinutes(5);
-    // TODO : .env 환경변수로 분리
-    public static final String REDIRECT_URL = "http://localhost:8000/callback/social";
-
+    @Value("${oauth2.redirect.success}")
+    public static String REDIRECT_URL;
     private final TokenProvider tokenProvider;
     private final RedisRepository redisRepository;
 
