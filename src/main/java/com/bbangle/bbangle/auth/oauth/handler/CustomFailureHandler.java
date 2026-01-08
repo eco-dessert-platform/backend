@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.auth.oauth.handler;
 
+import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.ServletException;
@@ -8,18 +9,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-// TODO : Test
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class CustomFailureHandler implements AuthenticationFailureHandler {
 
-    // TODO : .env 환경변수로 분리
-    public static final String REDIRECT_URL = "http://localhost:8000/callback/social";
+    @Value("${oauth2.redirect.error}")
+    public static String REDIRECT_URL;
+    private final SlackAdaptor slackAdaptor;
 
     @Override
     public void onAuthenticationFailure(
@@ -32,7 +34,8 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             BbangleErrorCode code = ex.getCode();
 
             if (code.getHttpStatus().is5xxServerError()) {
-                log.error("OAuth2 server error", ex);
+                log.error(ex.getMessage(), ex);
+                slackAdaptor.sendAlert(request, ex);
             } else {
                 log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
             }
@@ -41,7 +44,7 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             return;
         }
 
-        log.warn("Unknown authentication error", exception);
+        log.warn("Unknown authentication error - [{}] {}", exception.getCause(), exception.getMessage());
         response.sendRedirect(createRedirectUrl(null));
     }
 

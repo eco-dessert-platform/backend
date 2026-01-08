@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-// TODO : test
 @Service
 @RequiredArgsConstructor
 public class OAuth2SellerFacade {
