@@ -56,7 +56,7 @@ public class Product {
     @Column(name = "price")
     private int price;
 
-    @Column(name = "category", columnDefinition = "varchar")
+    @Column(name = "category")
     @Enumerated(EnumType.STRING)
     private Category category;
 
