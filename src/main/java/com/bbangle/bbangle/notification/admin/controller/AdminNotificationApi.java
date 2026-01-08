@@ -6,6 +6,7 @@ import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRe
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Notification", description = "(관리자) 공지사항 API")
@@ -17,5 +18,4 @@ public interface AdminNotificationApi {
         AdminNotificationCreateRequest request,
         List<MultipartFile> profileImage
     );
-
 }

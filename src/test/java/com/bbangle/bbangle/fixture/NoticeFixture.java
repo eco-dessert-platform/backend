@@ -19,17 +19,17 @@ public class NoticeFixture {
     }
 
     public static Notice notice(String title, String content, Admin admin) {
-        return new Notice(title, content, null, null, admin);
+        return new Notice(title, content, null, admin);
     }
 
     public static Notice notice(String title, String content, LocalDateTime createdAt, Admin admin) {
-        Notice notice = new Notice(title, content, null, null, admin);
+        Notice notice = new Notice(title, content, null, admin);
         setCreatedAt(notice, createdAt);
         return notice;
     }
 
     public static Notice noticeWithIdAndCreatedAt(Long id, String title, String content, LocalDateTime createdAt, Admin admin) {
-        Notice notice = new Notice(title, content, null, null, admin);
+        Notice notice = new Notice(title, content, null, admin);
         setId(notice, id);
         setCreatedAt(notice, createdAt);
         return notice;

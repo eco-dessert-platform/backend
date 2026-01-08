@@ -17,8 +17,6 @@ public class AdminNotificationResponse {
         String title,
         @Schema(description = "내용")
         String content,
-        @Schema(description = "링크 목록")
-        List<LinkDto> links,
         @Schema(description = "이미지 링크 목록")
         List<String> imageLinks,
         @Schema(description = "생성 일시")
@@ -32,7 +30,6 @@ public class AdminNotificationResponse {
                 .id(noticeInfo.id())
                 .title(noticeInfo.title())
                 .content(noticeInfo.content())
-                .links(noticeInfo.links())
                 .imageLinks(noticeInfo.imageLinks())
                 .createAt(noticeInfo.createAt())
                 .modifiedAt(noticeInfo.modifiedAt())
