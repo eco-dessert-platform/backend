@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.handler;
+package com.bbangle.bbangle.config.security.handler;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,8 +22,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration REFRESH_TOKEN_TTL = Duration.ofMinutes(5);
-    @Value("${oauth2.redirect.success}")
-    public static String REDIRECT_URL;
+
+    private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final TokenProvider tokenProvider;
     private final RedisRepository redisRepository;
 
@@ -54,6 +53,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     String createRedirectUrl(UUID uuid) {
-        return REDIRECT_URL + "?generateToken=" + uuid;
+        return oauth2HandlerProperties.getSuccess() + "?generateToken=" + uuid;
     }
 }

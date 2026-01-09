@@ -11,9 +11,6 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
-import com.bbangle.bbangle.auth.oauth.service.OAuth2UserService;
-import com.bbangle.bbangle.config.security.handler.CustomFailureHandler;
-import com.bbangle.bbangle.config.security.handler.CustomSuccessHandler;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -33,22 +30,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Profile("!test")
+@Profile("test")
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
-public class WebOAuthSecurityConfig implements WebMvcConfigurer {
+public class TestSecurityConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
             "http://localhost:3000",
-            "https://www.bbanggree.com",
-            "https://api.bbanggree.com",
-            "https://develop.bbanggree.com"
     };
     private final TokenProvider tokenProvider;
-    private final OAuth2UserService oAuth2UserService;
-    private final CustomSuccessHandler customSuccessHandler;
-    private final CustomFailureHandler customFailureHandler;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -80,13 +71,6 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                         .anyRequest().permitAll())
-                .oauth2Login((oauth2) -> oauth2
-                        .authorizationEndpoint(endpoint -> endpoint
-                                .baseUri( SellerApiPath.PREFIX + "/oauth2/authorization"))
-                        .userInfoEndpoint(config -> config.userService(oAuth2UserService))  // 인증 후 유저 정보 조회
-                        .successHandler(customSuccessHandler)   // OAuth2 인증 성공 시 처리
-                        .failureHandler(customFailureHandler)   // OAuth2 인증 실패 시 처리
-                )
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(exp ->
                         exp.defaultAuthenticationEntryPointFor(
