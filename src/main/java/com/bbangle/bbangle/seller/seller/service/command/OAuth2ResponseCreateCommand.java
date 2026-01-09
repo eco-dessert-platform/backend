@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.seller.seller.service.command;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Response;
+import com.bbangle.bbangle.auth.oauth.client.OAuth2Response;
 import lombok.Builder;
 
 public record OAuth2ResponseCreateCommand(

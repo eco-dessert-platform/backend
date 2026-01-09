@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config.security.handler;
+package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;

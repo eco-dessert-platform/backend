@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config.security.handler;
+package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
