@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.handler;
+package com.bbangle.bbangle.config.security.handler;
 
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -19,9 +18,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomFailureHandler implements AuthenticationFailureHandler {
 
-    @Value("${oauth2.redirect.error}")
-    public static String REDIRECT_URL;
     private final SlackAdaptor slackAdaptor;
+    private final OAuth2HandlerProperties oauth2HandlerProperties;
 
     @Override
     public void onAuthenticationFailure(
@@ -49,7 +47,7 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
     }
 
     String createRedirectUrl(BbangleErrorCode code) {
-        if (code == null) return REDIRECT_URL + "?error=" + "UNKNOWN_ERROR";
-        return REDIRECT_URL + "?error=" + code + "&code=" + code.getCode();
+        if (code == null) return oauth2HandlerProperties.getError() + "?error=" + "UNKNOWN_ERROR";
+        return oauth2HandlerProperties.getError() + "?error=" + code + "&code=" + code.getCode();
     }
 }

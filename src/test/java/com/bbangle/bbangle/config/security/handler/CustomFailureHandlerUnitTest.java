@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.handler;
+package com.bbangle.bbangle.config.security.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.AuthenticationException;
@@ -33,8 +32,7 @@ class CustomFailureHandlerUnitTest {
     @Mock
     HttpServletResponse response;
 
-    @InjectMocks
-    private CustomFailureHandler customFailureHandler;
+    CustomFailureHandler customFailureHandler;
 
     @Test
     @DisplayName("5xx 에러 발생 시 Slack에 알림 전송 후 Redirect한다.")
@@ -42,6 +40,10 @@ class CustomFailureHandlerUnitTest {
 
         // given
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR);
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        properties.setError("https://test.com/login");
+
+        customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);
@@ -54,7 +56,7 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                CustomFailureHandler.REDIRECT_URL +
+                properties.getError() +
                         "?error=" + BbangleErrorCode.INTERNAL_SERVER_ERROR +
                         "&code=" + BbangleErrorCode.INTERNAL_SERVER_ERROR.getCode()
         );
@@ -66,6 +68,10 @@ class CustomFailureHandlerUnitTest {
 
         // given
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        properties.setError("https://test.com/login");
+
+        customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);
@@ -78,7 +84,7 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                CustomFailureHandler.REDIRECT_URL +
+                properties.getError() +
                         "?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER +
                         "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode()
         );
@@ -90,6 +96,10 @@ class CustomFailureHandlerUnitTest {
 
         // given
         AuthenticationException exception = new AuthenticationException("Unknown error") {};
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        properties.setError("https://test.com/login");
+
+        customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);
@@ -102,7 +112,7 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                CustomFailureHandler.REDIRECT_URL + "?error=" + "UNKNOWN_ERROR"
+                properties.getError() + "?error=" + "UNKNOWN_ERROR"
         );
     }
 }

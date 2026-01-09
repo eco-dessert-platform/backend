@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.handler;
+package com.bbangle.bbangle.config.security.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
@@ -31,7 +30,6 @@ import org.springframework.security.core.Authentication;
 @ExtendWith(MockitoExtension.class)
 class CustomSuccessHandlerUnitTest {
 
-    @InjectMocks
     CustomSuccessHandler customSuccessHandler;
 
     @Mock
@@ -54,6 +52,9 @@ class CustomSuccessHandlerUnitTest {
     void success_onAuthenticationSuccess() throws Exception {
 
         // given
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        properties.setSuccess("https://test.com/login");
+
         CustomUserDetails userDetails = CustomUserDetails.builder()
                 .id(1L)
                 .role(Role.ROLE_SELLER)
@@ -66,6 +67,8 @@ class CustomSuccessHandlerUnitTest {
                 userDetails.role(),
                 CustomSuccessHandler.REFRESH_TOKEN_DURATION
         )).willReturn("refreshToken");
+
+        customSuccessHandler = new CustomSuccessHandler(properties, tokenProvider, redisRepository);
 
         // when
         customSuccessHandler.onAuthenticationSuccess(request, response, authentication);
@@ -84,7 +87,7 @@ class CustomSuccessHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                CustomSuccessHandler.REDIRECT_URL + "?generateToken=" + uuidCaptor.getValue()
+                properties.getSuccess() + "?generateToken=" + uuidCaptor.getValue()
         );
     }
 
@@ -100,6 +103,9 @@ class CustomSuccessHandlerUnitTest {
                 .build();
 
         RuntimeException originalEx = new RuntimeException("Redis Down");
+
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        customSuccessHandler = new CustomSuccessHandler(properties, tokenProvider, redisRepository);
 
         given(authentication.getPrincipal()).willReturn(userDetails);
         given(tokenProvider.generateToken(any(), any(), any())).willReturn("refreshToken");
