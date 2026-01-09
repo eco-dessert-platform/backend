@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.client.dto;
+package com.bbangle.bbangle.auth.oauth.client;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 

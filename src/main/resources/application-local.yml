@@ -54,6 +54,15 @@ spring:
             redirect-uri: ${OAUTH2_REDIRECT_URI}
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
+          google:
+            client-name: google
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${OAUTH2_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            scope:
+              - email
+              - profile
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize

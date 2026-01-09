@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.auth.oauth.service;
+package com.bbangle.bbangle.config.security.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

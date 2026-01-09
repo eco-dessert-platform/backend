@@ -11,9 +11,9 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
-import com.bbangle.bbangle.auth.oauth.service.OAuth2UserService;
-import com.bbangle.bbangle.config.security.handler.CustomFailureHandler;
-import com.bbangle.bbangle.config.security.handler.CustomSuccessHandler;
+import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
+import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
+import com.bbangle.bbangle.config.security.auth.OAuth2UserService;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;

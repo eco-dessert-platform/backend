@@ -1,6 +1,7 @@
-package com.bbangle.bbangle.auth.oauth.client.dto;
+package com.bbangle.bbangle.auth.oauth.client.kakao.dto;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.OAuth2Response;
 import java.util.Map;
 
 public class KakaoResponse implements OAuth2Response {
