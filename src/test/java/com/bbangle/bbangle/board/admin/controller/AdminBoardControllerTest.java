@@ -4,6 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,7 +19,7 @@ import com.bbangle.bbangle.config.JsonDataEncoder;
 import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
-import com.bbangle.bbangle.fixture.AdminProductResponseFixture;
+import com.bbangle.bbangle.fixture.board.admin.controller.dto.AdminProductResponseFixture;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -135,6 +137,28 @@ class AdminBoardControllerTest {
 
         then(adminBoardService).shouldHaveNoInteractions();
         then(responseService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("[상품 삭제] 관리자는 상품을 soft delete 처리할 수 있다")
+    void deleteBoards_success() throws Exception {
+        // given
+        List<Long> productIds = List.of(1L, 2L, 3L);
+
+        willDoNothing().given(adminBoardService).deleteBoards(productIds);
+
+        // when & then
+        mvc.perform(delete(AdminApiPath.PREFIX + "/products")
+                .param("productIds", "1", "2", "3")
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(0))
+            .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+        then(adminBoardService).should().deleteBoards(productIds);
+        then(responseService).should().getSuccessResult();
     }
 
 }

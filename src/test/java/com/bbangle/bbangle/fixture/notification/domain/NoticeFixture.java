@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.fixture;
+package com.bbangle.bbangle.fixture.notification.domain;
 
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.notification.domain.Notice;

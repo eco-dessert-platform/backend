@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.fixture;
+package com.bbangle.bbangle.fixture.board.admin.controller.dto;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import java.util.List;

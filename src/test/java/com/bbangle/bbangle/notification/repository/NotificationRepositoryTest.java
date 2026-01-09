@@ -10,7 +10,7 @@ import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.NoticeFixture;
+import com.bbangle.bbangle.fixture.notification.domain.NoticeFixture;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;

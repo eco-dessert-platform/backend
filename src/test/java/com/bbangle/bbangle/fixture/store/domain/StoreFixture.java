@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.fixture;
+package com.bbangle.bbangle.fixture.store.domain;
 
 import com.bbangle.bbangle.store.domain.Store;
 
