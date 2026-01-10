@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.seller.domain;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteCreatedAtBaseEntity;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "seller")
 @Entity
-public class OAuth2Seller extends BaseEntity {
+public class OAuth2Seller extends SoftDeleteCreatedAtBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
