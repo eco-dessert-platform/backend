@@ -48,7 +48,7 @@ class OAuth2UserServiceUnitTest {
 
     @Test
     @DisplayName("Kakao OAuth2 로그인 성공 시 CustomUserDetails를 반환한다.")
-    void success_login_seller() {
+    void success_login_seller_kakao() {
 
         // given
         Map<String, Object> properties = Map.of(
@@ -74,6 +74,53 @@ class OAuth2UserServiceUnitTest {
 
         given(request.getClientRegistration()).willReturn(clientRegistration);
         given(clientRegistration.getRegistrationId()).willReturn("kakao");
+
+        // super.loadUser() mocking
+        doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
+
+        given(oAuth2SellerFacade.login(any())).willReturn(seller);
+
+        // when
+        OAuth2User result = oAuth2UserService.loadUser(request);
+
+        // then
+        assertThat(result).isInstanceOf(CustomUserDetails.class);
+
+        CustomUserDetails details = (CustomUserDetails) result;
+        assertThat(details.role()).isEqualTo(Role.ROLE_SELLER);
+        assertThat(details.name()).isEqualTo(seller.getName());
+
+        verify(oAuth2SellerFacade).login(any(OAuth2ResponseCreateCommand.class));
+    }
+
+    @Test
+    @DisplayName("Google OAuth2 로그인 성공 시 CustomUserDetails를 반환한다.")
+    void success_login_seller_google() {
+
+        // given
+        Map<String, Object> attributes = Map.of(
+                "sub", 12345,
+                "name", "test",
+                "given_name", "temp",
+                "picture", "test.png",
+                "email", "test.com",
+                "email_verified", true
+        );
+        // OAuth2 Server에서 조회한 User Info
+        OAuth2User oAuth2User = new DefaultOAuth2User(
+                List.of(() -> "OAUTH2_USER"),
+                attributes,
+                "sub"
+        );
+
+        OAuth2Seller seller = OAuth2Seller.create(
+                "test",
+                OauthServerType.GOOGLE,
+                "12345"
+        );
+
+        given(request.getClientRegistration()).willReturn(clientRegistration);
+        given(clientRegistration.getRegistrationId()).willReturn("google");
 
         // super.loadUser() mocking
         doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());

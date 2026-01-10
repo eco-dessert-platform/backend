@@ -13,6 +13,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
+import com.bbangle.bbangle.config.security.auth.OAuth2ClientValidationFilter;
 import com.bbangle.bbangle.config.security.auth.OAuth2UserService;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -49,6 +51,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     private final OAuth2UserService oAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomFailureHandler customFailureHandler;
+    private final OAuth2ClientValidationFilter oAuth2ClientValidationFilter;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -89,6 +92,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                         .successHandler(customSuccessHandler)   // OAuth2 인증 성공 시 처리
                         .failureHandler(customFailureHandler)   // OAuth2 인증 실패 시 처리
                 )
+                .addFilterBefore(oAuth2ClientValidationFilter, OAuth2AuthorizationRequestRedirectFilter.class)  // OAuth2 URL 검사
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(exp ->
                         exp.defaultAuthenticationEntryPointFor(

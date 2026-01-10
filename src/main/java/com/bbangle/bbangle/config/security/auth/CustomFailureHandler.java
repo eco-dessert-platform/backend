@@ -42,7 +42,8 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             return;
         }
 
-        log.warn("Unknown authentication error - [{}] {}", exception.getCause(), exception.getMessage());
+        log.error("Unknown authentication error - [{}] {}", exception.getCause(), exception.getMessage());
+        slackAdaptor.sendAlert(request, exception);
         response.sendRedirect(createRedirectUrl(null));
     }
 

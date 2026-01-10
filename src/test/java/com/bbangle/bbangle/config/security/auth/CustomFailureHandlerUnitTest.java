@@ -105,7 +105,7 @@ class CustomFailureHandlerUnitTest {
         customFailureHandler.onAuthenticationFailure(request, response, exception);
 
         // then
-        verify(slackAdaptor, never()).sendAlert(any(), any());
+        verify(slackAdaptor).sendAlert(eq(request), eq(exception));
 
         ArgumentCaptor<String> redirectCaptor = ArgumentCaptor.forClass(String.class);
         verify(response).sendRedirect(redirectCaptor.capture());
