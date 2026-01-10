@@ -185,8 +185,6 @@ dependencies {
     // --- test 에서도 QueryDSL 쓰고 싶다면 (선택) ---
     testImplementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     testAnnotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
-
-    implementation 'com.google.code.gson:gson:2.13.2'
 }
 
 // Querydsl 설정부
