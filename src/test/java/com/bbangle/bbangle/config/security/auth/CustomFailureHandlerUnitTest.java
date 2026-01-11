@@ -91,7 +91,7 @@ class CustomFailureHandlerUnitTest {
     }
 
     @Test
-    @DisplayName("알 수 없는 예외 발생 시 UNKNOWN_ERROR로 Redirect한다.")
+    @DisplayName("알 수 없는 예외 발생 시 Slack에 알림 전송 후 UNKNOWN_ERROR로 Redirect한다.")
     void failure_unknown_error() throws Exception {
 
         // given

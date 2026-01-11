@@ -33,6 +33,10 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2Response oAuth2Response = createOAuth2Response(registrationId, oAuth2User);
 
+        if (oAuth2Response.getName() == null && oAuth2Response.getNickname() == null) {
+            throw new OAuth2Exception(BbangleErrorCode.MISSING_NAME_NICKNAME);
+        }
+
         OAuth2Seller seller;
         try {
             seller = oAuth2SellerFacade.login(OAuth2ResponseCreateCommand.from(oAuth2Response));

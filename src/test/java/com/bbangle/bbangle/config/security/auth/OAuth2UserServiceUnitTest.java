@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
@@ -46,25 +47,31 @@ class OAuth2UserServiceUnitTest {
     @Mock
     ClientRegistration clientRegistration;
 
+    // Kakao 용 User Info
+    private OAuth2User kakaoOAuth2User() {
+        Map<String, Object> properties = Map.of(
+            "nickname", "test",
+            "profile_image", "test.png"
+        );
+        Map<String, Object> attributes = Map.of(
+            "id", 12345,
+            "properties", properties
+        );
+
+        return new DefaultOAuth2User(
+            List.of(() -> "OAUTH2_USER"),
+            attributes,
+            "id"
+        );
+    }
+
     @Test
     @DisplayName("Kakao OAuth2 로그인 성공 시 CustomUserDetails를 반환한다.")
     void success_login_seller_kakao() {
 
         // given
-        Map<String, Object> properties = Map.of(
-                "nickname", "test",
-                "profile_image", "test.png"
-        );
-        Map<String, Object> attributes = Map.of(
-                "id", 12345,
-                "properties", properties
-        );
         // OAuth2 Server에서 조회한 User Info
-        OAuth2User oAuth2User = new DefaultOAuth2User(
-                List.of(() -> "OAUTH2_USER"),
-                attributes,
-                "id"
-        );
+        OAuth2User oAuth2User = kakaoOAuth2User();
 
         OAuth2Seller seller = OAuth2Seller.create(
                 "test",
@@ -145,20 +152,8 @@ class OAuth2UserServiceUnitTest {
     void fail_login_seller_BbangleException() {
 
         // given
-        Map<String, Object> properties = Map.of(
-                "nickname", "test",
-                "profile_image", "test.png"
-        );
-        Map<String, Object> attributes = Map.of(
-                "id", 12345,
-                "properties", properties
-        );
         // OAuth2 Server에서 조회한 User Info
-        OAuth2User oAuth2User = new DefaultOAuth2User(
-                List.of(() -> "OAUTH2_USER"),
-                attributes,
-                "id"
-        );
+        OAuth2User oAuth2User = kakaoOAuth2User();
 
         RuntimeException originalEx = new RuntimeException(BbangleErrorCode.INTERNAL_SERVER_ERROR.getMessage());
 
@@ -185,20 +180,8 @@ class OAuth2UserServiceUnitTest {
     void fail_load_seller_UnsupportedProvider() {
 
         // given
-        Map<String, Object> properties = Map.of(
-                "nickname", "test",
-                "profile_image", "test.png"
-        );
-        Map<String, Object> attributes = Map.of(
-                "id", 12345,
-                "properties", properties
-        );
         // OAuth2 Server에서 조회한 User Info
-        OAuth2User oAuth2User = new DefaultOAuth2User(
-                List.of(() -> "OAUTH2_USER"),
-                attributes,
-                "id"
-        );
+        OAuth2User oAuth2User = kakaoOAuth2User();
 
         given(request.getClientRegistration()).willReturn(clientRegistration);
         given(clientRegistration.getRegistrationId()).willReturn("facebook");
@@ -213,5 +196,77 @@ class OAuth2UserServiceUnitTest {
                     assertThat(oAuth2Ex.getCode())
                             .isEqualTo(BbangleErrorCode.NOT_SUPPORTED_SERVER);
                 });
+    }
+
+    @Test
+    @DisplayName("Kakao에서 조회한 User의 name과 nickname이 전부 비공개일 경우 예외를 던진다.")
+    void fail_login_name_nickname_null() {
+
+        // given
+        Map<String, Object> properties = Map.of(
+            // name, nickname이 없음
+            "profile_image", "test.png"
+        );
+        Map<String, Object> attributes = Map.of(
+            "id", 12345,
+            "properties", properties
+        );
+        OAuth2User oAuth2User = new DefaultOAuth2User(
+            List.of(() -> "OAUTH2_USER"),
+            attributes,
+            "id"
+        );
+
+        given(request.getClientRegistration()).willReturn(clientRegistration);
+        given(clientRegistration.getRegistrationId()).willReturn("kakao");
+
+        doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2UserService.loadUser(request))
+            .isInstanceOf(OAuth2Exception.class)
+            .satisfies(ex -> {
+                OAuth2Exception oAuth2Ex = (OAuth2Exception) ex;
+                assertThat(oAuth2Ex.getCode())
+                    .isEqualTo(BbangleErrorCode.MISSING_NAME_NICKNAME);
+            });
+
+        verify(oAuth2SellerFacade, never()).login(any());
+    }
+
+    @Test
+    @DisplayName("Google에서 조회한 User의 name과 given_name이 전부 비공개일 경우 예외를 던진다.")
+    void fail_login_name_givenName_null() {
+
+        // given
+        Map<String, Object> attributes = Map.of(
+            // name, given_name이 없음
+            "sub", 12345,
+            "picture", "test.png",
+            "email", "test.com",
+            "email_verified", true
+        );
+        // OAuth2 Server에서 조회한 User Info
+        OAuth2User oAuth2User = new DefaultOAuth2User(
+            List.of(() -> "OAUTH2_USER"),
+            attributes,
+            "sub"
+        );
+
+        given(request.getClientRegistration()).willReturn(clientRegistration);
+        given(clientRegistration.getRegistrationId()).willReturn("google");
+
+        doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2UserService.loadUser(request))
+            .isInstanceOf(OAuth2Exception.class)
+            .satisfies(ex -> {
+                OAuth2Exception oAuth2Ex = (OAuth2Exception) ex;
+                assertThat(oAuth2Ex.getCode())
+                    .isEqualTo(BbangleErrorCode.MISSING_NAME_NICKNAME);
+            });
+
+        verify(oAuth2SellerFacade, never()).login(any());
     }
 }

@@ -32,16 +32,21 @@ public class KakaoResponse implements OAuth2Response {
 
     @Override
     public String getName() {
-        return null;
+        return getOptional(properties, "name");
     }
 
     @Override
     public String getNickname() {
-        return properties.get("nickname").toString();
+        return getOptional(properties, "nickname");
     }
 
     @Override
     public String getProfile() {
-        return properties.get("profile_image").toString();
+        return getOptional(properties, "profile_image");
+    }
+
+    protected String getOptional(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        return value == null ? null : value.toString();
     }
 }

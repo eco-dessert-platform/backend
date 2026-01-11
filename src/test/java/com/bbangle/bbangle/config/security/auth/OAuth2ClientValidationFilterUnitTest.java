@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,10 @@ class OAuth2ClientValidationFilterUnitTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
-        assertThat(response.getRedirectedUrl()).isEqualTo("/login?error=NOT_SUPPORTED_SERVER&code=-994");
+        assertThat(response.getRedirectedUrl()).isEqualTo(
+            "/login?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER +
+                "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode()
+        );
 
         verify(filterChain, never()).doFilter(any(), any());
     }
