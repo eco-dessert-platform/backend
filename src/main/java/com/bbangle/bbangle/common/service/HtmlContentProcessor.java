@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.common.service;
 
-import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import java.util.List;
@@ -22,15 +21,12 @@ public class HtmlContentProcessor {
 
     /**
      * HTML content 내의 img 태그를 파싱하고 원본 src를 CDN URL로 교체합니다.
-     * HTML의 img 개수가 originalSrcs 개수와 정확히 일치해야 합니다.
      *
      * @param content HTML 문자열
      * @param cdnUrlMap CDN URL 맵
      * @return 처리된 HTML 문자열
-     * @throws BbangleException HTML img 개수가 originalSrcs 개수와 일치하지 않을 경우
-     * @throws BbangleException 매칭되지 않은 img 태그가 있을 경우
      */
-    public String changeToCdn(String content, Map<String,String> cdnUrlMap) {
+    public String changeToCdn(String content, Map<String, String> cdnUrlMap) {
         // Jsoup을 사용하여 HTML 안전하게 파싱
         Document doc = Jsoup.parse(content);
         doc.outputSettings().prettyPrint(false);
@@ -40,8 +36,17 @@ public class HtmlContentProcessor {
         for (Element img : imgTags) {
             String uuid = img.attr("data-id");
             img.attr("src",cdnUrlMap.get(uuid));
+            // 2. data-id 속성 삭제
+            img.removeAttr("data-id"); // 공지사항 수정 시 수정된 이미지를 구분하기 위함
         }
         return doc.body().html();
     }
 
+    public List<String> extractImageSrc(String content) {
+        Document doc = Jsoup.parse(content);
+        Elements imgTags = doc.select("img");
+        return imgTags.stream()
+            .map(img -> img.attr("src"))
+            .toList();
+    }
 }

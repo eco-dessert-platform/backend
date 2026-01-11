@@ -113,10 +113,13 @@ public enum BbangleErrorCode {
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.",BAD_REQUEST),
     CONTENT_IS_EMPTY(-762, "본문이 존재하지 않습니다.",BAD_REQUEST),
-    ADMIN_NOTICE_CREATION_FAILED(-763, "본문이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    ADMIN_NOTICE_CREATION_FAILED(-763, "공지사항 생성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_URL_COUNT(-764, "원본 src 개수와 CDN URL 개수가 일치하지 않아 변환을 수행할 수 없습니다.", BAD_REQUEST),
     IMAGE_COUNT_MISMATCH(-765, "이미지 파일 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
-    IMAGE_NOT_MATCHED(-766, "HTML의 이미지 태그 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST);
+    IMAGE_NOT_MATCHED(-766, "HTML의 이미지 태그 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
+    NOT_FIND_NOTICE(-767, "Notice의 정보를 찾을 수 없습니다.", BAD_REQUEST),
+    ADMIN_NOTICE_UPDATE_FAILED(-768, "공지사항 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+
 
     private final int code;
     private final String message;
