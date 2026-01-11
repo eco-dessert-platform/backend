@@ -48,7 +48,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     }
 
     String createRedirectUrl() {
-        return oauth2HandlerProperties.getError() + "?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER
-                + "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode();
+        return oauth2HandlerProperties.error() + "?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER
+            + "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode();
     }
 }

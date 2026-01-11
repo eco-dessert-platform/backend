@@ -54,7 +54,7 @@ class OAuth2ClientValidationFilterUnitTest {
         // given
         request.setRequestURI("/oauth2/authorization/test");
 
-        given(oAuth2HandlerProperties.getError()).willReturn("/login");
+        given(oAuth2HandlerProperties.error()).willReturn("/login");
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
 
         // when

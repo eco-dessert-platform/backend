@@ -40,8 +40,7 @@ class CustomFailureHandlerUnitTest {
 
         // given
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR);
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
-        properties.setError("https://test.com/login");
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties(null, "https://test.com/login");
 
         customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
@@ -56,9 +55,9 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                properties.getError() +
-                        "?error=" + BbangleErrorCode.INTERNAL_SERVER_ERROR +
-                        "&code=" + BbangleErrorCode.INTERNAL_SERVER_ERROR.getCode()
+            properties.error() +
+                "?error=" + BbangleErrorCode.INTERNAL_SERVER_ERROR +
+                "&code=" + BbangleErrorCode.INTERNAL_SERVER_ERROR.getCode()
         );
     }
 
@@ -68,8 +67,7 @@ class CustomFailureHandlerUnitTest {
 
         // given
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
-        properties.setError("https://test.com/login");
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties(null, "https://test.com/login");
 
         customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
@@ -84,9 +82,9 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                properties.getError() +
-                        "?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER +
-                        "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode()
+            properties.error() +
+                "?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER +
+                "&code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode()
         );
     }
 
@@ -96,8 +94,7 @@ class CustomFailureHandlerUnitTest {
 
         // given
         AuthenticationException exception = new AuthenticationException("Unknown error") {};
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
-        properties.setError("https://test.com/login");
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties(null, "https://test.com/login");
 
         customFailureHandler = new CustomFailureHandler(slackAdaptor, properties);
 
@@ -112,7 +109,7 @@ class CustomFailureHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                properties.getError() + "?error=" + "UNKNOWN_ERROR"
+            properties.error() + "?error=" + "UNKNOWN_ERROR"
         );
     }
 }

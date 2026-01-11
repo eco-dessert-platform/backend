@@ -52,8 +52,7 @@ class CustomSuccessHandlerUnitTest {
     void success_onAuthenticationSuccess() throws Exception {
 
         // given
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
-        properties.setSuccess("https://test.com/login");
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties("https://test.com/login", null);
 
         CustomUserDetails userDetails = CustomUserDetails.builder()
                 .id(1L)
@@ -87,7 +86,7 @@ class CustomSuccessHandlerUnitTest {
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-                properties.getSuccess() + "?generateToken=" + uuidCaptor.getValue()
+            properties.success() + "?generateToken=" + uuidCaptor.getValue()
         );
     }
 
@@ -104,7 +103,7 @@ class CustomSuccessHandlerUnitTest {
 
         RuntimeException originalEx = new RuntimeException("Redis Down");
 
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties();
+        OAuth2HandlerProperties properties = new OAuth2HandlerProperties(null, null);
         customSuccessHandler = new CustomSuccessHandler(properties, tokenProvider, redisRepository);
 
         given(authentication.getPrincipal()).willReturn(userDetails);

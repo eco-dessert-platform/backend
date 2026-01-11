@@ -47,8 +47,8 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
         response.sendRedirect(createRedirectUrl(null));
     }
 
-    String createRedirectUrl(BbangleErrorCode code) {
-        if (code == null) return oauth2HandlerProperties.getError() + "?error=" + "UNKNOWN_ERROR";
-        return oauth2HandlerProperties.getError() + "?error=" + code + "&code=" + code.getCode();
+    private String createRedirectUrl(BbangleErrorCode code) {
+        if (code == null) return oauth2HandlerProperties.error() + "?error=" + "UNKNOWN_ERROR";
+        return oauth2HandlerProperties.error() + "?error=" + code + "&code=" + code.getCode();
     }
 }

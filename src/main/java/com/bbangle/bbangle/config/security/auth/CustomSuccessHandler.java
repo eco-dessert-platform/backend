@@ -52,7 +52,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.sendRedirect(createRedirectUrl(uuid));
     }
 
-    String createRedirectUrl(UUID uuid) {
-        return oauth2HandlerProperties.getSuccess() + "?generateToken=" + uuid;
+    private String createRedirectUrl(UUID uuid) {
+        return oauth2HandlerProperties.success() + "?generateToken=" + uuid;
     }
 }
