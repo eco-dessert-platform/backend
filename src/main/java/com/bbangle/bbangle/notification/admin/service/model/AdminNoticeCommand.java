@@ -14,4 +14,14 @@ public class AdminNoticeCommand {
 
 
 
+    @Builder
+    public record AdminNoticeUpdateCommand(Long adminId,
+                                           Long noticeId,
+                                           String title,
+                                           String content,
+                                           List<String> cdnImageLinks) {
+    }
+
+
+
 }
