@@ -16,7 +16,9 @@ import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
+import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -241,5 +243,244 @@ public class AdminNotificationFacadeIntegrationTest {
 
         // S3Service는 호출되지 않아야 함
         verify(s3Service, times(0)).saveAndReturnWithCdn(anyString(), any());
+    }
+
+    @Test
+    @DisplayName("이미지 없이 공지사항 제목과 본문만 수정에 성공한다")
+    void success_update_notice_without_images() {
+        // given
+        // 먼저 공지사항 생성
+        NoticeInfo createdNotice = adminNotificationFacade.createNotice(
+            testAdminId,
+            new AdminNotificationCreateRequest("원본 제목", "원본 내용"),
+            List.of()
+        );
+        em.flush();
+        em.clear();
+
+        AdminNotificationUpdateRequest request = new AdminNotificationUpdateRequest(
+            "수정된 제목",
+            "수정된 내용"
+        );
+
+        // when
+        NoticeInfo updatedNotice = adminNotificationFacade.updateNotice(
+            testAdminId,
+            createdNotice.id(),
+            request,
+            List.of()
+        );
+
+        // then
+        assertThat(updatedNotice).isNotNull();
+        assertThat(updatedNotice.id()).isEqualTo(createdNotice.id());
+        assertThat(updatedNotice.title()).isEqualTo("수정된 제목");
+        assertThat(updatedNotice.content()).isEqualTo("수정된 내용");
+        assertThat(updatedNotice.imageLinks()).isEmpty();
+
+        // DB에서 직접 확인
+        Notice notice = notificationRepository.findById(createdNotice.id()).orElseThrow();
+        assertThat(notice.getTitle()).isEqualTo("수정된 제목");
+        assertThat(notice.getContent()).isEqualTo("수정된 내용");
+    }
+
+    @Test
+    @DisplayName("새로운 이미지를 추가하여 공지사항 수정에 성공한다")
+    void success_update_notice_with_new_images() {
+        // given
+        // 먼저 이미지 없는 공지사항 생성
+        NoticeInfo createdNotice = adminNotificationFacade.createNotice(
+            testAdminId,
+            new AdminNotificationCreateRequest("원본 제목", "원본 내용"),
+            List.of()
+        );
+        em.flush();
+        em.clear();
+
+        MockMultipartFile newImage = new MockMultipartFile(
+            "images",
+            "uuid-1",
+            MediaType.IMAGE_JPEG_VALUE,
+            "new image content".getBytes()
+        );
+        List<MultipartFile> images = List.of(newImage);
+
+        String newImageUrl = "https://cdn.example.com/new-image.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(newImage)))
+            .thenReturn(newImageUrl);
+
+        AdminNotificationUpdateRequest request = new AdminNotificationUpdateRequest(
+            "수정된 제목",
+            "<div><img src=\"uuid-1\"></div>"
+        );
+
+        // when
+        NoticeInfo updatedNotice = adminNotificationFacade.updateNotice(
+            testAdminId,
+            createdNotice.id(),
+            request,
+            images
+        );
+
+        // then
+        assertThat(updatedNotice).isNotNull();
+        assertThat(updatedNotice.imageLinks()).hasSize(1);
+        // HTML 컨텐츠에서 추출된 실제 이미지 링크 확인
+        assertThat(updatedNotice.content()).contains("uuid-1");
+
+        // S3 호출 검증
+        verify(s3Service, times(1)).saveAndReturnWithCdn(eq("admin-notice-images"), eq(newImage));
+    }
+
+    @Test
+    @DisplayName("기존 이미지를 삭제하고 공지사항 수정에 성공한다")
+    void success_update_notice_removing_existing_images() {
+        // given
+        // 먼저 이미지 있는 공지사항 생성
+        MockMultipartFile originalImage = new MockMultipartFile(
+            "images",
+            "uuid-original",
+            MediaType.IMAGE_JPEG_VALUE,
+            "original image".getBytes()
+        );
+
+        String originalImageUrl = "https://cdn.example.com/original-image.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(originalImage)))
+            .thenReturn(originalImageUrl);
+
+        NoticeInfo createdNotice = adminNotificationFacade.createNotice(
+            testAdminId,
+            new AdminNotificationCreateRequest("원본 제목", "<div><img src=\"uuid-original\"></div>"),
+            List.of(originalImage)
+        );
+        em.flush();
+        em.clear();
+
+        AdminNotificationUpdateRequest request = new AdminNotificationUpdateRequest(
+            "수정된 제목",
+            "<div>이미지 삭제됨</div>"
+        );
+
+        // when
+        NoticeInfo updatedNotice = adminNotificationFacade.updateNotice(
+            testAdminId,
+            createdNotice.id(),
+            request,
+            List.of()
+        );
+
+        // then
+        assertThat(updatedNotice).isNotNull();
+        assertThat(updatedNotice.content()).isEqualTo("<div>이미지 삭제됨</div>");
+
+        // 이미지가 제거되었는지 확인
+        assertThat(updatedNotice.content()).doesNotContain("uuid-original");
+    }
+
+    @Test
+    @DisplayName("기존 이미지를 새 이미지로 교체하여 수정에 성공한다")
+    void success_update_notice_replacing_images() {
+        // given
+        // 먼저 이미지 있는 공지사항 생성
+        MockMultipartFile originalImage = new MockMultipartFile(
+            "images",
+            "uuid-original",
+            MediaType.IMAGE_JPEG_VALUE,
+            "original image".getBytes()
+        );
+
+        String originalImageUrl = "https://cdn.example.com/original-image.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(originalImage)))
+            .thenReturn(originalImageUrl);
+
+        NoticeInfo createdNotice = adminNotificationFacade.createNotice(
+            testAdminId,
+            new AdminNotificationCreateRequest("원본 제목", "<div><img src=\"uuid-original\"></div>"),
+            List.of(originalImage)
+        );
+        em.flush();
+        em.clear();
+
+        // 새 이미지로 교체
+        MockMultipartFile newImage = new MockMultipartFile(
+            "images",
+            "uuid-new",
+            MediaType.IMAGE_JPEG_VALUE,
+            "new image".getBytes()
+        );
+
+        String newImageUrl = "https://cdn.example.com/new-image.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(newImage)))
+            .thenReturn(newImageUrl);
+
+        AdminNotificationUpdateRequest request = new AdminNotificationUpdateRequest(
+            "수정된 제목",
+            "<div><img src=\"uuid-new\"></div>"
+        );
+
+        // when
+        NoticeInfo updatedNotice = adminNotificationFacade.updateNotice(
+            testAdminId,
+            createdNotice.id(),
+            request,
+            List.of(newImage)
+        );
+
+        // then
+        assertThat(updatedNotice).isNotNull();
+        assertThat(updatedNotice.imageLinks()).hasSize(1);
+        assertThat(updatedNotice.content()).contains("uuid-new");
+        assertThat(updatedNotice.content()).doesNotContain("uuid-original");
+
+        // S3 호출 검증
+        verify(s3Service, times(1)).saveAndReturnWithCdn(eq("admin-notice-images"), eq(newImage));
+        // S3에서 기존 이미지 삭제 호출되었는지 확인
+        verify(s3Service, times(1)).deleteImagesCdn(List.of(originalImageUrl));
+    }
+
+    @Test
+    @DisplayName("DB 업데이트 실패 시 새로 업로드된 이미지를 롤백한다")
+    void rollback_new_images_when_update_fails() {
+        // given
+        // 먼저 공지사항 생성
+        NoticeInfo createdNotice = adminNotificationFacade.createNotice(
+            testAdminId,
+            new AdminNotificationCreateRequest("원본 제목", "원본 내용"),
+            List.of()
+        );
+        em.flush();
+        em.clear();
+
+        // 존재하지 않는 noticeId로 수정 시도
+        Long invalidNoticeId = 99999L;
+
+        MockMultipartFile newImage = new MockMultipartFile(
+            "images",
+            "uuid-1",
+            MediaType.IMAGE_JPEG_VALUE,
+            "new image".getBytes()
+        );
+
+        String newImageUrl = "https://cdn.example.com/new-image.jpg";
+        when(s3Service.saveAndReturnWithCdn(eq("admin-notice-images"), eq(newImage)))
+            .thenReturn(newImageUrl);
+
+        AdminNotificationUpdateRequest request = new AdminNotificationUpdateRequest(
+            "수정된 제목",
+            "<div><img src=\"uuid-1\"></div>"
+        );
+
+        // when & then
+        assertThatThrownBy(() ->
+            adminNotificationFacade.updateNotice(
+                testAdminId,
+                invalidNoticeId,
+                request,
+                List.of(newImage)
+            )
+        ).isInstanceOf(BbangleException.class);
+
+        // 새로 업로드된 이미지는 삭제되어야 함
+        verify(s3Service, times(1)).deleteImagesCdn(List.of(newImageUrl));
     }
 }
