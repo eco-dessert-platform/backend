@@ -4,7 +4,9 @@ import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import com.bbangle.bbangle.notification.admin.facade.AdminNotificationFacade;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import jakarta.validation.Valid;
@@ -30,10 +32,23 @@ public class AdminNotificationController implements AdminNotificationApi {
     @Override
     public SingleResult<AdminNotificationCreateResponse> registerNotification(@PathVariable Long adminId,
                                                                               @RequestPart @Valid AdminNotificationCreateRequest request,
-                                                                              @RequestPart List<MultipartFile> profileImage) {
+                                                                              @RequestPart(required = false) List<MultipartFile> profileImage) {
 
         NoticeInfo noticeInfo = adminNotificationFacade.createNotice(adminId, request, profileImage);
         AdminNotificationCreateResponse response = AdminNotificationCreateResponse.from(noticeInfo);
+
+        return responseService.getSingleResult(response);
+    }
+
+    @PostMapping(value= "/{adminId}/{noticeId}/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Override
+    public SingleResult<AdminNotificationUpdateResponse> updateNotification(@PathVariable Long adminId,
+                                                                            @PathVariable Long noticeId,
+                                                                            @RequestPart @Valid AdminNotificationUpdateRequest request,
+                                                                            @RequestPart(required = false) List<MultipartFile> profileImage) {
+
+        NoticeInfo noticeInfo = adminNotificationFacade.updateNotice(adminId, noticeId, request, profileImage);
+        AdminNotificationUpdateResponse response = AdminNotificationUpdateResponse.from(noticeInfo);
 
         return responseService.getSingleResult(response);
     }
