@@ -16,8 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,7 +59,31 @@ public class Notice extends BaseEntity {
         return new Notice(title, content, imageLinks, admin);
     }
 
+    public static Notice createNoticeFofAdminWithoutImage(String title, String content, Admin admin){
+        return new Notice(title, content, admin);
+    }
+
+
+    public void updateNoticeContainImage(String title, String content, String imageLinks){
+        this.title = Objects.requireNonNullElse(title, this.title);
+        this.content = Objects.requireNonNullElse(content, this.content);
+        this.imageLinks = Objects.requireNonNullElse(imageLinks, this.imageLinks);
+    }
+
+    public void updateNoticeWithoutImage(String title, String content){
+        this.title = Objects.requireNonNullElse(title, this.title);
+        this.content = Objects.requireNonNullElse(content, this.content);
+    }
+
     public Notice(String title, String content, String imageLinks, Admin admin) {
+        validateField(title, content, admin);
+        this.title = title;
+        this.content = content;
+        this.imageLinks = imageLinks;
+        this.admin = admin;
+    }
+
+    public Notice(String title, String content,  Admin admin){
         validateField(title, content, admin);
         this.title = title;
         this.content = content;
