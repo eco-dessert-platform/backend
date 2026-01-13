@@ -57,11 +57,13 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    public void confirmOrder() {
+    public boolean confirmOrder() {
         if (this.orderStatus != OrderStatus.PAYMENT_COMPLETED) {
-            throw new IllegalStateException("결제 완료 상태에서만 발주 확인이 가능합니다.");
+            return false;
         }
         this.orderStatus = OrderStatus.ORDER_CONFIRMED;
+        return true;
     }
+
 
 }
