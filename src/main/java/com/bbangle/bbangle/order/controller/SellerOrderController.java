@@ -7,11 +7,15 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.request.OrderRequest.OrderSearchRequest;
+import com.bbangle.bbangle.order.controller.dto.request.SellerOrderRequest;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
 import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.controller.swagger.SellerOrderApi;
+import com.bbangle.bbangle.order.service.SellerOrderService;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SellerOrderController implements SellerOrderApi {
 
     private final ResponseService responseService;
+
+    private final SellerOrderService sellerOrderService;
 
     @Override
     @GetMapping("/completed")
@@ -149,6 +155,17 @@ public class SellerOrderController implements SellerOrderApi {
         Page<OrderSearchResponse> resultPage = new PageImpl<>(mockOrders, pageable, 480);
         BbanglePageResponse<OrderSearchResponse> res = BbanglePageResponse.of(resultPage);
         return responseService.getSingleResult(res);
+    }
+
+    @PostMapping("/{orderId}/confirm")
+    @Override
+    public SingleResult<OrderConfirmResponse> confirmOrder(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.OrderConfirmRequest request
+    ) {
+        var result = sellerOrderService.confirmOrder(request.toCommand(sellerId, orderId));
+        return responseService.getSingleResult(result);
     }
 
 }
