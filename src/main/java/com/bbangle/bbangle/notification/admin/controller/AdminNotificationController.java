@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,7 +45,7 @@ public class AdminNotificationController implements AdminNotificationApi {
 
     @PutMapping(value= "/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
-    public SingleResult<AdminNotificationUpdateResponse> updateNotification(@RequestParam Long adminId,
+    public SingleResult<AdminNotificationUpdateResponse> updateNotification(@AuthenticationPrincipal Long adminId,
                                                                             @PathVariable Long noticeId,
                                                                             @RequestPart @Valid AdminNotificationUpdateRequest request,
                                                                             @RequestPart(required = false) List<MultipartFile> profileImage) {
