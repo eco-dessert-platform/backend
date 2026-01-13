@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @DisplayName("[컨트롤러 테스트] AdminBoardController")
@@ -44,6 +45,7 @@ import org.springframework.test.web.servlet.MockMvc;
     ResponseService.class
 })
 @WebMvcTest(AdminBoardController.class)
+@ActiveProfiles("test")
 class AdminBoardControllerTest {
 
     @Autowired

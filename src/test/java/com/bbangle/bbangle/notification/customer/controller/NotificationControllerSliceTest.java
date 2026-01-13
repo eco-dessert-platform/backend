@@ -37,6 +37,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @DisplayName("[컨트롤러] NotificationController")
@@ -48,6 +49,7 @@ import org.springframework.test.web.servlet.MockMvc;
         ResponseService.class
 })
 @WebMvcTest(controllers = NotificationController.class)
+@ActiveProfiles("test")
 class NotificationControllerSliceTest {
 
     @Autowired

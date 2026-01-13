@@ -11,10 +11,6 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerTypeConverter;
-import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
-import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
-import com.bbangle.bbangle.config.security.auth.OAuth2ClientValidationFilter;
-import com.bbangle.bbangle.config.security.auth.OAuth2UserService;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -35,23 +30,19 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Profile("!test")
+@Profile("test")
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
-public class WebOAuthSecurityConfig implements WebMvcConfigurer {
+public class TestSecurityConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
-            "http://localhost:3000",
-            "https://www.bbanggree.com",
-            "https://api.bbanggree.com",
-            "https://develop.bbanggree.com"
+        "http://localhost:3000",
+        "https://www.bbanggree.com",
+        "https://api.bbanggree.com",
+        "https://develop.bbanggree.com"
     };
     private final TokenProvider tokenProvider;
-    private final OAuth2UserService oAuth2UserService;
-    private final CustomSuccessHandler customSuccessHandler;
-    private final CustomFailureHandler customFailureHandler;
-    private final OAuth2ClientValidationFilter oAuth2ClientValidationFilter;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -74,25 +65,15 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
                 .addFilterBefore(tokenAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/.well-known/**").permitAll() // Chrome DevTools 및 well-known URI
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Swagger
                         .requestMatchers(PublicApiPath.ANY_METHOD).permitAll() // Public (모든 HTTP 메서드)
                         .requestMatchers(GET, PublicApiPath.GET_ONLY).permitAll() //Public (GET 전용)
                         .requestMatchers(PATCH, PublicApiPath.PATCH_OLLY).permitAll() // Public (PATCH 전용)
                         .requestMatchers(CustomerApiPath.ANY_METHOD)
                         .hasAuthority(ROLE_CUSTOMER.getRole()) // Customer API
-                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole()) // Seller API
+                        .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole())  // Seller API
                         .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                         .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                         .anyRequest().permitAll())
-                .oauth2Login((oauth2) -> oauth2
-                        .authorizationEndpoint(endpoint -> endpoint
-                                .baseUri( SellerApiPath.PREFIX + "/oauth2/authorization"))
-                        .userInfoEndpoint(config -> config.userService(oAuth2UserService))  // 인증 후 유저 정보 조회
-                        .successHandler(customSuccessHandler)   // OAuth2 인증 성공 시 처리
-                        .failureHandler(customFailureHandler)   // OAuth2 인증 실패 시 처리
-                )
-                .addFilterBefore(oAuth2ClientValidationFilter, OAuth2AuthorizationRequestRedirectFilter.class)  // OAuth2 URL 검사
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(exp ->
                         exp.defaultAuthenticationEntryPointFor(
