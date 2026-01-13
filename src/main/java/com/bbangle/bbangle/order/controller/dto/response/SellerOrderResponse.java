@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.order.controller.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 
@@ -15,22 +14,17 @@ public class SellerOrderResponse {
         Long orderId,
 
         @Schema(description = "발주 확인 완료된 주문상품 ID 목록")
-        List<Long> confirmedOrderItemIds,
-
-        @Schema(description = "발주 확인 일시")
-        LocalDateTime confirmedAt
+        List<Long> confirmedOrderItemIds
 
     ) {
 
         public static OrderConfirmResponse of(
             Long orderId,
-            List<Long> confirmedOrderItemIds,
-            LocalDateTime confirmedAt
+            List<Long> confirmedOrderItemIds
         ) {
             return OrderConfirmResponse.builder()
                 .orderId(orderId)
                 .confirmedOrderItemIds(confirmedOrderItemIds)
-                .confirmedAt(confirmedAt)
                 .build();
         }
     }
