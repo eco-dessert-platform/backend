@@ -45,10 +45,11 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
 
         return CustomUserDetails.builder()
-                .id(seller.getId())
-                .role(Role.ROLE_SELLER)
-                .name(seller.getName())
-                .build();
+            .id(seller.getId())
+            .role(Role.ROLE_SELLER)
+            .name(seller.getName())
+            .status(seller.getCertificationStatus())
+            .build();
     }
 
     private OAuth2Response createOAuth2Response(String registrationId, OAuth2User oAuth2User) {

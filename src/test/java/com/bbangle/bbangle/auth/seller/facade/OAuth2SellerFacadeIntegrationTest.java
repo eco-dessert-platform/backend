@@ -64,7 +64,7 @@ class OAuth2SellerFacadeIntegrationTest {
         assertThat(savedSeller.getProvider()).isEqualTo(command.provider());
         assertThat(savedSeller.getProviderId()).isEqualTo(command.providerId());
 
-        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
         assertThat(savedSeller.isDeleted()).isFalse();
         assertThat(savedSeller.getStore()).isNull();
     }
@@ -100,7 +100,7 @@ class OAuth2SellerFacadeIntegrationTest {
         assertThat(result.getProvider()).isEqualTo(existingSeller.getProvider());
         assertThat(result.getProviderId()).isEqualTo(existingSeller.getProviderId());
 
-        assertThat(result.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+        assertThat(result.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
         assertThat(result.isDeleted()).isFalse();
         assertThat(result.getStore()).isNull();
     }

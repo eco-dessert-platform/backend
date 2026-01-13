@@ -91,7 +91,7 @@ class OAuth2SellerServiceIntegrationTest {
         assertThat(savedSeller.getProvider()).isEqualTo(command.provider());
         assertThat(savedSeller.getProviderId()).isEqualTo(command.providerId());
 
-        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
         assertThat(savedSeller.isDeleted()).isFalse();
         assertThat(savedSeller.getStore()).isNull();
     }
@@ -121,7 +121,7 @@ class OAuth2SellerServiceIntegrationTest {
         assertThat(savedSeller.getProvider()).isEqualTo(command.provider());
         assertThat(savedSeller.getProviderId()).isEqualTo(command.providerId());
 
-        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+        assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
         assertThat(savedSeller.isDeleted()).isFalse();
         assertThat(savedSeller.getStore()).isNull();
     }

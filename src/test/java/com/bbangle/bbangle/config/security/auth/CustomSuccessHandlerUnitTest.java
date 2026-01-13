@@ -12,12 +12,14 @@ import static org.mockito.Mockito.verify;
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.role.Role;
-import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +35,6 @@ class CustomSuccessHandlerUnitTest {
     CustomSuccessHandler customSuccessHandler;
 
     @Mock
-    TokenProvider tokenProvider;
-
-    @Mock
     RedisRepository redisRepository;
 
     @Mock
@@ -47,46 +46,57 @@ class CustomSuccessHandlerUnitTest {
     @Mock
     HttpServletResponse response;
 
+    @Mock
+    OAuth2HandlerProperties oauth2HandlerProperties;
+
+    @BeforeEach
+    void setUp() {
+        customSuccessHandler = new CustomSuccessHandler(oauth2HandlerProperties, redisRepository);
+    }
+
     @Test
     @DisplayName("OAuth2 로그인 성공 시 RefreshToken을  Redis에 저장하고 인가 코드를 담아서 Redirect한다.")
     void success_onAuthenticationSuccess() throws Exception {
 
         // given
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties("https://test.com/login", null);
-
         CustomUserDetails userDetails = CustomUserDetails.builder()
-                .id(1L)
-                .role(Role.ROLE_SELLER)
-                .name("test")
-                .build();
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .name("test")
+            .status(CertificationStatus.NEW)
+            .build();
 
         given(authentication.getPrincipal()).willReturn(userDetails);
-        given(tokenProvider.generateToken(
-                userDetails.id(),
-                userDetails.role(),
-                CustomSuccessHandler.REFRESH_TOKEN_DURATION
-        )).willReturn("refreshToken");
-
-        customSuccessHandler = new CustomSuccessHandler(properties, tokenProvider, redisRepository);
+        given(oauth2HandlerProperties.success()).willReturn("https://test.com/success");
 
         // when
         customSuccessHandler.onAuthenticationSuccess(request, response, authentication);
 
         // then
-        ArgumentCaptor<String> uuidCaptor = ArgumentCaptor.forClass(String.class);   //  UUID 값 저장
-        verify(redisRepository).setFromString(
+        ArgumentCaptor<String> uuidCaptor = ArgumentCaptor.forClass(String.class);  //  UUID 값 저장
+        ArgumentCaptor<Map<String, Object>> mapCaptor = ArgumentCaptor.forClass(Map.class);
+
+        verify(redisRepository).setFromMap(
                 eq("oauth2:code"),
                 uuidCaptor.capture(),
-                eq("refreshToken"),
-                eq(CustomSuccessHandler.REFRESH_TOKEN_TTL)
+                mapCaptor.capture(),
+                eq(CustomSuccessHandler.TEMP_CODE_TTL)
         );
 
+        // Map 검증
+        Map<String, Object> value = mapCaptor.getValue();
+        assertThat(value)
+            .containsEntry("id", 1L)
+            .containsEntry("Role", Role.ROLE_SELLER)
+            .containsEntry("Status", CertificationStatus.NEW);
+
+        // redirect 검증
         ArgumentCaptor<String> redirectCaptor = ArgumentCaptor.forClass(String.class);
         verify(response).sendRedirect(redirectCaptor.capture());
 
         String redirectUrl = redirectCaptor.getValue();
         assertThat(redirectUrl).isEqualTo(
-            properties.success() + "?generateToken=" + uuidCaptor.getValue()
+            "https://test.com/success?generateToken=" + uuidCaptor.getValue()
         );
     }
 
@@ -96,22 +106,18 @@ class CustomSuccessHandlerUnitTest {
 
         // given
         CustomUserDetails userDetails = CustomUserDetails.builder()
-                .id(1L)
-                .role(Role.ROLE_SELLER)
-                .name("test")
-                .build();
-
-        RuntimeException originalEx = new RuntimeException("Redis Down");
-
-        OAuth2HandlerProperties properties = new OAuth2HandlerProperties(null, null);
-        customSuccessHandler = new CustomSuccessHandler(properties, tokenProvider, redisRepository);
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .name("test")
+            .status(CertificationStatus.NEW)
+            .build();
 
         given(authentication.getPrincipal()).willReturn(userDetails);
-        given(tokenProvider.generateToken(any(), any(), any())).willReturn("refreshToken");
 
+        RuntimeException originalEx = new RuntimeException("Redis Down");
         doThrow(originalEx)
-                .when(redisRepository)
-                .setFromString(any(), any(), any(), any());
+            .when(redisRepository)
+            .setFromMap(any(), any(), any(), any());
 
         // when & then
         assertThatThrownBy(() ->

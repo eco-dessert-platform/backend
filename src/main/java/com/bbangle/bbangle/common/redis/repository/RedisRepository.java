@@ -20,6 +20,8 @@ public interface RedisRepository {
 
     void setFromString(String namespace, String key, String value, Duration ttl);
 
+    void setFromMap(String namespace, String key, Map<String, Object> values, Duration ttl);
+
     void delete(String namespace, String key);
 
     void deleteAll();

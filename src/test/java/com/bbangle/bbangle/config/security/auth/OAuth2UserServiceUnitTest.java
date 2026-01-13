@@ -15,6 +15,7 @@ import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ class OAuth2UserServiceUnitTest {
         CustomUserDetails details = (CustomUserDetails) result;
         assertThat(details.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(details.name()).isEqualTo(seller.getName());
+        assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
 
         verify(oAuth2SellerFacade).login(any(OAuth2ResponseCreateCommand.class));
     }
@@ -143,6 +145,7 @@ class OAuth2UserServiceUnitTest {
         CustomUserDetails details = (CustomUserDetails) result;
         assertThat(details.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(details.name()).isEqualTo(seller.getName());
+        assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
 
         verify(oAuth2SellerFacade).login(any(OAuth2ResponseCreateCommand.class));
     }

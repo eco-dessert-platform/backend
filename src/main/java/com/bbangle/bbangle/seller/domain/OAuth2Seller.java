@@ -78,7 +78,7 @@ public class OAuth2Seller extends SoftDeleteCreatedAtBaseEntity {
                 .name(name)
                 .provider(provider)
                 .providerId(providerId)
-                .certificationStatus(CertificationStatus.PENDING)
+                .certificationStatus(CertificationStatus.NEW)
                 .isDeleted(false)
                 .store(null)
                 .build();

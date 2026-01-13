@@ -28,7 +28,7 @@ class OAuth2SellerUnitTest {
         assertThat(seller.getProvider()).isEqualTo(provider);
         assertThat(seller.getProviderId()).isEqualTo(providerId);
 
-        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
         assertThat(seller.isDeleted()).isFalse();
         assertThat(seller.getStore()).isNull();
     }

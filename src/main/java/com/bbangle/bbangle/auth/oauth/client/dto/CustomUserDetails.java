@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.auth.oauth.client.dto;
 
 import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -13,7 +14,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 public record CustomUserDetails (
         Long id,
         Role role,
-        String name
+        String name,
+        CertificationStatus status
 ) implements OAuth2User {
 
     @Override
@@ -31,5 +33,9 @@ public record CustomUserDetails (
     @Override
     public String getName() {
         return name;
+    }
+
+    public CertificationStatus getStatus() {
+        return status;
     }
 }

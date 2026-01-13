@@ -80,6 +80,14 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
+    public void setFromMap(String namespace, String key, Map<String, Object> value, Duration ttl) {
+        String multiKey = namespace + ":" + key;
+        redisTemplate.opsForHash()
+            .putAll(multiKey, value);
+        redisTemplate.expire(multiKey, ttl);
+    }
+
+    @Override
     public void delete(String namespace, String key) {
         String multiKey = namespace + ":" + key;
         redisTemplate.delete(multiKey);
