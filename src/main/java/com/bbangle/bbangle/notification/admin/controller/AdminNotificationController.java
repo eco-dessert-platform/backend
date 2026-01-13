@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,9 +42,9 @@ public class AdminNotificationController implements AdminNotificationApi {
         return responseService.getSingleResult(response);
     }
 
-    @PutMapping(value= "/admins/{adminId}/notices/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value= "/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
-    public SingleResult<AdminNotificationUpdateResponse> updateNotification(@PathVariable Long adminId,
+    public SingleResult<AdminNotificationUpdateResponse> updateNotification(@RequestParam Long adminId,
                                                                             @PathVariable Long noticeId,
                                                                             @RequestPart @Valid AdminNotificationUpdateRequest request,
                                                                             @RequestPart(required = false) List<MultipartFile> profileImage) {
