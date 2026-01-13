@@ -13,6 +13,7 @@ public class PublicApiPath {
         "/api/v1/stores/**",
         "/api/v1/health/**",
         "/api/v1/push/**",
+        "/login/oauth2/code/**"
     };
 
     public static final String[] GET_ONLY = {
