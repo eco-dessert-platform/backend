@@ -87,7 +87,7 @@ public class Notice extends BaseEntity {
         validateField(title, content, admin);
         this.title = title;
         this.content = content;
-        this.imageLinks = imageLinks;
+        this.imageLinks = "[]";
         this.admin = admin;
     }
 

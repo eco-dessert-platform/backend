@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +41,7 @@ public class AdminNotificationController implements AdminNotificationApi {
         return responseService.getSingleResult(response);
     }
 
-    @PostMapping(value= "/{adminId}/{noticeId}/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value= "/admins/{adminId}/notices/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
     public SingleResult<AdminNotificationUpdateResponse> updateNotification(@PathVariable Long adminId,
                                                                             @PathVariable Long noticeId,
