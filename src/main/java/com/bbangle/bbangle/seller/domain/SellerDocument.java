@@ -45,7 +45,7 @@ public class SellerDocument extends BaseEntity {
     private Seller seller;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", columnDefinition = "VARCHAR(30)")
+    @Column(name = "type", columnDefinition = "VARCHAR(60)")
     private DocumentType type;
 
     @Column(name = "url", columnDefinition = "VARCHAR(255)")
