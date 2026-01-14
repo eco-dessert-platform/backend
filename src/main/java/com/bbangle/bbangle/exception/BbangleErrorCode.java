@@ -102,6 +102,8 @@ public enum BbangleErrorCode {
     SELLER_DOCUMENT_TYPE_REQUIRED(-711, "서류 타입은 필수입니다.", BAD_REQUEST),
     INVALID_DOCUMENT_FILE_EXTENSION(-712, "서류 파일은 jpg, jpeg, png, pdf 형식만 가능합니다.", BAD_REQUEST),
     SELLER_NOT_FOUND(-713, "존재하지 않는 판매자입니다.", NOT_FOUND),
+    ACCOUNT_VERIFICATION_NOT_FOUND(-714, "존재하지 않는 인증정보입니다.", NOT_FOUND),
+    ACCOUNT_NOT_VERIFIED(-715, "인증되지 않은 계좌입니다.", BAD_REQUEST),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
