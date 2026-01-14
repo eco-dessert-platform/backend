@@ -2,9 +2,14 @@ package com.bbangle.bbangle.seller.seller.controller.dto;
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
+import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,18 +18,36 @@ public class SellerRequest {
 
     public record SellerDocumentsRegisterRequest(
         @Schema(description = "사업자 등록증", requiredMode = REQUIRED, type = "string", format = "binary")
+        @NotNull(message = "사업자 등록증은 필수 입니다.")
         MultipartFile businessLicense,
 
         @Schema(description = "통신판매업 신고증", requiredMode = REQUIRED, type = "string", format = "binary")
+        @NotNull(message = "통신판매업 신고증은 필수 입니다.")
         MultipartFile mailOrderLicense,
 
         @Schema(description = "개인명의 통장 사본", requiredMode = REQUIRED, type = "string", format = "binary")
+        @NotNull(message = "통장 사본은 필수 입니다.")
         MultipartFile bankbookCopy,
 
         @Schema(description = "즉석식품제조가공업 & 식품제조업", requiredMode = REQUIRED, type = "string", format = "binary")
-        MultipartFile foodManufactureLicense
+        @NotNull(message = "즉석식품제조가공업 & 식품제조업은 필수 입니다.")
+        MultipartFile foodManufactureLicense,
+
+        @Schema(description = "계좌인증 ID", requiredMode = REQUIRED)
+        @NotNull(message = "계좌인증 ID는 필수 입니다")
+        Long accountVerificationId
     ) {
 
+        public RegisterDocumentsCommand toCommand(Long sellerId) {
+            return RegisterDocumentsCommand.builder()
+                .businessLicense(businessLicense)
+                .mailOrderLicense(mailOrderLicense)
+                .bankbookCopy(bankbookCopy)
+                .foodManufactureLicense(foodManufactureLicense)
+                .accountVerificationId(accountVerificationId)
+                .sellerId(sellerId)
+                .build();
+        }
     }
 
     @Schema(description = "계좌 정보 변경 요청 DTO")
@@ -128,7 +151,7 @@ public class SellerRequest {
         @Size(max = 50, message = "상세 주소는 50자까지 입력 가능합니다.") // 주석 반영
         String originAddressDetail,
 
-        @Schema(description = "중복검사 후 선택한 스토어의 아이디값", example = "1" )
+        @Schema(description = "중복검사 후 선택한 스토어의 아이디값", example = "1")
         Long storeId
     ) {
 

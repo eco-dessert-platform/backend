@@ -11,6 +11,7 @@ import com.bbangle.bbangle.seller.seller.service.SellerDocumentService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.RegisterDocumentCommand;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
+import com.bbangle.bbangle.seller.seller.service.info.SellerDocumentInfo;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,9 @@ public class SellerFacade {
     }
 
     @Transactional
-    public void registerDocuments(RegisterDocumentsCommand command) {
+    public List<SellerDocumentInfo> registerDocuments(RegisterDocumentsCommand command) {
+
+        List<SellerDocumentInfo> sellerDocumentInfos = new ArrayList<>();
         // 1. 계좌 인증 확인
         accountVerificationService.confirmAccount(command.accountVerificationId());
 
@@ -68,7 +71,7 @@ public class SellerFacade {
 
             // 4. DB 저장
             for (UploadedDocument uploaded : uploadedDocuments) {
-                sellerDocumentService.registerDocument(
+                SellerDocumentInfo sellerDocumentInfo = sellerDocumentService.registerDocument(
                     new RegisterDocumentCommand(
                         command.sellerId(),
                         uploaded.filePath(),
@@ -76,8 +79,9 @@ public class SellerFacade {
                         uploaded.type()
                     )
                 );
+                sellerDocumentInfos.add(sellerDocumentInfo);
             }
-
+            return sellerDocumentInfos;
         } catch (Exception e) {
             // 5. 롤백: 업로드된 모든 파일 삭제
             uploadedDocuments.forEach(doc -> {
