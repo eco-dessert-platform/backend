@@ -91,14 +91,16 @@ class SellerDocumentServiceIntegrationTest {
 
         // assert
         assertThat(result).isNotNull();
-        assertThat(result.sellerId()).isNotNull();
+        assertThat(result.sellerDocumentId()).isNotNull();
+        assertThat(result.sellerId()).isEqualTo(testSeller.getId());
         assertThat(result.url()).isEqualTo(command.url());
         assertThat(result.documentName()).isEqualTo(command.name());
         assertThat(result.documentType()).isEqualTo(command.type());
+        assertThat(result.status()).isEqualTo(CertificationStatus.PENDING.name());
         assertThat(result.createdAt()).isNotNull();
 
         // DB 검증
-        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerId())
+        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerDocumentId())
             .orElseThrow();
         assertThat(savedDocument.getName()).isEqualTo(command.name());
         assertThat(savedDocument.getUrl()).isEqualTo(command.url());
@@ -134,7 +136,7 @@ class SellerDocumentServiceIntegrationTest {
         assertThat(result.documentType()).isEqualTo(documentType);
 
         // DB 검증
-        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerId())
+        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerDocumentId())
             .orElseThrow();
         assertThat(savedDocument.getType().name()).isEqualTo(documentType);
     }
@@ -166,7 +168,7 @@ class SellerDocumentServiceIntegrationTest {
         assertThat(result.documentName()).isEqualTo(fileName);
 
         // DB 검증
-        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerId())
+        SellerDocument savedDocument = sellerDocumentRepository.findById(result.sellerDocumentId())
             .orElseThrow();
         assertThat(savedDocument.getName()).isEqualTo(fileName);
     }
@@ -352,7 +354,7 @@ class SellerDocumentServiceIntegrationTest {
         // assert
         assertThat(result1).isNotNull();
         assertThat(result2).isNotNull();
-        assertThat(result1.sellerId()).isNotEqualTo(result2.sellerId());
+        assertThat(result1.sellerDocumentId()).isNotEqualTo(result2.sellerDocumentId());
 
         // DB 검증
         assertThat(sellerDocumentRepository.findAll()).hasSize(2);

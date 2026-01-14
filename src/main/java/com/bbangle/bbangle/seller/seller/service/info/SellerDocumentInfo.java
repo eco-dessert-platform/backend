@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 
 public record SellerDocumentInfo(
+    Long sellerDocumentId,
     Long sellerId,
     String url,
     String documentName,
@@ -14,8 +15,10 @@ public record SellerDocumentInfo(
 ) {
 
     @Builder
-    public SellerDocumentInfo(Long sellerId, String url, String documentName, String documentType, String status,
+    public SellerDocumentInfo(Long sellerDocumentId, Long sellerId, String url, String documentName,
+                              String documentType, String status,
                               LocalDateTime createdAt) {
+        this.sellerDocumentId = sellerDocumentId;
         this.sellerId = sellerId;
         this.url = url;
         this.documentName = documentName;
@@ -26,10 +29,12 @@ public record SellerDocumentInfo(
 
     public static SellerDocumentInfo from(SellerDocument sellerDocument) {
         return SellerDocumentInfo.builder()
-            .sellerId(sellerDocument.getId())
+            .sellerDocumentId(sellerDocument.getId())
+            .sellerId(sellerDocument.getSeller().getId())
             .url(sellerDocument.getUrl())
             .documentType(sellerDocument.getType().name())
             .documentName(sellerDocument.getName())
+            .status(sellerDocument.getStatus().name())
             .createdAt(sellerDocument.getCreatedAt())
             .build();
     }
