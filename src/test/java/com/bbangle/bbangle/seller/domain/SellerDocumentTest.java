@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -30,7 +29,7 @@ public class SellerDocumentTest {
         // arrange
         String name = "business_registration.pdf";
         String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act
         SellerDocument document = SellerDocument.create(name, url, type, seller);
@@ -39,15 +38,20 @@ public class SellerDocumentTest {
         assertThat(document).isNotNull();
         assertThat(document.getName()).isEqualTo(name);
         assertThat(document.getUrl()).isEqualTo(url);
-        assertThat(document.getType()).isEqualTo(type);
+        assertThat(document.getType()).isEqualTo(DocumentType.BUSINESS_REGISTRATION_CERTIFICATE);
         assertThat(document.getSeller()).isEqualTo(seller);
         assertThat(document.getStatus()).isEqualTo(CertificationStatus.PENDING);
     }
 
     @ParameterizedTest
-    @EnumSource(DocumentType.class)
+    @ValueSource(strings = {
+        "BUSINESS_REGISTRATION_CERTIFICATE",
+        "MAIL_ORDER_SALES_REPORT",
+        "INSTANT_FOOD_MANUFACTURING_PROCESSING_REGISTRATION",
+        "BANKBOOK_COPY"
+    })
     @DisplayName("모든 서류 타입으로 판매자 서류 생성에 성공한다")
-    void success_create_seller_document_with_all_document_types(DocumentType documentType) {
+    void success_create_seller_document_with_all_document_types(String documentType) {
         // arrange
         String name = "document.pdf";
         String url = "https://s3.amazonaws.com/bbangle/documents/document.pdf";
@@ -57,7 +61,7 @@ public class SellerDocumentTest {
 
         // assert
         assertThat(document).isNotNull();
-        assertThat(document.getType()).isEqualTo(documentType);
+        assertThat(document.getType()).isEqualTo(DocumentType.valueOf(documentType));
         assertThat(document.getStatus()).isEqualTo(CertificationStatus.PENDING);
     }
 
@@ -67,7 +71,7 @@ public class SellerDocumentTest {
     void fail_create_seller_document_with_null_or_empty_name(String invalidName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(invalidName, url, type, seller))
@@ -81,7 +85,7 @@ public class SellerDocumentTest {
     void fail_create_seller_document_with_whitespace_name(String whitespaceName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(whitespaceName, url, type, seller))
@@ -96,7 +100,7 @@ public class SellerDocumentTest {
     void fail_create_seller_document_with_invalid_url(String invalidUrl) {
         // arrange
         String name = "business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(name, invalidUrl, type, seller))
@@ -117,13 +121,26 @@ public class SellerDocumentTest {
             .hasMessageContaining(BbangleErrorCode.SELLER_DOCUMENT_TYPE_REQUIRED.getMessage());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"INVALID_TYPE", "UNKNOWN", "TEST", ""})
+    @DisplayName("판매자 서류 생성 시 유효하지 않은 서류 타입이면 실패한다")
+    void fail_create_seller_document_with_invalid_type(String invalidType) {
+        // arrange
+        String name = "business_registration.pdf";
+        String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
+
+        // act & assert
+        assertThatThrownBy(() -> SellerDocument.create(name, url, invalidType, seller))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     @DisplayName("판매자 서류 생성 시 판매자가 null이면 실패한다")
     void fail_create_seller_document_with_null_seller() {
         // arrange
         String name = "business_registration.pdf";
         String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(name, url, type, null))
@@ -137,7 +154,7 @@ public class SellerDocumentTest {
         // arrange
         String name = "business_registration.pdf";
         String url = "https://s3.amazonaws.com/bbangle/documents/business_registration.pdf";
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act
         SellerDocument document = SellerDocument.create(name, url, type, seller);
@@ -158,7 +175,7 @@ public class SellerDocumentTest {
     void success_create_seller_document_with_various_file_names(String fileName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/" + fileName;
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act
         SellerDocument document = SellerDocument.create(fileName, url, type, seller);
@@ -183,7 +200,7 @@ public class SellerDocumentTest {
     void success_create_seller_document_with_allowed_extensions(String fileName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/" + fileName;
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act
         SellerDocument document = SellerDocument.create(fileName, url, type, seller);
@@ -208,7 +225,7 @@ public class SellerDocumentTest {
     void fail_create_seller_document_with_not_allowed_extensions(String fileName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/" + fileName;
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(fileName, url, type, seller))
@@ -227,7 +244,7 @@ public class SellerDocumentTest {
     void fail_create_seller_document_with_no_extension(String fileName) {
         // arrange
         String url = "https://s3.amazonaws.com/bbangle/documents/" + fileName;
-        DocumentType type = DocumentType.BUSINESS_REGISTRATION_CERTIFICATE;
+        String type = "BUSINESS_REGISTRATION_CERTIFICATE";
 
         // act & assert
         assertThatThrownBy(() -> SellerDocument.create(fileName, url, type, seller))
