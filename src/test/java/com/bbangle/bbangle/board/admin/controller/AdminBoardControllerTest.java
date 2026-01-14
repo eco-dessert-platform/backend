@@ -17,6 +17,7 @@ import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
 import com.bbangle.bbangle.config.security.AdminApiPath;
+import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.fixture.board.admin.controller.dto.AdminProductResponseFixture;
@@ -42,7 +43,8 @@ import org.springframework.test.web.servlet.MockMvc;
     JsonDataEncoder.class,
     TokenProvider.class,
     TestJwtPropertiesConfig.class,
-    ResponseService.class
+    ResponseService.class,
+    SecurityConfig.class
 })
 @WebMvcTest(AdminBoardController.class)
 @ActiveProfiles("test")

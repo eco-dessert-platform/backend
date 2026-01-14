@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
+import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -37,7 +38,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
     JsonDataEncoder.class,
     TokenProvider.class,
     TestJwtPropertiesConfig.class,
-    ResponseService.class
+    ResponseService.class,
+    SecurityConfig.class
 })
 @ActiveProfiles("test")
 public class SellerControllerTest {

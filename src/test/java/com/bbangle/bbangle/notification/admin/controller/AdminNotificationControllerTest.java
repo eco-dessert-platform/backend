@@ -6,13 +6,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
 import com.bbangle.bbangle.config.security.AdminApiPath;
+import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
@@ -43,7 +43,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
     JsonDataEncoder.class,
     TokenProvider.class,
     TestJwtPropertiesConfig.class,
-    ResponseService.class
+    ResponseService.class,
+    SecurityConfig.class
 })
 @ActiveProfiles("test")
 public class AdminNotificationControllerTest {
