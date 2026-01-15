@@ -9,7 +9,6 @@ import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.service.model.SellerOrderCommand.OrderConfirmCommand;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,13 +31,10 @@ public class SellerOrderService {
             command.orderItemIds()
         );
 
-        List<Long> confirmedOrderItemIds = new ArrayList<>();
-
-        for (OrderItem orderItem : orderItems) {
-            if (orderItem.confirmOrder()) {
-                confirmedOrderItemIds.add(orderItem.getId());
-            }
-        }
+        List<Long> confirmedOrderItemIds = orderItems.stream()
+            .filter(OrderItem::confirmOrder)
+            .map(OrderItem::getId)
+            .toList();
 
         return OrderConfirmResponse.of(order.getId(), confirmedOrderItemIds);
     }
