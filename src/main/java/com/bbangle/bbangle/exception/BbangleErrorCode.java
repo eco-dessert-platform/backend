@@ -111,6 +111,7 @@ public enum BbangleErrorCode {
     INVALID_REFRESH_TOKEN(-743, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
     NOT_SUPPORTED_SERVER(-744, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
     MISSING_NAME_NICKNAME(-745, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
+    UNAUTHORIZED(-746, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.",BAD_REQUEST),

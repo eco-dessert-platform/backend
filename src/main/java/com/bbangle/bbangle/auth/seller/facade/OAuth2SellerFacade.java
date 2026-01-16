@@ -1,5 +1,8 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
+import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
+import com.bbangle.bbangle.auth.seller.service.dto.SellerInfoRedisDTO;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
@@ -11,7 +14,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OAuth2SellerFacade {
 
+    // 임시 Seller 테이블용 Service 레이어
     private final OAuth2SellerService oAuth2SellerService;
+
+    // OAuth 작업과 관련된 Service 레이어
+    private final OAuthSellerService oAuthSellerService;
 
     public OAuth2Seller login(OAuth2ResponseCreateCommand response) {
         try {
@@ -27,5 +34,24 @@ public class OAuth2SellerFacade {
                     response.providerId()
             ).orElseThrow(() -> e);
         }
+    }
+
+    // TODO : Test
+    public GenerateTokenResponse generateToken(String code) {
+
+        // 1. Redis에서 Seller 정보 가져오기
+        SellerInfoRedisDTO sellerInfo = oAuthSellerService.getSellerInfoFromRedis(code);
+
+        // 2. Seller 정보를 통해 Token 생성
+        String refreshToken = oAuthSellerService.generateRefreshToken(sellerInfo.id(), sellerInfo.role());
+        String accessToken = oAuthSellerService.generateAccessToken(sellerInfo.id(), sellerInfo.role());
+
+        // 3. DTO를 생성하여 전달
+        return GenerateTokenResponse.of(
+            refreshToken,
+            accessToken,
+            sellerInfo.id(),
+            sellerInfo.status()
+        );
     }
 }
