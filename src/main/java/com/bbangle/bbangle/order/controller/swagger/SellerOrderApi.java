@@ -7,10 +7,12 @@ import com.bbangle.bbangle.exception.ErrorResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.order.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.controller.dto.request.OrderRequest;
+import com.bbangle.bbangle.order.controller.dto.request.SellerOrderRequest;
 import com.bbangle.bbangle.order.controller.dto.response.CompletedOrderResponse.OrderSummary;
 import com.bbangle.bbangle.order.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,6 +25,10 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Seller Order", description = "(판매자) 주문 API")
 public interface SellerOrderApi {
@@ -173,4 +179,10 @@ public interface SellerOrderApi {
         @Valid
         OrderRequest.OrderSearchRequest request);
 
+    @PostMapping("/{orderId}/confirm")
+    SingleResult<OrderConfirmResponse> confirmOrder(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.OrderConfirmRequest request
+    );
 }

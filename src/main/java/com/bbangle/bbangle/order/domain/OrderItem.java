@@ -57,4 +57,13 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    public boolean confirmOrder() {
+        if (this.orderStatus != OrderStatus.PAYMENT_COMPLETED) {
+            return false;
+        }
+        this.orderStatus = OrderStatus.ORDER_CONFIRMED;
+        return true;
+    }
+
+
 }

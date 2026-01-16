@@ -40,6 +40,17 @@ public class AdminNoticeInfo {
             }
         }
 
+        public static NoticeInfo from(Notice notice) {
+                return NoticeInfo.builder()
+                    .id(notice.getId())
+                    .title(notice.getTitle())
+                    .content(notice.getContent())
+                    .imageLinks(List.of())  // imageLinks를 빈 리스트로 초기화
+                    .createAt(notice.getCreatedAt())
+                    .modifiedAt(notice.getModifiedAt())
+                    .build();
+        }
+
     }
 
 

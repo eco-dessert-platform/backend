@@ -8,6 +8,8 @@ import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
+import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeCreateCommand;
+import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeUpdateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
@@ -217,6 +219,291 @@ class AdminNotificationServiceIntegrationTest {
         assertThatThrownBy(() -> sut.createAdminNotification(command))
             .isInstanceOf(BbangleException.class)
             .hasMessage(BbangleErrorCode.CONTENT_IS_EMPTY.getMessage());
+    }
+
+    @Test
+    @DisplayName("이미지 포함하여 공지사항 수정에 성공한다")
+    void success_updateAdminNotification_WithImages() throws JsonProcessingException {
+        // given - 먼저 공지사항 생성
+        String originalTitle = "원본 제목";
+        String originalContent = "<div>원본 내용</div>";
+        List<String> originalImageLinks = List.of("https://cdn.example.com/old-image.jpg");
+
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            originalTitle,
+            originalContent,
+            originalImageLinks
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // 수정할 데이터
+        String updatedTitle = "수정된 제목";
+        String updatedContent = "<div>수정된 내용</div>";
+        List<String> updatedImageLinks = List.of(
+            "https://cdn.example.com/new-image1.jpg",
+            "https://cdn.example.com/new-image2.jpg"
+        );
+
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(createdNotice.id())
+            .title(updatedTitle)
+            .content(updatedContent)
+            .cdnImageLinks(updatedImageLinks)
+            .build();
+
+        // when
+        NoticeInfo result = sut.updateAdminNotification(updateCommand);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(createdNotice.id());
+        assertThat(result.title()).isEqualTo(updatedTitle);
+        assertThat(result.content()).isEqualTo(updatedContent);
+        assertThat(result.imageLinks()).containsExactlyElementsOf(updatedImageLinks);
+
+        // DB에서 직접 확인 (Dirty Checking 검증)
+        em.flush();
+        em.clear();
+        Notice updatedNotice = notificationRepository.findById(createdNotice.id()).orElseThrow();
+        assertThat(updatedNotice.getTitle()).isEqualTo(updatedTitle);
+        assertThat(updatedNotice.getContent()).isEqualTo(updatedContent);
+
+        List<String> savedImageLinks = objectMapper.readValue(
+            updatedNotice.getImageLinks(),
+            new TypeReference<List<String>>() {}
+        );
+        assertThat(savedImageLinks).containsExactlyElementsOf(updatedImageLinks);
+    }
+
+    @Test
+    @DisplayName("이미지 없이 공지사항 수정에 성공한다")
+    void success_updateAdminNotification_WithoutImages() {
+        // given - 먼저 공지사항 생성
+        String originalTitle = "원본 제목";
+        String originalContent = "<div>원본 내용</div>";
+
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            originalTitle,
+            originalContent,
+            List.of()
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // 수정할 데이터
+        String updatedTitle = "수정된 제목";
+        String updatedContent = "<div>수정된 내용</div>";
+
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(createdNotice.id())
+            .title(updatedTitle)
+            .content(updatedContent)
+            .build();
+
+        // when
+        NoticeInfo result = sut.updateAdminNotification(updateCommand);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(createdNotice.id());
+        assertThat(result.title()).isEqualTo(updatedTitle);
+        assertThat(result.content()).isEqualTo(updatedContent);
+
+        // DB에서 직접 확인 (Dirty Checking 검증)
+        em.flush();
+        em.clear();
+        Notice updatedNotice = notificationRepository.findById(createdNotice.id()).orElseThrow();
+        assertThat(updatedNotice.getTitle()).isEqualTo(updatedTitle);
+        assertThat(updatedNotice.getContent()).isEqualTo(updatedContent);
+    }
+
+    @Test
+    @DisplayName("JPA Dirty Checking을 통해 자동으로 DB에 업데이트된다")
+    void success_updateAdminNotification_DirtyCheckingWorks() throws JsonProcessingException {
+        // given - 먼저 공지사항 생성
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            "원본 제목",
+            "<div>원본 내용</div>",
+            List.of("https://cdn.example.com/image.jpg")
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        Long noticeId = createdNotice.id();
+        em.flush();
+        em.clear();
+
+        // when - 수정 실행 (트랜잭션 내에서)
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(noticeId)
+            .title("수정된 제목")
+            .content("<div>수정된 내용</div>")
+            .cdnImageLinks(List.of("https://cdn.example.com/new-image.jpg"))
+            .build();
+
+        NoticeInfo updatedResult = sut.updateAdminNotification(updateCommand);
+
+        // 명시적으로 save()를 호출하지 않았지만 Dirty Checking으로 자동 업데이트
+        em.flush();
+        em.clear();
+
+        // then - DB에서 재조회하여 변경사항이 반영되었는지 확인
+        Notice savedNotice = notificationRepository.findById(noticeId).orElseThrow();
+        assertThat(savedNotice.getTitle()).isEqualTo("수정된 제목");
+        assertThat(savedNotice.getContent()).isEqualTo("<div>수정된 내용</div>");
+
+        List<String> savedImageLinks = objectMapper.readValue(
+            savedNotice.getImageLinks(),
+            new TypeReference<List<String>>() {}
+        );
+        assertThat(savedImageLinks).containsExactly("https://cdn.example.com/new-image.jpg");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 Admin으로 공지사항 수정 시 실패한다")
+    void fail_updateAdminNotification_WithNonExistentAdmin() {
+        // given - 먼저 공지사항 생성
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            "원본 제목",
+            "<div>원본 내용</div>",
+            List.of()
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // 존재하지 않는 Admin ID로 수정 시도
+        Long invalidAdminId = 99999L;
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(invalidAdminId)
+            .noticeId(createdNotice.id())
+            .title("수정된 제목")
+            .content("<div>수정된 내용</div>")
+            .build();
+
+        // when & then
+        assertThatThrownBy(() -> sut.updateAdminNotification(updateCommand))
+            .isInstanceOf(BbangleException.class)
+            .hasMessage(BbangleErrorCode.ADMIN_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 Notice로 수정 시 실패한다")
+    void fail_updateAdminNotification_WithNonExistentNotice() {
+        // given
+        Long invalidNoticeId = 99999L;
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(invalidNoticeId)
+            .title("수정된 제목")
+            .content("<div>수정된 내용</div>")
+            .build();
+
+        // when & then
+        assertThatThrownBy(() -> sut.updateAdminNotification(updateCommand))
+            .isInstanceOf(BbangleException.class)
+            .hasMessage(BbangleErrorCode.NOT_FIND_NOTICE.getMessage());
+    }
+
+    @Test
+    @DisplayName("이미지 링크를 null에서 빈 리스트로 변경할 수 있다")
+    void success_updateAdminNotification_ImageLinks_FromNullToEmpty() {
+        // given - 먼저 이미지가 있는 공지사항 생성
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            "원본 제목",
+            "<div>원본 내용</div>",
+            List.of("https://cdn.example.com/image.jpg")
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // 이미지를 제거하는 수정 (cdnImageLinks를 null로 설정)
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(createdNotice.id())
+            .title("수정된 제목")
+            .content("<div>이미지 없는 내용</div>")
+            .cdnImageLinks(null)  // 이미지 제거
+            .build();
+
+        // when
+        NoticeInfo result = sut.updateAdminNotification(updateCommand);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.title()).isEqualTo("수정된 제목");
+        assertThat(result.content()).isEqualTo("<div>이미지 없는 내용</div>");
+
+        // DB 확인
+        em.flush();
+        em.clear();
+        Notice updatedNotice = notificationRepository.findById(createdNotice.id()).orElseThrow();
+        assertThat(updatedNotice.getTitle()).isEqualTo("수정된 제목");
+        assertThat(updatedNotice.getContent()).isEqualTo("<div>이미지 없는 내용</div>");
+    }
+
+    @Test
+    @DisplayName("여러 필드를 동시에 수정할 수 있다")
+    void success_updateAdminNotification_MultipleFieldsAtOnce() throws JsonProcessingException {
+        // given - 먼저 공지사항 생성
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            "원본 제목",
+            "<div>원본 내용</div>",
+            List.of("https://cdn.example.com/old1.jpg", "https://cdn.example.com/old2.jpg")
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // 모든 필드 수정
+        String newTitle = "완전히 새로운 제목";
+        String newContent = "<div><h1>완전히 새로운 내용</h1></div>";
+        List<String> newImageLinks = List.of(
+            "https://cdn.example.com/new1.jpg",
+            "https://cdn.example.com/new2.jpg",
+            "https://cdn.example.com/new3.jpg"
+        );
+
+        var updateCommand = AdminNoticeUpdateCommand.builder()
+            .adminId(testAdminId)
+            .noticeId(createdNotice.id())
+            .title(newTitle)
+            .content(newContent)
+            .cdnImageLinks(newImageLinks)
+            .build();
+
+        // when
+        NoticeInfo result = sut.updateAdminNotification(updateCommand);
+
+        // then - 모든 필드가 업데이트되었는지 확인
+        assertThat(result.title()).isEqualTo(newTitle);
+        assertThat(result.content()).isEqualTo(newContent);
+        assertThat(result.imageLinks()).hasSize(3);
+        assertThat(result.imageLinks()).containsExactlyElementsOf(newImageLinks);
+
+        // DB 확인
+        em.flush();
+        em.clear();
+        Notice updatedNotice = notificationRepository.findById(createdNotice.id()).orElseThrow();
+        assertThat(updatedNotice.getTitle()).isEqualTo(newTitle);
+        assertThat(updatedNotice.getContent()).isEqualTo(newContent);
+
+        List<String> savedImageLinks = objectMapper.readValue(
+            updatedNotice.getImageLinks(),
+            new TypeReference<List<String>>() {}
+        );
+        assertThat(savedImageLinks).containsExactlyElementsOf(newImageLinks);
     }
 
 }
