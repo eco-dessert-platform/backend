@@ -39,6 +39,12 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
+    public Map<Object, Object> getMap(String namespace, String key) {
+        String multiKey = namespace + ":" + key;
+        return redisTemplate.opsForHash().entries(multiKey);
+    }
+
+    @Override
     public String getString(String namespace, String key) {
         String multiKey = namespace + ":" + key;
         Object value = redisTemplate.opsForValue().get(multiKey);

@@ -12,6 +12,8 @@ public interface RedisRepository {
 
     List<String> getStringList(String namespace, String key);
 
+    Map<Object, Object> getMap(String namespace, String key);
+
     void set(String namespace, String key, String... values);
 
     void setStringList(String namespace, Map<String, List<String>> values);
