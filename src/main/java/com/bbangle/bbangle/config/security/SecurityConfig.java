@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,11 +30,12 @@ public class SecurityConfig {
 
     private final TokenProvider tokenProvider;
 
+    @Profile("!local")
     @Bean
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/**")
+            .securityMatcher("/**")
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(
@@ -51,6 +53,29 @@ public class SecurityConfig {
                 .requestMatchers(SellerApiPath.ANY_METHOD).hasAuthority(ROLE_SELLER.getRole()) // Seller API
                 .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                 .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
+                .anyRequest().permitAll())
+            .exceptionHandling(exp ->
+                exp.defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    new AntPathRequestMatcher("/api/**")
+                )
+            );
+        return http.build();
+    }
+
+    @Profile("local")
+    @Bean
+    @Order(2)
+    public SecurityFilterChain localApiFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/**")
+            .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(
+                new TokenAuthenticationFilter(tokenProvider),
+                UsernamePasswordAuthenticationFilter.class
+            )
+            .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll())
             .exceptionHandling(exp ->
                 exp.defaultAuthenticationEntryPointFor(
