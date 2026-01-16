@@ -58,8 +58,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private Map<String, Object> createUserInfo(Long id, Role role, CertificationStatus status) {
         return Map.of(
             "id", id,
-            "Role", role,
-            "Status", status
+            "role", role,
+            "status", status.getDescription()
         );
     }
 }
