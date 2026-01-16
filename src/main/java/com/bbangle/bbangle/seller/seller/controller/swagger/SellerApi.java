@@ -21,7 +21,59 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Seller", description = "(판매자) 판매자 API")
 public interface SellerApi {
 
-    @Operation(summary = "(판매자) 판매자 서류 등록")
+    @Operation(
+        summary = "(판매자) 판매자 서류 등록",
+        description = """
+            판매자 입점에 필요한 서류를 등록합니다.
+            - 사업자 등록증
+            - 통신판매업 신고증
+            - 개인명의 통장 사본
+            - 즉석식품제조가공업 & 식품제조업 등록증
+            - 계좌인증 ID
+            
+            모든 서류는 필수이며, 이미지(jpg, jpeg, png) 또는 PDF 형식으로 업로드 가능합니다.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "서류 등록 성공",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success": true,
+                            "code": 0,
+                            "message": "SUCCESS",
+                            "list": [
+                                {
+                                    "sellerDocumentId": 1,
+                                    "sellerId": 1,
+                                    "url": "https://s3.amazonaws.com/bbangle/documents/business_license.pdf",
+                                    "documentName": "business_license.pdf",
+                                    "documentType": "BUSINESS_REGISTRATION_CERTIFICATE",
+                                    "status": "PENDING",
+                                    "createdAt": "2024-01-14T10:30:00"
+                                },
+                                {
+                                    "sellerDocumentId": 2,
+                                    "sellerId": 1,
+                                    "url": "https://s3.amazonaws.com/bbangle/documents/mail_order.pdf",
+                                    "documentName": "mail_order.pdf",
+                                    "documentType": "MAIL_ORDER_SALES_REPORT",
+                                    "status": "PENDING",
+                                    "createdAt": "2024-01-14T10:30:00"
+                                }
+                            ]
+                        }
+                        """
+                )
+            )
+        )
+    })
     CommonResult registerDocuments(
         SellerDocumentsRegisterRequest request,
         Long sellerId

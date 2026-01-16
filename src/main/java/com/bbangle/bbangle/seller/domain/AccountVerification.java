@@ -40,4 +40,12 @@ public class AccountVerification extends BaseEntity {
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
+    public AccountVerification(String bankName, String accountNumber, String accountHolder, boolean verified,
+                               Seller seller) {
+        this.bankName = bankName;
+        this.accountNumber = accountNumber;
+        this.accountHolder = accountHolder;
+        this.verified = verified;
+        this.seller = seller;
+    }
 }

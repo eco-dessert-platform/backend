@@ -37,11 +37,10 @@ public class SellerController implements SellerApi {
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
-        @ModelAttribute SellerDocumentsRegisterRequest request,
+        @Valid @ModelAttribute SellerDocumentsRegisterRequest request,
         @AuthenticationPrincipal Long sellerId
     ) {
-        // TODO: 구현 필요
-        return responseService.getSuccessResult();
+        return responseService.getListResult(sellerFacade.registerDocuments(request.toCommand(sellerId)));
     }
 
 

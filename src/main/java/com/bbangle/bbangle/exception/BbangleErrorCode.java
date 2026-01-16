@@ -83,7 +83,7 @@ public enum BbangleErrorCode {
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
-            HttpStatus.INTERNAL_SERVER_ERROR),
+        HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_INITIALIZATION_ERROR(-997, "Firebase 초기화 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FCM_CONNECTION_ERROR(-998, "FCM 서버 요청 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -97,8 +97,15 @@ public enum BbangleErrorCode {
     INVALID_CERTIFICATION_STATUS(-705, "승인 상태가 비어 있습니다.", BAD_REQUEST),
     INVALID_PROFILE(-706, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST),
     SELLER_CREATION_FAILED(-708, "Seller 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    ORDER_NOT_FOUND(-709, "존재하지 않는 주문입니다.", NOT_FOUND),
-    ORDER_ITEM_NOT_FOUND(-710, "존재하지 않는 주문상품입니다.", NOT_FOUND),
+    SELLER_DOCUMENT_NAME_REQUIRED(-709, "서류 파일명은 필수입니다.", BAD_REQUEST),
+    SELLER_DOCUMENT_URL_REQUIRED(-710, "서류 URL은 필수입니다.", BAD_REQUEST),
+    SELLER_DOCUMENT_TYPE_REQUIRED(-711, "서류 타입은 필수입니다.", BAD_REQUEST),
+    INVALID_DOCUMENT_FILE_EXTENSION(-712, "서류 파일은 jpg, jpeg, png, pdf 형식만 가능합니다.", BAD_REQUEST),
+    SELLER_NOT_FOUND(-713, "존재하지 않는 판매자입니다.", NOT_FOUND),
+    ACCOUNT_VERIFICATION_NOT_FOUND(-714, "존재하지 않는 인증정보입니다.", NOT_FOUND),
+    ACCOUNT_NOT_VERIFIED(-715, "인증되지 않은 계좌입니다.", BAD_REQUEST),
+    ORDER_NOT_FOUND(-716, "존재하지 않는 주문입니다.", NOT_FOUND),
+    ORDER_ITEM_NOT_FOUND(-717, "존재하지 않는 주문상품입니다.", NOT_FOUND),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
@@ -115,8 +122,8 @@ public enum BbangleErrorCode {
     MISSING_NAME_NICKNAME(-745, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
 
     // NOTICE Error(761~770)
-    TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.",BAD_REQUEST),
-    CONTENT_IS_EMPTY(-762, "본문이 존재하지 않습니다.",BAD_REQUEST),
+    TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),
+    CONTENT_IS_EMPTY(-762, "본문이 존재하지 않습니다.", BAD_REQUEST),
     ADMIN_NOTICE_CREATION_FAILED(-763, "공지사항 생성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_URL_COUNT(-764, "원본 src 개수와 CDN URL 개수가 일치하지 않아 변환을 수행할 수 없습니다.", BAD_REQUEST),
     IMAGE_COUNT_MISMATCH(-765, "이미지 파일 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
@@ -131,17 +138,17 @@ public enum BbangleErrorCode {
 
     public static BbangleErrorCode of(int code) {
         return Stream.of(BbangleErrorCode.values())
-                .filter(message -> message.getCode() == code)
-                .findFirst()
-                .orElseThrow(BbangleException::new);
+            .filter(message -> message.getCode() == code)
+            .findFirst()
+            .orElseThrow(BbangleException::new);
     }
 
     public static BbangleErrorCode of(String message) {
         return Stream.of(BbangleErrorCode.values())
-                .filter(error -> error.getMessage()
-                        .equals(message))
-                .findFirst()
-                .orElseThrow(BbangleException::new);
+            .filter(error -> error.getMessage()
+                .equals(message))
+            .findFirst()
+            .orElseThrow(BbangleException::new);
     }
 
 
