@@ -2,6 +2,8 @@ package com.bbangle.bbangle.order.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
@@ -14,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
+import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -34,15 +37,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+@ActiveProfiles("test")
 @DisplayName("[컨트롤러] SellerOrderController")
 @Import({
     TestSlackAdaptorConfig.class,
     JsonDataEncoder.class,
     TokenProvider.class,
     TestJwtPropertiesConfig.class,
-    ResponseService.class
+    ResponseService.class,
+    SecurityConfig.class
 })
 @WebMvcTest(controllers = SellerOrderController.class)
 class SellerOrderControllerSliceTest {
@@ -126,7 +132,7 @@ class SellerOrderControllerSliceTest {
         then(sellerOrderService).should(times(1)).confirmOrder(any());
         then(globalControllerAdvice).should(times(1))
             .handleBbangleException(any(HttpServletRequest.class), any(BbangleException.class));
-        then(responseService).should(times(1)).getFailResult(any(), any());
+        then(responseService).should(times(1)).getFailResult(anyString(), anyInt());
     }
 
     @DisplayName("발주 확인 API - 실패(orderItemIds 비어있음 -> validation 400)")
@@ -144,6 +150,6 @@ class SellerOrderControllerSliceTest {
             .andExpect(status().is4xxClientError());
 
         // validation에서 막히면 service 호출 안 되는 게 정상
-        then(sellerOrderService).should(times(0)).confirmOrder(any());
+        then(sellerOrderService).shouldHaveNoInteractions();
     }
 }
