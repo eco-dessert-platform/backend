@@ -20,7 +20,7 @@ public record SellerInfoRedisDTO(
                 CertificationStatus.fromDescription(map.get("status").toString())
             );
         } catch (Exception e) {
-            throw new BbangleException(BbangleErrorCode.UNAUTHORIZED);
+            throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
         }
     }
 }

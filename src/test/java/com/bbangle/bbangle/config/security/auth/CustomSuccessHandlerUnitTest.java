@@ -87,8 +87,8 @@ class CustomSuccessHandlerUnitTest {
         Map<String, Object> value = mapCaptor.getValue();
         assertThat(value)
             .containsEntry("id", 1L)
-            .containsEntry("Role", Role.ROLE_SELLER)
-            .containsEntry("Status", CertificationStatus.NEW);
+            .containsEntry("role", Role.ROLE_SELLER)
+            .containsEntry("status", CertificationStatus.NEW.getDescription());
 
         // redirect 검증
         ArgumentCaptor<String> redirectCaptor = ArgumentCaptor.forClass(String.class);

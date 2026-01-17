@@ -36,17 +36,12 @@ public class OAuth2SellerFacade {
         }
     }
 
-    // TODO : Test
     public GenerateTokenResponse generateToken(String code) {
 
-        // 1. Redis에서 Seller 정보 가져오기
         SellerInfoRedisDTO sellerInfo = oAuthSellerService.getSellerInfoFromRedis(code);
-
-        // 2. Seller 정보를 통해 Token 생성
         String refreshToken = oAuthSellerService.generateRefreshToken(sellerInfo.id(), sellerInfo.role());
         String accessToken = oAuthSellerService.generateAccessToken(sellerInfo.id(), sellerInfo.role());
 
-        // 3. DTO를 생성하여 전달
         return GenerateTokenResponse.of(
             refreshToken,
             accessToken,

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public static final Duration TEMP_CODE_TTL = Duration.ofMinutes(5);
+    public static final String OAUTH_CODE_NAMESPACE = "oauth2:code";
 
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final RedisRepository redisRepository;
@@ -39,7 +40,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         try {
             redisRepository.setFromMap(
-                "oauth2:code",
+                OAUTH_CODE_NAMESPACE,
                 uuid.toString(),
                 createUserInfo(oAuth2User.id(), oAuth2User.role(), oAuth2User.status()),
                 TEMP_CODE_TTL

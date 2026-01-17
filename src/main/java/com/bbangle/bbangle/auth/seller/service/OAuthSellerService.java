@@ -14,11 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO : Test
 @Service
 @RequiredArgsConstructor
 public class OAuthSellerService {
 
+    public static final String OAUTH_CODE_NAMESPACE = "oauth2:code";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
 
@@ -27,10 +27,10 @@ public class OAuthSellerService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public SellerInfoRedisDTO getSellerInfoFromRedis(String code) {
-        Map<Object, Object> sellerInfo = redisRepository.getMap("oauth2:code", code);
-        if (sellerInfo == null || sellerInfo.isEmpty()) throw new BbangleException(BbangleErrorCode.UNAUTHORIZED);
+        Map<Object, Object> sellerInfo = redisRepository.getMap(OAUTH_CODE_NAMESPACE, code);
+        if (sellerInfo == null || sellerInfo.isEmpty()) throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
 
-        redisRepository.delete("oauth2:code", code);
+        redisRepository.delete(OAUTH_CODE_NAMESPACE, code);
 
         return SellerInfoRedisDTO.fromMap(sellerInfo);
     }

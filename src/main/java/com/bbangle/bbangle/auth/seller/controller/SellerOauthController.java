@@ -7,6 +7,8 @@ import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +33,9 @@ public class SellerOauthController implements SellerOauthApi {
     @Override
     @GetMapping("/tokens")
     public SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestParam("generateToken") String code
+        @RequestParam(value = "generateToken", defaultValue = "") String code
     ) {
+        if (code.isBlank()) throw new BbangleException(BbangleErrorCode._BAD_REQUEST);
         // TODO : Test
         return responseService.getSingleResult(oAuth2SellerFacade.generateToken(code));
     }

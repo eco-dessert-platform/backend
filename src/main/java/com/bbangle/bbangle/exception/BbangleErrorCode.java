@@ -82,6 +82,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    _BAD_REQUEST(-994, "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
             HttpStatus.INTERNAL_SERVER_ERROR),
     JSON_SERIALIZATION_ERROR(-996, "json 변환 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -111,7 +112,7 @@ public enum BbangleErrorCode {
     INVALID_REFRESH_TOKEN(-743, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
     NOT_SUPPORTED_SERVER(-744, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
     MISSING_NAME_NICKNAME(-745, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    UNAUTHORIZED(-746, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    _UNAUTHORIZED(-746, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.",BAD_REQUEST),
