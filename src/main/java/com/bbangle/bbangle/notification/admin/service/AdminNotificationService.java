@@ -103,7 +103,7 @@ public class AdminNotificationService {
 
     @Transactional(readOnly = true)
     public NoticeInfo searchNotification(Long adminId,Long noticeId){
-        Notice notice = notificationRepository.findByIdAndAdminId(adminId,noticeId)
+        Notice notice = notificationRepository.findByIdAndAdminId(noticeId,adminId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
         return NoticeInfo.from(notice);
     }
