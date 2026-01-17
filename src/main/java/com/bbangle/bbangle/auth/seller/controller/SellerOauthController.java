@@ -36,7 +36,7 @@ public class SellerOauthController implements SellerOauthApi {
         @RequestParam(value = "generateToken", defaultValue = "") String code
     ) {
         if (code.isBlank()) throw new BbangleException(BbangleErrorCode._BAD_REQUEST);
-        // TODO : Test
+
         return responseService.getSingleResult(oAuth2SellerFacade.generateToken(code));
     }
 }
