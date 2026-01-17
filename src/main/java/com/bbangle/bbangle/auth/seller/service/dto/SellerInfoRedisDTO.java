@@ -19,7 +19,7 @@ public record SellerInfoRedisDTO(
                 Role.from(map.get("role").toString()),
                 CertificationStatus.fromDescription(map.get("status").toString())
             );
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
         }
     }

@@ -48,7 +48,7 @@ public class OAuthSellerService {
             ));
 
         token.update(refreshToken);
-        // UNIQUE 충돌을 방지하기 위해 Redis 분산 락?
+
         refreshTokenRepository.save(token);
 
         return refreshToken;
