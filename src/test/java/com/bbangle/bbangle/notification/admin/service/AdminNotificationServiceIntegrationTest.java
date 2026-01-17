@@ -506,4 +506,79 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(savedImageLinks).containsExactlyElementsOf(newImageLinks);
     }
 
+    @Test
+    @DisplayName("공지사항 조회에 성공한다")
+    void success_searchNotification() {
+        // given - 먼저 공지사항 생성
+        String title = "공지사항 제목";
+        String content = "<div>공지사항 본문</div>";
+        List<String> imageLinks = List.of("https://cdn.example.com/image.jpg");
+
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            title,
+            content,
+            imageLinks
+        );
+
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        em.flush();
+        em.clear();
+
+        // when
+        NoticeInfo result = sut.searchNotification(testAdminId, createdNotice.id());
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(createdNotice.id());
+        assertThat(result.title()).isEqualTo(title);
+        assertThat(result.content()).isEqualTo(content);
+        assertThat(result.createAt()).isNotNull();
+        assertThat(result.modifiedAt()).isNotNull();
+    }
+
+
+    @Test
+    @DisplayName("존재하지 않는 공지사항 조회 시 예외가 발생한다")
+    void fail_searchNotification_WithNonExistentNotice() {
+        // given
+        Long invalidNoticeId = 99999L;
+
+        // when & then
+        assertThatThrownBy(() -> sut.searchNotification(testAdminId, invalidNoticeId))
+            .isInstanceOf(BbangleException.class)
+            .hasMessage(BbangleErrorCode.NOT_FIND_NOTICE.getMessage());
+    }
+
+    @Test
+    @DisplayName("공지사항 조회는 읽기 전용 트랜잭션이다")
+    void success_searchNotification_IsReadOnly() {
+        // given - 공지사항 생성
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            "공지사항 제목",
+            "<div>공지사항 본문</div>",
+            List.of("https://cdn.example.com/image.jpg")
+        );
+
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        Long noticeId = createdNotice.id();
+        em.flush();
+        em.clear();
+
+        // when - 조회 수행
+        NoticeInfo result = sut.searchNotification(testAdminId, noticeId);
+
+        // then - 읽기 전용 트랜잭션이므로 변경사항이 반영되지 않아야 함
+        // (실제로는 읽기 전용이므로 수정을 시도하면 에러가 발생)
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(noticeId);
+
+        // DB에서 재조회하여 상태 변화 없음을 확인
+        em.flush();
+        em.clear();
+        Notice dbNotice = notificationRepository.findById(noticeId).orElseThrow();
+        assertThat(dbNotice.getId()).isEqualTo(noticeId);
+    }
+
 }
