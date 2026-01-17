@@ -100,4 +100,11 @@ public class AdminNotificationService {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }
     }
+
+    @Transactional(readOnly = true)
+    public NoticeInfo searchNotification(Long adminId,Long noticeId){
+        Notice notice = notificationRepository.findByIdAndAdminId(adminId,noticeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
+        return NoticeInfo.from(notice);
+    }
 }
