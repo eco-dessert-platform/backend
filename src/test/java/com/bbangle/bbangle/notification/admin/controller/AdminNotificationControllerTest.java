@@ -17,6 +17,7 @@ import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.facade.AdminNotificationFacade;
+import com.bbangle.bbangle.notification.admin.service.AdminNotificationService;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +58,8 @@ public class AdminNotificationControllerTest {
     @MockBean
     private AdminNotificationFacade adminNotificationFacade;
 
+    @MockBean
+    private AdminNotificationService adminNotificationService;
 
     @Test
     @WithMockUser(roles = "ADMIN")
