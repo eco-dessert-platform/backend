@@ -13,7 +13,6 @@ import com.bbangle.bbangle.notification.admin.service.AdminNotificationService;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import jakarta.validation.Valid;
 import java.util.List;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -60,14 +59,12 @@ public class AdminNotificationController implements AdminNotificationApi {
         return responseService.getSingleResult(response);
     }
 
-
-
     @GetMapping(value = "/{noticeId}")
     @Override
     public SingleResult<AdminNotificationSearchResponse> searchNotification(@AuthenticationPrincipal Long adminId,
                                                                             @PathVariable Long noticeId) {
 
-        NoticeInfo noticeInfo = adminNotificationService.searchNotification(adminId,noticeId);
+        NoticeInfo noticeInfo = adminNotificationService.searchNotification(adminId, noticeId);
         return responseService.getSingleResult(AdminNotificationSearchResponse.from(noticeInfo));
     }
 }
