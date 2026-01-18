@@ -75,7 +75,7 @@ public enum BbangleErrorCode {
     NOT_VALID_INDEX(-58, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INPUT_STREAM_NOT_CLOSE(-59, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_REMOVE_PRODUCTS_REQUEST(-60, "옵션 전체삭제가 아닌경우 옵션 ID가 하나라도 있어야합니다.", BAD_REQUEST),
-
+    INVALID_STOCK_AMOUNT(-61, "재고 수량은 0이상이여야 합니다.", BAD_REQUEST),
     NOT_FOUND_OPTION(-62, "존재하지 않는 상품 옵션입니다", NOT_FOUND),
     INVALID_DECREASE_STOCK_AMOUNT(-63, "감소하려는 수보다 현재 재고가 더 작습니다.", BAD_REQUEST),
     //AWS Error (600)
