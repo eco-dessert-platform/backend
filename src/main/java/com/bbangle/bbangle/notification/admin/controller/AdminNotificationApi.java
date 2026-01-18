@@ -1,14 +1,16 @@
 package com.bbangle.bbangle.notification.admin.controller;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.Map;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Notification", description = "(관리자) 공지사항 API")
@@ -28,4 +30,8 @@ public interface AdminNotificationApi {
         AdminNotificationUpdateRequest request,
         List<MultipartFile> profileImage
     );
+
+    @Operation(summary = "(관리자) 공지사항 조회")
+    SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(
+        Pageable pageable);
 }
