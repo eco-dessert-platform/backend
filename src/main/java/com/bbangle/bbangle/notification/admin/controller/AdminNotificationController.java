@@ -17,7 +17,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -66,7 +65,7 @@ public class AdminNotificationController implements AdminNotificationApi {
 
     @GetMapping
     @Override
-    public SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(@PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Direction.DESC)
+    public SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(@PageableDefault(size = 10, page = 0)
                                                                                                  Pageable pageable) {
 
         Page<NoticeInfo> result = adminNotificationService.searchNotice(pageable);

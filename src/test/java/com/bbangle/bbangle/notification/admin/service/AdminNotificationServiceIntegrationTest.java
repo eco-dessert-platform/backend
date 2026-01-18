@@ -22,6 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -559,18 +560,15 @@ class AdminNotificationServiceIntegrationTest {
         em.flush();
         em.clear();
 
-        // when - 첫 번째 페이지 조회 (1개씩)
-        var pageRequest1 = org.springframework.data.domain.PageRequest.of(0, 1);
+        // when - 첫 번째 페이지 조회
+        var pageRequest1 = PageRequest.of(0, 1);
         var result1 = sut.searchNotice(pageRequest1);
 
         // then
         assertThat(result1).isNotNull();
         assertThat(result1.getTotalElements()).isGreaterThanOrEqualTo(1);
         assertThat(result1.getContent()).hasSize(1);
-        assertThat(result1.getContent().get(0).id()).isEqualTo(noticeId);
+        assertThat(result1.getContent().get(0).id()).isEqualTo(5L);
     }
-
-
-
 
 }

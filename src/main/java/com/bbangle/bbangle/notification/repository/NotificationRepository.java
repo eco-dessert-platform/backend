@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface NotificationRepository extends JpaRepository<Notice, Long>, NotificationQueryDSLRepository {
 
-    @Query("SELECT n FROM Notice n")
+    @Query("SELECT n FROM Notice n ORDER BY n.createdAt DESC")
     Page<Notice> searchNoticeAll(Pageable pageable);
 
 }
