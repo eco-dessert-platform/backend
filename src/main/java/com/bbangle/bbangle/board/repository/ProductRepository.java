@@ -20,4 +20,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
         """)
     void softDeleteByBoardIds(@Param("boardIds") List<Long> boardIds);
 
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE Product p
+            SET p.isDeleted = true
+            WHERE p.board.id = :boardId
+        """)
+    void softDeleteByBoardId(@Param("boardId") Long boardId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE Product p
+            SET p.isDeleted = true
+            WHERE p.id IN :productIds
+        """)
+    void softDeleteByProductIds(@Param("productIds") List<Long> productIds);
 }
