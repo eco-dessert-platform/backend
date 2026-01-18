@@ -108,6 +108,9 @@ public class Product extends SoftDeleteBaseEntity {
     @Column(name = "order_end_date")
     private LocalDateTime orderEndDate;
 
+    @Column(name = "is_deleted", columnDefinition = "tinyint")
+    private boolean isDeleted;
+
     @NotNull
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private boolean soldout;
@@ -148,6 +151,7 @@ public class Product extends SoftDeleteBaseEntity {
         this.sunday = sunday;
         this.nutrition = nutrition;
         this.soldout = false;
+        this.isDeleted = false;
     }
 
     private void validate(String title,
