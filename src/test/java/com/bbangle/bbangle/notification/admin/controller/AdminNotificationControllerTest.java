@@ -35,6 +35,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @DisplayName("[컨트롤러 테스트] AdminNotificationController")
 @WebMvcTest(controllers = AdminNotificationController.class)
@@ -285,5 +288,90 @@ public class AdminNotificationControllerTest {
 
         // Facade 호출 검증
         verify(adminNotificationFacade).createNotice(eq(adminId), any(AdminNotificationCreateRequest.class), anyList());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("공지사항 목록 조회에 성공한다")
+    void success_searchNotification_WithValidAdmin() throws Exception {
+        // given
+        List<NoticeInfo> mockNotices = List.of(
+            NoticeInfo.builder()
+                .id(1L)
+                .title("공지사항 1")
+                .content("<div>내용 1</div>")
+                .imageLinks(List.of())
+                .createAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build(),
+            NoticeInfo.builder()
+                .id(2L)
+                .title("공지사항 2")
+                .content("<div>내용 2</div>")
+                .imageLinks(List.of("https://cdn.example.com/image.jpg"))
+                .createAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build()
+        );
+
+        Page<NoticeInfo> mockPage = new PageImpl<>(mockNotices, PageRequest.of(0, 10), 2);
+        when(adminNotificationService.searchNotice(any())).thenReturn(mockPage);
+
+        // when & then
+        mockMvc.perform(
+                MockMvcRequestBuilders.get(AdminApiPath.PREFIX + "/notifications")
+                    .param("page", "0")
+                    .param("size", "10")
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        // Service 호출 검증
+        verify(adminNotificationService).searchNotice(any());
+    }
+
+    @Test
+    @DisplayName("공지사항 목록 조회 시 인증 없으면 실패한다 (401 Unauthorized)")
+    void searchNotification_Fails_WithoutAuthentication() throws Exception {
+        // when & then - 로그인하지 않은 사용자
+        mockMvc.perform(
+                MockMvcRequestBuilders.get(AdminApiPath.PREFIX + "/notifications")
+                    .param("page", "0")
+                    .param("size", "10")
+            )
+            .andDo(print())
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("공지사항 목록 조회 시 페이징이 올바르게 작동한다")
+    void success_searchNotification_WithPagination() throws Exception {
+        // given
+        List<NoticeInfo> mockNotices = List.of(
+            NoticeInfo.builder()
+                .id(1L)
+                .title("공지사항 1")
+                .content("<div>내용 1</div>")
+                .imageLinks(List.of())
+                .createAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build()
+        );
+
+        Page<NoticeInfo> mockPage = new PageImpl<>(mockNotices, PageRequest.of(1, 10), 25);
+        when(adminNotificationService.searchNotice(any())).thenReturn(mockPage);
+
+        // when & then
+        mockMvc.perform(
+                MockMvcRequestBuilders.get(AdminApiPath.PREFIX + "/notifications")
+                    .param("page", "1")
+                    .param("size", "10")
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        // Service 호출 검증
+        verify(adminNotificationService).searchNotice(any());
     }
 }

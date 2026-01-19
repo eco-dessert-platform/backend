@@ -7,7 +7,6 @@ import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeCreateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeUpdateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -504,6 +504,71 @@ class AdminNotificationServiceIntegrationTest {
             new TypeReference<List<String>>() {}
         );
         assertThat(savedImageLinks).containsExactlyElementsOf(newImageLinks);
+    }
+
+    @Test
+    @DisplayName("공지사항 조회에 성공한다")
+    void success_searchNotice() {
+        // given - 공지사항 생성
+        String title = "검색 테스트 공지사항";
+        String content = "<div>검색 테스트 내용</div>";
+        List<String> imageLinks = List.of("https://cdn.example.com/test-image.jpg");
+
+        var createCommand = new AdminNoticeCreateCommand(
+            testAdminId,
+            title,
+            content,
+            imageLinks
+        );
+        NoticeInfo createdNotice = sut.createAdminNotification(createCommand);
+        Long noticeId = createdNotice.id();
+        em.flush();
+        em.clear();
+
+        // when
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        var result = sut.searchNotice(pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).id()).isEqualTo(noticeId);
+        assertThat(result.getContent().get(0).title()).isEqualTo(title);
+        assertThat(result.getContent().get(0).content()).isEqualTo(content);
+        // 조회 시에는 imageLinks가 본문에 포함되어있어 빈 리스트로 반환됨
+        assertThat(result.getContent().get(0).imageLinks()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("공지사항 조회 시 페이징이 올바르게 작동한다")
+    void success_searchNotice_WithPagination() {
+        // given - 여러 공지사항 생성
+        Long noticeId = null;
+        for (int i = 0; i < 5; i++) {
+            var createCommand = new AdminNoticeCreateCommand(
+                testAdminId,
+                "공지사항 " + i,
+                "<div>내용 " + i + "</div>",
+                List.of()
+            );
+            NoticeInfo created = sut.createAdminNotification(createCommand);
+            if (i == 0) {
+                noticeId = created.id();
+            }
+        }
+        em.flush();
+        em.clear();
+
+        // when - 첫 번째 페이지 조회
+        var pageRequest1 = PageRequest.of(0, 1);
+        var result1 = sut.searchNotice(pageRequest1);
+
+        // then
+        assertThat(result1).isNotNull();
+        assertThat(result1.getTotalElements()).isGreaterThanOrEqualTo(1);
+        assertThat(result1.getContent()).hasSize(1);
+        assertThat(result1.getContent().get(0).id()).isEqualTo(5L);
     }
 
 }

@@ -3,10 +3,8 @@ package com.bbangle.bbangle.notification.admin.service;
 
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
-import com.bbangle.bbangle.common.service.HtmlContentProcessor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeCreateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeUpdateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
@@ -15,10 +13,10 @@ import com.bbangle.bbangle.notification.repository.NotificationRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,5 +97,11 @@ public class AdminNotificationService {
         } catch (JsonProcessingException e) {
             throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoticeInfo> searchNotice(Pageable pageable) {
+        Page<Notice> notice = notificationRepository.searchNoticeAll(pageable);
+        return notice.map(NoticeInfo::from);
     }
 }
