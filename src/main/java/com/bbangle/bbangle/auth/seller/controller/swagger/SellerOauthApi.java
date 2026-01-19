@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -95,6 +96,8 @@ public interface SellerOauthApi {
         """
     )
     SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestParam("generateToken") String code
+        @RequestParam(value = "generateToken", required = false)
+        @NotBlank(message = "generateToken은 필수입니다.")
+        String code
     );
 }

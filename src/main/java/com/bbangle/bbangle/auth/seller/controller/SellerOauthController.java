@@ -7,9 +7,9 @@ import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(SellerApiPath.PREFIX + "/oauth2")
+@Validated
 public class SellerOauthController implements SellerOauthApi {
 
     private final ResponseService responseService;
@@ -33,10 +34,10 @@ public class SellerOauthController implements SellerOauthApi {
     @Override
     @GetMapping("/tokens")
     public SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestParam(value = "generateToken", defaultValue = "") String code
+        @RequestParam(value = "generateToken", required = false)
+        @NotBlank(message = "generateToken은 필수입니다.")
+        String code
     ) {
-        if (code.isBlank()) throw new BbangleException(BbangleErrorCode._BAD_REQUEST);
-
         return responseService.getSingleResult(oAuth2SellerFacade.generateToken(code));
     }
 }
