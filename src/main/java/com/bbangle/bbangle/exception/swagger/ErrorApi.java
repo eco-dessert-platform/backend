@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -51,7 +50,7 @@ public interface ErrorApi {
 
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "400A",
+            responseCode = "400",
             description = "Bad Request Error",
             content = @Content(
                 schema = @Schema(implementation = CommonResult.class)
@@ -59,17 +58,6 @@ public interface ErrorApi {
         )
     })
     ResponseEntity<CommonResult> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex);
-
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "400B",
-            description = "Bad Request Error",
-            content = @Content(
-                schema = @Schema(implementation = CommonResult.class)
-            )
-        )
-    })
-    ResponseEntity<CommonResult> handleConstraintViolationException(ConstraintViolationException ex);
 
     @ApiResponses(value = {
         @ApiResponse(

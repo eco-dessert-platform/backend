@@ -14,10 +14,17 @@ public record SellerInfoRedisDTO(
 
     public static SellerInfoRedisDTO fromMap(Map<Object, Object> map) {
         try {
+            Object id = map.get("id");
+            Object role = map.get("role");
+            Object status = map.get("status");
+
+            if (id == null || role == null || status == null)
+                throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
+
             return new SellerInfoRedisDTO(
-                Long.valueOf(map.get("id").toString()),
-                Role.from(map.get("role").toString()),
-                CertificationStatus.fromDescription(map.get("status").toString())
+                Long.valueOf(id.toString()),
+                Role.from(role.toString()),
+                CertificationStatus.fromDescription(status.toString())
             );
         } catch (IllegalArgumentException e) {
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);

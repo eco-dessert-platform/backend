@@ -73,7 +73,6 @@ public class GlobalControllerAdvice implements ErrorApi {
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
     }
 
-    @Override
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<CommonResult> handleConstraintViolationException(
         ConstraintViolationException ex
