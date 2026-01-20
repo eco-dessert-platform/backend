@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
-import com.bbangle.bbangle.auth.seller.service.dto.SellerInfoRedisDTO;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
@@ -38,7 +38,7 @@ public class OAuth2SellerFacade {
 
     public GenerateTokenResponse generateToken(String code) {
 
-        SellerInfoRedisDTO sellerInfo = oAuthSellerService.getSellerInfoFromRedis(code);
+        OAuth2InfoRedisDTO sellerInfo = oAuthSellerService.getSellerInfoFromRedis(code);
         String refreshToken = oAuthSellerService.generateRefreshToken(sellerInfo.id(), sellerInfo.role());
         String accessToken = oAuthSellerService.generateAccessToken(sellerInfo.id(), sellerInfo.role());
 

@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.auth.seller.service;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
-import com.bbangle.bbangle.auth.seller.service.dto.SellerInfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
@@ -9,11 +9,12 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import java.time.Duration;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthSellerService {
@@ -26,13 +27,18 @@ public class OAuthSellerService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public SellerInfoRedisDTO getSellerInfoFromRedis(String code) {
-        Map<Object, Object> sellerInfo = redisRepository.getMap(OAUTH_CODE_NAMESPACE, code);
-        if (sellerInfo == null || sellerInfo.isEmpty()) throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
+    public OAuth2InfoRedisDTO getSellerInfoFromRedis(String code) {
+        OAuth2InfoRedisDTO sellerInfo;
+        try {
+            sellerInfo = redisRepository.getDTOAndDelete(OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class);
+        } catch (Exception e) {
+            log.warn("Redis 조회/삭제 실패. namespace={}, code={} : ",OAUTH_CODE_NAMESPACE, code, e);
+            throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
+        }
 
-        redisRepository.delete(OAUTH_CODE_NAMESPACE, code);
+        if (sellerInfo == null) throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
 
-        return SellerInfoRedisDTO.fromMap(sellerInfo);
+        return sellerInfo;
     }
 
     @Transactional

@@ -7,14 +7,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
-import com.bbangle.bbangle.auth.seller.service.dto.SellerInfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,23 +46,27 @@ class OAuthSellerServiceUnitTest {
     void success_getSellerInfoFromRedis() {
 
         // given
-        Map<Object, Object> sellerInfo = Map.of(
-            "id", 1L,
-            "role", Role.ROLE_SELLER.getRole(),
-            "status", CertificationStatus.NEW.getDescription()
-        );
+        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .status(CertificationStatus.NEW)
+            .build();
 
-        given(redisRepository.getMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code")).willReturn(sellerInfo);
+        given(
+            redisRepository.getDTOAndDelete(
+                OAuthSellerService.OAUTH_CODE_NAMESPACE,
+                "code",
+                OAuth2InfoRedisDTO.class
+            )
+        ).willReturn(sellerInfo);
 
         // when
-        SellerInfoRedisDTO result = service.getSellerInfoFromRedis("code");
+        OAuth2InfoRedisDTO result = service.getSellerInfoFromRedis("code");
 
         // then
         assertThat(result.id()).isEqualTo(1L);
         assertThat(result.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(result.status()).isEqualTo(CertificationStatus.NEW);
-
-        verify(redisRepository).delete(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code");
     }
 
     @Test
@@ -71,7 +74,13 @@ class OAuthSellerServiceUnitTest {
     void failure_getSellerInfoFromRedis() {
 
         // given
-        given(redisRepository.getMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code")).willReturn(Map.of());
+        given(
+            redisRepository.getDTOAndDelete(
+                OAuthSellerService.OAUTH_CODE_NAMESPACE,
+                "code",
+                OAuth2InfoRedisDTO.class
+            )
+        ).willReturn(null);
 
         // when & then
         assertThatThrownBy(() -> service.getSellerInfoFromRedis("code"))

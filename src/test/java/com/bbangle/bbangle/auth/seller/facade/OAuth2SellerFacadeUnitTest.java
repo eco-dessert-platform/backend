@@ -9,9 +9,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
-import com.bbangle.bbangle.auth.seller.service.dto.SellerInfoRedisDTO;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -144,11 +144,11 @@ class OAuth2SellerFacadeUnitTest {
 
         // given
         String code = "authCode";
-        SellerInfoRedisDTO sellerInfo = new SellerInfoRedisDTO(
-            1L,
-            Role.ROLE_SELLER,
-            CertificationStatus.NEW
-        );
+        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .status(CertificationStatus.NEW)
+            .build();
 
         given(oAuthSellerService.getSellerInfoFromRedis(code)).willReturn(sellerInfo);
         given(oAuthSellerService.generateRefreshToken(1L, Role.ROLE_SELLER)).willReturn("refreshToken");

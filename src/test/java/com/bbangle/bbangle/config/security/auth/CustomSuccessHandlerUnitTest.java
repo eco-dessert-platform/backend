@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -18,7 +19,6 @@ import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,21 +74,20 @@ class CustomSuccessHandlerUnitTest {
 
         // then
         ArgumentCaptor<String> uuidCaptor = ArgumentCaptor.forClass(String.class);  //  UUID 값 저장
-        ArgumentCaptor<Map<String, Object>> mapCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<OAuth2InfoRedisDTO> dtoCaptor = ArgumentCaptor.forClass(OAuth2InfoRedisDTO.class);
 
-        verify(redisRepository).setFromMap(
+        verify(redisRepository).setFromDTO(
                 eq("oauth2:code"),
                 uuidCaptor.capture(),
-                mapCaptor.capture(),
+            dtoCaptor.capture(),
                 eq(CustomSuccessHandler.TEMP_CODE_TTL)
         );
 
         // Map 검증
-        Map<String, Object> value = mapCaptor.getValue();
-        assertThat(value)
-            .containsEntry("id", 1L)
-            .containsEntry("role", Role.ROLE_SELLER)
-            .containsEntry("status", CertificationStatus.NEW.getDescription());
+        OAuth2InfoRedisDTO value = dtoCaptor.getValue();
+        assertThat(value.id()).isEqualTo(1L);
+        assertThat(value.role()).isEqualTo(Role.ROLE_SELLER);
+        assertThat(value.status()).isEqualTo(CertificationStatus.NEW);
 
         // redirect 검증
         ArgumentCaptor<String> redirectCaptor = ArgumentCaptor.forClass(String.class);
@@ -117,7 +116,7 @@ class CustomSuccessHandlerUnitTest {
         RuntimeException originalEx = new RuntimeException("Redis Down");
         doThrow(originalEx)
             .when(redisRepository)
-            .setFromMap(any(), any(), any(), any());
+            .setFromDTO(any(), any(), any(), any());
 
         // when & then
         assertThatThrownBy(() ->

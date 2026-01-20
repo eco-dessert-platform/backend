@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
@@ -25,7 +26,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -185,13 +185,13 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // given
         String code = "oAuthCode";
-        Map<String, Object> sellerInfo = Map.of(
-            "id", 1L,
-            "role", Role.ROLE_SELLER.name(),
-            "status", CertificationStatus.NEW.getDescription()
-        );
+        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .status(CertificationStatus.NEW)
+            .build();
 
-        redisRepository.setFromMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
+        redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
 
         given(tokenProvider.generateToken(eq(1L), eq(Role.ROLE_SELLER), any()))
             .willReturn("mockToken");
@@ -205,7 +205,8 @@ class OAuth2SellerFacadeIntegrationTest {
         assertThat(response.accessToken()).isEqualTo("mockToken");
         assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
 
-        assertThat(redisRepository.getMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, code)).isEmpty();
+        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class))
+            .isNull();
 
         RefreshToken saved = refreshTokenRepository
             .findByUserIdAndUserRole(1L, Role.ROLE_SELLER)
@@ -220,52 +221,6 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // given
         String code = "invalidCode";
-
-        // when & then
-        assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
-            .isInstanceOf(BbangleException.class)
-            .satisfies(e -> {
-                BbangleException ex = (BbangleException) e;
-                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
-            });
-    }
-
-    @Test
-    @DisplayName("Redis에 저장된 Seller Info가 알 수 없는 Role이면 UNAUTHORIZED 예외를 던진다.")
-    void failure_generateToken_invalid_role() {
-
-        // given
-        String code = "oAuthCode";
-        Map<String, Object> sellerInfo = Map.of(
-            "id", 1L,
-            "role", "UNKNOWN_ROLE",
-            "status", CertificationStatus.NEW.getDescription()
-        );
-
-        redisRepository.setFromMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
-
-        // when & then
-        assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
-            .isInstanceOf(BbangleException.class)
-            .satisfies(e -> {
-                BbangleException ex = (BbangleException) e;
-                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
-            });
-    }
-
-    @Test
-    @DisplayName("Redis에 저장된 Seller Info가 알 수 없는 Status이면 UNAUTHORIZED 예외를 던진다.")
-    void failure_generateToken_invalid_status() {
-
-        // given
-        String code = "oAuthCode";
-        Map<String, Object> sellerInfo = Map.of(
-            "id", 1L,
-            "role", Role.ROLE_SELLER.name(),
-            "status", "Invalid"
-        );
-
-        redisRepository.setFromMap(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
 
         // when & then
         assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
