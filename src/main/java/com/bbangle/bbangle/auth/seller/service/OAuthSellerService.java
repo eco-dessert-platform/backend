@@ -46,7 +46,7 @@ public class OAuthSellerService {
         String refreshToken = tokenProvider.generateToken(sellerId, role, REFRESH_TOKEN_DURATION);
 
         RefreshToken token = refreshTokenRepository
-            .findByUserIdAndUserRoleForUpdate(sellerId, role)
+            .findByUserIdAndUserRole(sellerId, role)
             .orElseGet(() -> RefreshToken.create(
                 sellerId,
                 role,
