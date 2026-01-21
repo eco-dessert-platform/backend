@@ -97,7 +97,7 @@ class OAuthSellerServiceUnitTest {
         // given
         given(tokenProvider.generateToken(any(), any(), any())).willReturn("refreshToken");
 
-        given(refreshTokenRepository.findByUserIdAndUserRole(1L, Role.ROLE_SELLER))
+        given(refreshTokenRepository.findByUserIdAndUserRoleForUpdate(1L, Role.ROLE_SELLER))
             .willReturn(Optional.empty());
 
         // when
@@ -117,7 +117,7 @@ class OAuthSellerServiceUnitTest {
 
         given(tokenProvider.generateToken(any(), any(), any())).willReturn("newToken");
 
-        given(refreshTokenRepository.findByUserIdAndUserRole(1L, Role.ROLE_SELLER))
+        given(refreshTokenRepository.findByUserIdAndUserRoleForUpdate(1L, Role.ROLE_SELLER))
             .willReturn(Optional.of(existing));
 
         // when

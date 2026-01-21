@@ -32,7 +32,7 @@ public class OAuthSellerService {
         try {
             sellerInfo = redisRepository.getDTOAndDelete(OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class);
         } catch (Exception e) {
-            log.warn("Redis 조회/삭제 실패. namespace={}, code={} : ",OAUTH_CODE_NAMESPACE, code, e);
+            log.warn("Redis 조회/삭제 실패 : ", e);
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
         }
 
@@ -46,7 +46,7 @@ public class OAuthSellerService {
         String refreshToken = tokenProvider.generateToken(sellerId, role, REFRESH_TOKEN_DURATION);
 
         RefreshToken token = refreshTokenRepository
-            .findByUserIdAndUserRole(sellerId, role)
+            .findByUserIdAndUserRoleForUpdate(sellerId, role)
             .orElseGet(() -> RefreshToken.create(
                 sellerId,
                 role,

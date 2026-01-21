@@ -73,7 +73,7 @@ public class RedisTestConfig {
     }
 
     /**
-     * DTO용 RedisTemplate Value를 String으로 직렬화
+     * DTO용 RedisTemplate Value를 JSON으로 직렬화
      */
 
     @Bean(name = "dtoRedisTemplate")
