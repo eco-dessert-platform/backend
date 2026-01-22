@@ -11,6 +11,7 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.exception.swagger.ErrorApi;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,18 @@ public class GlobalControllerAdvice implements ErrorApi {
         CommonResult methodArgumentNotValidExceptionResult = responseService
             .getMethodArgumentNotValidExceptionResult(ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<CommonResult> handleConstraintViolationException(
+        ConstraintViolationException ex
+    ) {
+        log.error(ex.getMessage(), ex);
+        CommonResult constraintViolationExceptionResult = responseService
+            .getConstraintViolationExceptionResult(ex);
+
+        return ResponseEntity.badRequest()
+            .body(constraintViolationExceptionResult);
     }
 
     //아마존 S3 ACL 권한 설정 안했을 시 에러 발생

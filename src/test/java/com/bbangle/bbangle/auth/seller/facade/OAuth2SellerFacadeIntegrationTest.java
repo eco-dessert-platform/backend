@@ -1,13 +1,28 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 
+import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
+import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.OAuth2SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import jakarta.persistence.EntityManager;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +35,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +47,21 @@ class OAuth2SellerFacadeIntegrationTest {
 
     @Autowired
     OAuth2SellerFacade oAuth2SellerFacade;
+
     @Autowired
     OAuth2SellerRepository oAuth2SellerRepository;
+
+    @Autowired
+    RedisRepository redisRepository;
+
+    @Autowired
+    RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
     EntityManager em;
+
+    @MockBean
+    TokenProvider tokenProvider;
 
     @Test
     @DisplayName("판매자 계정이 없으면 새로 생성한다.")
@@ -150,5 +177,57 @@ class OAuth2SellerFacadeIntegrationTest {
         }
 
         assertThat(sellerIds).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("임시 코드로 토큰을 발급하고 RefreshToken을 DB에 저장한다.")
+    void success_generateToken() {
+
+        // given
+        String code = "oAuthCode";
+        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .status(CertificationStatus.NEW)
+            .build();
+
+        redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
+
+        given(tokenProvider.generateToken(eq(1L), eq(Role.ROLE_SELLER), any()))
+            .willReturn("mockToken");
+
+        // when
+        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+
+        // then
+        assertThat(response.sellerId()).isEqualTo(1L);
+        assertThat(response.refreshToken()).isEqualTo("mockToken");
+        assertThat(response.accessToken()).isEqualTo("mockToken");
+        assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
+
+        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class))
+            .isNull();
+
+        RefreshToken saved = refreshTokenRepository
+            .findByUserIdAndUserRole(1L, Role.ROLE_SELLER)
+            .orElseThrow();
+
+        assertThat(saved.getRefreshToken()).isEqualTo("mockToken");
+    }
+
+    @Test
+    @DisplayName("Redis에 임시 코드가 없으면 UNAUTHORIZED 예외를 던진다.")
+    void failure_generateToken_code_notFound() {
+
+        // given
+        String code = "invalidCode";
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
     }
 }

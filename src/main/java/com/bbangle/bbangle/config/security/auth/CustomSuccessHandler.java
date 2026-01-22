@@ -1,17 +1,15 @@
 package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public static final Duration TEMP_CODE_TTL = Duration.ofMinutes(5);
+    public static final String OAUTH_CODE_NAMESPACE = "oauth2:code";
 
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final RedisRepository redisRepository;
@@ -38,10 +37,14 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         UUID uuid = UUID.randomUUID();
 
         try {
-            redisRepository.setFromMap(
-                "oauth2:code",
+            redisRepository.setFromDTO(
+                OAUTH_CODE_NAMESPACE,
                 uuid.toString(),
-                createUserInfo(oAuth2User.id(), oAuth2User.role(), oAuth2User.status()),
+                OAuth2InfoRedisDTO.builder()
+                    .id(oAuth2User.id())
+                    .role(oAuth2User.role())
+                    .status(oAuth2User.status())
+                    .build(),
                 TEMP_CODE_TTL
             );
         } catch (Exception e) {
@@ -53,13 +56,5 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private String createRedirectUrl(UUID uuid) {
         return oauth2HandlerProperties.success() + "?generateToken=" + uuid;
-    }
-
-    private Map<String, Object> createUserInfo(Long id, Role role, CertificationStatus status) {
-        return Map.of(
-            "id", id,
-            "Role", role,
-            "Status", status
-        );
     }
 }

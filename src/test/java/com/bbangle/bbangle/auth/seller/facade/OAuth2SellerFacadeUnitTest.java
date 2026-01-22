@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.inOrder;
@@ -8,7 +9,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
+import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import java.util.Optional;
@@ -30,8 +38,12 @@ class OAuth2SellerFacadeUnitTest {
 
     @InjectMocks
     private OAuth2SellerFacade oAuth2SellerFacade;
+
     @Mock
     private OAuth2SellerService oAuth2SellerService;
+
+    @Mock
+    private OAuthSellerService oAuthSellerService;
 
     @Test
     @DisplayName("판매자 계정이 없으면 새로 생성한다.")
@@ -124,5 +136,48 @@ class OAuth2SellerFacadeUnitTest {
         inOrder.verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
         inOrder.verify(oAuth2SellerService).createOAuth2Seller(any());
         inOrder.verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
+    }
+
+    @Test
+    @DisplayName("Redis의 Seller 정보 기반으로 JWT를 생성한다.")
+    void success_generate_Token() {
+
+        // given
+        String code = "authCode";
+        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .status(CertificationStatus.NEW)
+            .build();
+
+        given(oAuthSellerService.getSellerInfoFromRedis(code)).willReturn(sellerInfo);
+        given(oAuthSellerService.generateRefreshToken(1L, Role.ROLE_SELLER)).willReturn("refreshToken");
+        given(oAuthSellerService.generateAccessToken(1L, Role.ROLE_SELLER)).willReturn("accessToken");
+
+        // when
+        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+
+        // then
+        assertThat(response.refreshToken()).isEqualTo("refreshToken");
+        assertThat(response.accessToken()).isEqualTo("accessToken");
+        assertThat(response.sellerId()).isEqualTo(1L);
+        assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
+
+        verify(oAuthSellerService).getSellerInfoFromRedis(code);
+        verify(oAuthSellerService).generateRefreshToken(1L, Role.ROLE_SELLER);
+        verify(oAuthSellerService).generateAccessToken(1L, Role.ROLE_SELLER);
+    }
+
+    @Test
+    @DisplayName("Redis에 Seller 정보가 없으면 예외를 던진다.")
+    void failure_generate_Token() {
+
+        // given
+        given(oAuthSellerService.getSellerInfoFromRedis("code"))
+            .willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED));
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.generateToken("code"))
+            .isInstanceOf(BbangleException.class);
     }
 }

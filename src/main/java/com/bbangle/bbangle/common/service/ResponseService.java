@@ -7,17 +7,22 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+@Slf4j
 @Component
 public record ResponseService(MessageSource messageSource) {
 
@@ -140,6 +145,38 @@ public record ResponseService(MessageSource messageSource) {
         return result;
     }
 
+    public CommonResult getConstraintViolationExceptionResult(
+        ConstraintViolationException ex) {
+        CommonResult result = new CommonResult();
+        result.setSuccess(false);
+        result.setCode(FAIL.getCode());
+        result.setMessage(BbangleErrorCode._BAD_REQUEST.getMessage());
+
+        CommonResult.FieldError[] fieldErrors = ex.getConstraintViolations()
+            .stream()
+            .map(violation -> new CommonResult.FieldError(
+                    extractFiledName(violation),
+                    violation.getMessage()
+                )
+            )
+            .toArray(CommonResult.FieldError[]::new);
+
+        result.setFieldErrors(fieldErrors);
+        result.setHttpStatus(HttpStatus.BAD_REQUEST);
+
+        return result;
+    }
+
+    private String extractFiledName(ConstraintViolation<?> violation) {
+        String path = violation.getPropertyPath().toString();
+        int lastDotIndex = path.lastIndexOf('.');
+        return lastDotIndex != -1 ? path.substring(lastDotIndex + 1) : path;
+    }
+
+    public <T extends CommonResult> ResponseEntity<T> getResponseEntity(T result) {
+        return new ResponseEntity<T>(result, result.getHttpStatus());
+    }
+
     public enum CommonResponse {
         SUCCESS(0, "SUCCESS"),
         FAIL(-1, "FAIL");
@@ -159,10 +196,6 @@ public record ResponseService(MessageSource messageSource) {
         public String getMessage() {
             return message;
         }
-    }
-
-    public <T extends CommonResult> ResponseEntity<T> getResponseEntity(T result) {
-        return new ResponseEntity<T>(result, result.getHttpStatus());
     }
 
 }

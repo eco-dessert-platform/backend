@@ -22,7 +22,7 @@ public enum Role {
         return Arrays.stream(Role.values())
                 .filter(r -> r.getRole().equals(role))
                 .findFirst()
-                .orElse(ROLE_CUSTOMER);
+                .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + role));
     }
 
 }

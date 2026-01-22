@@ -71,5 +71,24 @@ public class RedisTestConfig {
         redisTemplate.setConnectionFactory(connectionFactory);
         return redisTemplate;
     }
+
+    /**
+     * DTO용 RedisTemplate Value를 JSON으로 직렬화
+     */
+
+    @Bean(name = "dtoRedisTemplate")
+    public RedisTemplate<String, Object> dtoRedisTemplate(
+        RedisConnectionFactory connectionFactory
+    ) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        return redisTemplate;
+    }
 }
 
