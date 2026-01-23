@@ -4,15 +4,17 @@ import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
+import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -26,6 +28,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,7 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
     JsonDataEncoder.class,
     TokenProvider.class,
     TestJwtPropertiesConfig.class,
-    ResponseService.class
+    ResponseService.class,
+    SecurityConfig.class
 })
 @WebMvcTest(controllers = SellerOauthController.class)
 @ActiveProfiles("test")
@@ -43,6 +47,9 @@ class SellerOauthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JsonDataEncoder jsonDataEncoder;
 
     @MockBean
     private OAuth2SellerFacade oAuth2SellerFacade;
@@ -67,8 +74,10 @@ class SellerOauthControllerTest {
         given(oAuth2SellerFacade.generateToken(code)).willReturn(dto);
 
         // when & then
-        mockMvc.perform(get(SellerApiPath.PREFIX + "/oauth2/tokens")
-            .param("generateToken", code))
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(new GenerateTokenRequest(code)))
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
@@ -84,7 +93,10 @@ class SellerOauthControllerTest {
     @Test
     @DisplayName("임시 코드가 없으면 400 에러를 반환한다.")
     void failure_sellerToken_400() throws Exception {
-        mockMvc.perform(get(SellerApiPath.PREFIX + "/oauth2/tokens"))
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(new GenerateTokenRequest("")))
+            )
             .andExpect(status().isBadRequest());
     }
 
@@ -99,8 +111,10 @@ class SellerOauthControllerTest {
             .willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED));
 
         // when & then
-        mockMvc.perform(get(SellerApiPath.PREFIX + "/oauth2/tokens")
-            .param("generateToken", code))
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+                    .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(new GenerateTokenRequest(code)))
+            )
             .andExpect(status().isUnauthorized());
     }
 }

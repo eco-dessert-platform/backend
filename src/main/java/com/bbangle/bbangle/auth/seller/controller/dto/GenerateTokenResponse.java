@@ -3,6 +3,7 @@ package com.bbangle.bbangle.auth.seller.controller.dto;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Token 발급 응답 DTO")
 public record GenerateTokenResponse(
     @Schema(description = "Refresh 토큰") String refreshToken,
     @Schema(description = "Access 토큰") String accessToken,

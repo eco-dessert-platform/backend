@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.auth.seller.controller.swagger;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,9 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Seller Oauth Login", description = "(판매자) 로그인 Oauth API")
 public interface SellerOauthApi {
@@ -98,9 +99,7 @@ public interface SellerOauthApi {
         """
     )
     SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestParam(value = "generateToken", required = false)
-        @NotBlank(message = "generateToken은 필수입니다.")
-        String code
+        @RequestBody @Valid GenerateTokenRequest request
     );
 
     @Operation(
