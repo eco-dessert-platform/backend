@@ -14,4 +14,13 @@ public final class ProductFixture {
             .build();
         return product;
     }
+
+    public static Product createWithStock(Board board, String title, int stock) {
+        return Product.builder()
+            .title(title)
+            .board(board)
+            .stock(stock)
+            .soldout(false)
+            .build();
+    }
 }
