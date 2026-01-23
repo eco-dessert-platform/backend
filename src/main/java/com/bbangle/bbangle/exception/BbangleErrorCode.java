@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -138,8 +139,15 @@ public enum BbangleErrorCode {
     IMAGE_COUNT_MISMATCH(-765, "이미지 파일 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
     IMAGE_NOT_MATCHED(-766, "HTML의 이미지 태그 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
     NOT_FIND_NOTICE(-767, "Notice의 정보를 찾을 수 없습니다.", BAD_REQUEST),
-    ADMIN_NOTICE_UPDATE_FAILED(-768, "공지사항 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    ADMIN_NOTICE_UPDATE_FAILED(-768, "공지사항 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    // Claim Error(771 ~ 780)
+    CLAIM_NOT_FOUND(-771, "해당 claim을 찾을 수 없습니다", BAD_REQUEST),
+    SELLER_CLAIM_MISMATCH(-772, "Claim과 판매자 ID가 일치하지 않습니다", UNAUTHORIZED),
+    CLAIM_INVALID_STATUS(-773, "이미 처리된 Claim 입니다", BAD_REQUEST),
+
+    // Order Error(781 ~ 800)
+    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST);
 
     private final int code;
     private final String message;

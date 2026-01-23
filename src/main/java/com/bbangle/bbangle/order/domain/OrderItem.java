@@ -1,7 +1,11 @@
 package com.bbangle.bbangle.order.domain;
 
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
+
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import jakarta.persistence.Column;
@@ -65,5 +69,17 @@ public class OrderItem extends BaseEntity {
         return true;
     }
 
+    public void returnApprove() {
+        if (orderStatus != RETURN_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_APPROVED;
+    }
 
+    public void returnReject() {
+        if (orderStatus != RETURN_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_APPROVED;
+    }
 }
