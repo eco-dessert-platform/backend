@@ -63,4 +63,10 @@ public class OAuthSellerService {
     public String generateAccessToken(Long sellerId, Role role) {
         return tokenProvider.generateToken(sellerId, role, ACCESS_TOKEN_DURATION);
     }
+
+    // TODO : Test
+    public void refreshTokenValidate(String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode._UNAUTHORIZED));
+    }
 }

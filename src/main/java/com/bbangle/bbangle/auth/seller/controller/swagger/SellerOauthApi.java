@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -99,5 +101,21 @@ public interface SellerOauthApi {
         @RequestParam(value = "generateToken", required = false)
         @NotBlank(message = "generateToken은 필수입니다.")
         String code
+    );
+
+    @Operation(
+        summary = "판매자 토큰 재발급",
+        description = """
+        ### 판매자의 Access Token을 재발급 하고 Refresh Token을 갱신
+
+        ---
+        ## ⚠️ 주의사항
+        - 서버로 요청을 보낼 때 Refresh Token을 **Cookie**에 담아서 전송해야합니다.
+        - 이 때, Cookie의 Key를 **refreshToken**으로 설정해야합니다.
+        """
+    )
+    SingleResult<String> reissueToken(
+        HttpServletRequest request,
+        HttpServletResponse response
     );
 }
