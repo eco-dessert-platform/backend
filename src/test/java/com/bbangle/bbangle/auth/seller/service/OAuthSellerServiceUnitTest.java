@@ -2,6 +2,7 @@ package com.bbangle.bbangle.auth.seller.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import java.util.Optional;
@@ -143,5 +145,38 @@ class OAuthSellerServiceUnitTest {
 
         // then
         assertThat(token).isEqualTo("accessToken");
+    }
+
+    // --------------------
+    // refreshTokenValidate Test
+    // --------------------
+    @Test
+    @DisplayName("DB에 Refresh Token이 존재하면 통과한다.")
+    void refreshTokenValidate_existToken() {
+
+        // given
+        String refreshToken = "validRefreshToken";
+        RefreshToken existing = RefreshToken.create(1L, Role.ROLE_SELLER, "refreshToken");
+        given(refreshTokenRepository.findByRefreshToken(any())).willReturn(Optional.of(existing));
+
+        // when & then
+        assertDoesNotThrow(() -> service.refreshTokenValidate(refreshToken));
+    }
+
+    @Test
+    @DisplayName("DB에 Refresh Token이 없을 경우 UNAUTHORIZED 예외")
+    void refreshTokenValidate_notExistToken() {
+
+        // given
+        String refreshToken = "invalidRefreshToken";
+        given(refreshTokenRepository.findByRefreshToken(refreshToken)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> service.refreshTokenValidate(refreshToken))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
     }
 }

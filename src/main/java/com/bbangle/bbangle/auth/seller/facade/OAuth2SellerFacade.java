@@ -56,25 +56,18 @@ public class OAuth2SellerFacade {
         );
     }
 
-    // TODO : Test
     public TokenResponse reissueToken(String refreshToken) {
 
-        // 1. Refresh Token 분석 -> 만료된 토큰일 경우 예외 던짐
         Claims claims = tokenProvider.parseRefreshToken(refreshToken);
 
-        // 2. Refresh Token이 DB에 없을 경우 예외
         oAuthSellerService.refreshTokenValidate(refreshToken);
 
         Long id = claims.get("id", Long.class);
         Role role = Role.from(claims.get("role", String.class));
 
-        // 3. 만료되지 않았을 경우 Refresh Token 새로 생성
         String newRefreshToken = oAuthSellerService.generateRefreshToken(id, role);
-
-        // 4. 만료되지 않았을 경우 Access Token 새로 생성
         String newAccessToken = oAuthSellerService.generateAccessToken(id, role);
 
-        // 5. DTO 생성 및 반환
         return TokenResponse.builder()
             .refreshToken(newRefreshToken)
             .accessToken(newAccessToken)

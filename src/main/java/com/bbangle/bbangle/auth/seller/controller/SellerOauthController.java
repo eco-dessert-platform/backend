@@ -70,17 +70,19 @@ public class SellerOauthController implements SellerOauthApi {
         // Token 생성
         TokenResponse dto = oAuth2SellerFacade.reissueToken(refresh);
         response.setHeader("Authorization", "Bearer " + dto.accessToken());
-        response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken(), Duration.ofDays(14)).toString());
 
         return responseService.getSingleResult("새로운 토큰 발급");
     }
 
-    private ResponseCookie createCookie(String value) {
+    // TODO : 로그아웃 구현
+
+    private ResponseCookie createCookie(String value, Duration duration) {
         return ResponseCookie.from("refreshToken", value)
             .httpOnly(true)
-            //.secure(true)  // 로컬에서 사용할 때는 주석처리
+            .secure(true)  // TODO : 로컬에서 사용할 때는 주석처리
             .path("/")
-            .maxAge(Duration.ofDays(14))
+            .maxAge(duration)
             .sameSite("Strict")
             .build();
     }
