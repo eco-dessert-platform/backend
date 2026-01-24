@@ -82,6 +82,6 @@ public class AdminNotificationController implements AdminNotificationApi {
         @RequestBody List<Long> noticeId) {
 
         adminNotificationService.deleteNotification(adminId, noticeId);
-        return null;
+        return responseService.getSuccessResult();
     }
 }

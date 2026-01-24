@@ -110,14 +110,20 @@ public class AdminNotificationService {
     @Transactional
     public void deleteNotification(Long adminId, List<Long> noticeIds) {
 
-        List<Notice> notice = notificationRepository.findAllById(noticeIds);
+        adminRepository.findById(adminId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
+        List<Long> distinctIds = noticeIds.stream().distinct().toList();
+        List<Notice> notices = notificationRepository.findAllById(distinctIds);
 
-        if (notice.size() != noticeIds.size()) {
+        boolean hasOtherAdmin = notices.stream()
+            .anyMatch(n -> !n.getAdmin().getId().equals(adminId));
+
+        if (notices.size() != distinctIds.size() || hasOtherAdmin) {
             throw new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE);
         }
         // soft delete 적용
-        notice.forEach(Notice::delete);
-        notificationRepository.saveAll(notice);
+        notices.forEach(Notice::delete);
+        notificationRepository.saveAll(notices);
     }
 
 
