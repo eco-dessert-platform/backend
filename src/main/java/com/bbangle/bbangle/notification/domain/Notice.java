@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.notification.domain;
 
 import com.bbangle.bbangle.admin.domain.Admin;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Notice extends BaseEntity {
+public class Notice extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

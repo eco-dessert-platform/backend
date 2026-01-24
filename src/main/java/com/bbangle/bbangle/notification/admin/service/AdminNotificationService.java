@@ -17,11 +17,13 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminNotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -104,4 +106,19 @@ public class AdminNotificationService {
         Page<Notice> notice = notificationRepository.searchNoticeAll(pageable);
         return notice.map(NoticeInfo::from);
     }
+
+    @Transactional
+    public void deleteNotification(Long adminId, List<Long> noticeIds) {
+
+        List<Notice> notice = notificationRepository.findAllById(noticeIds);
+
+        if (notice.size() != noticeIds.size()) {
+            throw new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE);
+        }
+        // soft delete 적용
+        notice.forEach(Notice::delete);
+        notificationRepository.saveAll(notice);
+    }
+
+
 }

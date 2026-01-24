@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.notification.admin.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
@@ -34,4 +35,10 @@ public interface AdminNotificationApi {
     @Operation(summary = "(관리자) 공지사항 조회")
     SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(
         Pageable pageable);
+
+    @Operation(summary = "(관리자) 공지사항 삭제")
+    CommonResult deleteNotification(
+        Long adminId,
+        List<Long> noticeId);
+
 }
