@@ -182,13 +182,13 @@ class OAuthSellerServiceUnitTest {
 
     @Test
     @DisplayName("DB에 존재하는 Refresh Token을 삭제한다.")
-    void logout() {
+    void deleteRefreshToken() {
 
         // given
         String refreshToken = "refreshToken";
 
         // when
-        service.logout(refreshToken);
+        service.deleteRefreshToken(refreshToken);
 
         // then
         verify(refreshTokenRepository).deleteByRefreshToken(refreshToken);

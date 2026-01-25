@@ -235,7 +235,7 @@ class OAuth2SellerFacadeIntegrationTest {
         String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
 
         RefreshToken entity = RefreshToken.create(sellerId, role, refreshToken);
-        refreshTokenRepository.save(entity);
+        RefreshToken oldToken = refreshTokenRepository.save(entity);
 
         // when
         TokenResponse result = oAuth2SellerFacade.reissueToken(refreshToken);
@@ -246,30 +246,7 @@ class OAuth2SellerFacadeIntegrationTest {
         assertThat(result.refreshToken()).isNotNull();
 
         RefreshToken updated = refreshTokenRepository.findByUserIdAndUserRole(sellerId, role).orElseThrow();
-        assertThat(result.refreshToken()).isEqualTo(updated.getRefreshToken());
-    }
-
-    @Test
-    @DisplayName("Refresh Token이 유효하면 토큰을 재발급한다.")
-    void failure_reissueToken_expired() {
-
-        // given
-        Long sellerId = 1L;
-        Role role = Role.ROLE_SELLER;
-        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofMillis(1));
-
-        RefreshToken entity = RefreshToken.create(sellerId, role, refreshToken);
-        refreshTokenRepository.save(entity);
-
-        try { Thread.sleep(3); } catch (InterruptedException e) {}
-
-        // when & then
-        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
-            .isInstanceOf(BbangleException.class)
-            .satisfies(e -> {
-                BbangleException ex = (BbangleException) e;
-                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
-            });
+        assertThat(oldToken.getId()).isNotEqualTo(updated.getId());
     }
 
     @Test

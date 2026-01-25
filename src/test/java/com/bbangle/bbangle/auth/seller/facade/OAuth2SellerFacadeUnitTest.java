@@ -204,6 +204,7 @@ class OAuth2SellerFacadeUnitTest {
         given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(claims);
 
         willDoNothing().given(oAuthSellerService).refreshTokenValidate(refreshToken);
+        willDoNothing().given(oAuthSellerService).deleteRefreshToken(refreshToken);
 
         given(oAuthSellerService.generateRefreshToken(1L, Role.ROLE_SELLER)).willReturn("newRefreshToken");
         given(oAuthSellerService.generateAccessToken(1L, Role.ROLE_SELLER)).willReturn("newAccessToken");
@@ -218,6 +219,7 @@ class OAuth2SellerFacadeUnitTest {
         InOrder inOrder = inOrder(tokenProvider, oAuthSellerService);
         inOrder.verify(tokenProvider).parseRefreshToken(refreshToken);
         inOrder.verify(oAuthSellerService).refreshTokenValidate(refreshToken);
+        inOrder.verify(oAuthSellerService).deleteRefreshToken(refreshToken);
         inOrder.verify(oAuthSellerService).generateRefreshToken(1L, Role.ROLE_SELLER);
         inOrder.verify(oAuthSellerService).generateAccessToken(1L, Role.ROLE_SELLER);
     }
@@ -240,6 +242,7 @@ class OAuth2SellerFacadeUnitTest {
             });
 
         verify(oAuthSellerService, never()).refreshTokenValidate(refreshToken);
+        verify(oAuthSellerService, never()).deleteRefreshToken(any());
         verify(oAuthSellerService, never()).generateRefreshToken(any(), any());
         verify(oAuthSellerService, never()).generateAccessToken(any(), any());
     }
@@ -264,6 +267,7 @@ class OAuth2SellerFacadeUnitTest {
                 assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
             });
 
+        verify(oAuthSellerService, never()).deleteRefreshToken(any());
         verify(oAuthSellerService, never()).generateRefreshToken(any(), any());
         verify(oAuthSellerService, never()).generateAccessToken(any(), any());
     }

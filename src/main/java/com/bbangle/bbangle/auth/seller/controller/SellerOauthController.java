@@ -76,7 +76,7 @@ public class SellerOauthController implements SellerOauthApi {
         String refreshToken,
         HttpServletResponse response
     ) {
-        if (refreshToken != null) oAuthSellerService.logout(refreshToken);
+        if (refreshToken != null) oAuthSellerService.deleteRefreshToken(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("", Duration.ofMillis(1)).toString());
 
         return responseService.getSuccessResult();

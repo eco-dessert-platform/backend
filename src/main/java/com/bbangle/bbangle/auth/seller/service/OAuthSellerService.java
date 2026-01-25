@@ -70,7 +70,7 @@ public class OAuthSellerService {
     }
 
     @Transactional
-    public void logout(String refreshToken) {
+    public void deleteRefreshToken(String refreshToken) {
         refreshTokenRepository.deleteByRefreshToken(refreshToken);
     }
 }

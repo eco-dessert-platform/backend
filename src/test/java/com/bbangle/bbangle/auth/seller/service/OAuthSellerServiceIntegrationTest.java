@@ -161,7 +161,7 @@ class OAuthSellerServiceIntegrationTest {
 
     @Test
     @DisplayName("로그아웃 시 DB의 Refresh Token을 삭제한다.")
-    void logout() {
+    void deleteRefreshToken() {
 
         // given
         String refreshToken = "refreshToken";
@@ -173,7 +173,7 @@ class OAuthSellerServiceIntegrationTest {
         refreshTokenRepository.save(exist);
 
         // when
-        service.logout(refreshToken);
+        service.deleteRefreshToken(refreshToken);
 
         // then
         assertThat(refreshTokenRepository.findByUserIdAndUserRole(1L, Role.ROLE_SELLER)).isEmpty();

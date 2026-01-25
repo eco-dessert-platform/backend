@@ -61,6 +61,7 @@ public class OAuth2SellerFacade {
         Claims claims = tokenProvider.parseRefreshToken(refreshToken);
 
         oAuthSellerService.refreshTokenValidate(refreshToken);
+        oAuthSellerService.deleteRefreshToken(refreshToken);
 
         Long id = claims.get("id", Long.class);
         Role role = Role.from(claims.get("role", String.class));
