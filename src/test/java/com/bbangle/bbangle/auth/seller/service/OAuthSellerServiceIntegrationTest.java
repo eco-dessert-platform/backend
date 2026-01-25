@@ -158,4 +158,25 @@ class OAuthSellerServiceIntegrationTest {
                 assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
             });
     }
+
+    @Test
+    @DisplayName("로그아웃 시 DB의 Refresh Token을 삭제한다.")
+    void logout() {
+
+        // given
+        String refreshToken = "refreshToken";
+        RefreshToken exist = RefreshToken.create(
+            1L,
+            Role.ROLE_SELLER,
+            refreshToken
+        );
+        refreshTokenRepository.save(exist);
+
+        // when
+        service.logout(refreshToken);
+
+        // then
+        assertThat(refreshTokenRepository.findByUserIdAndUserRole(1L, Role.ROLE_SELLER)).isEmpty();
+        assertThat(refreshTokenRepository.findByRefreshToken(refreshToken)).isEmpty();
+    }
 }

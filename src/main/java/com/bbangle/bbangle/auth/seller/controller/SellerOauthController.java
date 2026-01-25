@@ -11,6 +11,8 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.Duration;
@@ -58,6 +60,8 @@ public class SellerOauthController implements SellerOauthApi {
         String refreshToken,
         HttpServletResponse response
     ) {
+        if (refreshToken == null) throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
+
         TokenResponse dto = oAuth2SellerFacade.reissueToken(refreshToken);
         response.setHeader("Authorization", "Bearer " + dto.accessToken());
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken(), Duration.ofDays(14)).toString());
@@ -65,7 +69,6 @@ public class SellerOauthController implements SellerOauthApi {
         return responseService.getSuccessResult();
     }
 
-    // TODO : Test
     @Override
     @DeleteMapping("/logout")
     public CommonResult logout(

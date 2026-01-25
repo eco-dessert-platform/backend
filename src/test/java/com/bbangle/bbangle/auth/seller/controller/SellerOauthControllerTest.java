@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +15,7 @@ import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
+import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
@@ -58,6 +60,9 @@ class SellerOauthControllerTest {
 
     @MockBean
     private OAuth2SellerFacade oAuth2SellerFacade;
+
+    @MockBean
+    private OAuthSellerService oAuthSellerService;
 
     @SpyBean
     private ResponseService responseService;
@@ -178,5 +183,23 @@ class SellerOauthControllerTest {
         mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/reissue")
                 .cookie(cookie))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("로그아웃 시 항상 만료된 쿠키를 반환한다.")
+    void logout() throws Exception {
+
+        // given
+        Cookie cookie = new Cookie("refreshToken", "refreshToken");
+
+        // when & then
+        mockMvc.perform(delete(SellerApiPath.PREFIX + "/oauth2/logout")
+            .cookie(cookie))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refreshToken=")))
+            .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()));
     }
 }

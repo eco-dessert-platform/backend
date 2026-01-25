@@ -38,9 +38,9 @@ public interface SellerOauthApi {
         - Redirect URL: `/callback/social?generateToken=1234-abcdefg-567890-hij`
         - 동작:
           1. OAuth2 인증 성공
-          2. 인가 코드 (generateToken) 발급
+          2. 임시 코드 (generateToken) 발급
           3. 프론트엔드로 리다이렉트
-          4. 프론트엔드의 콜백 페이지에서 인가 코드 (generateToken)를 다시 서버로 전송
+          4. 프론트엔드의 콜백 페이지에서 임시 코드(generateToken)를 다시 서버로 전송
 
         ---
         ### ❌ 로그인 실패 시
@@ -53,7 +53,7 @@ public interface SellerOauthApi {
         ⚠️ 주의사항
         - JSON 응답을 반환하지 않습니다.
         - Swagger **Try it out**으로 실행하지 마세요.
-        - 인가 코드는 URL의 쿼리 파라미터를 통해 전송됩니다.
+        - 임시 코드는 URL의 쿼리 파라미터를 통해 전송됩니다.
         - 리다이렉트로 OAuth2 과정을 진행하셔야합니다.
         """
     )
@@ -73,7 +73,7 @@ public interface SellerOauthApi {
         | Error Code | Code | 설명 |
         |-----------|------|------|
         |NOT_SUPPORTED_SERVER|-744|지원하지 않는 OAuth2 로그인 서버입니다.|
-        |MISSING_NAME_NICKNAME|-745|이름 또는 닉네임이 비공개 상태입니다.|
+        |MISSING_NAME_NICKNAME|-745|이름과 닉네임이 전부 비공개 상태입니다.|
         |INTERNAL_SERVER_ERROR|-999|서버 내부 에러입니다. (ex : DB Down)|
         |UNKNOWN_ERROR|null|에러 코드 표에 작성된 Error Code 이외의 기타 예외 상황|
         """

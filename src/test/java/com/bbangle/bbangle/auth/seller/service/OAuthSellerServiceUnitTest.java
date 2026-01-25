@@ -179,4 +179,18 @@ class OAuthSellerServiceUnitTest {
                 assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
             });
     }
+
+    @Test
+    @DisplayName("DB에 존재하는 Refresh Token을 삭제한다.")
+    void logout() {
+
+        // given
+        String refreshToken = "refreshToken";
+
+        // when
+        service.logout(refreshToken);
+
+        // then
+        verify(refreshTokenRepository).deleteByRefreshToken(refreshToken);
+    }
 }
