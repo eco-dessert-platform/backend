@@ -146,10 +146,9 @@ class SellerOauthControllerTest {
             .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refreshToken=newRefreshToken")))
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
-            .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
-            .andExpect(jsonPath("$.result").value("새로운 토큰 발급"));
+            .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()));
 
-        then(responseService).should(times(1)).getSingleResult("새로운 토큰 발급");
+        then(responseService).should(times(1)).getSuccessResult();
     }
 
     @Test

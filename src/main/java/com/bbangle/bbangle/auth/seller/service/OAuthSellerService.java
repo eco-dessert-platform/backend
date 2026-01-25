@@ -68,4 +68,10 @@ public class OAuthSellerService {
         refreshTokenRepository.findByRefreshToken(refreshToken)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode._UNAUTHORIZED));
     }
+
+    // TODO : Test
+    @Transactional
+    public void logout(String refreshToken) {
+        refreshTokenRepository.deleteByRefreshToken(refreshToken);
+    }
 }

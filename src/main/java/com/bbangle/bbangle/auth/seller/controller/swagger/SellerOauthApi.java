@@ -3,15 +3,16 @@ package com.bbangle.bbangle.auth.seller.controller.swagger;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -113,8 +114,28 @@ public interface SellerOauthApi {
         - 이 때, Cookie의 Key를 **refreshToken**으로 설정해야합니다.
         """
     )
-    SingleResult<String> reissueToken(
-        HttpServletRequest request,
+    CommonResult reissueToken(
+        @Parameter(description = "Refresh Token")
+        @CookieValue(value = "refreshToken", required = false)
+        String refreshToken,
+        HttpServletResponse response
+    );
+
+    @Operation(
+        summary = "판매자 로그아웃",
+        description = """
+        ### 판매자의 Refresh Token과 쿠키를 삭제하고 로그아웃 처리
+
+        ---
+        ## ⚠️ 주의사항
+        - 서버로 요청을 보낼 때 Refresh Token을 **Cookie**에 담아서 전송해야합니다.
+        - 이 때, Cookie의 Key를 **refreshToken**으로 설정해야합니다.
+        """
+    )
+    CommonResult logout(
+        @Parameter(description = "Refresh Token")
+        @CookieValue(value = "refreshToken", required = false)
+        String refreshToken,
         HttpServletResponse response
     );
 }
