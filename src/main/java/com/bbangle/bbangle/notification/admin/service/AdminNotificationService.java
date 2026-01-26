@@ -112,13 +112,12 @@ public class AdminNotificationService {
 
         adminRepository.findById(adminId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
+
         List<Long> distinctIds = noticeIds.stream().distinct().toList();
-        List<Notice> notices = notificationRepository.findAllById(distinctIds);
 
-        boolean hasOtherAdmin = notices.stream()
-            .anyMatch(n -> !n.getAdmin().getId().equals(adminId));
+        List<Notice> notices = notificationRepository.findAllByIdInAndAdminId(distinctIds, adminId);
 
-        if (notices.size() != distinctIds.size() || hasOtherAdmin) {
+        if (notices.size() != distinctIds.size()) {
             throw new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE);
         }
         // soft delete 적용

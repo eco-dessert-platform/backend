@@ -21,4 +21,6 @@ public interface NotificationRepository extends JpaRepository<Notice, Long>, Not
         WHERE n.admin.id = :adminId AND n.id IN :noticeIds
         """)
     void deleteAllByAdminIdAndIdIn(@Param("adminId") Long adminId, @Param("noticeIds") List<Long> noticeIds);
+
+    List<Notice> findAllByIdInAndAdminId(List<Long> distinctIds, Long adminId);
 }
