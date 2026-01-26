@@ -5,6 +5,8 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
+    private final SellerStoreMapper storeMapper;
+
+    // TODO : Test
+    public List<SearchResponse> searchStore(String storeName) {
+        String noSpaceStoreName = storeName.replaceAll("\\s+", "");
+
+        List<Store> stores = storeRepository.getStoreListByStoreName(noSpaceStoreName);
+        return storeMapper.toSearchResponseList(stores);
+    }
 
     @Transactional
     public Store registerStoreForSeller(Long storeId, String storeName) {

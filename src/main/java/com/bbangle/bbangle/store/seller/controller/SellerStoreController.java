@@ -9,8 +9,6 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchRespo
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +23,13 @@ public class SellerStoreController implements SellerStoreApi {
     private final ResponseService responseService;
     private final SellerStoreService sellerStoreService;
 
+    // TODO : Test
     @Override
     @GetMapping("/search")
-    public ListResult<SearchResponse> search(@RequestParam String searchValue) {
-        // TODO: 구현 필요
-        List<SearchResponse> response = new ArrayList<>();
-        response.add(new SearchResponse(1L, "빵그리의 오븐 즉석빵 상점"));
-        response.add(new SearchResponse(2L, "빵그리의 오븐 공장빵 상점"));
-        return responseService.getListResult(response);
+    public ListResult<SearchResponse> search(
+        @RequestParam String storeName
+    ) {
+        return responseService.getListResult(sellerStoreService.searchStore(storeName));
     }
 
 

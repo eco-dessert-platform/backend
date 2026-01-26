@@ -17,9 +17,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Seller Store", description = "(판매자) 스토어 API")
 public interface SellerStoreApi {
 
-    @Operation(summary = "(판매자) 스토어 검색")
+    @Operation(
+        summary = "(판매자) 스토어 검색",
+        description = """
+            ### 스토어 이름을 통해 스토어 목록을 조회
+            - storeName에 스토어 이름을 입력하실 때 **빈칸을 제거**하고 입력하셔야합니다.
+            - EX) `storeName.replaceAll(" " , "")`
+            """
+    )
     ListResult<SearchResponse> search(
-        @Parameter(description = "검색어", example = "빵그리의 오븐") String searchValue
+        @Parameter(description = "검색어", example = "빵그리의오븐") String storeName
     );
 
     @Operation(summary = "스토어명 중복 확인")

@@ -25,4 +25,11 @@ public interface StoreQueryDSLRepository {
     List<Store> getStoreByStoreName(String storeName);
 
     CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds);
+
+    /**
+     * Seller 정보 등록 시 Store 목록 찾을 때 사용하는 메서드
+     * @param storeName 빈칸을 제거한 StoreName
+     * @return List<Store>
+     */
+    List<Store> getStoreListByStoreName(String storeName);
 }

@@ -15,6 +15,7 @@ import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.List;
@@ -125,6 +126,19 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         return CursorPagination.of(response, PAGE_SIZE, null, SellerStoreInfo.StoreInfo::id);
     }
 
+    // TODO : Test
+    @Override
+    public List<Store> getStoreListByStoreName(String storeName) {
+
+        return queryFactory.selectFrom(store)
+            .where(
+                Expressions.stringTemplate(
+                    "REPLACE({0}, ' ', '')", store.name
+                ).contains(storeName)
+            )
+            .orderBy(store.name.desc())
+            .fetch();
+    }
 
     ///  페이징 처리를 위한 스토어 이름 검색 메서드
     @Override
