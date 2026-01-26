@@ -42,11 +42,13 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             return;
         }
 
-        // 간헐적으로 발생하는 에러를 분석하기 위해 추가
-        log.error("Authentication error occurred - FailureHandler");
-        log.error("Exception class: {}", exception.getClass().getName());
-        log.error("Message: {}", exception.getMessage());
-        log.error("Cause: {}", exception.getCause(), exception);
+        // TODO : 간헐적으로 발생하는 에러를 분석하기 위해 추가 - 추후 삭제 예정
+        log.error("Authentication error occurred - FailureHandler | class : {} | message : {} | cause : {}",
+            exception.getClass().getName(),
+            exception.getMessage(),
+            exception.getCause(),
+            exception
+        );
         
         slackAdaptor.sendAlert(request, exception);
         response.sendRedirect(createRedirectUrl(null));

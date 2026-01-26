@@ -13,7 +13,9 @@ public class PublicApiPath {
         "/api/v1/stores/**",
         "/api/v1/health/**",
         "/api/v1/push/**",
-        SellerApiPath.PREFIX + "/oauth2/**",
+        SellerApiPath.PREFIX + "/oauth2/tokens",
+        SellerApiPath.PREFIX + "/oauth2/reissue",
+        SellerApiPath.PREFIX + "/oauth2/logout"
     };
 
     public static final String[] GET_ONLY = {

@@ -86,7 +86,8 @@ public class SellerOauthController implements SellerOauthApi {
     private ResponseCookie createCookie(String value, Duration duration) {
         return ResponseCookie.from("refreshToken", value)
             .httpOnly(true)
-            .secure(true)  // TODO : 로컬에서 사용할 때는 주석처리
+            // TODO : 로컬에서 사용할 때는 주석처리
+            .secure(true)
             .path("/")
             .maxAge(duration)
             .sameSite("Strict")
