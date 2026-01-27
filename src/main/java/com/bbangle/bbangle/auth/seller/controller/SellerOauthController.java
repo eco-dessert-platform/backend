@@ -82,7 +82,6 @@ public class SellerOauthController implements SellerOauthApi {
         return responseService.getSuccessResult();
     }
 
-
     private ResponseCookie createCookie(String value, Duration duration) {
         return ResponseCookie.from("refreshToken", value)
             .httpOnly(true)
