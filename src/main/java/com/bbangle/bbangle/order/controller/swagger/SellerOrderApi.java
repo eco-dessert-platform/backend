@@ -27,7 +27,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Seller Order", description = "(판매자) 주문 API")
@@ -179,7 +178,7 @@ public interface SellerOrderApi {
         @Valid
         OrderRequest.OrderSearchRequest request);
 
-    @PostMapping("/{orderId}/confirm")
+    @Operation(summary = "(판매자) 발주 확인")
     SingleResult<OrderConfirmResponse> confirmOrder(
         @AuthenticationPrincipal Long sellerId,
         @PathVariable Long orderId,

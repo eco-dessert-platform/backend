@@ -2,6 +2,7 @@ package com.bbangle.bbangle.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.util.stream.Stream;
@@ -106,6 +107,7 @@ public enum BbangleErrorCode {
     ACCOUNT_NOT_VERIFIED(-715, "인증되지 않은 계좌입니다.", BAD_REQUEST),
     ORDER_NOT_FOUND(-716, "존재하지 않는 주문입니다.", NOT_FOUND),
     ORDER_ITEM_NOT_FOUND(-717, "존재하지 않는 주문상품입니다.", NOT_FOUND),
+    ORDER_ACCESS_DENIED(-718, "해당 주문에 대한 접근 권한이 없습니다.", FORBIDDEN),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
