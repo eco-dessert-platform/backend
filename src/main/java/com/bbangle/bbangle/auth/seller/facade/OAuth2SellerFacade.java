@@ -1,15 +1,14 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
-import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -58,16 +57,13 @@ public class OAuth2SellerFacade {
 
     public TokenResponse reissueToken(String refreshToken) {
 
-        Claims claims = tokenProvider.parseRefreshToken(refreshToken);
+        TokenClaimsDTO claims = tokenProvider.parseRefreshToken(refreshToken);
 
         oAuthSellerService.refreshTokenValidate(refreshToken);
         oAuthSellerService.deleteRefreshToken(refreshToken);
 
-        Long id = claims.get("id", Long.class);
-        Role role = Role.from(claims.get("role", String.class));
-
-        String newRefreshToken = oAuthSellerService.generateRefreshToken(id, role);
-        String newAccessToken = oAuthSellerService.generateAccessToken(id, role);
+        String newRefreshToken = oAuthSellerService.generateRefreshToken(claims.id(), claims.role());
+        String newAccessToken = oAuthSellerService.generateAccessToken(claims.id(), claims.role());
 
         return TokenResponse.builder()
             .refreshToken(newRefreshToken)

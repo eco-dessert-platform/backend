@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.config.security.jwt;
 
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -56,9 +57,14 @@ public class TokenProvider {
         }
     }
 
-    public Claims parseRefreshToken(String token) {
+    public TokenClaimsDTO parseRefreshToken(String token) {
         try {
-            return getClaims(token);
+            Claims claims = getClaims(token);
+
+            return TokenClaimsDTO.builder()
+                .id(claims.get("id", Long.class))
+                .role(Role.from(claims.get("role", String.class)))
+                .build();
         } catch (JwtException | IllegalArgumentException e) {
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
         }

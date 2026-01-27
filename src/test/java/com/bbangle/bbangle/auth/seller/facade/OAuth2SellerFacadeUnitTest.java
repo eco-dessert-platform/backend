@@ -7,12 +7,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
@@ -24,7 +24,6 @@ import com.bbangle.bbangle.seller.domain.OAuth2Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
-import io.jsonwebtoken.Claims;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -196,12 +195,12 @@ class OAuth2SellerFacadeUnitTest {
 
         // given
         String refreshToken = "validRefreshToken";
+        TokenClaimsDTO tokenClaimsDTO = TokenClaimsDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .build();
 
-        Claims claims = mock(Claims.class);
-        given(claims.get("id", Long.class)).willReturn(1L);
-        given(claims.get("role", String.class)).willReturn(Role.ROLE_SELLER.getRole());
-
-        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(claims);
+        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(tokenClaimsDTO);
 
         willDoNothing().given(oAuthSellerService).refreshTokenValidate(refreshToken);
         willDoNothing().given(oAuthSellerService).deleteRefreshToken(refreshToken);
@@ -253,10 +252,12 @@ class OAuth2SellerFacadeUnitTest {
 
         // given
         String refreshToken = "invalidRefreshToken";
+        TokenClaimsDTO tokenClaimsDTO = TokenClaimsDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .build();
 
-        Claims claims = mock(Claims.class);
-        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(claims);
-
+        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(tokenClaimsDTO);
         willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED)).given(oAuthSellerService).refreshTokenValidate(refreshToken);
 
         // when & then
