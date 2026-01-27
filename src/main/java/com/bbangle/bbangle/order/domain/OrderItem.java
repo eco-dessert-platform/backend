@@ -30,13 +30,13 @@ public class OrderItem extends BaseEntity {
     private Long id;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "product_price")
-    private int productPrice;
+    private Integer productPrice;
 
     @Column(name = "unit_price")
-    private int unitPrice;
+    private Integer unitPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", columnDefinition = "VARCHAR(20)")
@@ -47,7 +47,7 @@ public class OrderItem extends BaseEntity {
     private OrderDeliveryStatus orderDeliveryStatus;
 
     @Column(name = "total_price")
-    private int totalPrice;
+    private Integer totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")

@@ -42,15 +42,14 @@ public class Order extends BaseEntity{
     private String buyerSubPhone;
 
     @Column(name = "delivery_fee")
-    private int deliveryFee;
+    private Integer deliveryFee;
 
     @Column(name = "total_amount")
-    private int totalAmount;
+    private Integer totalAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-
 
 
 }
