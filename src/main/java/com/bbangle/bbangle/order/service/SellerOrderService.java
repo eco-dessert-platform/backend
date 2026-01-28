@@ -25,6 +25,14 @@ public class SellerOrderService {
     @Transactional
     public OrderConfirmResponse confirmOrder(OrderConfirmCommand command) {
 
+        if (command.orderItemIds() == null || command.orderItemIds().isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+        }
+
+        List<Long> uniqueOrderItemIds = command.orderItemIds().stream()
+            .distinct()
+            .toList();
+
         Order order = orderRepository.findById(command.orderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
 
@@ -35,17 +43,17 @@ public class SellerOrderService {
 
         long ownedCount = orderItemRepository.countOwnedOrderItems(
             order.getId(),
-            command.orderItemIds(),
+            uniqueOrderItemIds,
             storeId
         );
 
-        if (ownedCount != command.orderItemIds().size()) {
+        if (ownedCount != uniqueOrderItemIds.size()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
         }
 
         List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdIn(
             order.getId(),
-            command.orderItemIds()
+            uniqueOrderItemIds
         );
 
         List<Long> confirmedOrderItemIds = orderItems.stream()
