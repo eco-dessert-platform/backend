@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.order.seller.controller.dto.response;
 
-import com.bbangle.bbangle.order.controller.dto.DeliveryStatus;
-import com.bbangle.bbangle.order.controller.dto.OrderStatus;
+import com.bbangle.bbangle.order.domain.model.DeliveryStatus;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class OrderDetailResponse {
 
         public static OrderDetail sample() {
             return new OrderDetail(
-                new OrderInfo(1001L, "ORD-20250927-0001", OrderStatus.PAID, 45000),
+                new OrderInfo(1001L, "ORD-20250927-0001", OrderStatus.PAYMENT_COMPLETED, 45000),
                 new BuyerInfo("홍길동", "김철수", "010-1234-5678", "02-987-6543"),
                 new DeliveryInfo(DeliveryStatus.IN_TRANSIT, "CJ대한통운", "1234567890", 3000,
                     "서울특별시 강남구 테헤란로 123", "부재 시 경비실에 맡겨주세요"),

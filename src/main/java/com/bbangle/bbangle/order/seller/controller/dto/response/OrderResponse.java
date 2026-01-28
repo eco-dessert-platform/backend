@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.order.seller.controller.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;

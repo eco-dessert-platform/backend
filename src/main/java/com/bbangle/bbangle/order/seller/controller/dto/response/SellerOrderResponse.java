@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.order.seller.controller.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;

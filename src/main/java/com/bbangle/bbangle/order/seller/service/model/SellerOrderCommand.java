@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.service.model;
+package com.bbangle.bbangle.order.seller.service.model;
 
 import java.util.List;
 import lombok.Builder;

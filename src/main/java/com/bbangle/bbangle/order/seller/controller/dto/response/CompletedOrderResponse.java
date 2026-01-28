@@ -1,10 +1,10 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.order.seller.controller.dto.response;
 
-import static com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus.CANCELED;
-import static com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus.PURCHASED;
+import static com.bbangle.bbangle.order.domain.model.CompletedOrderStatus.CANCELED;
+import static com.bbangle.bbangle.order.domain.model.CompletedOrderStatus.PURCHASED;
 
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus;
-import com.bbangle.bbangle.order.controller.dto.DayOfWeek;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderStatus;
+import com.bbangle.bbangle.order.domain.model.DayOfWeek;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;

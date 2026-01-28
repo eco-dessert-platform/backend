@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller.dto;
+package com.bbangle.bbangle.order.domain.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
