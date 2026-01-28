@@ -7,9 +7,9 @@ public class SellerOrderCommand {
 
     @Builder
     public record OrderConfirmCommand(
-        Long sellerId,
         Long orderId,
-        List<Long> orderItemIds
+        List<Long> orderItemIds,
+        Long sellerId
     ) {
     }
 }
