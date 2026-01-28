@@ -1,11 +1,11 @@
 package com.bbangle.bbangle.notification.admin.controller;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +37,7 @@ public interface AdminNotificationApi {
         Pageable pageable);
 
     @Operation(summary = "(관리자) 공지사항 삭제")
-    CommonResult deleteNotification(
+    SingleResult<AdminNotificationDeleteResponse> deleteNotification(
         Long adminId,
         List<Long> noticeId);
 

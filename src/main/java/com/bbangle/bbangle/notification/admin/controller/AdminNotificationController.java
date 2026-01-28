@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.notification.admin.controller;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -8,6 +7,7 @@ import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import com.bbangle.bbangle.notification.admin.facade.AdminNotificationFacade;
@@ -77,11 +77,11 @@ public class AdminNotificationController implements AdminNotificationApi {
 
     @DeleteMapping
     @Override
-    public CommonResult deleteNotification(
+    public SingleResult<AdminNotificationDeleteResponse> deleteNotification(
         @AuthenticationPrincipal Long adminId,
         @RequestBody List<Long> noticeId) {
 
-        adminNotificationService.deleteNotification(adminId, noticeId);
-        return responseService.getSuccessResult();
+        AdminNotificationDeleteResponse response = adminNotificationService.deleteNotification(adminId, noticeId);
+        return responseService.getSingleResult(response);
     }
 }

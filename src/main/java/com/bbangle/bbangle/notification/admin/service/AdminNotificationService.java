@@ -7,6 +7,8 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeCreateCommand;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.AdminNoticeUpdateCommand;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse.FailedNotice;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
@@ -108,22 +110,30 @@ public class AdminNotificationService {
     }
 
     @Transactional
-    public void deleteNotification(Long adminId, List<Long> noticeIds) {
-
-        adminRepository.findById(adminId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
+    public AdminNotificationDeleteResponse deleteNotification(Long adminId, List<Long> noticeIds) {
+        if (noticeIds == null || noticeIds.isEmpty()) {
+             throw new BbangleException(BbangleErrorCode._BAD_REQUEST);
+        }
 
         List<Long> distinctIds = noticeIds.stream().distinct().toList();
-
         List<Notice> notices = notificationRepository.findAllByIdInAndAdminId(distinctIds, adminId);
 
-        if (notices.size() != distinctIds.size()) {
-            throw new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE);
-        }
-        // soft delete 적용
+        // 삭제 성공 처리
         notices.forEach(Notice::delete);
         notificationRepository.saveAll(notices);
-    }
 
+        // 실패한 공지사항 목록 생성
+        List<Long> foundIds = notices.stream().map(Notice::getId).toList();
+        List<FailedNotice> failedNotices = distinctIds.stream()
+            .filter(id -> !foundIds.contains(id))
+            .map(id -> FailedNotice.builder()
+                .id(id)
+                .title("[존재하지 않는 공지사항]")
+                .build())
+            .toList();
+
+        int successCount = notices.size();
+        return AdminNotificationDeleteResponse.of(successCount, failedNotices);
+    }
 
 }
