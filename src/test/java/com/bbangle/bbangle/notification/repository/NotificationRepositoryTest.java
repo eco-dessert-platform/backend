@@ -53,6 +53,8 @@ class NotificationRepositoryTest {
     private EntityManager em;
 
     private static final Long PAGE_SIZE = 20L;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     /**
      * 테스트 전 auto increment 초기화
@@ -198,5 +200,29 @@ class NotificationRepositoryTest {
         assertThat(result.getNextCursor()).isNotNull();
     }
 
+    @DisplayName("작성자가 모든 공지사항을 삭제한다.")
+    @Test
+    void deleteNotification_success(){
+        // given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
+        List<Notice> notices = IntStream.rangeClosed(1, 25)
+            .mapToObj(i -> NoticeFixture.notice("공지사항 등록", "<div> 본문내용 <div>", admin))
+            .toList();
+        //when
+        notificationRepository.saveAll(notices);
+        em.flush();
+        em.clear();
+
+        // 저장 후 ID 수집
+        List<Long> noticeIds = notificationRepository.findAll().stream()
+            .map(Notice::getId)
+            .toList();
+
+        // then
+        notificationRepository.deleteAllByAdminIdAndIdIn(admin.getId(), noticeIds);
+
+        assertThat(notificationRepository.findAll()).isEmpty();
+
+    }
 }
 

@@ -84,4 +84,31 @@ public class AdminNotificationResponse {
                 .build();
         }
     }
+
+    @Schema(description = "관리자 공지사항 삭제 응답 DTO")
+    @Builder
+    public record AdminNotificationDeleteResponse(
+        @Schema(description = "삭제 성공한 공지사항 개수")
+        int successCount,
+        @Schema(description = "삭제 실패한 공지사항 개수")
+        int failureCount,
+        @Schema(description = "삭제 실패한 공지사항 정보 목록")
+        List<FailedNotice> failedNotices
+    ){
+        @Builder
+        public record FailedNotice(
+            @Schema(description = "공지사항 ID")
+            Long id,
+            @Schema(description = "공지사항 제목")
+            String title
+        ) {}
+
+        public static AdminNotificationDeleteResponse of(int successCount, List<FailedNotice> failedNotices) {
+            return AdminNotificationDeleteResponse.builder()
+                .successCount(successCount)
+                .failureCount(failedNotices.size())
+                .failedNotices(failedNotices)
+                .build();
+        }
+    }
 }

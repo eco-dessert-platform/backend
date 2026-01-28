@@ -7,6 +7,7 @@ import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationCreateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import com.bbangle.bbangle.notification.admin.facade.AdminNotificationFacade;
@@ -20,10 +21,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,5 +73,15 @@ public class AdminNotificationController implements AdminNotificationApi {
 
         Page<NoticeInfo> result = adminNotificationService.searchNotice(pageable);
         return responseService.getSingleResult(BbanglePageResponse.of(result.map(AdminNotificationSearchResponse::from)));
+    }
+
+    @DeleteMapping
+    @Override
+    public SingleResult<AdminNotificationDeleteResponse> deleteNotification(
+        @AuthenticationPrincipal Long adminId,
+        @RequestBody List<Long> noticeId) {
+
+        AdminNotificationDeleteResponse response = adminNotificationService.deleteNotification(adminId, noticeId);
+        return responseService.getSingleResult(response);
     }
 }
