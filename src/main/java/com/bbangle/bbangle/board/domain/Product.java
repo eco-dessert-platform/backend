@@ -186,6 +186,9 @@ public class Product extends SoftDeleteBaseEntity {
     public void editStock(int amount, EditStockFlag editStockFlag) {
         if (editStockFlag == EditStockFlag.INCREASE) {
             this.stock = this.stock + amount;
+            if (this.soldout) {
+                this.soldout = false;
+            }
         } else if (editStockFlag == EditStockFlag.DECREASE) {
             if (this.stock < amount) {
                 throw new BbangleException(BbangleErrorCode.INVALID_DECREASE_STOCK_AMOUNT);
