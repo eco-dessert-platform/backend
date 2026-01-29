@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller;
+package com.bbangle.bbangle.order.seller.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,9 +22,9 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.order.controller.dto.request.SellerOrderRequest.OrderConfirmRequest;
-import com.bbangle.bbangle.order.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
-import com.bbangle.bbangle.order.service.SellerOrderService;
+import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest.OrderConfirmRequest;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.service.SellerOrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

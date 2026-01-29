@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.order.controller.dto.request;
+package com.bbangle.bbangle.order.seller.controller.dto.request;
 
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderSearchType;
-import com.bbangle.bbangle.order.controller.dto.CompletedOrderStatus;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderStatus;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.time.LocalDate;
 

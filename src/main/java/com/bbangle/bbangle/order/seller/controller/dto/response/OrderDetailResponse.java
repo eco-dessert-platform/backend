@@ -1,7 +1,7 @@
-package com.bbangle.bbangle.order.controller.dto.response;
+package com.bbangle.bbangle.order.seller.controller.dto.response;
 
-import com.bbangle.bbangle.order.controller.dto.DeliveryStatus;
-import com.bbangle.bbangle.order.controller.dto.OrderStatus;
+import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -20,15 +20,15 @@ public class OrderDetailResponse {
 
         public static OrderDetail sample() {
             return new OrderDetail(
-                new OrderInfo(1001L, "ORD-20250927-0001", OrderStatus.PAID, 45000),
+                new OrderInfo(1001L, "ORD-20250927-0001", OrderStatus.PAYMENT_COMPLETED, 45000),
                 new BuyerInfo("홍길동", "김철수", "010-1234-5678", "02-987-6543"),
-                new DeliveryInfo(DeliveryStatus.IN_TRANSIT, "CJ대한통운", "1234567890", 3000,
+                new DeliveryInfo(OrderDeliveryStatus.DELIVERING, "CJ대한통운", "1234567890", 3000,
                     "서울특별시 강남구 테헤란로 123", "부재 시 경비실에 맡겨주세요"),
-                new ReturnDeliveryInfo(DeliveryStatus.PICKUP, "롯데택배", "RET-987654321", 2500,
+                new ReturnDeliveryInfo(OrderDeliveryStatus.PICKED_UP, "롯데택배", "RET-987654321", 2500,
                     "서울특별시 송파구 잠실로 456", "상품 불량으로 반품 요청"),
-                new ExchangeDeliveryInfo(DeliveryStatus.PICKUP, "한진택배", "EX-BUYER-11111", 2500,
+                new ExchangeDeliveryInfo(OrderDeliveryStatus.PICKED_UP, "한진택배", "EX-BUYER-11111", 2500,
                     "서울특별시 마포구 독막로 12", "사이즈 교환 요청"),
-                new ExchangeDeliveryInfo(DeliveryStatus.IN_TRANSIT, "CJ대한통운", "EX-SELLER-22222", 0,
+                new ExchangeDeliveryInfo(OrderDeliveryStatus.DELIVERING, "CJ대한통운", "EX-SELLER-22222", 0,
                     "서울특별시 마포구 독막로 12", "교환상품 발송 완료"),
                 List.of(
                     new OrderItemInfo(2001L, "디저트 게시판", "초코 마카롱 세트", 2, 15000),
@@ -59,7 +59,7 @@ public class OrderDetailResponse {
 
         @Schema(description = "배송 정보")
         public record DeliveryInfo(
-            @Schema(description = "배송 상태") DeliveryStatus status,
+            @Schema(description = "배송 상태") OrderDeliveryStatus status,
             @Schema(description = "택배사") String deliveryCompany,
             @Schema(description = "운송장 번호") String trackingNumber,
             @Schema(description = "배송비") Integer deliveryFee,
@@ -71,7 +71,7 @@ public class OrderDetailResponse {
 
         @Schema(description = "반품 배송 정보")
         public record ReturnDeliveryInfo(
-            @Schema(description = "배송 상태") DeliveryStatus status,
+            @Schema(description = "배송 상태") OrderDeliveryStatus status,
             @Schema(description = "택배사") String deliveryCompany,
             @Schema(description = "운송장 번호") String trackingNumber,
             @Schema(description = "배송비") Integer deliveryFee,
@@ -83,7 +83,7 @@ public class OrderDetailResponse {
 
         @Schema(description = "교환 배송 정보")
         public record ExchangeDeliveryInfo(
-            @Schema(description = "배송 상태") DeliveryStatus status,
+            @Schema(description = "배송 상태") OrderDeliveryStatus status,
             @Schema(description = "택배사") String deliveryCompany,
             @Schema(description = "운송장 번호") String trackingNumber,
             @Schema(description = "배송비") Integer deliveryFee,

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.controller.dto.request;
+package com.bbangle.bbangle.order.seller.controller.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

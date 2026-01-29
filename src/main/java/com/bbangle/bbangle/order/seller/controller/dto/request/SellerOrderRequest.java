@@ -1,6 +1,6 @@
-package com.bbangle.bbangle.order.controller.dto.request;
+package com.bbangle.bbangle.order.seller.controller.dto.request;
 
-import com.bbangle.bbangle.order.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;

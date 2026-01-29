@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.order.service;
+package com.bbangle.bbangle.order.seller.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -8,13 +8,13 @@ import static org.mockito.Mockito.times;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.order.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
-import com.bbangle.bbangle.order.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Optional;
