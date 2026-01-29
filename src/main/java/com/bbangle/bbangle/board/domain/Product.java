@@ -4,6 +4,7 @@ import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.PushType;
+import com.bbangle.bbangle.store.domain.Store;
 import com.google.firebase.database.annotations.NotNull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -50,6 +51,10 @@ public class Product extends SoftDeleteBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Store store;
 
     @Column(name = "title")
     private String title;
@@ -124,6 +129,7 @@ public class Product extends SoftDeleteBaseEntity {
         validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
 
         this.board = board;
+        this.store = board.getStore();
         this.title = title;
         this.price = price;
         this.category = category;
