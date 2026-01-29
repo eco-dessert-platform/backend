@@ -100,7 +100,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetchOne());
     }
 
-    // TODO : Test
     @Override
     public Optional<Store> findByStoreNameAndIsNotDeleted(String storeName) {
         return Optional.ofNullable(queryFactory.selectFrom(store)
@@ -109,7 +108,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetchOne());
     }
 
-    // TODO : Test
     @Override
     public CursorPagination<StoreInfo> findByStoreNameWithCursor(String storeName, Long cursorId) {
 
@@ -119,7 +117,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 Expressions.stringTemplate("REPLACE({0}, ' ', '')", store.name)
                     .contains(storeName),
                 store.isDeleted.eq(false),
-                cursorId != null ? store.id.gt(cursorId) : null
+                cursorId != null ? store.id.goe(cursorId) : null
             )
             .orderBy(store.id.asc())
             .limit(PAGE_SIZE + 1)

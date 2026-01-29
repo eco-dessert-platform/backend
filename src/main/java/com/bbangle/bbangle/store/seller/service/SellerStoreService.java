@@ -36,7 +36,6 @@ public class SellerStoreService {
         return storeRepository.save(Store.createForSeller(storeName));
     }
 
-    // TODO : Test
     @Transactional(readOnly = true)
     public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName, Long cursorId) {
         String normalizedStoreName = storeName.replaceAll("\\s+", "");
@@ -44,7 +43,6 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
-    // TODO : Test
     public StoreResponse.StoreNameCheck checkStoreName(String storeName) {
         String normalizedStoreName = storeName.strip();
 

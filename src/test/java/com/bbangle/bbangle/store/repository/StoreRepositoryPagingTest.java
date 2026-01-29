@@ -12,7 +12,6 @@ import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -43,26 +42,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class StoreRepositoryPagingTest {
 
+    private static final int TOTAL_STORES = 25;
+    private static final long PAGE_SIZE = 20L;
+    // 시간을 조작할 변수 (static으로 공유)
+    static LocalDateTime mockTime = LocalDateTime.now().minusDays(1);
+
     @Autowired
     private StoreRepository storeRepository;
 
     @Autowired
     private EntityManager em;
-
-    // 시간을 조작할 변수 (static으로 공유)
-    static LocalDateTime mockTime = LocalDateTime.now().minusDays(1);
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public DateTimeProvider dateTimeProvider() {
-            // 항상 mockTime 변수의 값을 현재 시간으로 반환
-            return () -> Optional.of(mockTime);
-        }
-    }
-
-    private static final int TOTAL_STORES = 25;
-    private static final long PAGE_SIZE = 20L;
 
     @BeforeEach
     void setUp() {
@@ -86,22 +75,57 @@ public class StoreRepositoryPagingTest {
         em.clear();
     }
 
-
     @Test
-    @DisplayName("첫 페이지를 정상적으로 조회한다")
-    void findNextCursorPage_firstPage_success() {
-        List<Long> storeIds = storeRepository.findAll().stream()
-            .map(Store::getId)
-            .toList();
+    @DisplayName("스토어 이름 검색 - 첫 페이지를 조회한다")
+    void findByStoreNameWithCursor_firstPage_success() {
+
+        // given
+        String storeName = "Store";
+
         // when
-        CursorPagination<StoreInfo> result = storeRepository.findNextCursorPage(storeIds);
+        CursorPagination<StoreInfo> result = storeRepository.findByStoreNameWithCursor(storeName, null);
 
         // then
         assertThat(result.getContent()).hasSize((int) PAGE_SIZE);
         assertThat(result.getHasNext()).isTrue();
-        // createdAt DESC, id DESC 이므로 가장 마지막에 생성된 Store 25가 첫번째로 와야 함
-        assertThat(result.getContent().get(0).name()).isEqualTo("Store 25");
-        assertThat(result.getContent().get(19).name()).isEqualTo("Store 6");
+
+        // id ASC이므로 가장 먼저 생성된 Store 1 부터
+        assertThat(result.getContent().get(0).name()).isEqualTo("Store 1");
+        assertThat(result.getContent().get(19).name()).isEqualTo("Store 20");
+
+        // nextCursor는 21번째 Store의 id
+        assertThat(result.getNextCursor()).isEqualTo(
+            result.getContent().get(19).id() + 1
+        );
     }
 
+    @Test
+    @DisplayName("스토어 이름 검색 - 두 번째 페이지를 cursorId 기준으로 조회한다.")
+    void findByStoreNameWithCursor_secondPage_success() {
+
+        // given
+        String storeName = "Store";
+
+        CursorPagination<StoreInfo> firstPage = storeRepository.findByStoreNameWithCursor(storeName, null);
+        Long cursorId = firstPage.getNextCursor();
+
+        // when
+        CursorPagination<StoreInfo> secondPage = storeRepository.findByStoreNameWithCursor(storeName, cursorId);
+
+        // then
+        assertThat(secondPage.getContent()).hasSize(5);
+        assertThat(secondPage.getHasNext()).isFalse();
+
+        assertThat(secondPage.getContent().get(0).name()).isEqualTo("Store 21");
+        assertThat(secondPage.getContent().get(4).name()).isEqualTo("Store 25");
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public DateTimeProvider dateTimeProvider() {
+            // 항상 mockTime 변수의 값을 현재 시간으로 반환
+            return () -> Optional.of(mockTime);
+        }
+    }
 }
