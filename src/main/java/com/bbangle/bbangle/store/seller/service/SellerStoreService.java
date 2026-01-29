@@ -9,7 +9,6 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,32 +38,26 @@ public class SellerStoreService {
 
     // TODO : Test
     @Transactional(readOnly = true)
-    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName){
-        if (storeName.isBlank()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
+    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName, Long cursorId) {
         String normalizedStoreName = storeName.replaceAll("\\s+", "");
 
-        /// 페이징 처리를 위한 +1 조회 진행
-        ///중복되지 않은 스토어명들을 조회하고 id 값을 List로 모아 페이징 처리 로직으로 전달
-        List<Long> storeIds = storeRepository.getStoreByStoreName(normalizedStoreName).stream().map(Store::getId).toList();
-
-        // 2. 스토어 명이 중복이 아니라면 사용 가능하다
-         return storeRepository.findNextCursorPage(storeIds);
+        return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
     // TODO : Test
     public StoreResponse.StoreNameCheck checkStoreName(String storeName) {
-        return storeRepository.findByStoreNameAndIsNotDeleted(storeName)
+        String normalizedStoreName = storeName.strip();
+
+        return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName)
             .map(store ->
                 StoreResponse.StoreNameCheck.builder()
-                    .duplicated(!StoreStatus.NONE.equals(store.getStatus()))
+                    .available(StoreStatus.NONE.equals(store.getStatus()))
                     .store(sellerStoreMapper.toSellerStoreDetail(store))
                     .build()
             )
             .orElseGet(() ->
                 StoreResponse.StoreNameCheck.builder()
-                    .duplicated(false)
+                    .available(true)
                     .store(null)
                     .build()
             );

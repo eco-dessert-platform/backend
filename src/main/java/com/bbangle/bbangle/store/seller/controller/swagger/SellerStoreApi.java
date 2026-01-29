@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 
 @Tag(name = "Seller Store", description = "(판매자) 스토어 API")
 public interface SellerStoreApi {
@@ -25,7 +26,11 @@ public interface SellerStoreApi {
             """
     )
     SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
-        @Parameter(description = "검색어", example = "빵그리의오븐") String storeName
+        @Parameter(description = "검색어", example = "빵그리의오븐")
+        @NotBlank(message = "스토어 이름은 필수입니다.")
+        String storeName,
+        @Parameter(description = "조회한 목록의 마지막 스토어의 id", example = "1")
+        Long cursorId
     );
 
     @Operation(summary = "스토어명 중복 확인")
@@ -39,7 +44,9 @@ public interface SellerStoreApi {
         )
     })
     SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
-        @Parameter(description = "스토어명", example = "빵그리의 오븐") String storeName
+        @Parameter(description = "스토어명", example = "빵그리의 오븐")
+        @NotBlank(message = "스토어 이름은 필수입니다.")
+        String storeName
     );
 
 }

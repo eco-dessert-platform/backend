@@ -28,8 +28,8 @@ public class StoreResponse {
     @Schema(description = "판매자 스토어 중복 검사 응답 DTO")
     @Builder
     public record StoreNameCheck(
-        @Schema(description = "스토어 이름 중복 여부 (true = 중복, false = 사용 가능)", example = "false") boolean duplicated,
-        SellerStoreDetail store
+        @Schema(description = "스토어 이름 중복 여부 (false = 중복, true = 사용 가능)", example = "false") boolean available,
+        @Schema(description = "스토어 상세 정보 (스토어가 존재할 경우)", nullable = true) SellerStoreDetail store
     ) {}
 
     @Schema(description = "판매자 스토어 상세 응답 DTO")
