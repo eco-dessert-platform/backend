@@ -60,10 +60,12 @@ public class TokenProvider {
     public TokenClaimsDTO parseRefreshToken(String token) {
         try {
             Claims claims = getClaims(token);
+            Long id = Long.valueOf((Integer) claims.get(USER_KEY));
+            Role role = Role.from((String) claims.get(ROLE_KEY));
 
             return TokenClaimsDTO.builder()
-                .id(claims.get("id", Long.class))
-                .role(Role.from(claims.get("role", String.class)))
+                .id(id)
+                .role(role)
                 .build();
         } catch (JwtException | IllegalArgumentException e) {
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
