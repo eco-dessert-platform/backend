@@ -1,10 +1,9 @@
 package com.bbangle.bbangle.store.seller.controller.swagger;
 
-import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,7 +24,7 @@ public interface SellerStoreApi {
             - EX) `storeName.replaceAll(" " , "")`
             """
     )
-    ListResult<SearchResponse> search(
+    SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
         @Parameter(description = "검색어", example = "빵그리의오븐") String storeName
     );
 
@@ -39,7 +38,7 @@ public interface SellerStoreApi {
             )
         )
     })
-    SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> checkStoreNameDuplicate(
+    SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
         @Parameter(description = "스토어명", example = "빵그리의 오븐") String storeName
     );
 

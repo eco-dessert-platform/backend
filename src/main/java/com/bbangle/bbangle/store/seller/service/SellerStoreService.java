@@ -4,8 +4,9 @@ import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.List;
@@ -18,15 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
-    private final SellerStoreMapper storeMapper;
-
-    // TODO : Test
-    public List<SearchResponse> searchStore(String storeName) {
-        String noSpaceStoreName = storeName.replaceAll("\\s+", "");
-
-        List<Store> stores = storeRepository.getStoreListByStoreName(noSpaceStoreName);
-        return storeMapper.toSearchResponseList(stores);
-    }
+    private final SellerStoreMapper sellerStoreMapper;
 
     @Transactional
     public Store registerStoreForSeller(Long storeId, String storeName) {
@@ -44,16 +37,13 @@ public class SellerStoreService {
         return storeRepository.save(Store.createForSeller(storeName));
     }
 
+    // TODO : Test
     @Transactional(readOnly = true)
     public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName){
-        String normalizedStoreName = normalize(storeName);
-        if (normalizedStoreName == null) {
+        if (storeName.isBlank()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
-        // 1. 스토어명이 중복이라면 사용할 수없다.
-        if (storeRepository.existsByStoreName((normalizedStoreName))){
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
+        String normalizedStoreName = storeName.replaceAll("\\s+", "");
 
         /// 페이징 처리를 위한 +1 조회 진행
         ///중복되지 않은 스토어명들을 조회하고 id 값을 List로 모아 페이징 처리 로직으로 전달
@@ -63,11 +53,20 @@ public class SellerStoreService {
          return storeRepository.findNextCursorPage(storeIds);
     }
 
-    private String normalize(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        // → "   " 같은 공백-only 문자열이면 null로 간주
-        return trimmed.isEmpty() ? null : trimmed;
+    // TODO : Test
+    public StoreResponse.StoreNameCheck checkStoreName(String storeName) {
+        return storeRepository.findByStoreNameAndIsNotDeleted(storeName)
+            .map(store ->
+                StoreResponse.StoreNameCheck.builder()
+                    .duplicated(!StoreStatus.NONE.equals(store.getStatus()))
+                    .store(sellerStoreMapper.toSellerStoreDetail(store))
+                    .build()
+            )
+            .orElseGet(() ->
+                StoreResponse.StoreNameCheck.builder()
+                    .duplicated(false)
+                    .store(null)
+                    .build()
+            );
     }
-
 }

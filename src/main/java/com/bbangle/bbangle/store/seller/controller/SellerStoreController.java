@@ -1,11 +1,10 @@
 package com.bbangle.bbangle.store.seller.controller;
 
-import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// TODO : Test
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(SellerApiPath.PREFIX + "/stores")
@@ -23,24 +23,22 @@ public class SellerStoreController implements SellerStoreApi {
     private final ResponseService responseService;
     private final SellerStoreService sellerStoreService;
 
-    // TODO : Test
     @Override
     @GetMapping("/search")
-    public ListResult<SearchResponse> search(
+    public SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
         @RequestParam String storeName
     ) {
-        return responseService.getListResult(sellerStoreService.searchStore(storeName));
+        return responseService.getSingleResult(
+            sellerStoreService.selectStoreNameForSeller(storeName)
+        );
     }
 
 
     @Override
-    @GetMapping("/check-name-duplicate")
-    public SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> checkStoreNameDuplicate(
-        @RequestParam String storeName) {
-
-        CursorPagination<SellerStoreInfo.StoreInfo> result = sellerStoreService.selectStoreNameForSeller(
-            storeName);
-
-        return responseService.getSingleResult(result);
+    @GetMapping("/check-name")
+    public SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+        @RequestParam String storeName
+    ) {
+        return responseService.getSingleResult(sellerStoreService.checkStoreName(storeName));
     }
 }

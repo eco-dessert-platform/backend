@@ -11,7 +11,6 @@ import com.bbangle.bbangle.board.customer.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -103,7 +102,16 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetchOne());
     }
 
+    // TODO : Test
+    @Override
+    public Optional<Store> findByStoreNameAndIsNotDeleted(String storeName) {
+        return Optional.ofNullable(queryFactory.selectFrom(store)
+            .where(store.name.eq(storeName)
+                .and(store.isDeleted.eq(false)))
+            .fetchOne());
+    }
 
+    // TODO : Test
     @Override
     public CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds) {
 
@@ -115,41 +123,31 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .selectFrom(store)
             .where(store.id.in(storeIds))
             .limit(PAGE_SIZE + 1) // PAGE_SIZE는 상수값 20 고정
-            .orderBy(store.createdAt.desc(), store.id.desc())
+            .orderBy(store.name.asc())
+            //.orderBy(store.createdAt.desc(), store.id.desc())
             .fetch();
 
         List<SellerStoreInfo.StoreInfo> response = stores.stream()
             .map(StoreInfo::from)
             .toList();
 
-
         return CursorPagination.of(response, PAGE_SIZE, null, SellerStoreInfo.StoreInfo::id);
     }
 
     // TODO : Test
-    @Override
-    public List<Store> getStoreListByStoreName(String storeName) {
-
-        return queryFactory.selectFrom(store)
-            .where(
-                Expressions.stringTemplate(
-                    "REPLACE({0}, ' ', '')", store.name
-                ).contains(storeName)
-            )
-            .orderBy(store.name.desc())
-            .fetch();
-    }
-
     ///  페이징 처리를 위한 스토어 이름 검색 메서드
     @Override
     public List<Store> getStoreByStoreName(String storeName) {
 
         return queryFactory.selectFrom(store)
-            .where(store.name.contains(storeName)
-                .and(store.isDeleted.eq(false))
-                .and(store.status.eq(StoreStatus.NONE)))
+            .where(
+                Expressions.stringTemplate("REPLACE({0}, ' ', '')", store.name)
+                    .contains(storeName)
+                    .and(store.isDeleted.eq(false))
+            )
             .limit(PAGE_SIZE + 1)
-            .orderBy(store.createdAt.desc(), store.id.desc())
-            .stream().toList();
+            .orderBy(store.name.asc())
+            //.orderBy(store.createdAt.desc(), store.id.desc())
+            .fetch();
     }
 }
