@@ -65,7 +65,6 @@ class SellerStoreControllerTest {
         StoreInfo storeInfo = StoreInfo.builder()
             .id(1L)
             .name("빵굽는하루")
-            .status(StoreStatus.NONE)
             .build();
 
         CursorPagination<SellerStoreInfo.StoreInfo> pagination = CursorPagination.of(List.of(storeInfo),20, null, StoreInfo::id);
@@ -80,7 +79,6 @@ class SellerStoreControllerTest {
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
             .andExpect(jsonPath("$.result.content[0].id").value(1L))
             .andExpect(jsonPath("$.result.content[0].name").value("빵굽는하루"))
-            .andExpect(jsonPath("$.result.content[0].status").value("NONE"))
             .andExpect(jsonPath("$.result.nextCursor").value(-1L))
             .andExpect(jsonPath("$.result.hasNext").value(false));
     }
@@ -96,7 +94,6 @@ class SellerStoreControllerTest {
         StoreInfo storeInfo = StoreInfo.builder()
             .id(21L)
             .name("빵굽는하루")
-            .status(StoreStatus.NONE)
             .build();
 
         CursorPagination<SellerStoreInfo.StoreInfo> pagination =
@@ -113,7 +110,6 @@ class SellerStoreControllerTest {
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
             .andExpect(jsonPath("$.result.content[0].id").value(21L))
             .andExpect(jsonPath("$.result.content[0].name").value("빵굽는하루"))
-            .andExpect(jsonPath("$.result.content[0].status").value("NONE"))
             .andExpect(jsonPath("$.result.nextCursor").value(-1L))
             .andExpect(jsonPath("$.result.hasNext").value(false));
     }
