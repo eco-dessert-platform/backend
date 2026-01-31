@@ -36,7 +36,7 @@ public interface SellerStoreApi {
     @Operation(
         summary = "스토어명 중복 확인",
         description = """
-        ### 판매자의 JWT 토큰을 발급 받고 계정 상태를 조회
+        ### 입력한 스토어 이름이 사용가능한지 체크하고 스토어 상세 정보를 조회
 
         ---
         ### 스토어 상태 설명 표
