@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.claim.repository.custom;
 
-import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.board.domain.QProduct.product;
 import static com.bbangle.bbangle.claim.domain.QClaim.claim;
 import static com.bbangle.bbangle.order.domain.QOrderItem.orderItem;
@@ -22,8 +21,7 @@ public class ClaimCustomRepositoryImpl implements ClaimCustomRepository {
             .from(claim)
             .join(claim.orderItem, orderItem)
             .join(orderItem.product, product)
-            .join(product.board, board)
-            .join(board.store, store)
+            .join(product.store, store)
             .join(seller).on(seller.store.eq(store))
             .where(
                 claim.id.eq(claimId),
