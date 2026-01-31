@@ -119,9 +119,9 @@ class AccountVerificationServiceIntegrationTest {
      * 테스트용 AccountVerification 생성 헬퍼 메서드
      */
     private AccountVerification createAccountVerification(Seller seller, boolean verified) {
-        AccountVerification accountVerification = new AccountVerification(
-            "테스트은행",
-            "1234567890",
+        AccountVerification accountVerification = AccountVerification.create(
+            "92",
+            "encryptedAccountNumber",
             "홍길동",
             verified,
             seller

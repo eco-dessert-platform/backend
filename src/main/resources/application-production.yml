@@ -116,3 +116,7 @@ management:
     health:
       probes:
         enabled: true
+
+encryption:
+  aes:
+    secret-key: ${AES_SECRET_KEY}

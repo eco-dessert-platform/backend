@@ -115,3 +115,7 @@ springdoc:
 app:
   cookie:
     domain: ${COOKIE_DOMAIN}
+
+encryption:
+  aes:
+    secret-key: ${AES_SECRET_KEY}
