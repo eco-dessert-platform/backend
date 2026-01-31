@@ -33,7 +33,20 @@ public interface SellerStoreApi {
         Long cursorId
     );
 
-    @Operation(summary = "스토어명 중복 확인")
+    @Operation(
+        summary = "스토어명 중복 확인",
+        description = """
+        ### 판매자의 JWT 토큰을 발급 받고 계정 상태를 조회
+
+        ---
+        ### 스토어 상태 설명 표
+        |Status Code|의미|설명|
+        |-----------|----|----|
+        |RESERVED|선점|판매자가 해당 가게를 등록했지만 관리자가 승인하지 않은 상태|
+        |ACTIVE|등록|관리자가 승인하여 최종적으로 해당 가게 등록자가 된 상태|
+        |NONE|비선점|해당 스토어를 등록한 판매자가 아직 없는 상태|
+        """
+    )
     @ApiResponses(value = {
               @ApiResponse(
             responseCode = "400",
