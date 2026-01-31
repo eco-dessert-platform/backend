@@ -2,7 +2,7 @@ package com.bbangle.bbangle.claim.seller.controller;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
 import com.bbangle.bbangle.claim.seller.controller.swagger.SellerReturnApi;
-import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
+import com.bbangle.bbangle.claim.seller.service.SellerClaimService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SellerReturnController implements SellerReturnApi {
 
     private final ResponseService responseService;
-    private final SellerReturnService sellerReturnService;
+    private final SellerClaimService sellerClaimService;
 
     @PostMapping("/{returnId}/decision")
     public CommonResult returnDecision(
@@ -29,7 +29,8 @@ public class SellerReturnController implements SellerReturnApi {
         @Valid @RequestBody ReturnDecisionRequest returnDecisionRequest,
         @AuthenticationPrincipal Long sellerId
     ) {
-        sellerReturnService.returnDecision(returnId, sellerId, returnDecisionRequest);
+        sellerClaimService.decision(returnId, sellerId,
+            returnDecisionRequest.decisionType(), returnDecisionRequest.reason());
         return responseService.getSuccessResult();
     }
 

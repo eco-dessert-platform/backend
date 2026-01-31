@@ -22,19 +22,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@DisplayName("[비즈니스 로직] SellerReturnService")
+@DisplayName("[비즈니스 로직] SellerClaimService")
 @ExtendWith(MockitoExtension.class)
-class SellerReturnServiceTest {
+class SellerClaimServiceTest {
 
     @InjectMocks
-    private SellerReturnService sut;
+    private SellerClaimService sut;
 
     @Mock
     private ClaimRepository claimRepository;
 
     @Test
     @DisplayName("반품 승인 - 판매자와 반품 요청이 일치하면 approve가 호출된다")
-    void returnDecision_approve_success() {
+    void decision_approve_success() {
         // given
         Long returnId = 1L;
         Long sellerId = 10L;
@@ -47,7 +47,7 @@ class SellerReturnServiceTest {
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
 
         // when
-        sut.returnDecision(returnId, sellerId, request);
+        sut.decision(returnId, sellerId, request.decisionType(), request.reason());
 
         // then
         then(returnRequest).should(times(1)).approve(reason);
@@ -56,7 +56,7 @@ class SellerReturnServiceTest {
 
     @Test
     @DisplayName("반품 거절 - 판매자와 반품 요청이 일치하면 reject가 호출된다")
-    void returnDecision_reject_success() {
+    void decision_reject_success() {
         // given
         Long returnId = 1L;
         Long sellerId = 10L;
@@ -68,7 +68,7 @@ class SellerReturnServiceTest {
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
 
         // when
-        sut.returnDecision(returnId, sellerId, request);
+        sut.decision(returnId, sellerId, request.decisionType(), request.reason());
 
         // then
         then(returnRequest).should(times(1)).reject(reason);
@@ -77,7 +77,7 @@ class SellerReturnServiceTest {
 
     @Test
     @DisplayName("판매자와 반품 요청이 매칭되지 않으면 예외가 발생한다")
-    void returnDecision_sellerMismatch_throwException() {
+    void decision_sellerMismatch_throwException() {
         // given
         Long returnId = 1L;
         Long sellerId = 10L;
@@ -87,7 +87,7 @@ class SellerReturnServiceTest {
         given(claimRepository.existsReturnRequestBySeller(returnId, sellerId)).willReturn(false);
 
         // when & then
-        assertThatThrownBy(() -> sut.returnDecision(returnId, sellerId, request))
+        assertThatThrownBy(() -> sut.decision(returnId, sellerId, request.decisionType(), request.reason()))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.SELLER_CLAIM_MISMATCH.getMessage());
 
@@ -96,7 +96,7 @@ class SellerReturnServiceTest {
 
     @Test
     @DisplayName("반품 요청이 존재하지 않으면 예외가 발생한다")
-    void returnDecision_claimNotFound_throwException() {
+    void decision_claimNotFound_throwException() {
         // given
         Long returnId = 1L;
         Long sellerId = 10L;
@@ -107,7 +107,7 @@ class SellerReturnServiceTest {
         given(claimRepository.findById(returnId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> sut.returnDecision(returnId, sellerId, request))
+        assertThatThrownBy(() -> sut.decision(returnId, sellerId, request.decisionType(), request.reason()))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.CLAIM_NOT_FOUND.getMessage());
     }
