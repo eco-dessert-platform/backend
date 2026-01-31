@@ -57,8 +57,8 @@ public class AccountVerificationService {
             seller
         );
 
-        AccountVerification saved = accountVerificationRepository.save(accountVerification);
+        accountVerificationRepository.save(accountVerification);
 
-        return AccountVerificationInfo.from(saved);
+        return AccountVerificationInfo.from(accountVerification);
     }
 }
