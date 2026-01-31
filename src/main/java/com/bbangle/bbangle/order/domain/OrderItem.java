@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -67,6 +68,27 @@ public class OrderItem extends BaseEntity {
         }
         this.orderStatus = OrderStatus.ORDER_CONFIRMED;
         return true;
+    }
+
+    @Builder
+    public OrderItem(
+        Integer quantity,
+        Integer productPrice,
+        Integer unitPrice,
+        OrderStatus orderStatus,
+        OrderDeliveryStatus orderDeliveryStatus,
+        Integer totalPrice,
+        Order order,
+        Product product
+    ) {
+        this.quantity = quantity;
+        this.productPrice = productPrice;
+        this.unitPrice = unitPrice;
+        this.orderStatus = orderStatus;
+        this.orderDeliveryStatus = orderDeliveryStatus;
+        this.totalPrice = totalPrice;
+        this.order = order;
+        this.product = product;
     }
 
     public void returnApprove() {
