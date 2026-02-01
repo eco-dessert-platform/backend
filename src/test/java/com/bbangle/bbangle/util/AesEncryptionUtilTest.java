@@ -91,4 +91,20 @@ class AesEncryptionUtilTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("AES key must be 16, 24, or 32 bytes");
     }
+
+    @Test
+    @DisplayName("같은 평문을 암호화해도 매번 다른 암호문이 생성된다")
+    void success_encrypt_produces_different_ciphertext_each_time() {
+        // arrange
+        String plainText = "123412341234";
+
+        // act
+        String encrypted1 = aesEncryptionUtil.encrypt(plainText);
+        String encrypted2 = aesEncryptionUtil.encrypt(plainText);
+
+        // assert
+        assertThat(encrypted1).isNotEqualTo(encrypted2);
+        assertThat(aesEncryptionUtil.decrypt(encrypted1)).isEqualTo(plainText);
+        assertThat(aesEncryptionUtil.decrypt(encrypted2)).isEqualTo(plainText);
+    }
 }
