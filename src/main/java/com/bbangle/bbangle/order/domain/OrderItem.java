@@ -102,6 +102,6 @@ public class OrderItem extends BaseEntity {
         if (orderStatus != RETURN_REQUESTED) {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
         }
-        this.orderStatus = OrderStatus.RETURN_APPROVED;
+        this.orderStatus = OrderStatus.RETURN_REJECTED;
     }
 }
