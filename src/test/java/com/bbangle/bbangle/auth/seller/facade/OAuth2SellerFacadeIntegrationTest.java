@@ -7,7 +7,7 @@ import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
-import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
@@ -191,7 +191,7 @@ class OAuth2SellerFacadeIntegrationTest {
         redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
 
         // when
-        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+        GenerateTokenDTO response = oAuth2SellerFacade.generateToken(code);
 
         // then
         assertThat(response.sellerId()).isEqualTo(1L);

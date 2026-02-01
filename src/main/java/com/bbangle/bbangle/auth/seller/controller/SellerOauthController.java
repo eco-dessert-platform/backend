@@ -6,6 +6,7 @@ import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.swagger.SellerOauthApi;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
@@ -46,10 +47,19 @@ public class SellerOauthController implements SellerOauthApi {
     @Override
     @PostMapping("/tokens")
     public SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestBody @Valid GenerateTokenRequest request
+        @RequestBody @Valid GenerateTokenRequest request,
+        HttpServletResponse response
     ) {
+        GenerateTokenDTO dto = oAuth2SellerFacade.generateToken(request.generateToken());
+
+        response.setHeader("Authorization", "Bearer " + dto.accessToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken(), Duration.ofDays(14)).toString());
+
         return responseService.getSingleResult(
-            oAuth2SellerFacade.generateToken(request.generateToken())
+            GenerateTokenResponse.builder()
+                .sellerId(dto.sellerId())
+                .status(dto.status())
+                .build()
         );
     }
 

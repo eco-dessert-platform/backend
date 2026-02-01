@@ -14,7 +14,7 @@ import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
-import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -163,7 +163,7 @@ class OAuth2SellerFacadeUnitTest {
         given(oAuthSellerService.generateAccessToken(1L, Role.ROLE_SELLER)).willReturn("accessToken");
 
         // when
-        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+        GenerateTokenDTO response = oAuth2SellerFacade.generateToken(code);
 
         // then
         assertThat(response.refreshToken()).isEqualTo("refreshToken");

@@ -15,6 +15,7 @@ import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -74,12 +75,16 @@ class SellerOauthControllerTest {
         // given
         String code = "oAuthCode";
 
-        GenerateTokenResponse dto = GenerateTokenResponse.of(
+        GenerateTokenDTO dto = GenerateTokenDTO.of(
             "refreshToken",
             "accessToken",
             1L,
             CertificationStatus.NEW
         );
+        GenerateTokenResponse response = GenerateTokenResponse.builder()
+            .sellerId(dto.sellerId())
+            .status(dto.status())
+            .build();
 
         given(oAuth2SellerFacade.generateToken(code)).willReturn(dto);
 
@@ -89,15 +94,15 @@ class SellerOauthControllerTest {
                 .content(jsonDataEncoder.encode(new GenerateTokenRequest(code)))
             )
             .andExpect(status().isOk())
+            .andExpect(header().string("Authorization", "Bearer accessToken"))
+            .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refreshToken=refreshToken")))
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
-            .andExpect(jsonPath("$.result.refreshToken").value("refreshToken"))
-            .andExpect(jsonPath("$.result.accessToken").value("accessToken"))
             .andExpect(jsonPath("$.result.sellerId").value(1L))
             .andExpect(jsonPath("$.result.status").value("NEW"));
 
-        then(responseService).should(times(1)).getSingleResult(dto);
+        then(responseService).should(times(1)).getSingleResult(response);
     }
 
     @Test

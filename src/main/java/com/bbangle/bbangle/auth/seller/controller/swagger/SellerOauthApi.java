@@ -100,7 +100,8 @@ public interface SellerOauthApi {
         """
     )
     SingleResult<GenerateTokenResponse> sellerToken(
-        @RequestBody @Valid GenerateTokenRequest request
+        @RequestBody @Valid GenerateTokenRequest request,
+        HttpServletResponse response
     );
 
     @Operation(
