@@ -39,6 +39,13 @@ public class SellerController implements SellerApi {
     private final SellerFacade sellerFacade;
     private final AccountVerificationService accountVerificationService;
 
+    /**
+     * Registers seller documents uploaded via multipart/form-data.
+     *
+     * @param request  the multipart/form-data request containing document files and metadata
+     * @param sellerId the authenticated seller's id
+     * @return a list result containing information about the registered seller documents
+     */
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
         @Valid @ModelAttribute SellerDocumentsRegisterRequest request,
@@ -79,7 +86,13 @@ public class SellerController implements SellerApi {
     }
 
 
-    // TODO : v3
+    /**
+     * Create a new seller using the provided creation payload and profile image.
+     *
+     * @param request      the seller creation payload
+     * @param profileImage the seller's profile image file
+     * @return             a CommonResult indicating success with no payload
+     */
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult createSeller(
@@ -91,6 +104,13 @@ public class SellerController implements SellerApi {
     }
 
 
+    /**
+     * Initiates account verification for the authenticated seller and returns verification details.
+     *
+     * @param request the account verification request payload
+     * @param sellerId the authenticated seller's ID
+     * @return a CommonResult containing AccountVerificationInfo with the verification result
+     */
     @PostMapping("/account-verifications")
     @Override
     public CommonResult accountVerification(

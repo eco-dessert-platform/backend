@@ -19,6 +19,12 @@ public class AesEncryptionUtil {
     private final SecretKeySpec secretKeySpec;
     private final IvParameterSpec ivParameterSpec;
 
+    /**
+     * Create an AesEncryptionUtil configured with the provided AES secret key.
+     *
+     * @param secretKey the AES secret key string; when encoded as UTF-8 it must be 16, 24, or 32 bytes long
+     * @throws IllegalArgumentException if the UTF-8 encoding of {@code secretKey} does not produce 16, 24, or 32 bytes
+     */
     public AesEncryptionUtil(@Value("${encryption.aes.secret-key}") String secretKey) {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length != 16 && keyBytes.length != 24 && keyBytes.length != 32) {
@@ -28,6 +34,13 @@ public class AesEncryptionUtil {
         this.ivParameterSpec = new IvParameterSpec(keyBytes, 0, 16);
     }
 
+    /**
+     * Encrypts the given plaintext using AES/CBC/PKCS5Padding and produces Base64-encoded ciphertext.
+     *
+     * @param plainText the UTF-8 string to encrypt; if null or empty, the same value is returned unchanged
+     * @return the Base64-encoded ciphertext corresponding to the input plaintext
+     * @throws BbangleException if encryption fails
+     */
     public String encrypt(String plainText) {
         if (plainText == null || plainText.isEmpty()) {
             return plainText;
@@ -42,6 +55,13 @@ public class AesEncryptionUtil {
         }
     }
 
+    /**
+     * Decrypts a Base64-encoded AES/CBC/PKCS5Padding ciphertext and returns the resulting UTF-8 plaintext.
+     *
+     * @param encryptedText the Base64-encoded ciphertext to decrypt; if {@code null} or empty, the same value is returned
+     * @return the decrypted plaintext as a UTF-8 string
+     * @throws BbangleException if decryption fails
+     */
     public String decrypt(String encryptedText) {
         if (encryptedText == null || encryptedText.isEmpty()) {
             return encryptedText;

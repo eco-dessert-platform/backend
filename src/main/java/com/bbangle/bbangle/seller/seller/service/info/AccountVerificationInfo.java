@@ -19,6 +19,12 @@ public record AccountVerificationInfo(
     LocalDateTime createdAt
 ) {
 
+    /**
+     * Create an AccountVerificationInfo DTO from an AccountVerification domain object.
+     *
+     * @param accountVerification the domain object to convert
+     * @return an AccountVerificationInfo containing id, sellerId, verified, and createdAt from the given accountVerification
+     */
     public static AccountVerificationInfo from(AccountVerification accountVerification) {
         return new AccountVerificationInfo(
             accountVerification.getId(),

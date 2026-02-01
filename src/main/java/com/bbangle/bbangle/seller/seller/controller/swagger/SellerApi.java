@@ -146,7 +146,18 @@ public interface SellerApi {
         SellerCreateRequest request,
         MultipartFile profileImage);
 
-    @Operation(
+    /**
+         * Verify a seller's bank account.
+         *
+         * <p>Uses Toss Payments standard bank codes; the verification API may change due to PG contract
+         * constraints.</p>
+         *
+         * @param request the account verification request payload containing bank code, account number,
+         *                and account holder information
+         * @return a CommonResult whose `result` contains the verification record with `id`, `sellerId`,
+         *         `verified` (boolean), and `createdAt` (ISO-8601 timestamp)
+         */
+        @Operation(
         summary = "계좌 인증",
         description = """
             판매자의 계좌를 인증합니다.

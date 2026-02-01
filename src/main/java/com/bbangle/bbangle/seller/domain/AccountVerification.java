@@ -40,6 +40,15 @@ public class AccountVerification extends BaseEntity {
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
+    /**
+     * Creates a new AccountVerification with the specified bank code, encrypted account number, account holder, verification status, and associated seller.
+     *
+     * @param bankCode the bank code (stored as VARCHAR(10))
+     * @param encryptedAccountNumber the account number already encrypted for storage (stored as VARBINARY(255))
+     * @param accountHolder the account holder's name
+     * @param verified whether the account has been verified
+     * @param seller the associated Seller entity
+     */
     private AccountVerification(String bankCode, String encryptedAccountNumber, String accountHolder,
                                 boolean verified, Seller seller) {
         this.bankCode = bankCode;
@@ -49,6 +58,16 @@ public class AccountVerification extends BaseEntity {
         this.seller = seller;
     }
 
+    /**
+     * Create a new AccountVerification with the provided bank code, encrypted account number, account holder, verification status, and associated seller.
+     *
+     * @param bankCode the bank code (stored as VARCHAR(10))
+     * @param encryptedAccountNumber the account number in encrypted form (stored as VARBINARY)
+     * @param accountHolder the account holder's name
+     * @param verified the verification status
+     * @param seller the Seller associated with this account verification
+     * @return a new AccountVerification initialized with the given values
+     */
     public static AccountVerification create(String bankCode, String encryptedAccountNumber,
                                              String accountHolder, boolean verified, Seller seller) {
         return new AccountVerification(bankCode, encryptedAccountNumber, accountHolder, verified, seller);

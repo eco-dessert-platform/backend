@@ -28,6 +28,12 @@ public class SellerRequest {
         String accountNumber
     ) {
 
+        /**
+         * Create a VerifyAccountCommand for the given seller using this request's bank code and account number.
+         *
+         * @param sellerId the ID of the seller to verify the account for
+         * @return a VerifyAccountCommand populated with the seller ID, bank code, and account number
+         */
         public VerifyAccountCommand toCommand(Long sellerId) {
             return new VerifyAccountCommand(sellerId, bankCode, accountNumber);
         }

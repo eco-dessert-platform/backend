@@ -27,6 +27,13 @@ public class AccountVerificationService {
     private final AccountVerificationClient accountVerificationClient;
     private final AesEncryptionUtil aesEncryptionUtil;
 
+    /**
+     * Confirms that the account verification identified by the given id is marked as verified.
+     *
+     * @param accountVerificationId the id of the AccountVerification to confirm
+     * @throws BbangleException with {@code ACCOUNT_VERIFICATION_NOT_FOUND} if no record exists for the given id
+     * @throws BbangleException with {@code ACCOUNT_NOT_VERIFIED} if the found AccountVerification is not verified
+     */
     public void confirmAccount(Long accountVerificationId) {
         AccountVerification accountVerification = accountVerificationRepository.findById(accountVerificationId)
             .orElseThrow(() -> new BbangleException(ACCOUNT_VERIFICATION_NOT_FOUND));
@@ -36,6 +43,12 @@ public class AccountVerificationService {
         }
     }
 
+    /**
+     * Verifies a seller's bank account using the provided command and records the result.
+     *
+     * @param command contains the seller ID, bank code, and account number used to perform verification
+     * @return an AccountVerificationInfo representing the persisted account verification
+     */
     @Transactional
     public AccountVerificationInfo verifyAccount(VerifyAccountCommand command) {
         Seller seller = sellerRepository.findById(command.sellerId())
