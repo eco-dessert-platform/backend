@@ -3,6 +3,7 @@ package com.bbangle.bbangle.seller.seller.controller;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
@@ -10,7 +11,9 @@ import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStor
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
 import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
+import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -34,6 +37,7 @@ public class SellerController implements SellerApi {
     private final ResponseService responseService;
     private final SellerService sellerService;
     private final SellerFacade sellerFacade;
+    private final AccountVerificationService accountVerificationService;
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
@@ -87,9 +91,14 @@ public class SellerController implements SellerApi {
     }
 
 
+    @PostMapping("/account-verifications")
     @Override
-    public CommonResult accountVerification(String accountNumber, String sellerName) {
-        return responseService.getSuccessResult();
+    public CommonResult accountVerification(
+        @RequestBody @Valid AccountVerificationRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        AccountVerificationInfo info = accountVerificationService.verifyAccount(request.toCommand(sellerId));
+        return responseService.getSingleResult(info);
     }
 
 }

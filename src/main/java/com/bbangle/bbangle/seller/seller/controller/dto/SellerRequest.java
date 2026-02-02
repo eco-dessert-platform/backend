@@ -4,6 +4,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
+import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +16,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Builder
 public class SellerRequest {
+
+    @Schema(description = "계좌 인증 요청 DTO")
+    public record AccountVerificationRequest(
+        @Schema(description = "은행코드 (토스페이먼츠 표준)", example = "92")
+        @NotBlank(message = "은행코드는 필수입니다.")
+        String bankCode,
+
+        @Schema(description = "계좌번호", example = "123412341234")
+        @NotBlank(message = "계좌번호는 필수입니다.")
+        String accountNumber
+    ) {
+
+        public VerifyAccountCommand toCommand(Long sellerId) {
+            return new VerifyAccountCommand(sellerId, bankCode, accountNumber);
+        }
+    }
 
     public record SellerDocumentsRegisterRequest(
         @Schema(description = "사업자 등록증", requiredMode = REQUIRED, type = "string", format = "binary")

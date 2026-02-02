@@ -24,8 +24,8 @@ public class AccountVerification extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bank_name", columnDefinition = "VARCHAR(50)")
-    private String bankName;
+    @Column(name = "bank_code", columnDefinition = "VARCHAR(10)")
+    private String bankCode;
 
     @Column(name = "account_number", columnDefinition = "VARBINARY(255)")
     private String accountNumber;
@@ -40,12 +40,17 @@ public class AccountVerification extends BaseEntity {
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
-    public AccountVerification(String bankName, String accountNumber, String accountHolder, boolean verified,
-                               Seller seller) {
-        this.bankName = bankName;
-        this.accountNumber = accountNumber;
+    private AccountVerification(String bankCode, String encryptedAccountNumber, String accountHolder,
+                                boolean verified, Seller seller) {
+        this.bankCode = bankCode;
+        this.accountNumber = encryptedAccountNumber;
         this.accountHolder = accountHolder;
         this.verified = verified;
         this.seller = seller;
+    }
+
+    public static AccountVerification create(String bankCode, String encryptedAccountNumber,
+                                             String accountHolder, boolean verified, Seller seller) {
+        return new AccountVerification(bankCode, encryptedAccountNumber, accountHolder, verified, seller);
     }
 }

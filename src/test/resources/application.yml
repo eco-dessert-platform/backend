@@ -61,3 +61,7 @@ logging:
 jwt:
   issuer: testStore53525
   secret_key: testKey123443555
+
+encryption:
+  aes:
+    secret-key: 1234567890123456
