@@ -23,6 +23,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest.OrderConfirmRequest;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.service.SellerOrderService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,8 +78,15 @@ class SellerOrderControllerSliceTest {
 
         OrderConfirmRequest request = new OrderConfirmRequest(List.of(100L, 101L, 102L));
 
-        // 부분 성공 정책 예시: 100, 102만 확정됨
-        OrderConfirmResponse serviceResponse = OrderConfirmResponse.of(orderId, List.of(100L, 102L));
+        // 부분 성공 정책 예시: 100, 102만 확정됨 (101은 실패)
+        SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(3, 2, 1);
+        SellerOrderResponse.Content content = SellerOrderResponse.Content.of(
+            orderId,
+            summary,
+            List.of(100L, 102L),  // confirmedOrderItemIds
+            List.of(101L)          // failedOrderItemIds
+        );
+        OrderConfirmResponse serviceResponse = OrderConfirmResponse.of(content);
 
         given(sellerOrderService.confirmOrder(any())).willReturn(serviceResponse);
 
@@ -96,9 +104,13 @@ class SellerOrderControllerSliceTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
-            .andExpect(jsonPath("$.result.orderId").value(orderId))
-            .andExpect(jsonPath("$.result.confirmedOrderItemIds[0]").value(100))
-            .andExpect(jsonPath("$.result.confirmedOrderItemIds[1]").value(102));
+            .andExpect(jsonPath("$.result.content.orderId").value(orderId))
+            .andExpect(jsonPath("$.result.content.summary.requestedCount").value(3))
+            .andExpect(jsonPath("$.result.content.summary.successCount").value(2))
+            .andExpect(jsonPath("$.result.content.summary.failCount").value(1))
+            .andExpect(jsonPath("$.result.content.confirmedOrderItemIds[0]").value(100))
+            .andExpect(jsonPath("$.result.content.confirmedOrderItemIds[1]").value(102))
+            .andExpect(jsonPath("$.result.content.failedOrderItemIds[0]").value(101));
 
         then(sellerOrderService).should(times(1)).confirmOrder(any());
         then(responseService).should(times(1)).getSingleResult(serviceResponse);
@@ -140,7 +152,7 @@ class SellerOrderControllerSliceTest {
     void givenEmptyOrderItemIds_whenConfirmOrder_thenReturns400() throws Exception {
         // Given
         Long orderId = 10L;
-        OrderConfirmRequest request = new OrderConfirmRequest(List.of()); // @NotEmpty 위반
+        OrderConfirmRequest request = new OrderConfirmRequest(List.of());
 
         // When & Then
         mvc.perform(post("/api/v1/seller/orders/{orderId}/confirm", orderId)
