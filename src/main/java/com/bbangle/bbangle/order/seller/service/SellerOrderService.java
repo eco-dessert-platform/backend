@@ -6,6 +6,7 @@ import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -33,6 +34,8 @@ public class SellerOrderService {
             .distinct()
             .toList();
 
+        int requestedCount = uniqueOrderItemIds.size();
+
         Order order = orderRepository.findById(command.orderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
 
@@ -56,11 +59,39 @@ public class SellerOrderService {
             uniqueOrderItemIds
         );
 
-        List<Long> confirmedOrderItemIds = orderItems.stream()
-            .filter(OrderItem::confirmOrder)
+        java.util.Set<Long> foundIds = orderItems.stream()
             .map(OrderItem::getId)
+            .collect(java.util.stream.Collectors.toSet());
+
+        List<Long> notFoundIds = uniqueOrderItemIds.stream()
+            .filter(id -> !foundIds.contains(id))
             .toList();
 
-        return OrderConfirmResponse.of(order.getId(), confirmedOrderItemIds);
+        List<Long> confirmedOrderItemIds = new java.util.ArrayList<>();
+        List<Long> failedOrderItemIds = new java.util.ArrayList<>(notFoundIds);
+
+        for (OrderItem orderItem : orderItems) {
+            if (orderItem.confirmOrder()) {
+                confirmedOrderItemIds.add(orderItem.getId());
+            } else {
+                failedOrderItemIds.add(orderItem.getId());
+            }
+        }
+
+        int successCount = confirmedOrderItemIds.size();
+        int failCount = failedOrderItemIds.size();
+
+        SellerOrderResponse.Summary summary =
+            SellerOrderResponse.Summary.of(requestedCount, successCount, failCount);
+
+        SellerOrderResponse.Content content =
+            SellerOrderResponse.Content.of(
+                order.getId(),
+                summary,
+                confirmedOrderItemIds,
+                failedOrderItemIds
+            );
+
+        return OrderConfirmResponse.of(content);
     }
 }
