@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("[비즈니스 로직] SellerClaimService")
 @ExtendWith(MockitoExtension.class)
-class SellerClaimServiceTest {
+class SellerClaimServiceUnitTest {
 
     @InjectMocks
     private SellerClaimService sut;
