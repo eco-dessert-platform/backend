@@ -3,6 +3,7 @@ package com.bbangle.bbangle.config.security;
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
 import com.bbangle.bbangle.config.security.auth.OAuth2ClientValidationFilter;
+import com.bbangle.bbangle.config.security.auth.OAuth2HandlerProperties;
 import com.bbangle.bbangle.config.security.auth.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -22,7 +24,8 @@ public class OAuth2SecurityConfig {
     private final OAuth2UserService oAuth2UserService;
     private final CustomSuccessHandler successHandler;
     private final CustomFailureHandler failureHandler;
-    private final OAuth2ClientValidationFilter validationFilter;
+    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2HandlerProperties oAuth2HandlerProperties;
 
     @Bean
     @Order(1)
@@ -42,9 +45,17 @@ public class OAuth2SecurityConfig {
                 .failureHandler(failureHandler)
             )
             .addFilterBefore(
-                validationFilter,
+                validationFilter(),
                 OAuth2AuthorizationRequestRedirectFilter.class
             );
         return http.build();
+    }
+
+    @Bean
+    public OAuth2ClientValidationFilter validationFilter() {
+        return new OAuth2ClientValidationFilter(
+            clientRegistrationRepository,
+            oAuth2HandlerProperties
+        );
     }
 }

@@ -2,14 +2,12 @@ package com.bbangle.bbangle.auth.seller.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
-import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +57,7 @@ class OAuth2SellerFacadeIntegrationTest {
     @Autowired
     EntityManager em;
 
-    @MockBean
+    @Autowired
     TokenProvider tokenProvider;
 
     @Test
@@ -193,16 +190,13 @@ class OAuth2SellerFacadeIntegrationTest {
 
         redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
 
-        given(tokenProvider.generateToken(eq(1L), eq(Role.ROLE_SELLER), any()))
-            .willReturn("mockToken");
-
         // when
-        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+        GenerateTokenDTO response = oAuth2SellerFacade.generateToken(code);
 
         // then
         assertThat(response.sellerId()).isEqualTo(1L);
-        assertThat(response.refreshToken()).isEqualTo("mockToken");
-        assertThat(response.accessToken()).isEqualTo("mockToken");
+        assertThat(response.refreshToken()).isNotBlank();
+        assertThat(response.accessToken()).isNotBlank();
         assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
 
         assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class))
@@ -212,7 +206,7 @@ class OAuth2SellerFacadeIntegrationTest {
             .findByUserIdAndUserRole(1L, Role.ROLE_SELLER)
             .orElseThrow();
 
-        assertThat(saved.getRefreshToken()).isEqualTo("mockToken");
+        assertThat(saved.getRefreshToken()).isEqualTo(response.refreshToken());
     }
 
     @Test
@@ -224,6 +218,48 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // when & then
         assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 유효하면 토큰을 재발급한다.")
+    void success_reissueToken() {
+
+        // given
+        Long sellerId = 1L;
+        Role role = Role.ROLE_SELLER;
+        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
+
+        RefreshToken entity = RefreshToken.create(sellerId, role, refreshToken);
+        RefreshToken oldToken = refreshTokenRepository.save(entity);
+
+        // when
+        TokenResponse result = oAuth2SellerFacade.reissueToken(refreshToken);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.accessToken()).isNotNull();
+        assertThat(result.refreshToken()).isNotNull();
+
+        RefreshToken updated = refreshTokenRepository.findByUserIdAndUserRole(sellerId, role).orElseThrow();
+        assertThat(oldToken.getId()).isNotEqualTo(updated.getId());
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 DB에 없으면 예외 발생")
+    void failure_reissueToken_notExist() {
+
+        // given
+        Long sellerId = 1L;
+        Role role = Role.ROLE_SELLER;
+        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
             .isInstanceOf(BbangleException.class)
             .satisfies(e -> {
                 BbangleException ex = (BbangleException) e;
