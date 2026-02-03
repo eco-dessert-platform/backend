@@ -31,6 +31,8 @@ public class ReturnRequest extends Claim {
     @Enumerated(EnumType.STRING)
     private ReturnRequestRequestStatus status;
 
+    private String sellerComment;
+
     @Builder
     public ReturnRequest(
         OrderItem orderItem,
@@ -47,7 +49,9 @@ public class ReturnRequest extends Claim {
             throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
         }
         this.status = APPROVED;
+        this.sellerComment = reason;
         this.getOrderItem().returnApprove();
+        super.decide();
     }
 
     public void reject(String reason) {
@@ -55,6 +59,8 @@ public class ReturnRequest extends Claim {
             throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
         }
         this.status = REJECTED;
+        this.sellerComment = reason;
         this.getOrderItem().returnReject();
+        super.decide();
     }
 }

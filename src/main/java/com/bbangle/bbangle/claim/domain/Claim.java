@@ -44,4 +44,8 @@ public abstract class Claim extends BaseEntity {
         this.decidedAt = decidedAt;
     }
 
+    protected void decide() {
+        this.decidedAt = LocalDateTime.now();
+    }
+
 }
