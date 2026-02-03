@@ -11,13 +11,13 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * Local 환경에서 @AuthenticationPrincipal 어노테이션이 적용된 Long 타입 파라미터에 Mock seller ID를 자동으로 주입하는 ArgumentResolver
+ * Local 환경에서 @AuthenticationPrincipal 어노테이션이 적용된 Long 타입 파라미터에 Mock user ID를 자동으로 주입하는 ArgumentResolver
  * <p>
  * local 환경에서는 토큰 없이 모든 요청을 허용하기 때문에 SecurityContextHolder에 Authentication이 설정되지 않아
  *
  * @AuthenticationPrincipal이 null이 되는 문제를 해결함
  * <p>
- * Dev/Production 환경에서는 이 Resolver가 로드되지 않으므로 실제 JWT 토큰에서 추출한 seller ID가 사용됨
+ * Dev/Production 환경에서는 이 Resolver가 로드되지 않으므로 실제 JWT 토큰에서 추출한 user ID가 사용됨
  */
 @Component
 @Profile("local")
@@ -36,7 +36,7 @@ public class LocalSecurityArgumentResolver implements HandlerMethodArgumentResol
     }
 
     /**
-     * Local 환경에서 기본값 sellerId 반환
+     * Local 환경에서 기본값 userId 반환
      */
     @Override
     public Object resolveArgument(MethodParameter parameter,
