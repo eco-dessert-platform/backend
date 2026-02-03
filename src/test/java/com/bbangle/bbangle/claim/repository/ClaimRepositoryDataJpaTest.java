@@ -88,7 +88,7 @@ class ClaimRepositoryDataJpaTest {
         @DisplayName("판매자가 반품을 소유하면 true를 반환한다")
         void given_sellerOwnsReturn_when_exists_then_returnTrue() {
             // when
-            boolean result = claimRepository.existsReturnRequestBySeller(returnRequest.getId(), seller.getId());
+            boolean result = claimRepository.existsClaimRequestBySeller(returnRequest.getId(), seller.getId());
 
             // then
             assertThat(result).isTrue();
@@ -104,7 +104,7 @@ class ClaimRepositoryDataJpaTest {
             em.clear();
 
             // when
-            boolean result = claimRepository.existsReturnRequestBySeller(returnRequest.getId(), otherSeller.getId());
+            boolean result = claimRepository.existsClaimRequestBySeller(returnRequest.getId(), otherSeller.getId());
 
             // then
             assertThat(result).isFalse();
@@ -117,7 +117,7 @@ class ClaimRepositoryDataJpaTest {
             Long nonExistentReturnId = 99999L;
 
             // when
-            boolean result = claimRepository.existsReturnRequestBySeller(nonExistentReturnId, seller.getId());
+            boolean result = claimRepository.existsClaimRequestBySeller(nonExistentReturnId, seller.getId());
 
             // then
             assertThat(result).isFalse();
@@ -138,13 +138,13 @@ class ClaimRepositoryDataJpaTest {
             em.clear();
 
             // when & then
-            assertThat(claimRepository.existsReturnRequestBySeller(returnRequest.getId(), seller.getId()))
+            assertThat(claimRepository.existsClaimRequestBySeller(returnRequest.getId(), seller.getId()))
                 .isTrue();
-            assertThat(claimRepository.existsReturnRequestBySeller(returnRequest.getId(), sellerB.getId()))
+            assertThat(claimRepository.existsClaimRequestBySeller(returnRequest.getId(), sellerB.getId()))
                 .isFalse();
-            assertThat(claimRepository.existsReturnRequestBySeller(returnRequestB.getId(), seller.getId()))
+            assertThat(claimRepository.existsClaimRequestBySeller(returnRequestB.getId(), seller.getId()))
                 .isFalse();
-            assertThat(claimRepository.existsReturnRequestBySeller(returnRequestB.getId(), sellerB.getId()))
+            assertThat(claimRepository.existsClaimRequestBySeller(returnRequestB.getId(), sellerB.getId()))
                 .isTrue();
         }
 
@@ -158,7 +158,7 @@ class ClaimRepositoryDataJpaTest {
             em.clear();
 
             // when
-            boolean result = claimRepository.existsReturnRequestBySeller(returnRequest.getId(), anotherSeller.getId());
+            boolean result = claimRepository.existsClaimRequestBySeller(returnRequest.getId(), anotherSeller.getId());
 
             // then
             assertThat(result).isFalse();
@@ -171,7 +171,7 @@ class ClaimRepositoryDataJpaTest {
             Long nonExistentSellerId = 99999L;
 
             // when
-            boolean result = claimRepository.existsReturnRequestBySeller(returnRequest.getId(), nonExistentSellerId);
+            boolean result = claimRepository.existsClaimRequestBySeller(returnRequest.getId(), nonExistentSellerId);
 
             // then
             assertThat(result).isFalse();

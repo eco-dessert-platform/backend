@@ -18,7 +18,7 @@ public class SellerClaimService {
 
     @Transactional
     public void decision(Long returnId, Long sellerId, DecisionType decisionType, String reason) {
-        if (!claimRepository.existsReturnRequestBySeller(returnId, sellerId)) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 

@@ -43,7 +43,7 @@ class SellerClaimServiceUnitTest {
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.APPROVE, reason);
         ReturnRequest returnRequest = mock(ReturnRequest.class);
 
-        given(claimRepository.existsReturnRequestBySeller(returnId, sellerId)).willReturn(true);
+        given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(true);
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
 
         // when
@@ -64,7 +64,7 @@ class SellerClaimServiceUnitTest {
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.REJECT, reason);
         ReturnRequest returnRequest = mock(ReturnRequest.class);
 
-        given(claimRepository.existsReturnRequestBySeller(returnId, sellerId)).willReturn(true);
+        given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(true);
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
 
         // when
@@ -84,7 +84,7 @@ class SellerClaimServiceUnitTest {
 
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.APPROVE, "사유");
 
-        given(claimRepository.existsReturnRequestBySeller(returnId, sellerId)).willReturn(false);
+        given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(false);
 
         // when & then
         assertThatThrownBy(() -> sut.decision(returnId, sellerId, request.decisionType(), request.reason()))
@@ -103,7 +103,7 @@ class SellerClaimServiceUnitTest {
 
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.APPROVE, "사유");
 
-        given(claimRepository.existsReturnRequestBySeller(returnId, sellerId)).willReturn(true);
+        given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(true);
         given(claimRepository.findById(returnId)).willReturn(Optional.empty());
 
         // when & then

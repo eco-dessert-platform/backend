@@ -15,7 +15,7 @@ public class ClaimCustomRepositoryImpl implements ClaimCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public boolean existsReturnRequestBySeller(Long claimId, Long sellerId) {
+    public boolean existsClaimRequestBySeller(Long claimId, Long sellerId) {
         Integer result = queryFactory
             .selectOne()
             .from(claim)
