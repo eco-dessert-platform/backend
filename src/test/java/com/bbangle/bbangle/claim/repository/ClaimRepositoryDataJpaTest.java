@@ -149,11 +149,10 @@ class ClaimRepositoryDataJpaTest {
         }
 
         @Test
-        @DisplayName("같은 store의 다른 seller는 false를 반환한다")
-        void given_samestoreWithDifferentSeller_when_exists_then_returnFalse() {
+        @DisplayName("같은 store의 다른 seller도 true를 반환한다")
+        void given_samestoreWithDifferentSeller_when_exists_then_returnTrue() {
             // given
-            Store otherStore = storeRepository.save(StoreFixture.defaultStore());
-            Seller anotherSeller = sellerRepository.save(SellerFixture.defaultSeller(otherStore));
+            Seller anotherSeller = sellerRepository.save(SellerFixture.defaultSeller(store));
             em.flush();
             em.clear();
 
@@ -161,7 +160,7 @@ class ClaimRepositoryDataJpaTest {
             boolean result = claimRepository.existsClaimRequestBySeller(returnRequest.getId(), anotherSeller.getId());
 
             // then
-            assertThat(result).isFalse();
+            assertThat(result).isTrue();
         }
 
         @Test
