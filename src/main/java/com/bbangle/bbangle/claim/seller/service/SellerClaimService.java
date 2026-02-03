@@ -6,6 +6,9 @@ import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.order.domain.OrderItem;
+import com.bbangle.bbangle.order.domain.OrderItemHistory;
+import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerClaimService {
 
     private final ClaimRepository claimRepository;
+    private final OrderItemHistoryRepository orderItemHistoryRepository;
 
     @Transactional
     public void decision(Long returnId, Long sellerId, DecisionType decisionType, String reason) {
@@ -27,8 +31,20 @@ public class SellerClaimService {
 
         if (claim instanceof ReturnRequest returnRequest) {
             switch (decisionType) {
-                case APPROVE -> returnRequest.approve(reason);
-                case REJECT -> returnRequest.reject(reason);
+                case APPROVE -> {
+                    returnRequest.approve(reason);
+                    OrderItem orderItem = returnRequest.getOrderItem();
+                    orderItem.returnApprove();
+                    OrderItemHistory history = OrderItemHistory.create(orderItem);
+                    orderItemHistoryRepository.save(history);
+                }
+                case REJECT -> {
+                    returnRequest.reject(reason);
+                    OrderItem orderItem = returnRequest.getOrderItem();
+                    orderItem.returnReject();
+                    OrderItemHistory history = OrderItemHistory.create(orderItem);
+                    orderItemHistoryRepository.save(history);
+                }
             }
             return;
         }

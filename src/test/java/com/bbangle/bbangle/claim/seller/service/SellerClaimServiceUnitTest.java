@@ -14,6 +14,9 @@ import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.order.domain.OrderItem;
+import com.bbangle.bbangle.order.domain.OrderItemHistory;
+import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,8 +35,11 @@ class SellerClaimServiceUnitTest {
     @Mock
     private ClaimRepository claimRepository;
 
+    @Mock
+    private OrderItemHistoryRepository orderItemHistoryRepository;
+
     @Test
-    @DisplayName("반품 승인 - 판매자와 반품 요청이 일치하면 approve가 호출된다")
+    @DisplayName("반품 승인 - 판매자와 반품 요청이 일치하면 approve가 호출되고 OrderItemHistory가 저장된다")
     void decision_approve_success() {
         // given
         Long returnId = 1L;
@@ -42,9 +48,11 @@ class SellerClaimServiceUnitTest {
 
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.APPROVE, reason);
         ReturnRequest returnRequest = mock(ReturnRequest.class);
+        OrderItem orderItem = mock(OrderItem.class);
 
         given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(true);
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
+        given(returnRequest.getOrderItem()).willReturn(orderItem);
 
         // when
         sut.decision(returnId, sellerId, request.decisionType(), request.reason());
@@ -52,10 +60,12 @@ class SellerClaimServiceUnitTest {
         // then
         then(returnRequest).should(times(1)).approve(reason);
         then(returnRequest).should(never()).reject(any());
+        then(orderItem).should(times(1)).returnApprove();
+        then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
     }
 
     @Test
-    @DisplayName("반품 거절 - 판매자와 반품 요청이 일치하면 reject가 호출된다")
+    @DisplayName("반품 거절 - 판매자와 반품 요청이 일치하면 reject가 호출되고 OrderItemHistory가 저장된다")
     void decision_reject_success() {
         // given
         Long returnId = 1L;
@@ -63,9 +73,11 @@ class SellerClaimServiceUnitTest {
         String reason = "거절 사유";
         ReturnDecisionRequest request = new ReturnDecisionRequest(DecisionType.REJECT, reason);
         ReturnRequest returnRequest = mock(ReturnRequest.class);
+        OrderItem orderItem = mock(OrderItem.class);
 
         given(claimRepository.existsClaimRequestBySeller(returnId, sellerId)).willReturn(true);
         given(claimRepository.findById(returnId)).willReturn(Optional.of(returnRequest));
+        given(returnRequest.getOrderItem()).willReturn(orderItem);
 
         // when
         sut.decision(returnId, sellerId, request.decisionType(), request.reason());
@@ -73,6 +85,8 @@ class SellerClaimServiceUnitTest {
         // then
         then(returnRequest).should(times(1)).reject(reason);
         then(returnRequest).should(never()).approve(any());
+        then(orderItem).should(times(1)).returnReject();
+        then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
     }
 
     @Test

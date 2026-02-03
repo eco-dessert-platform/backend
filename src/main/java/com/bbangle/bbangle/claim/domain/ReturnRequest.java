@@ -50,7 +50,6 @@ public class ReturnRequest extends Claim {
         }
         this.status = APPROVED;
         this.sellerComment = reason;
-        this.getOrderItem().returnApprove();
         super.decide();
     }
 
@@ -60,7 +59,6 @@ public class ReturnRequest extends Claim {
         }
         this.status = REJECTED;
         this.sellerComment = reason;
-        this.getOrderItem().returnReject();
         super.decide();
     }
 }

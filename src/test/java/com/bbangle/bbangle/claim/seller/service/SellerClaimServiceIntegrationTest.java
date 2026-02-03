@@ -18,6 +18,7 @@ import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
+import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -58,6 +59,9 @@ class SellerClaimServiceIntegrationTest {
     private SellerRepository sellerRepository;
 
     @Autowired
+    private OrderItemHistoryRepository orderItemHistoryRepository;
+
+    @Autowired
     private EntityManager em;
 
     private Store store;
@@ -84,7 +88,7 @@ class SellerClaimServiceIntegrationTest {
     class Decision {
 
         @Test
-        @DisplayName("판매자가 반품 요청을 승인하면 ReturnRequest는 APPROVED, OrderItem은 RETURN_APPROVED가 된다")
+        @DisplayName("판매자가 반품 요청을 승인하면 ReturnRequest는 APPROVED, OrderItem은 RETURN_APPROVED, OrderItemHistory가 생성된다")
         void given_validSellerAndClaim_when_approve_then_statusChangedToApproved() {
             // when
             sut.decision(returnRequest.getId(), seller.getId(), DecisionType.APPROVE, "검수 완료");
@@ -94,13 +98,15 @@ class SellerClaimServiceIntegrationTest {
             // then
             ReturnRequest found = (ReturnRequest) claimRepository.findById(returnRequest.getId()).get();
             OrderItem foundOrderItem = orderItemRepository.findById(orderItem.getId()).get();
+            long historyCount = orderItemHistoryRepository.count();
 
             assertThat(found.getStatus()).isEqualTo(ReturnRequestRequestStatus.APPROVED);
             assertThat(foundOrderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_APPROVED);
+            assertThat(historyCount).isGreaterThan(0);
         }
 
         @Test
-        @DisplayName("판매자가 반품 요청을 거절하면 ReturnRequest는 REJECTED, OrderItem은 RETURN_REJECTED가 된다")
+        @DisplayName("판매자가 반품 요청을 거절하면 ReturnRequest는 REJECTED, OrderItem은 RETURN_REJECTED, OrderItemHistory가 생성된다")
         void given_validSellerAndClaim_when_reject_then_statusChangedToRejected() {
             // when
             sut.decision(returnRequest.getId(), seller.getId(), DecisionType.REJECT, "상품 하자 없음");
@@ -110,9 +116,11 @@ class SellerClaimServiceIntegrationTest {
             // then
             ReturnRequest found = (ReturnRequest) claimRepository.findById(returnRequest.getId()).get();
             OrderItem foundOrderItem = orderItemRepository.findById(orderItem.getId()).get();
+            long historyCount = orderItemHistoryRepository.count();
 
             assertThat(found.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
             assertThat(foundOrderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
+            assertThat(historyCount).isGreaterThan(0);
         }
 
         @Test

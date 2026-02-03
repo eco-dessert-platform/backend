@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +34,17 @@ public class OrderItemHistory extends CreatedAtBaseEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
+    @Builder
+    private OrderItemHistory(OrderStatus orderstatus, OrderItem orderItem) {
+        this.Orderstatus = orderstatus;
+        this.orderItem = orderItem;
+    }
 
+    public static OrderItemHistory create(OrderItem orderItem) {
+        return OrderItemHistory.builder()
+            .orderstatus(orderItem.getOrderStatus())
+            .orderItem(orderItem)
+            .build();
+    }
 
 }

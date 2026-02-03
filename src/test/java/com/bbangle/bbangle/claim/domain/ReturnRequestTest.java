@@ -76,7 +76,6 @@ class ReturnRequestTest {
 
             // then
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
-            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
         }
 
         @Test
