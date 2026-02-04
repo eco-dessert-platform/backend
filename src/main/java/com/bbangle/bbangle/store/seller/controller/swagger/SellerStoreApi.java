@@ -1,10 +1,9 @@
 package com.bbangle.bbangle.store.seller.controller.swagger;
 
-import com.bbangle.bbangle.common.dto.ListResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SearchResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,16 +12,41 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 
 @Tag(name = "Seller Store", description = "(판매자) 스토어 API")
 public interface SellerStoreApi {
 
-    @Operation(summary = "(판매자) 스토어 검색")
-    ListResult<SearchResponse> search(
-        @Parameter(description = "검색어", example = "빵그리의 오븐") String searchValue
+    @Operation(
+        summary = "(판매자) 스토어 검색",
+        description = """
+            ### 스토어 이름을 통해 스토어 목록을 조회
+            - storeName에 스토어 이름을 입력하실 때 **빈칸을 제거**하고 입력하셔야합니다.
+            - EX) `storeName.replaceAll(" " , "")`
+            """
+    )
+    SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
+        @Parameter(description = "검색어", example = "빵그리의오븐")
+        @NotBlank(message = "스토어 이름은 필수입니다.")
+        String storeName,
+        @Parameter(description = "조회한 목록의 마지막 스토어의 id", example = "1")
+        Long cursorId
     );
 
-    @Operation(summary = "스토어명 중복 확인")
+    @Operation(
+        summary = "스토어명 중복 확인",
+        description = """
+        ### 입력한 스토어 이름이 사용가능한지 체크하고 스토어 상세 정보를 조회
+
+        ---
+        ### 스토어 상태 설명 표
+        |Status Code|의미|설명|
+        |-----------|----|----|
+        |RESERVED|선점|판매자가 해당 가게를 등록했지만 관리자가 승인하지 않은 상태|
+        |ACTIVE|등록|관리자가 승인하여 최종적으로 해당 가게 등록자가 된 상태|
+        |NONE|비선점|해당 스토어를 등록한 판매자가 아직 없는 상태|
+        """
+    )
     @ApiResponses(value = {
               @ApiResponse(
             responseCode = "400",
@@ -32,8 +56,10 @@ public interface SellerStoreApi {
             )
         )
     })
-    SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> checkStoreNameDuplicate(
-        @Parameter(description = "스토어명", example = "빵그리의 오븐") String storeName
+    SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+        @Parameter(description = "스토어명", example = "빵그리의 오븐")
+        @NotBlank(message = "스토어 이름은 필수입니다.")
+        String storeName
     );
 
 }

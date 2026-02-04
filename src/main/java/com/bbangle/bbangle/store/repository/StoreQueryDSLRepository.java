@@ -20,9 +20,9 @@ public interface StoreQueryDSLRepository {
 
     Optional<Store> findByStoreName(String storeName);
 
+    Optional<Store> findByStoreNameAndIsNotDeleted(String storeName);
+
     boolean existsByStoreName(String name);
 
-    List<Store> getStoreByStoreName(String storeName);
-
-    CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds);
+    CursorPagination<StoreInfo> findByStoreNameWithCursor(String storeName, Long cursorId);
 }
