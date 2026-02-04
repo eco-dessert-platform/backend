@@ -17,9 +17,11 @@ public class AdminProductService {
 
     @Transactional
     public void editProductStock(Long productId, int amount, EditStockFlag editStockFlag) {
-        Product product = productRepository.findById(productId).orElseThrow(
+        // Pessimistic Lock으로 조회하여 동시성 제어
+        Product product = productRepository.findWithLockById(productId).orElseThrow(
             () -> new BbangleException(BbangleErrorCode.NOT_FOUND_OPTION)
         );
         product.editStock(amount, editStockFlag);
     }
+
 }
