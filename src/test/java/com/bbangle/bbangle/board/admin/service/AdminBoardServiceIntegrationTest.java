@@ -3,8 +3,12 @@ package com.bbangle.bbangle.board.admin.service;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
@@ -31,6 +35,9 @@ class AdminBoardServiceIntegrationTest {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -154,6 +161,66 @@ class AdminBoardServiceIntegrationTest {
 
         assertThat(deletedBoard.isDeleted()).isTrue();
         assertThat(notDeletedBoard.isDeleted()).isFalse();
+    }
+
+    @Test
+    @DisplayName("상품 옵션 전체 삭제 시 해당 Board의 모든 Product가 soft delete 되고 조회되지 않는다")
+    void deleteProducts_removeAll_softDeletesAllProductsAndNotVisible() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board board = boardRepository.save(BoardFixture.crawlingActiveBoardWithStore(store, "테스트상품"));
+
+        Product product1 = productRepository.save(ProductFixture.create(board, "옵션1"));
+        Product product2 = productRepository.save(ProductFixture.create(board, "옵션2"));
+
+        // 삭제 전 조회 확인
+        Page<AdminProductResponse> beforeDelete = adminBoardService.getAdminBoards(PageRequest.of(0, 10));
+        assertThat(beforeDelete.getContent())
+            .extracting(AdminProductResponse::productName)
+            .contains("테스트상품");
+
+        // when
+        RemoveProductsCommand command = new RemoveProductsCommand(board.getId(), true, null);
+        adminBoardService.deleteProducts(command);
+        productRepository.flush();
+
+        // then
+        List<Product> products = productRepository.findAllById(List.of(product1.getId(), product2.getId()));
+        assertThat(products)
+            .allSatisfy(product -> assertThat(product.isDeleted()).isTrue());
+    }
+
+    @Test
+    @DisplayName("상품 옵션 선택 삭제 시 지정된 Product만 soft delete 되고 나머지는 유지된다")
+    void deleteProducts_selectiveDelete_softDeletesOnlySelectedProducts() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board board = boardRepository.save(BoardFixture.crawlingActiveBoardWithStore(store, "테스트상품"));
+
+        Product toDelete1 = productRepository.save(ProductFixture.create(board, "삭제대상1"));
+        Product toDelete2 = productRepository.save(ProductFixture.create(board, "삭제대상2"));
+        Product toKeep = productRepository.save(ProductFixture.create(board, "유지대상"));
+
+        // 삭제 전 조회 확인
+        Page<AdminProductResponse> beforeDelete = adminBoardService.getAdminBoards(PageRequest.of(0, 10));
+        assertThat(beforeDelete.getContent())
+            .extracting(AdminProductResponse::productName)
+            .contains("테스트상품");
+
+        // when
+        List<Long> productIdsToDelete = List.of(toDelete1.getId(), toDelete2.getId());
+        RemoveProductsCommand command = new RemoveProductsCommand(board.getId(), false, productIdsToDelete);
+        adminBoardService.deleteProducts(command);
+        productRepository.flush();
+
+        // then
+        Product deletedProduct1 = productRepository.findById(toDelete1.getId()).orElseThrow();
+        Product deletedProduct2 = productRepository.findById(toDelete2.getId()).orElseThrow();
+        Product keptProduct = productRepository.findById(toKeep.getId()).orElseThrow();
+
+        assertThat(deletedProduct1.isDeleted()).isTrue();
+        assertThat(deletedProduct2.isDeleted()).isTrue();
+        assertThat(keptProduct.isDeleted()).isFalse();
     }
 
 }

@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -114,6 +115,37 @@ class AdminBoardServiceUnitTest {
         then(boardDetailRepository).should().softDeleteByBoardIds(boardIds);
         then(boardStatisticRepository).should().softDeleteByBoardIds(boardIds);
         then(productInfoNoticeRepository).should().softDeleteByBoardIds(boardIds);
+    }
+
+    @Test
+    @DisplayName("removeAll이 true이면 boardId로 전체 상품을 soft delete 한다")
+    void deleteProducts_removeAll_true() {
+        // given
+        Long boardId = 1L;
+        RemoveProductsCommand command = new RemoveProductsCommand(boardId, true, null);
+
+        // when
+        sut.deleteProducts(command);
+
+        // then
+        then(productRepository).should().softDeleteByBoardId(boardId);
+        then(productRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("removeAll이 false이면 productIds로 선택된 상품만 soft delete 한다")
+    void deleteProducts_removeAll_false() {
+        // given
+        Long boardId = 1L;
+        List<Long> productIds = List.of(10L, 20L, 30L);
+        RemoveProductsCommand command = new RemoveProductsCommand(boardId, false, productIds);
+
+        // when
+        sut.deleteProducts(command);
+
+        // then
+        then(productRepository).should().softDeleteByProductIds(productIds);
+        then(productRepository).shouldHaveNoMoreInteractions();
     }
 
 }
