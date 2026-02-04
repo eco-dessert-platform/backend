@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.admin.service.AdminProductService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.AdminApiPath;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +25,7 @@ public class AdminProductController implements AdminProductApi {
     @PatchMapping("{optionId}/stock")
     public CommonResult editProductOptionStock(
         @PathVariable Long optionId,
-        @RequestBody @NotNull AdminEditStockRequest adminEditStockRequest
+        @RequestBody @Valid AdminEditStockRequest adminEditStockRequest
     ) {
         adminProductService.editProductStock(
             optionId,
