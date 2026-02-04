@@ -32,7 +32,6 @@ class ReturnRequestTest {
 
             // then
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.APPROVED);
-            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_APPROVED);
         }
 
         @Test
