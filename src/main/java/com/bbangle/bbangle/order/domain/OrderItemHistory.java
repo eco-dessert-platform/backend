@@ -7,11 +7,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class OrderItemHistory extends CreatedAtBaseEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "VARCHAR(255)")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -33,6 +36,17 @@ public class OrderItemHistory extends CreatedAtBaseEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
+    @Builder
+    private OrderItemHistory(OrderStatus orderstatus, OrderItem orderItem) {
+        this.Orderstatus = orderstatus;
+        this.orderItem = orderItem;
+    }
 
+    public static OrderItemHistory create(OrderItem orderItem) {
+        return OrderItemHistory.builder()
+            .orderstatus(orderItem.getOrderStatus())
+            .orderItem(orderItem)
+            .build();
+    }
 
 }

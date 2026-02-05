@@ -1,13 +1,22 @@
 package com.bbangle.bbangle.claim.domain;
 
+import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.APPROVED;
+import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REJECTED;
+import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REQUESTED;
+
 import com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.order.domain.OrderItem;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,4 +31,34 @@ public class ReturnRequest extends Claim {
     @Enumerated(EnumType.STRING)
     private ReturnRequestRequestStatus status;
 
+    private String sellerComment;
+
+    @Builder
+    public ReturnRequest(
+        OrderItem orderItem,
+        String detailReason,
+        LocalDateTime decidedAt,
+        ReturnRequestRequestStatus status
+    ) {
+        super(orderItem, detailReason, decidedAt);
+        this.status = status;
+    }
+
+    public void approve(String reason) {
+        if (status != REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = APPROVED;
+        this.sellerComment = reason;
+        super.decide();
+    }
+
+    public void reject(String reason) {
+        if (status != REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = REJECTED;
+        this.sellerComment = reason;
+        super.decide();
+    }
 }

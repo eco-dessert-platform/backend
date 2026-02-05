@@ -1,7 +1,11 @@
 package com.bbangle.bbangle.order.domain;
 
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
+
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import jakarta.persistence.Column;
@@ -16,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -65,5 +70,38 @@ public class OrderItem extends BaseEntity {
         return true;
     }
 
+    @Builder
+    public OrderItem(
+        Integer quantity,
+        Integer productPrice,
+        Integer unitPrice,
+        OrderStatus orderStatus,
+        OrderDeliveryStatus orderDeliveryStatus,
+        Integer totalPrice,
+        Order order,
+        Product product
+    ) {
+        this.quantity = quantity;
+        this.productPrice = productPrice;
+        this.unitPrice = unitPrice;
+        this.orderStatus = orderStatus;
+        this.orderDeliveryStatus = orderDeliveryStatus;
+        this.totalPrice = totalPrice;
+        this.order = order;
+        this.product = product;
+    }
 
+    public void returnApprove() {
+        if (orderStatus != RETURN_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_APPROVED;
+    }
+
+    public void returnReject() {
+        if (orderStatus != RETURN_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_REJECTED;
+    }
 }
