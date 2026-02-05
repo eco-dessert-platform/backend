@@ -1,21 +1,65 @@
 package com.bbangle.bbangle.store.seller.controller.swagger;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Seller Store", description = "(판매자) 스토어 API")
 public interface SellerStoreApi {
+
+    @Operation(
+        summary = "신규 판매자 생성",
+        description = "판매자 정보(JSON)와 프로필 이미지 파일을 업로드합니다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "판매자 생성 성공",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success" : true,
+                            "code" : 0,
+                            "message" : "SUCCESS"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청 데이터",
+            content = @Content(
+                schema = @Schema(implementation = GlobalControllerAdvice.class)
+            )
+        )
+    })
+    SingleResult<StoreResponse.StoreRegisterResult> registryStore(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
+        @RequestPart("profileImage") MultipartFile profileImage
+    );
 
     @Operation(
         summary = "(판매자) 스토어 검색",

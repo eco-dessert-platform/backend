@@ -145,6 +145,12 @@ public class SellerRequest {
         @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
         String storeName,
 
+        @Schema(description = "프로필 이미지 URL")
+        String profile,
+
+        @Schema(description = "한줄소개", example = "건강한 재료로 만드는 비건 베이커리")
+        String shortDescription,
+
         @Schema(description = "연락처", example = "01012345678")
         @NotBlank
         @Pattern(regexp = "^[0-9]{11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
@@ -184,6 +190,4 @@ public class SellerRequest {
                 .build();
         }
     }
-
-
 }

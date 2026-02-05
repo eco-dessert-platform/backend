@@ -1,14 +1,16 @@
 package com.bbangle.bbangle.seller.seller.service;
 
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
-import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,16 +38,29 @@ public class SellerService {
 
     }
 
-    @Transactional
-    public void createSeller(SellerCreateCommand command, String profileImagePath, Long storeId) {
-        // 스토어 객체 생성
-        Store store = sellerStoreService.registerStoreForSeller(storeId, command.storeName());
-        // 판매자 생성
-        sellerRepository.save(
-            Seller.create(command.phoneNumber(), command.subPhoneNumber(), command.email(),
-                command.originAddress(), command.originAddressDetail(), profileImagePath,
-                CertificationStatus.PENDING, store));
+    // TODO : 테스트하기
+    public Seller getSellerById(Long sellerId) {
+        return sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
+    }
 
+    // TODO : 테스트하기
+    public Optional<Seller> findByProviderAndProviderId(OauthServerType provider, String providerId) {
+        return sellerRepository.findByProviderAndProviderId(provider, providerId);
+    }
+
+    // TODO : OAuth2SellerService에서 이동하였으므로 테스트 코드 수정하기
+    @Transactional
+    public Seller createOAuth2Seller(OAuth2ResponseCreateCommand command) {
+        String name = command.resolvedName();
+
+        return sellerRepository.save(
+            Seller.create(
+                name,
+                command.provider(),
+                command.providerId()
+            )
+        );
     }
 
 }

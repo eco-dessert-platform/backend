@@ -15,5 +15,10 @@ import org.mapstruct.ReportingPolicy;
 public interface SellerStoreMapper {
 
     @Mapping(source = "id", target = "storeId")
+    @Mapping(source = "phoneNumberVO.phoneNumber", target = "phoneNumber")
+    @Mapping(source = "phoneNumberVO.subPhoneNumber", target = "subPhoneNumber")
+    @Mapping(source = "emailVO.email", target = "email")
+    @Mapping(source = "originAddressLine", target = "originAddress")
+    @Mapping(source = "originAddressDetail", target = "originAddressDetail")
     StoreResponse.SellerStoreDetail toSellerStoreDetail(Store store);
 }
