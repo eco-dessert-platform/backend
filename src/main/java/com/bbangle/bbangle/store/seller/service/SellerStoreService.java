@@ -3,9 +3,11 @@ package com.bbangle.bbangle.store.seller.service;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
@@ -20,20 +22,49 @@ public class SellerStoreService {
     private final StoreRepository storeRepository;
     private final SellerStoreMapper sellerStoreMapper;
 
+    // TODO : 로직 수정되었으니 테스트 코드 수정하기
     @Transactional
-    public Store registerStoreForSeller(Long storeId, String storeName) {
-        // 1. 크롤링된 스토어 사용하는 경우
-        if (storeId != null) {
-            return storeRepository.findById(storeId)
+    public Store findStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
+        // 1. DB에 존재하는 스토어를 사용하는 경우
+        if (request.storeId() != null) {
+            Store store = storeRepository.findById(request.storeId())
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
-        }
-        // 중복검사 진행
-        if (storeRepository.existsByStoreName(storeName)) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+
+            store.updateDetail(
+                request.profile(),
+                request.shortDescription(),
+                request.phoneNumber(),
+                request.subPhoneNumber(),
+                request.email(),
+                request.originAddress(),
+                request.originAddressDetail()
+            );
+
+            return store;
         }
 
         // 2. 새로운 스토어 생성하는 경우
-        return storeRepository.save(Store.createForSeller(storeName));
+        if (profileImagePath == null || profileImagePath.isEmpty()) throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
+
+        return storeRepository.save(
+            Store.createForSeller(
+                request.storeName(),
+                profileImagePath,
+                request.shortDescription(),
+                request.phoneNumber(),
+                request.subPhoneNumber(),
+                request.email(),
+                request.originAddress(),
+                request.originAddressDetail()
+            )
+        );
+    }
+
+    // TODO : 테스트 하기
+    @Transactional
+    public void registerStore(Seller seller, Store store) {
+        seller.registerStore(store);
+        store.changeStatus(StoreStatus.RESERVED);
     }
 
     @Transactional(readOnly = true)

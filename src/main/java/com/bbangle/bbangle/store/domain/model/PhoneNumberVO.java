@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.domain.model;
+package com.bbangle.bbangle.store.domain.model;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;

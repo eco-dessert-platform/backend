@@ -4,17 +4,25 @@ import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
+import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +32,20 @@ public class SellerStoreController implements SellerStoreApi {
 
     private final ResponseService responseService;
     private final SellerStoreService sellerStoreService;
+    private final SellerStoreFacade sellerStoreFacade;
+
+    // TODO : Seller/Seller/Controller에서 이동했으므로 테스트하기
+    @Override
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SingleResult<StoreResponse.StoreRegisterResult> registryStore(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
+        @RequestPart("profileImage") MultipartFile profileImage
+    ) {
+        return responseService.getSingleResult(
+            sellerStoreFacade.registerStoreForSeller(sellerId, request, profileImage)
+        );
+    }
 
     @Override
     @GetMapping("/search")

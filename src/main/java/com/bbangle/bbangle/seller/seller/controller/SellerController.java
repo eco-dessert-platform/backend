@@ -5,7 +5,6 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
@@ -25,9 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,7 +43,6 @@ public class SellerController implements SellerApi {
     ) {
         return responseService.getListResult(sellerFacade.registerDocuments(request.toCommand(sellerId)));
     }
-
 
     @PutMapping
     @Override
@@ -78,18 +74,7 @@ public class SellerController implements SellerApi {
         return responseService.getSuccessResult();
     }
 
-
-    // TODO : v3
-    @Override
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public CommonResult createSeller(
-        @Valid @RequestPart("request") SellerCreateRequest request,
-        @RequestPart("profileImage") MultipartFile profileImage
-    ) {
-        sellerFacade.registerSeller(request.toCommand(), profileImage, request.storeId());
-        return responseService.getSuccessResult();
-    }
-
+    // TODO : createSeller -> Store/Seller/Controller로 옮겼으니 테스트 코드 수정하기
 
     @PostMapping("/account-verifications")
     @Override

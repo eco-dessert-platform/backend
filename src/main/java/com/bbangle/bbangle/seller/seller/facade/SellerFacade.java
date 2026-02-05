@@ -1,16 +1,12 @@
 package com.bbangle.bbangle.seller.seller.facade;
 
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
 import com.bbangle.bbangle.seller.seller.facade.dto.DocumentUploadInfo;
 import com.bbangle.bbangle.seller.seller.facade.dto.UploadedDocument;
 import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerDocumentService;
-import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.RegisterDocumentCommand;
-import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import com.bbangle.bbangle.seller.seller.service.info.SellerDocumentInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,31 +14,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SellerFacade {
 
-    private final SellerService sellerService;
+    private static final String SELLER_DOCUMENT_FOLDER = "seller-documents";
     private final S3Service s3Service;
     private final SellerDocumentService sellerDocumentService;
     private final AccountVerificationService accountVerificationService;
 
-    private static final String SELLER_IMAGE_FOLDER = "seller-images";
-    private static final String SELLER_DOCUMENT_FOLDER = "seller-documents";
-
-    public void registerSeller(SellerCreateCommand command, MultipartFile profileImage, Long storeId) {
-        String profileImagePath = s3Service.saveAndReturnWithCdn(SELLER_IMAGE_FOLDER, profileImage);
-        try {
-            sellerService.createSeller(command, profileImagePath, storeId);
-        } catch (Exception e) {
-            log.error("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
-            s3Service.deleteImage(profileImagePath);
-            throw new BbangleException(BbangleErrorCode.SELLER_CREATION_FAILED);
-        }
-    }
+    // TODO : registerSeller -> Store/Seller/Facade로 메서드 옮겼으니 테스트 코드 수정
 
     @Transactional
     public List<SellerDocumentInfo> registerDocuments(RegisterDocumentsCommand command) {
