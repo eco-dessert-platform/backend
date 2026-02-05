@@ -183,4 +183,23 @@ public class Product extends SoftDeleteBaseEntity {
         return PushType.WEEK;
     }
 
+    public void editStock(int amount, EditStockFlag editStockFlag) {
+        if (editStockFlag == EditStockFlag.INCREASE) {
+            this.stock = this.stock + amount;
+            if (this.soldout) {
+                this.soldout = false;
+            }
+        } else if (editStockFlag == EditStockFlag.DECREASE) {
+            if (this.stock < amount) {
+                throw new BbangleException(BbangleErrorCode.INVALID_DECREASE_STOCK_AMOUNT);
+            }
+            this.stock = this.stock - amount;
+            if (this.stock == 0) {
+                this.soldout = true;
+            }
+        } else if (editStockFlag == EditStockFlag.SOLDOUT) {
+            this.stock = 0;
+            this.soldout = true;
+        }
+    }
 }
