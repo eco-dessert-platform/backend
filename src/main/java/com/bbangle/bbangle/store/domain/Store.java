@@ -33,32 +33,43 @@ public class Store extends SoftDeleteBaseEntity {
 
     private static final String DEFAULT_IDENTIFIER =
         String.valueOf((Math.abs(UUID.randomUUID().getLeastSignificantBits()) % 90000) + 10000);
+
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     List<Board> boards = new ArrayList<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "identifier")
     private String identifier;
+
     @Column(name = "name")
     private String name;
+
     @Column(name = "introduce")
     private String introduce;
+
     @Column(name = "profile")
     private String profile;
+
     @Embedded
     private PhoneNumberVO phoneNumberVO; // phone + subPhone을 포함
+
     @Embedded
     private EmailVO emailVO;
+
     @Column(name = "origin_address_line", columnDefinition = "VARCHAR(255)")
     private String originAddressLine;
+
     @Column(name = "origin_address_detail", columnDefinition = "VARCHAR(255)")
     private String originAddressDetail;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private StoreStatus status;
 
-    @Builder(access = AccessLevel.PRIVATE)
+    @Builder
     private Store(
         String name,
         String identifier,

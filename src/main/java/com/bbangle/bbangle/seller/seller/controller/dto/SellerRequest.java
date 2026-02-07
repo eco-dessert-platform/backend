@@ -3,14 +3,11 @@ package com.bbangle.bbangle.seller.seller.controller.dto;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
-import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -135,59 +132,5 @@ public class SellerRequest {
         String originAddressDetail
     ) {
 
-    }
-
-
-    // TODO: v3
-    public record SellerCreateRequest(
-        @Schema(description = "스토어명", example = "빵그리의 오븐 1호점")
-        @NotBlank(message = "스토어명은 필수입니다.")
-        @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
-        String storeName,
-
-        @Schema(description = "프로필 이미지 URL")
-        String profile,
-
-        @Schema(description = "한줄소개", example = "건강한 재료로 만드는 비건 베이커리")
-        String shortDescription,
-
-        @Schema(description = "연락처", example = "01012345678")
-        @NotBlank
-        @Pattern(regexp = "^[0-9]{11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
-        String phoneNumber,
-
-        @Schema(description = "서브 연락처", example = "01012345678")
-        @NotBlank
-        @Pattern(regexp = "^[0-9]{11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
-        String subPhoneNumber,
-
-        @Schema(description = "이메일", example = "user@example.com", format = "email")
-        @Email(message = "올바른 이메일 형식이 아닙니다.")
-        String email,
-
-        @Schema(description = "판매자 주소", example = "(우편번호) 성남시 금광동 222-31")
-        @NotBlank
-        String originAddress,
-
-        @Schema(description = "판매자 상세 주소", example = "나동 202호")
-        @NotBlank
-        @Size(max = 50, message = "상세 주소는 50자까지 입력 가능합니다.") // 주석 반영
-        String originAddressDetail,
-
-        @Schema(description = "중복검사 후 선택한 스토어의 아이디값", example = "1")
-        Long storeId
-    ) {
-
-        public SellerCreateCommand toCommand() {
-            return SellerCreateCommand.builder()
-                .storeName(storeName)
-                .phoneNumber(phoneNumber)
-                .subPhoneNumber(subPhoneNumber)
-                .email(email)
-                .originAddress(originAddress)
-                .originAddressDetail(originAddressDetail)
-                .storeId(storeId)
-                .build();
-        }
     }
 }

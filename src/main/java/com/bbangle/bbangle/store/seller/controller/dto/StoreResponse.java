@@ -32,7 +32,7 @@ public class StoreResponse {
         @Schema(description = "스토어 상세 정보 (스토어가 존재할 경우)", nullable = true) SellerStoreDetail store
     ) {}
 
-    @Schema(description = "판매자 스토어 중복 검사 응답 DTO")
+    @Schema(description = "판매자 스토어 등록 결과 응답 DTO")
     @Builder
     public record StoreRegisterResult(
         @Schema(description = "판매자 ID", example = "1") Long sellerId,
@@ -50,6 +50,6 @@ public class StoreResponse {
         @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhoneNumber,
         @Schema(description = "스토어 이메일", example = "user@example.com") String email,
         @Schema(description = "스토어 출고지 주소", example = "(우편번호) 성남시 금광동 222-31") String originAddress,
-        @Schema(description = "스토어 출고지 상세 주고", example = "나동 202호") String originAddressDetail
+        @Schema(description = "스토어 출고지 상세 주소", example = "나동 202호") String originAddressDetail
     ) {}
 }

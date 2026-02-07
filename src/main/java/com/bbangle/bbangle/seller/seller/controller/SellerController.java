@@ -44,6 +44,7 @@ public class SellerController implements SellerApi {
         return responseService.getListResult(sellerFacade.registerDocuments(request.toCommand(sellerId)));
     }
 
+    // TODO : v3 - Store 상세 정보 변경 API (Store/Seller/Controller로 이동할 것)
     @PutMapping
     @Override
     public CommonResult updateSeller(
@@ -54,6 +55,7 @@ public class SellerController implements SellerApi {
         return responseService.getSuccessResult();
     }
 
+    // TODO : v3 - Store 이름 변경 API (Store/Seller/Controller로 이동할 것)
     @PatchMapping("/store-name")
     @Override
     public CommonResult updateStoreName(
@@ -73,8 +75,6 @@ public class SellerController implements SellerApi {
         sellerService.updateAccount(request, sellerId);
         return responseService.getSuccessResult();
     }
-
-    // TODO : createSeller -> Store/Seller/Controller로 옮겼으니 테스트 코드 수정하기
 
     @PostMapping("/account-verifications")
     @Override

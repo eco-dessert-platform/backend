@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
@@ -19,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-@DisplayName("[통합테스트] SellerStoreService")
+@DisplayName("[통합테스트] SellerStoreService - 조회 및 중복 검사")
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -82,10 +81,10 @@ public class SellerStoreServiceIntegrationTest {
 
         Stream.concat(matchingNames.stream(), nonMatchingNames.stream())
             .forEach(name -> {
-                storeRepository.save(Store.builder()
-                    .name(name)
-                    .status(StoreStatus.NONE)
-                    .build());
+                storeRepository.save(Store.createForSeller(
+                    name, "test.com", "introduce", "01012345678", "01012345678",
+                    "test@temp.com", "서울", "서울"
+                ));
 
                 try {
                     Thread.sleep(1);

@@ -1,54 +1,39 @@
 package com.bbangle.bbangle.seller.seller.service.command;
 
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.OAuth2Response;
 import lombok.Builder;
 
 public record SellerCreateCommand(
-        String storeName,
-        String phoneNumber,
-        String subPhoneNumber,
-        String email,
-        String originAddress,
-        String originAddressDetail,
-        Long storeId
+        String name,
+        String nickname,
+        OauthServerType provider,
+        String providerId
 ) {
 
     @Builder
-    public SellerCreateCommand(String storeName, String phoneNumber, String subPhoneNumber,
-        String email, String originAddress, String originAddressDetail, Long storeId) {
-        this.storeName = storeName;
-        this.phoneNumber = phoneNumber;
-        this.subPhoneNumber = subPhoneNumber;
-        this.email = email;
-        this.originAddress = originAddress;
-        this.originAddressDetail = originAddressDetail;
-        this.storeId =  storeId;
-        validate();
+    public SellerCreateCommand(
+            String name,
+            String nickname,
+            OauthServerType provider,
+            String providerId
+    ) {
+        this.name = name;
+        this.nickname = nickname;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
-    private void validate() {
-        if(storeName == null || storeName.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-        if(phoneNumber == null || phoneNumber.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_PHONE_NUMBER);
-        }
-        if (subPhoneNumber == null || subPhoneNumber.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_PHONE_NUMBER);
-        }
-        if(email == null || email.isEmpty() || !email.contains("@")) {
-            throw new BbangleException(BbangleErrorCode.INVALID_EMAIL);
-        }
-        if(originAddress == null || originAddress.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_ADDRESS);
-        }
-        if(originAddressDetail == null || originAddressDetail.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_DETAIL_ADDRESS);
-        }
-        if(storeId != null) {
-            if(storeId <= 0)  throw new BbangleException(BbangleErrorCode.INVALID_STORE_ID);
-        }
+    public static SellerCreateCommand from(OAuth2Response response) {
+        return SellerCreateCommand.builder()
+                .name(response.getName())
+                .nickname(response.getNickname())
+                .provider(response.getProvider())
+                .providerId(response.getProviderId())
+                .build();
     }
 
+    public String resolvedName() {
+        return name != null ? name : nickname;
+    }
 }

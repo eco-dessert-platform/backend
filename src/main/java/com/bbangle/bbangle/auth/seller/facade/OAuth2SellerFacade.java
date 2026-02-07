@@ -8,7 +8,7 @@ import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,7 @@ public class OAuth2SellerFacade {
 
     private final TokenProvider tokenProvider;
 
-    // TODO : OAuth2SellerService를 SellerService로 변경하였으므로 테스트 코드 수정하기
-    public Seller login(OAuth2ResponseCreateCommand response) {
+    public Seller login(SellerCreateCommand response) {
         try {
             return sellerService.findByProviderAndProviderId(
                     response.provider(),
