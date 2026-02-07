@@ -53,7 +53,7 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
     private Store store;
 
     // 판매자 등록을 위한 생성자
-    @Builder(access = AccessLevel.PRIVATE)
+    @Builder
     private Seller(
         String name,
         OauthServerType provider,

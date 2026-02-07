@@ -22,9 +22,8 @@ public class SellerStoreService {
     private final StoreRepository storeRepository;
     private final SellerStoreMapper sellerStoreMapper;
 
-    // TODO : 로직 수정되었으니 테스트 코드 수정하기
     @Transactional
-    public Store findStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
+    public Store createStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
         // 1. DB에 존재하는 스토어를 사용하는 경우
         if (request.storeId() != null) {
             Store store = storeRepository.findById(request.storeId())
@@ -60,11 +59,9 @@ public class SellerStoreService {
         );
     }
 
-    // TODO : 테스트 하기
     @Transactional
     public void registerStore(Seller seller, Store store) {
         seller.registerStore(store);
-        store.changeStatus(StoreStatus.RESERVED);
     }
 
     @Transactional(readOnly = true)

@@ -3,6 +3,7 @@ package com.bbangle.bbangle.seller.seller.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
@@ -52,21 +53,24 @@ class SellerDocumentServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // arrange: 테스트용 스토어와 판매자 생성
-        Store store = Store.builder()
-            .name("테스트 스토어")
-            .build();
-        storeRepository.save(store);
-
-        testSeller = Seller.create(
-            "01012345678",
+        Store store = Store.createForSeller(
+            "테스트 스토어",
+            "https://example.com/profile.jpg",
+            null,
+            "01087654321",
             "01087654321",
             "test@example.com",
             "서울특별시 강남구 테헤란로 123",
-            "456호",
-            "https://example.com/profile.jpg",
-            CertificationStatus.PENDING,
-            store
+            "456호"
         );
+        storeRepository.save(store);
+
+        testSeller = Seller.create(
+            "test",
+            OauthServerType.GOOGLE,
+            "12345"
+        );
+        testSeller.registerStore(store);
         sellerRepository.save(testSeller);
 
         em.flush();

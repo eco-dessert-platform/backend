@@ -15,10 +15,10 @@ import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.seller.repository.OAuth2SellerRepository;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import jakarta.persistence.EntityManager;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ class OAuth2SellerFacadeIntegrationTest {
     OAuth2SellerFacade oAuth2SellerFacade;
 
     @Autowired
-    OAuth2SellerRepository oAuth2SellerRepository;
+    SellerRepository sellerRepository;
 
     @Autowired
     RedisRepository redisRepository;
@@ -65,8 +65,8 @@ class OAuth2SellerFacadeIntegrationTest {
     void success_login_seller_create() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
@@ -79,7 +79,7 @@ class OAuth2SellerFacadeIntegrationTest {
         em.clear();
 
         // then
-        OAuth2Seller savedSeller = oAuth2SellerRepository.findByProviderAndProviderId(
+        Seller savedSeller = sellerRepository.findByProviderAndProviderId(
                 command.provider(), command.providerId()
         ).orElseThrow();
 
@@ -98,24 +98,24 @@ class OAuth2SellerFacadeIntegrationTest {
     void success_login_seller_exist() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
                         .providerId("12345")
                         .build();
 
-        OAuth2Seller existingSeller = oAuth2SellerRepository.saveAndFlush(
-                OAuth2Seller.create(
-                        command.resolvedName(),
-                        command.provider(),
-                        command.providerId()
-                )
+        Seller existingSeller = sellerRepository.saveAndFlush(
+            Seller.create(
+                command.resolvedName(),
+                command.provider(),
+                command.providerId()
+            )
         );
 
         // when
-        OAuth2Seller result = oAuth2SellerFacade.login(command);
+        Seller result = oAuth2SellerFacade.login(command);
 
         // then
         assertThat(result).isNotNull();
@@ -134,8 +134,8 @@ class OAuth2SellerFacadeIntegrationTest {
     void login_unique_constraint_violation() throws Exception {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
@@ -146,7 +146,7 @@ class OAuth2SellerFacadeIntegrationTest {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
-        List<Future<OAuth2Seller>> futures = new ArrayList<>();
+        List<Future<Seller>> futures = new ArrayList<>();
 
         // when
         for (int i = 0; i < threadCount; i++) {
@@ -165,11 +165,11 @@ class OAuth2SellerFacadeIntegrationTest {
         executorService.shutdown();
 
         // then
-        assertThat(oAuth2SellerRepository.count()).isEqualTo(1);    // DB에는 판매자 게정이 1개만 존재해야한다.
+        assertThat(sellerRepository.count()).isEqualTo(1);    // DB에는 판매자 게정이 1개만 존재해야한다.
 
         // 모든 스레드가 동일한 판매자 계정을 반환해야한다.
         Set<Long> sellerIds = new HashSet<>();
-        for (Future<OAuth2Seller> future : futures) {
+        for (Future<Seller> future : futures) {
             sellerIds.add(future.get().getId());
         }
 
