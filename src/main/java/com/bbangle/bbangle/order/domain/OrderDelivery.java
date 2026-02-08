@@ -48,4 +48,12 @@ public class OrderDelivery extends BaseEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
+    /**
+     * 양방향 연관관계 설정용 패키지 전용 메서드
+     * OrderItem.addOrderDelivery()를 통해서만 호출되어야 합니다.
+     */
+    void setOrderItem(OrderItem orderItem) {
+        this.orderItem = orderItem;
+    }
+
 }
