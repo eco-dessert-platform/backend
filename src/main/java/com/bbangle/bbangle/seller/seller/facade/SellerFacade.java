@@ -25,8 +25,6 @@ public class SellerFacade {
     private final SellerDocumentService sellerDocumentService;
     private final AccountVerificationService accountVerificationService;
 
-    // TODO : registerSeller -> Store/Seller/Facade로 메서드 옮겼으니 테스트 코드 수정
-
     @Transactional
     public List<SellerDocumentInfo> registerDocuments(RegisterDocumentsCommand command) {
 

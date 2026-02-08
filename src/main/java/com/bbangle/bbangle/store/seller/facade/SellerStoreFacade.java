@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-// TODO : Seller/Seller/Facade에서 이동하였으므로 테스트 코드 수정하기
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,22 +29,30 @@ public class SellerStoreFacade {
     private final SellerService sellerService;
     private final SellerStoreMapper sellerStoreMapper;
 
-    // TODO : Test
     public StoreRegisterResult registerStoreForSeller(
         Long sellerId,
         StoreRequest.StoreCreateRequest request,
         MultipartFile profileImage
     ) {
+        // 이미지 파일과 기존 스토어의 profile 경로 둘 다 없을 경우 예외 던짐
+        if ((request.profile() == null ||  request.profile().isBlank()) && profileImage == null) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
+        }
+
+        // 판매자 계정 조회 -> 만약 판매자 계정이 [승인 / 대기] 상태일 경우 등록 불가
         Seller seller = sellerService.getSellerById(sellerId);
         if (seller.getCertificationStatus() == CertificationStatus.APPROVED || seller.getCertificationStatus() == CertificationStatus.PENDING)
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
 
-        String profileImagePath = s3Service.saveAndReturnWithCdn(SELLER_IMAGE_FOLDER, profileImage);
-        // String profileImagePath = "https://www.figma.com/design/us0vz52fFMfDRgBuIPDWhx/-Seller--Design?node-id=16124-3399&m=dev";
+        // 만약 이미지 파일이 존재할 경우 S3에 이미지 파일 업로드
+        String profileImagePath = null;
+        if (profileImage != null) profileImagePath = s3Service.saveAndReturnWithCdn(
+            SELLER_IMAGE_FOLDER + "/" + seller.getId(), profileImage);
 
         try {
-            Store store = sellerStoreService.findStore(request, profileImagePath);
+            Store store = sellerStoreService.createStore(request, profileImagePath);
 
+            // 스토어 상태가 비선점 상태가 아닐 경우 누군가 등록한 상태이므로 예외 던짐
             if (store.getStatus() != StoreStatus.NONE) throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
 
             sellerStoreService.registerStore(seller, store);
@@ -55,10 +62,23 @@ public class SellerStoreFacade {
                 .store(sellerStoreMapper.toSellerStoreDetail(store))
                 .build();
 
+        } catch (BbangleException e) {
+            // BbangleException일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 다시 던짐
+            if (profileImagePath != null) {
+                log.error("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
+                s3Service.deleteImage(profileImagePath);
+            }
+
+            throw new BbangleException(e.getBbangleErrorCode());
         } catch (Exception e) {
+            // BbangleException 이외의 예상치 못한 예외일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 새로 던짐
             log.error(e.getMessage());
-            log.error("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
-            s3Service.deleteImage(profileImagePath);
+
+            if (profileImagePath != null) {
+                log.error("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
+                s3Service.deleteImage(profileImagePath);
+            }
+
             throw new BbangleException(BbangleErrorCode.SELLER_CREATION_FAILED);
         }
     }
