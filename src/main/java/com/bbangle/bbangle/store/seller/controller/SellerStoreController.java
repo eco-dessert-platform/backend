@@ -34,7 +34,6 @@ public class SellerStoreController implements SellerStoreApi {
     private final SellerStoreService sellerStoreService;
     private final SellerStoreFacade sellerStoreFacade;
 
-    // TODO : Seller/Seller/Controller에서 이동했으므로 테스트하기
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public SingleResult<StoreResponse.StoreRegisterResult> registryStore(

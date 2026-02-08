@@ -29,8 +29,11 @@ public class SellerStoreService {
             Store store = storeRepository.findById(request.storeId())
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
 
+            // 1-1. 새로 업로드한 이미지 파일이 없을 경우 기존의 스토어 프로필을 사용
+            String newProfile = profileImagePath == null ? request.profile() : profileImagePath;
+
             store.updateDetail(
-                request.profile(),
+                newProfile,
                 request.shortDescription(),
                 request.phoneNumber(),
                 request.subPhoneNumber(),
