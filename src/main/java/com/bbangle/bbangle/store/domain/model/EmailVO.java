@@ -18,8 +18,8 @@ public class EmailVO {
     private static final Pattern PATTERN =
         Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
-    @Column(name = "email",  columnDefinition = "VARCHAR(100)")
-    private  String email;
+    @Column(name = "email", columnDefinition = "VARCHAR(100)")
+    private String email;
 
     private EmailVO(String email) {
         validate(email);

@@ -15,12 +15,13 @@ public class WithMockUserSecurityContextFactory implements WithSecurityContextFa
     public SecurityContext createSecurityContext(WithMockAuthenticationPrincipal annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
+        String role = annotation.role();
+        String normalizedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
             annotation.userId(),
             annotation.credentials(),
-            List.of(
-                new SimpleGrantedAuthority("ROLE_" + annotation.role())
-            )
+            List.of(new SimpleGrantedAuthority(normalizedRole))
         );
 
         context.setAuthentication(authentication);

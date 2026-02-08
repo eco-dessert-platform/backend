@@ -39,7 +39,7 @@ public class SellerStoreController implements SellerStoreApi {
     public SingleResult<StoreResponse.StoreRegisterResult> registryStore(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
-        @RequestPart("profileImage") MultipartFile profileImage
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
         return responseService.getSingleResult(
             sellerStoreFacade.registerStoreForSeller(sellerId, request, profileImage)

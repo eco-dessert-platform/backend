@@ -58,7 +58,7 @@ public interface SellerStoreApi {
     SingleResult<StoreResponse.StoreRegisterResult> registryStore(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
-        @RequestPart("profileImage") MultipartFile profileImage
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     );
 
     @Operation(

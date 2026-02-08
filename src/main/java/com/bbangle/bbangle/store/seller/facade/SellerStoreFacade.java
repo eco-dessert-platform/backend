@@ -65,11 +65,11 @@ public class SellerStoreFacade {
         } catch (BbangleException e) {
             // BbangleException일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 다시 던짐
             if (profileImagePath != null) {
-                log.error("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
+                log.warn("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
                 s3Service.deleteImage(profileImagePath);
             }
 
-            throw new BbangleException(e.getBbangleErrorCode());
+            throw e;
         } catch (Exception e) {
             // BbangleException 이외의 예상치 못한 예외일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 새로 던짐
             log.error(e.getMessage());
