@@ -19,6 +19,7 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreRegisterResult;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -41,142 +42,174 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
     @Autowired
     private EntityManager em;
 
-    @Test
-    @DisplayName("유효한 정보가 주어지면 판매자 등록에 성공한다 - 스토어 아이디가 없는 경우.")
-    void success_registerStoreForSeller_without_storeId() {
+    @Nested
+    @DisplayName("registerStoreForSeller() 테스트")
+    class RegisterStoreForSellerTest {
 
-        // given
-        Seller seller = SellerFixture.defaultSeller();
-        sellerRepository.save(seller);
-
-        StoreRequest.StoreCreateRequest request =
-            new StoreRequest.StoreCreateRequest(
-                "빵그리의 오븐",
-                null,
-                "비건 베이커리",
-                "01012345678",
-                "01098765432",
-                "test@gmail.com",
-                "경기도 수원시",
-                "상세주소",
-                null
+        private MockMultipartFile mockProfileImage() {
+            return new MockMultipartFile(
+                "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
+                "test-image.png",           // 파일명
+                "image/png",                // Content-Type
+                "fake image content".getBytes()  // 파일 내용
             );
+        }
 
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
-            "test-image.png",           // 파일명
-            "image/png",                // Content-Type
-            "fake image content".getBytes()  // 파일 내용
-        );
+        @Nested
+        @DisplayName("유용한 정보가 주어지면 스토어 등록에 성공한다.")
+        class Success_registerStoreForSeller {
 
-        em.flush();
-        em.clear();
+            private Seller saveNewSeller() {
+                Seller seller = SellerFixture.defaultSellerMergeConflict();
+                return sellerRepository.saveAndFlush(seller);
+            }
 
-        // when
-        StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
-        em.flush();
-        em.clear();
+            @Test
+            @DisplayName("storeId가 없는 경우")
+            void without_storeId() {
 
-        // then
-        Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-        Store store = storeRepository.findAll().get(0);
+                // given
+                Seller seller = saveNewSeller();
+                StoreRequest.StoreCreateRequest request =
+                    new StoreRequest.StoreCreateRequest(
+                        "빵그리의 오븐",
+                        null,
+                        "비건 베이커리",
+                        "01012345678",
+                        "01098765432",
+                        "test@gmail.com",
+                        "경기도 수원시",
+                        "상세주소",
+                        null
+                    );
 
-        assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-        assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);
-        assertThat(result.sellerId()).isEqualTo(seller.getId());
-    }
+                MockMultipartFile mockFile = mockProfileImage();
 
-    @Test
-    @DisplayName("유효한 정보가 주어지면 판매자 등록에 성공한다 - 스토어 아이디가 존재하는 경우.")
-    void success_registerStoreForSeller_exist_storeId() {
+                em.flush();
+                em.clear();
 
-        // given
-        Seller seller = SellerFixture.defaultSeller();
-        sellerRepository.save(seller);
+                // when
+                StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
+                em.flush();
+                em.clear();
 
-        Store store = StoreFixture.defaultStore();
-        Store newStore = storeRepository.save(store);
+                // then
+                Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
+                Store store = storeRepository.findAll().get(0);
 
-        StoreRequest.StoreCreateRequest request =
-            new StoreRequest.StoreCreateRequest(
-                "빵그리의 오븐",
-                newStore.getProfile(),
-                "비건 베이커리",
-                "01012345678",
-                "01098765432",
-                "test@gmail.com",
-                "경기도 수원시",
-                "상세주소",
-                newStore.getId()
-            );
+                assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+                assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);
+                assertThat(result.sellerId()).isEqualTo(seller.getId());
+            }
 
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
-            "test-image.png",           // 파일명
-            "image/png",                // Content-Type
-            "fake image content".getBytes()  // 파일 내용
-        );
+            @Test
+            @DisplayName("storeId가 존재하는 경우")
+            void with_storeId() {
 
-        em.flush();
-        em.clear();
+                // given
+                Seller seller = saveNewSeller();
+                Store store = StoreFixture.defaultStore();
+                Store newStore = storeRepository.save(store);
 
-        // when
-        StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
-        em.flush();
-        em.clear();
+                StoreRequest.StoreCreateRequest request =
+                    new StoreRequest.StoreCreateRequest(
+                        "빵그리의 오븐",
+                        newStore.getProfile(),
+                        "비건 베이커리",
+                        "01012345678",
+                        "01098765432",
+                        "test@gmail.com",
+                        "경기도 수원시",
+                        "상세주소",
+                        newStore.getId()
+                    );
 
-        // then
-        Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-        Store savedStore = storeRepository.findAll().get(0);
+                MockMultipartFile mockFile = mockProfileImage();
 
-        assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-        assertThat(savedStore.getStatus()).isEqualTo(StoreStatus.RESERVED);
-        assertThat(result.sellerId()).isEqualTo(seller.getId());
-    }
+                em.flush();
+                em.clear();
 
-    @Test
-    @DisplayName("이미 스토어를 등록한 판매자는 예외가 발생한다.")
-    void fail_registerStoreForSeller_already_registered() {
+                // when
+                StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
+                em.flush();
+                em.clear();
 
-        // given
-        Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
-        sellerRepository.save(seller);
+                // then
+                Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
+                Store savedStore = storeRepository.findAll().get(0);
 
-        StoreRequest.StoreCreateRequest request = mock(StoreRequest.StoreCreateRequest.class);
+                assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+                assertThat(savedStore.getStatus()).isEqualTo(StoreStatus.RESERVED);
+                assertThat(result.sellerId()).isEqualTo(seller.getId());
+            }
+        }
 
-        // when & then
-        assertThatThrownBy(() ->
-            sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mock(MultipartFile.class))
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.ALREADY_REGISTER_STORE.getMessage());
-    }
+        @Nested
+        @DisplayName("스토어 등록에 실패한다.")
+        class Fail_registerStoreForSeller {
 
-    @Test
-    @DisplayName("이미 예약된 스토어는 등록할 수 없다.")
-    void fail_registerStoreForSeller_already_reserved() {
+            private Seller saveNewSeller(CertificationStatus status) {
+                Seller seller = SellerFixture.defaultSellerMergeConflict(status);
+                return sellerRepository.saveAndFlush(seller);
+            }
 
-        // given
-        Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
-        sellerRepository.save(seller);
+            @Test
+            @DisplayName("이미 등록된 판매자 계정인 경우")
+            void already_registered_seller() {
 
-        Store store = StoreFixture.defaultStore();
-        store.changeStatus(StoreStatus.RESERVED);
-        storeRepository.save(store);
+                // given
+                Seller seller = saveNewSeller(CertificationStatus.PENDING);
+                StoreRequest.StoreCreateRequest request = mock(StoreRequest.StoreCreateRequest.class);
 
-        StoreRequest.StoreCreateRequest request = mock(StoreRequest.StoreCreateRequest.class);
+                // when & then
+                assertThatThrownBy(() ->
+                    sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mock(MultipartFile.class))
+                )
+                    .isInstanceOf(BbangleException.class)
+                    .satisfies(e -> {
+                        BbangleException ex = (BbangleException) e;
+                        assertThat(ex.getBbangleErrorCode())
+                            .isEqualTo(BbangleErrorCode.ALREADY_REGISTER_STORE);
+                    });
+            }
 
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
-            "test-image.png",           // 파일명
-            "image/png",                // Content-Type
-            "fake image content".getBytes()  // 파일 내용
-        );
+            @Test
+            @DisplayName("이미 등록된 스토어인 경우")
+            void already_registered_store() {
 
-        // when & then
-        assertThatThrownBy(() ->
-            sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile)
-        )
-            .isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.ALREADY_REGISTER_STORE.getMessage());
+                // given
+                Seller seller = saveNewSeller(CertificationStatus.NEW);
+
+                Store store = StoreFixture.defaultStore();
+                store.changeStatus(StoreStatus.RESERVED);
+                Store newStore = storeRepository.saveAndFlush(store);
+
+                StoreRequest.StoreCreateRequest request =
+                    new StoreRequest.StoreCreateRequest(
+                        "빵그리의 오븐",
+                        newStore.getProfile(),
+                        "비건 베이커리",
+                        "01012345678",
+                        "01098765432",
+                        "test@gmail.com",
+                        "경기도 수원시",
+                        "상세주소",
+                        newStore.getId()
+                    );
+
+                MockMultipartFile mockFile = mockProfileImage();
+
+                // when & then
+                assertThatThrownBy(() ->
+                    sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile)
+                )
+                    .isInstanceOf(BbangleException.class)
+                    .satisfies(e -> {
+                        BbangleException ex = (BbangleException) e;
+                        assertThat(ex.getBbangleErrorCode())
+                            .isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
+                    });
+            }
+        }
     }
 }

@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public class SellerFixture {
 
-    public static Seller defaultSeller() {
+    // dev 브랜치에 defaultSeller를 사용하고 있어서 임시로 설정하였습니다.
+    public static Seller defaultSellerMergeConflict() {
         return Seller.create(
             "testSeller",
             OauthServerType.KAKAO,
@@ -15,7 +16,7 @@ public class SellerFixture {
         );
     }
 
-    public static Seller defaultSeller(CertificationStatus status) {
+    public static Seller defaultSellerMergeConflict(CertificationStatus status) {
         return Seller.builder()
             .name("test")
             .provider(OauthServerType.KAKAO)
