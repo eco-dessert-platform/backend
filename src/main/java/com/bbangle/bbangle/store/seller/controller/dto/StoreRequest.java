@@ -21,12 +21,12 @@ public class StoreRequest {
         String shortDescription,
 
         @Schema(description = "연락처", example = "01012345678")
-        @Pattern(regexp = "^[0-9]{11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
+        @Pattern(regexp = "^[0-9]{9,11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
         @NotBlank(message = "연락처는 필수입니다.")
         String phoneNumber,
 
         @Schema(description = "서브 연락처", example = "01012345678")
-        @Pattern(regexp = "^[0-9]{11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
+        @Pattern(regexp = "^[0-9]{9,11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
         @NotBlank(message = "추가 연락처는 필수입니다.")
         String subPhoneNumber,
 

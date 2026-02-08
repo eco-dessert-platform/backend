@@ -8,11 +8,8 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("[단위 테스트] Seller")
-@ExtendWith(MockitoExtension.class)
 public class SellerUnitTest {
 
     @Test

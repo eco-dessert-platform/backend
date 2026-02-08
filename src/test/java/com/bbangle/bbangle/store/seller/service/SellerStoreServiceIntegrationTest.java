@@ -332,7 +332,7 @@ public class SellerStoreServiceIntegrationTest {
         }
 
         @Nested
-        @DisplayName("스토어 생성 및 조회에 성공한다.")
+        @DisplayName("등록하기 위한 스토어 생성 및 조회에 실패한다.")
         class Fail_CreateStoreTest {
 
             @Test
