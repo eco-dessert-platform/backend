@@ -220,8 +220,9 @@ class NotificationRepositoryTest {
 
         // then
         notificationRepository.deleteAllByAdminIdAndIdIn(admin.getId(), noticeIds);
+        em.flush();
 
-        assertThat(notificationRepository.findAll()).isEmpty();
+        assertThat(notificationRepository.findAllByIdInAndAdminId(noticeIds, admin.getId())).isEmpty();
 
     }
 }

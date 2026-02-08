@@ -8,9 +8,7 @@ public final class StoreFixture {
     }
 
     public static Store defaultStore() {
-        return Store.builder()
-            .name("가게명")
-            .build();
+        return Store.createForSeller("가게명");
     }
 
 }
