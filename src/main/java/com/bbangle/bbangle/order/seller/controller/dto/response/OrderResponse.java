@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.order.seller.controller.dto.response;
 
 
+import com.bbangle.bbangle.order.domain.Order;
+import com.bbangle.bbangle.order.domain.OrderDelivery;
+import com.bbangle.bbangle.order.seller.controller.model.PaymentInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -10,19 +13,62 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.util.List;
+import lombok.Builder;
 
 public class OrderResponse {
 
+    @Builder
     public record OrderSearchResponse(
-        String orderStatus,
-        String deliveryStatus,
-        String courierCompany,
-        String trackingNumber,
+        @Schema(description = "주문번호")
         String orderNumber,
-        String paymentAt,
+
+        @Schema(description = "수취인명")
         String recipientName,
-        String itemName
+
+        @Schema(description = "주문 품목 리스트")
+        List<OrderItemListResponse.OrderItemList> orderItems,
+
+        @Schema(description = "결제수단")
+        PaymentInfo paymentInfo,
+
+        @Schema(description = "총 주문금액")
+        String totalOrderPrice,
+
+        @Schema(description = "판매자 ID")
+        Long sellerId
+
     ) {
+
+        /**
+         * Order 엔티티로부터 OrderSearchResponse를 생성하는 팩토리 메서드
+         */
+        public static OrderSearchResponse from(
+            Order order,
+            List<OrderItemListResponse.OrderItemList> orderItemDetails,
+            PaymentInfo paymentInfo,
+            OrderDelivery firstDelivery
+        ) {
+            if (order.getOrderItems().isEmpty()) {
+                throw new IllegalArgumentException("Order must have at least one OrderItem");
+            }
+
+            return OrderSearchResponse.builder()
+                .orderNumber(order.getOrderNumber())
+                .recipientName(extractRecipientName(order, firstDelivery))
+                .orderItems(orderItemDetails)
+                .paymentInfo(paymentInfo)
+                .totalOrderPrice(order.getTotalAmount().toString())
+                .sellerId(order.getSeller() != null ? order.getSeller().getId() : null)
+                .build();
+        }
+
+        private static String extractRecipientName(Order order, OrderDelivery delivery) {
+            if (delivery != null && delivery.getReceiver() != null) {
+                return delivery.getReceiver().getRecipientName();
+            }
+            return order.getBuyerName();
+        }
 
     }
 
