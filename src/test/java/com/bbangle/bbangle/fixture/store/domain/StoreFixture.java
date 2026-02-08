@@ -20,4 +20,5 @@ public final class StoreFixture {
         );
     }
 
+    // TODO : 리팩토링 할 수 있는 거 추가하기
 }
