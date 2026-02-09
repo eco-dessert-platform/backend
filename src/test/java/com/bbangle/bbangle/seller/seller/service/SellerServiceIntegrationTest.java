@@ -41,7 +41,7 @@ class SellerServiceIntegrationTest {
     void success_getSellerById() {
 
         // given
-        Seller seller = SellerFixture.defaultSellerMergeConflict();
+        Seller seller = SellerFixture.defaultSeller();
         Seller newSeller = sellerRepository.save(seller);
         em.flush();
         em.clear();
@@ -76,7 +76,7 @@ class SellerServiceIntegrationTest {
     void success_findByProviderAndProviderId() {
 
         // given
-        Seller seller = SellerFixture.defaultSellerMergeConflict();
+        Seller seller = SellerFixture.defaultSeller();
         sellerRepository.save(seller);
         em.flush();
         em.clear();

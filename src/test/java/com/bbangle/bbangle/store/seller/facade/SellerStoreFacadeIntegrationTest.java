@@ -60,7 +60,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
         class Success_registerStoreForSeller {
 
             private Seller saveNewSeller() {
-                Seller seller = SellerFixture.defaultSellerMergeConflict();
+                Seller seller = SellerFixture.defaultSeller();
                 return sellerRepository.saveAndFlush(seller);
             }
 
@@ -149,7 +149,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
         class Fail_registerStoreForSeller {
 
             private Seller saveNewSeller(CertificationStatus status) {
-                Seller seller = SellerFixture.defaultSellerMergeConflict(status);
+                Seller seller = SellerFixture.defaultSeller(status);
                 return sellerRepository.saveAndFlush(seller);
             }
 

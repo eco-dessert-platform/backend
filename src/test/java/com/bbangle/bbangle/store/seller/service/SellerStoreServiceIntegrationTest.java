@@ -48,7 +48,7 @@ public class SellerStoreServiceIntegrationTest {
     void success_register_store() {
 
         // given
-        Seller seller = SellerFixture.defaultSellerMergeConflict();
+        Seller seller = SellerFixture.defaultSeller();
         Store store = StoreFixture.defaultStore();
 
         // when
