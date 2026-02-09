@@ -27,6 +27,7 @@ public interface SellerStoreApi {
         description = """
             ### 스토어 정보(JSON)와 프로필 이미지 파일을 업로드합니다.
             - 만약 중복 체크를 통해 조회한 스토어를 등록할 경우 JSON에 storeId가 필요합니다.
+            - 새로 스토어를 생성한 후 등록하는 경우 storeId는 null이여야 합니다.
             - 기존 스토어 프로필 경로와 이미지 파일 둘 다 없을 경우 예외가 발생합니다.
             - 둘 중 하나는 반드시 필요합니다.
             """
