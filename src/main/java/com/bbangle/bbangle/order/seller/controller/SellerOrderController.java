@@ -13,6 +13,7 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailRespo
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import com.bbangle.bbangle.order.seller.service.SellerOrderService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -164,6 +165,16 @@ public class SellerOrderController implements SellerOrderApi {
         @Valid @RequestBody SellerOrderRequest.OrderConfirmRequest request
     ) {
         var result = sellerOrderService.confirmOrder(request.toCommand(sellerId, orderId));
+        return responseService.getSingleResult(result);
+    }
+
+    @PostMapping("/{orderId}/shipment")
+    public SingleResult<ShipmentRegisterResponse> registerShipment(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.ShipmentRegisterRequest request
+    ) {
+        var result = sellerOrderService.registerShipment(request.toCommand(sellerId, orderId));
         return responseService.getSingleResult(result);
     }
 
