@@ -26,4 +26,24 @@ public class Shipping {
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
 
+    private Shipping(String courierName, String trackingNumber, LocalDateTime shippedAt) {
+        this.courierName = courierName;
+        this.trackingNumber = trackingNumber;
+        this.shippedAt = shippedAt;
+    }
+
+    public static Shipping of(String courierName, String trackingNumber) {
+        return new Shipping(courierName, trackingNumber, LocalDateTime.now());
+    }
+
+    public static Shipping empty() {
+        return new Shipping(null, null, null);
+    }
+
+    public void updateShippingInfo(String courierName, String trackingNumber) {
+        this.courierName = courierName;
+        this.trackingNumber = trackingNumber;
+        this.shippedAt = LocalDateTime.now();
+    }
+
 }
