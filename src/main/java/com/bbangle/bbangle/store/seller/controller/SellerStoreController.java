@@ -36,7 +36,7 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public SingleResult<StoreResponse.StoreRegisterResult> registryStore(
+    public SingleResult<StoreResponse.StoreRegisterResult> registerStore(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage

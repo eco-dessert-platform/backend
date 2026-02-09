@@ -136,7 +136,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
 
                 // then
                 Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-                Store savedStore = storeRepository.findAll().get(0);
+                Store savedStore = storeRepository.findById(result.store().storeId()).orElseThrow();
 
                 assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
                 assertThat(savedStore.getStatus()).isEqualTo(StoreStatus.RESERVED);
@@ -180,8 +180,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
                 // given
                 Seller seller = saveNewSeller(CertificationStatus.NEW);
 
-                Store store = StoreFixture.defaultStore();
-                store.changeStatus(StoreStatus.RESERVED);
+                Store store = StoreFixture.defaultStore(StoreStatus.RESERVED);
                 Store newStore = storeRepository.saveAndFlush(store);
 
                 StoreRequest.StoreCreateRequest request =

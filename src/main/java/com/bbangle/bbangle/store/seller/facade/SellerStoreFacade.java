@@ -41,8 +41,9 @@ public class SellerStoreFacade {
 
         // 판매자 계정 조회 -> 만약 판매자 계정이 [승인 / 대기] 상태일 경우 등록 불가
         Seller seller = sellerService.getSellerById(sellerId);
-        if (seller.getCertificationStatus() == CertificationStatus.APPROVED || seller.getCertificationStatus() == CertificationStatus.PENDING)
+        if (seller.getCertificationStatus() == CertificationStatus.APPROVED || seller.getCertificationStatus() == CertificationStatus.PENDING) {
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
+        }
 
         // 만약 이미지 파일이 존재할 경우 S3에 이미지 파일 업로드
         String profileImagePath = null;

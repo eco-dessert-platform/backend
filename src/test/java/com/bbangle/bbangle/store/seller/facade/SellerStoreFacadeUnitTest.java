@@ -23,7 +23,6 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreRegisterResult;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -102,13 +101,13 @@ class SellerStoreFacadeUnitTest {
             given(seller.getCertificationStatus()).willReturn(status);
 
             // when & then
-            Assertions.assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
+            assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
                     1L, mock(StoreRequest.StoreCreateRequest.class), multipartFile
                 ))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    Assertions.assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_REGISTER_STORE);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_REGISTER_STORE);
                 });
 
             verify(s3Service, never()).saveAndReturnWithCdn(any(), any());
@@ -130,13 +129,13 @@ class SellerStoreFacadeUnitTest {
             given(store.getStatus()).willReturn(status);
 
             // when & then
-            Assertions.assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
+            assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
                     1L, mock(StoreRequest.StoreCreateRequest.class), multipartFile
                 ))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    Assertions.assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
                 });
 
             verify(s3Service).deleteImage(any());
@@ -155,13 +154,13 @@ class SellerStoreFacadeUnitTest {
             given(sellerStoreService.createStore(any(), any())).willThrow(new RuntimeException());
 
             // when & then
-            Assertions.assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
+            assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
                     1L, mock(StoreRequest.StoreCreateRequest.class), multipartFile
                 ))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    Assertions.assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.SELLER_CREATION_FAILED);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.SELLER_CREATION_FAILED);
                 });
 
             verify(s3Service).deleteImage("cdn/error");

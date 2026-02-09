@@ -255,7 +255,7 @@ public class SellerStoreServiceIntegrationTest {
                 assertThat(result.getId()).isEqualTo(store.getId());
                 assertThat(result.getName()).isEqualTo(store.getName());
                 assertThat(result.getProfile()).isEqualTo(request.profile());
-                assertThat(result.getIntroduce()).isEqualTo(request.shortDescription());
+                assertThat(result.getIntroduce()).isEqualTo(request.introduce());
                 assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
                 assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
                 assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
@@ -289,7 +289,7 @@ public class SellerStoreServiceIntegrationTest {
                 assertThat(result.getId()).isEqualTo(store.getId());
                 assertThat(result.getName()).isEqualTo(store.getName());
                 assertThat(result.getProfile()).isEqualTo(uploadedImagePath);
-                assertThat(result.getIntroduce()).isEqualTo(request.shortDescription());
+                assertThat(result.getIntroduce()).isEqualTo(request.introduce());
                 assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
                 assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
                 assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
