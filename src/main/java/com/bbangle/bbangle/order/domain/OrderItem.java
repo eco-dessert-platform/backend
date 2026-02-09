@@ -65,5 +65,9 @@ public class OrderItem extends BaseEntity {
         return true;
     }
 
+    public void shipOrder() {
+        this.orderStatus = OrderStatus.SHIPPED;
+    }
+
 
 }

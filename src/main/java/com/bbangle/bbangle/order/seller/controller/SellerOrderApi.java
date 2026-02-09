@@ -13,6 +13,7 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailRespo
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -183,5 +184,12 @@ public interface SellerOrderApi {
         @AuthenticationPrincipal Long sellerId,
         @PathVariable Long orderId,
         @Valid @RequestBody SellerOrderRequest.OrderConfirmRequest request
+    );
+
+    @Operation(summary = "(판매자) 운송장 입력")
+    SingleResult<ShipmentRegisterResponse> registerShipment(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.ShipmentRegisterRequest request
     );
 }
