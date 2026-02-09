@@ -15,6 +15,7 @@ import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Optional;
@@ -39,13 +40,16 @@ class SellerOrderServiceTest {
     @Mock
     private OrderItemRepository orderItemRepository;
 
+    @Mock
+    private SellerRepository sellerRepository;
+
     @DisplayName("주문이 존재하지 않으면 ORDER_NOT_FOUND 예외가 발생한다.")
     @Test
     void givenNonExistingOrderId_whenConfirmOrder_thenThrowsException() {
         // given
         Long orderId = 999L;
         OrderConfirmCommand command = OrderConfirmCommand.builder()
-            .sellerId(1L) // 지금은 검증 안 해도 command 형태 맞추려고 넣어둠
+            .sellerId(1L)
             .orderId(orderId)
             .orderItemIds(List.of(1L, 2L))
             .build();
@@ -61,11 +65,13 @@ class SellerOrderServiceTest {
         assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
     }
 
-    @DisplayName("결제 완료(PAYMENT_COMPLETED)인 주문상품만 발주확인(ORDER_CONFIRMED)되고, 나머지는 부분 성공으로 스킵된다.")
+    @DisplayName("결제 완료(PAYMENT_COMPLETED)인 주문상품만 발주확인(ORDER_CONFIRMED)되며, 성공/실패 결과가 요약 정보로 반환된다.")
     @Test
     void givenMixedOrderItems_whenConfirmOrder_thenConfirmOnlyPaymentCompleted() {
         // given
         Long orderId = 1L;
+        Long sellerId = 1L;
+        Long storeId = 100L;
 
         Order order = newEntity(Order.class);
         ReflectionTestUtils.setField(order, "id", orderId);
@@ -77,16 +83,19 @@ class SellerOrderServiceTest {
 
         OrderItem skipItem = newEntity(OrderItem.class);
         ReflectionTestUtils.setField(skipItem, "id", 11L);
-        ReflectionTestUtils.setField(skipItem, "orderStatus", OrderStatus.ORDER_CONFIRMED); // 이미 확정된 상태라고 가정
+        ReflectionTestUtils.setField(skipItem, "orderStatus", OrderStatus.ORDER_CONFIRMED);
         ReflectionTestUtils.setField(skipItem, "order", order);
 
         OrderConfirmCommand command = OrderConfirmCommand.builder()
-            .sellerId(1L)
+            .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L, 11L))
             .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
+        given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
+            .willReturn(2L);
         given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(10L, 11L)))
             .willReturn(List.of(okItem, skipItem));
 
@@ -95,18 +104,60 @@ class SellerOrderServiceTest {
 
         // then
         then(orderRepository).should(times(1)).findById(orderId);
+        then(sellerRepository).should(times(1)).findStoreIdBySellerId(sellerId);
+        then(orderItemRepository).should(times(1)).countOwnedOrderItems(orderId, List.of(10L, 11L), storeId);
         then(orderItemRepository).should(times(1)).findByOrderIdAndIdIn(orderId, List.of(10L, 11L));
 
-        // 응답 검증: PAYMENT_COMPLETED였던 것만 포함
         assertThat(result).isNotNull();
-        assertThat(result.orderId()).isEqualTo(orderId);
-        assertThat(result.confirmedOrderItemIds())
+        assertThat(result.content()).isNotNull();
+        assertThat(result.content().orderId()).isEqualTo(orderId);
+        assertThat(result.content().summary()).isNotNull();
+        assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+        assertThat(result.content().summary().successCount()).isEqualTo(1);
+        assertThat(result.content().summary().failCount()).isEqualTo(1);
+        assertThat(result.content().confirmedOrderItemIds())
             .asList()
             .containsExactly(10L);
+        assertThat(result.content().failedOrderItemIds())
+            .asList()
+            .containsExactly(11L);
 
         // 상태 변경 검증
         assertThat(okItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
-        assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED); // 원래부터 confirmed였으면 그대로
+        assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
+    }
+
+    @DisplayName("주문상품이 판매자 소유가 아니면 ORDER_ACCESS_DENIED 예외가 발생한다.")
+    @Test
+    void givenOrderItemNotOwnedBySeller_whenConfirmOrder_thenThrowsAccessDeniedException() {
+        // given
+        Long orderId = 1L;
+        Long sellerId = 1L;
+        Long storeId = 100L;
+
+        Order order = newEntity(Order.class);
+        ReflectionTestUtils.setField(order, "id", orderId);
+
+        OrderConfirmCommand command = OrderConfirmCommand.builder()
+            .sellerId(sellerId)
+            .orderId(orderId)
+            .orderItemIds(List.of(10L, 11L))
+            .build();
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
+        given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
+            .willReturn(1L); // 2개 요청했지만 1개만 소유 → 접근 거부
+
+        // when
+        BbangleException result = assertThrows(BbangleException.class,
+            () -> sut.confirmOrder(command));
+
+        // then
+        then(orderRepository).should(times(1)).findById(orderId);
+        then(sellerRepository).should(times(1)).findStoreIdBySellerId(sellerId);
+        then(orderItemRepository).should(times(1)).countOwnedOrderItems(orderId, List.of(10L, 11L), storeId);
+        assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
     }
 
     private <T> T newEntity(Class<T> clazz) {
