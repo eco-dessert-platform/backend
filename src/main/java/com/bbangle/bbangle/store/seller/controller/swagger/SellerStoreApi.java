@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.store.seller.controller.swagger;
 
-import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
@@ -10,7 +9,6 @@ import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,37 +23,15 @@ import org.springframework.web.multipart.MultipartFile;
 public interface SellerStoreApi {
 
     @Operation(
-        summary = "신규 판매자 생성",
-        description = "판매자 정보(JSON)와 프로필 이미지 파일을 업로드합니다."
+        summary = "스토어 생성 및 판매자 등록",
+        description = """
+            ### 스토어 정보(JSON)와 프로필 이미지 파일을 업로드합니다.
+            - 만약 중복 체크를 통해 조회한 스토어를 등록할 경우 JSON에 storeId가 필요합니다.
+            - 기존 스토어 프로필 경로와 이미지 파일 둘 다 없을 경우 예외가 발생합니다.
+            - 둘 중 하나는 반드시 필요합니다.
+            """
     )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "판매자 생성 성공",
-            content = @Content(
-                schema = @Schema(implementation = CommonResult.class),
-                examples = @ExampleObject(
-                    name = "successResponse",
-                    summary = "성공응답 예시",
-                    value = """
-                        {
-                            "success" : true,
-                            "code" : 0,
-                            "message" : "SUCCESS"
-                        }
-                        """
-                )
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "잘못된 요청 데이터",
-            content = @Content(
-                schema = @Schema(implementation = GlobalControllerAdvice.class)
-            )
-        )
-    })
-    SingleResult<StoreResponse.StoreRegisterResult> registryStore(
+    SingleResult<StoreResponse.StoreRegisterResult> registerStore(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage

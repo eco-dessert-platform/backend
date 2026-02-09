@@ -18,7 +18,7 @@ public class StoreRequest {
         String profile,
 
         @Schema(description = "한줄소개", example = "건강한 재료로 만드는 비건 베이커리")
-        String shortDescription,
+        String introduce,
 
         @Schema(description = "연락처", example = "01012345678")
         @Pattern(regexp = "^[0-9]{9,11}$", message = "연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영

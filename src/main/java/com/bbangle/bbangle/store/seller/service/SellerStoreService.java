@@ -34,7 +34,7 @@ public class SellerStoreService {
 
             store.updateDetail(
                 newProfile,
-                request.shortDescription(),
+                request.introduce(),
                 request.phoneNumber(),
                 request.subPhoneNumber(),
                 request.email(),
@@ -52,7 +52,7 @@ public class SellerStoreService {
             Store.createForSeller(
                 request.storeName(),
                 profileImagePath,
-                request.shortDescription(),
+                request.introduce(),
                 request.phoneNumber(),
                 request.subPhoneNumber(),
                 request.email(),
