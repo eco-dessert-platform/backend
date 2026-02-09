@@ -95,7 +95,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
 
                 // then
                 Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-                Store store = storeRepository.findAll().get(0);
+                Store store = storeRepository.findById(result.store().storeId()).orElseThrow();
 
                 assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
                 assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);

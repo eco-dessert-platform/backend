@@ -16,7 +16,7 @@ public final class SellerFixture {
         return Seller.create(
             "testSeller",
             OauthServerType.KAKAO,
-            "providerId"
+            UUID.randomUUID().toString()
         );
     }
 
@@ -26,7 +26,6 @@ public final class SellerFixture {
             .provider(OauthServerType.KAKAO)
             .providerId(UUID.randomUUID().toString())
             .certificationStatus(status)
-            .isDeleted(false)
             .store(null)
             .build();
     }
@@ -37,7 +36,6 @@ public final class SellerFixture {
             .provider(OauthServerType.KAKAO)
             .providerId(UUID.randomUUID().toString())
             .certificationStatus(CertificationStatus.APPROVED)
-            .isDeleted(false)
             .store(store)
             .build();
     }

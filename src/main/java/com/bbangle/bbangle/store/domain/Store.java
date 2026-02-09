@@ -125,10 +125,13 @@ public class Store extends SoftDeleteBaseEntity {
         String originAddressLine,
         String originAddressDetail
     ) {
+        PhoneNumberVO newPhoneNumberVO = PhoneNumberVO.of(phone, subPhone);
+        EmailVO newEmailVO = EmailVO.of(email);
+
         this.profile = profile;
         this.introduce = introduce;
-        this.phoneNumberVO = PhoneNumberVO.of(phone, subPhone);
-        this.emailVO = EmailVO.of(email);
+        this.phoneNumberVO = newPhoneNumberVO;
+        this.emailVO = newEmailVO;
         this.originAddressLine = originAddressLine;
         this.originAddressDetail = originAddressDetail;
     }

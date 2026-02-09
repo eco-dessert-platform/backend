@@ -45,9 +45,6 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
     @Column(name = "status", columnDefinition = "VARCHAR(20)")
     private CertificationStatus certificationStatus;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
@@ -59,14 +56,12 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
         OauthServerType provider,
         String providerId,
         CertificationStatus certificationStatus,
-        boolean isDeleted,
         Store store
     ) {
         this.name = name;
         this.provider = provider;
         this.providerId = providerId;
         this.certificationStatus = certificationStatus;
-        this.isDeleted = isDeleted;
         this.store = store;
     }
 
@@ -80,7 +75,6 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             .provider(provider)
             .providerId(providerId)
             .certificationStatus(CertificationStatus.NEW)
-            .isDeleted(false)
             .store(null)
             .build();
     }
