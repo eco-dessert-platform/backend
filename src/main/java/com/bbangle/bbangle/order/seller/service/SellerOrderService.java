@@ -99,57 +99,47 @@ public class SellerOrderService {
 
     @Transactional
     public ShipmentRegisterResponse registerShipment(ShipmentRegisterCommand command) {
-        // 1. orderItemIds null/empty 체크
         if (command.orderItemIds() == null || command.orderItemIds().isEmpty()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
         }
 
-        // 2. 중복 제거
         List<Long> uniqueOrderItemIds = command.orderItemIds().stream()
             .distinct()
             .toList();
 
-        // 3. 주문 조회
         Order order = orderRepository.findById(command.orderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
 
-        // 4. 판매자 + 스토어 fetch join 조회 (createOrderDelivery에서 필요)
         Seller seller = sellerRepository.findByIdWithStore(command.sellerId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
 
-        // 5. 소유자 검증
         Long storeId = seller.getStore().getId();
         assertOwnedOrderItems(order.getId(), uniqueOrderItemIds, storeId);
 
-        // 6. OrderItem 목록 조회 (Order fetch join으로 LAZY 로딩 방지)
         List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdInWithOrder(
             order.getId(),
             uniqueOrderItemIds
         );
 
-        // 7. 기존 OrderDelivery 일괄 조회 (N+1 방지)
         List<OrderDelivery> existingDeliveries = orderDeliveryRepository.findByOrderItemIdIn(uniqueOrderItemIds);
         Map<Long, OrderDelivery> deliveryMap = existingDeliveries.stream()
-            .collect(Collectors.toMap(od -> od.getOrderItem().getId(), Function.identity()));
+            .collect(Collectors.toMap(od -> od.getOrderItem().getId(), Function.identity(),
+                (existing, duplicate) -> existing));
 
-        // 8. 각 orderItem에 대해 운송장 등록 처리
         List<Long> successOrderItemIds = new ArrayList<>();
         List<Long> failedOrderItemIds = new ArrayList<>();
         LocalDateTime shippedAt = null;
 
         for (OrderItem orderItem : orderItems) {
             try {
-                // OrderDelivery 조회 또는 생성
                 OrderDelivery orderDelivery = deliveryMap.get(orderItem.getId());
                 if (orderDelivery == null) {
                     orderDelivery = createOrderDelivery(orderItem, seller);
                     orderDeliveryRepository.save(orderDelivery);
                 }
 
-                // 운송장 정보 등록
                 orderDelivery.registerShipment(command.courierName(), command.trackingNumber());
 
-                // OrderItem 상태 변경
                 orderItem.shipOrder();
 
                 successOrderItemIds.add(orderItem.getId());
@@ -159,7 +149,6 @@ public class SellerOrderService {
             }
         }
 
-        // 9. 응답 생성
         return ShipmentRegisterResponse.of(
             order.getId(),
             successOrderItemIds,
