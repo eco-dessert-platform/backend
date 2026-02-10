@@ -153,12 +153,14 @@ public class SellerOrderService {
             }
         }
 
+        boolean hasSuccess = !successOrderItemIds.isEmpty();
+
         return ShipmentRegisterResponse.of(
             order.getId(),
             successOrderItemIds,
             failedOrderItemIds,
-            command.courierName(),
-            command.trackingNumber(),
+            hasSuccess ? command.courierName() : null,
+            hasSuccess ? command.trackingNumber() : null,
             shippedAt
         );
     }
