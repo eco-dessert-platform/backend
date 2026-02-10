@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.seller.service;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -357,7 +358,7 @@ public class SellerStoreServiceIntegrationTest {
                 );
 
                 // when & then
-                Assertions.assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
+                assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
                     )
                     .isInstanceOf(BbangleException.class)
                     .satisfies(e -> {
@@ -384,7 +385,7 @@ public class SellerStoreServiceIntegrationTest {
                 );
 
                 // when & then
-                Assertions.assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
+                assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
                     )
                     .isInstanceOf(BbangleException.class)
                     .satisfies(e -> {
