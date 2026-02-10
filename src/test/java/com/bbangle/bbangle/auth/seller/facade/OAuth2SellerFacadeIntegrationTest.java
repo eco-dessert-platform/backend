@@ -165,7 +165,7 @@ class OAuth2SellerFacadeIntegrationTest {
         executorService.shutdown();
 
         // then
-        assertThat(sellerRepository.count()).isEqualTo(1);    // DB에는 판매자 게정이 1개만 존재해야한다.
+        assertThat(sellerRepository.count()).isEqualTo(1);    // DB에는 판매자 계정이 1개만 존재해야한다.
 
         // 모든 스레드가 동일한 판매자 계정을 반환해야한다.
         Set<Long> sellerIds = new HashSet<>();

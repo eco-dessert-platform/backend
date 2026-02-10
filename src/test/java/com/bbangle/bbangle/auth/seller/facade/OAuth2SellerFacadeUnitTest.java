@@ -71,7 +71,7 @@ class OAuth2SellerFacadeUnitTest {
         given(sellerService.findByProviderAndProviderId(provider, providerId))
                 .willReturn(Optional.empty());  // 테이블에 판매자 계정이 존재하지 않는다고 가정
 
-        given(sellerService.createOAuth2Seller(command)).willReturn(seller);    // 판매자 게정을 생성한다고 가정
+        given(sellerService.createOAuth2Seller(command)).willReturn(seller);    // 판매자 계정을 생성한다고 가정
 
         // when
         Seller result = oAuth2SellerFacade.login(command);
@@ -108,7 +108,7 @@ class OAuth2SellerFacadeUnitTest {
         assertThat(result).isEqualTo(seller);
 
         verify(sellerService).findByProviderAndProviderId(provider, providerId);
-        verify(sellerService, never()).createOAuth2Seller(any()); // 판매자 게정 생성 메서드가 호출되지 않았는지 확인
+        verify(sellerService, never()).createOAuth2Seller(any()); // 판매자 계정 생성 메서드가 호출되지 않았는지 확인
     }
 
     @Test

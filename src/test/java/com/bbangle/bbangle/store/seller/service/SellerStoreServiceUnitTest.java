@@ -93,7 +93,7 @@ class SellerStoreServiceUnitTest {
 
     @Test
     @DisplayName("스토어가 존재하지만 상태가 NONE이 아니면 사용 불가")
-    void checkStoreName_storeExists_Unavailable() {
+    void checkStoreName_storeExists_unavailable() {
 
         // given
         String storeName = "StoreA";

@@ -10,6 +10,7 @@ import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -41,6 +42,9 @@ public class SellerStoreServiceIntegrationTest {
     private StoreRepository storeRepository;
 
     @Autowired
+    private SellerRepository sellerRepository;
+
+    @Autowired
     private EntityManager em;
 
     @Test
@@ -48,8 +52,8 @@ public class SellerStoreServiceIntegrationTest {
     void success_register_store() {
 
         // given
-        Seller seller = SellerFixture.defaultSeller();
-        Store store = StoreFixture.defaultStore();
+        Seller seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller());
+        Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
 
         // when
         sellerStoreService.registerStore(seller, store);

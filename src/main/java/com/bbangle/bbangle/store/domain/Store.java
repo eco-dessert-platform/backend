@@ -31,9 +31,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends SoftDeleteBaseEntity {
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    List<Board> boards = new ArrayList<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -65,6 +62,9 @@ public class Store extends SoftDeleteBaseEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private StoreStatus status;
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<Board> boards = new ArrayList<>();
 
     @Builder
     private Store(
@@ -113,7 +113,9 @@ public class Store extends SoftDeleteBaseEntity {
     }
 
     private static String generateIdentifier() {
-        return String.valueOf((Math.abs(UUID.randomUUID().getLeastSignificantBits()) % 90000) + 10000);
+        long bits = UUID.randomUUID().getMostSignificantBits();
+        long positive = (bits == Long.MIN_VALUE) ? 0 : Math.abs(bits);
+        return String.valueOf((positive % 90000) + 10000);
     }
 
     public void updateDetail(

@@ -36,11 +36,13 @@ public class SellerService {
 
     }
 
+    @Transactional(readOnly = true)
     public Seller getSellerById(Long sellerId) {
         return sellerRepository.findById(sellerId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
     public Optional<Seller> findByProviderAndProviderId(OauthServerType provider, String providerId) {
         return sellerRepository.findByProviderAndProviderId(provider, providerId);
     }

@@ -10,9 +10,10 @@ public final class StoreFixture {
     private StoreFixture() {
     }
 
-    private static Store basebuilder(String name, StoreStatus status) {
+    private static Store baseBuilder(String name, StoreStatus status) {
         return Store.builder()
             .name(name)
+            .identifier("12345")
             .profile("test.png")
             .introduce("비건 베이커리")
             .phoneNumberVO(
@@ -26,11 +27,11 @@ public final class StoreFixture {
     }
 
     public static Store defaultStore() {
-        return basebuilder("빵그리의 오븐", StoreStatus.NONE);
+        return baseBuilder("빵그리의 오븐", StoreStatus.NONE);
     }
 
     public static Store defaultStore(StoreStatus status) {
-        return basebuilder("빵그리의 오븐", status);
+        return baseBuilder("빵그리의 오븐", status);
     }
 
     // TODO : 리팩토링 할 수 있는 거 추가하기

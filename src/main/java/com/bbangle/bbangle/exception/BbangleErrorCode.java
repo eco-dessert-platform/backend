@@ -127,12 +127,12 @@ public enum BbangleErrorCode {
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
-    INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
-    ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
-    INVALID_REFRESH_TOKEN(-743, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
-    NOT_SUPPORTED_SERVER(-744, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
-    MISSING_NAME_NICKNAME(-745, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    _UNAUTHORIZED(-746, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    INVALID_ADMIN_ID(-742, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
+    ADMIN_INVALID_PASSWORD(-743, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
+    INVALID_REFRESH_TOKEN(-744, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
+    NOT_SUPPORTED_SERVER(-745, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
+    MISSING_NAME_NICKNAME(-746, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
+    _UNAUTHORIZED(-747, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),

@@ -120,7 +120,7 @@ class SellerServiceIntegrationTest {
         em.clear();
 
         // then
-        Seller savedSeller = sellerRepository.findAll().get(0);
+        Seller savedSeller = sellerRepository.findByProviderAndProviderId(command.provider(), command.providerId()).orElseThrow();
 
         assertThat(savedSeller).isNotNull();
         assertThat(savedSeller.getName()).isEqualTo(command.name());

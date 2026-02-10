@@ -71,7 +71,6 @@ public class StoreUnitTest {
     @DisplayName("스토어 생성 시 잘못된 서브 전화번호로 인해 실패한다")
     @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
     void fail_create_store_with_invalid_sub_phone(String invalidPhone) {
-        // arrange
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(name, profile, introduce, phone, invalidPhone, email, address, detailAddress)
         ).isInstanceOf(BbangleException.class)
@@ -131,7 +130,6 @@ public class StoreUnitTest {
         // given
         Store store = createDefaultStore();
 
-        // arrange
         // act & assert
         assertThatThrownBy(() -> store.updateDetail(newProfile, newIntroduce, newPhone, invalidPhone, newEmail, newAddress, newDetailAddress)
         ).isInstanceOf(BbangleException.class)

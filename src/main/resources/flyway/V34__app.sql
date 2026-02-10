@@ -57,7 +57,7 @@ ALTER TABLE sellers
     ADD COLUMN IF NOT EXISTS provider varchar(20) NOT NULL,
     ADD COLUMN IF NOT EXISTS provider_id varchar(50) NOT NULL,
     ADD COLUMN IF NOT EXISTS status varchar(20) NOT NULL DEFAULT 'PENDING',
-    ADD COLUMN IF NOT EXISTS is_deleted tinyint(1) NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS is_deleted tinyint(1) NOT NULL DEFAULT 0,
     DROP COLUMN IF EXISTS modified_at;
 
 -- provider_id UNIQUE 제약 추가 (중복 방지)
