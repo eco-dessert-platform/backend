@@ -109,6 +109,7 @@ public enum BbangleErrorCode {
     ORDER_NOT_FOUND(-716, "존재하지 않는 주문입니다.", NOT_FOUND),
     ORDER_ITEM_NOT_FOUND(-717, "존재하지 않는 주문상품입니다.", NOT_FOUND),
     ORDER_ACCESS_DENIED(-718, "해당 주문에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    PAYMENT_NOT_FOUND(-719, "존재하지 않는 결제정보입니다.", NOT_FOUND),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),

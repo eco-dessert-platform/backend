@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -87,21 +88,26 @@ public class SellerOrderService {
         for (Order order : orderPage.content()) {
             List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
 
-            if (!orderItemList.isEmpty()) {
-                Payment payment = order.getPayment();
-                PaymentInfo paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
-                    payment.getPaymentMethod().getDescription());
-
-                OrderDelivery firstDelivery = order.getOrderItems().stream()
-                    .map(item -> latestDeliveryMap.get(item.getId()))
-                    .filter(delivery -> delivery != null)
-                    .findFirst()
-                    .orElse(null);
-
-                OrderSearchResponse response = OrderSearchResponse.from(
-                    order, orderItemList, paymentInfo, firstDelivery);
-                responses.add(response);
+            if (orderItemList.isEmpty()) {
+                throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
             }
+
+            Payment payment = order.getPayment();
+            if (payment == null) {
+                throw new BbangleException(BbangleErrorCode.PAYMENT_NOT_FOUND);
+            }
+            PaymentInfo paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
+                payment.getPaymentMethod().getDescription());
+
+            OrderDelivery firstDelivery = order.getOrderItems().stream()
+                .map(item -> latestDeliveryMap.get(item.getId()))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+            OrderSearchResponse response = OrderSearchResponse.from(
+                order, orderItemList, paymentInfo, firstDelivery);
+            responses.add(response);
         }
 
         return new BbanglePageResponse<>(
