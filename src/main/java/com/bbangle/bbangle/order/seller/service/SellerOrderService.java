@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SellerOrderService {
@@ -144,7 +146,9 @@ public class SellerOrderService {
 
                 successOrderItemIds.add(orderItem.getId());
                 shippedAt = orderDelivery.getShipping().getShippedAt();
-            } catch (Exception e) {
+            } catch (BbangleException e) {
+                log.warn("운송장 등록 실패 - orderId: {}, orderItemId: {}, sellerId: {}, reason: {}",
+                    command.orderId(), orderItem.getId(), command.sellerId(), e.getMessage());
                 failedOrderItemIds.add(orderItem.getId());
             }
         }
