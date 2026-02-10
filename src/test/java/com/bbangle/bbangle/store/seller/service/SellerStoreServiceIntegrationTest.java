@@ -20,7 +20,6 @@ import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Stream;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -363,7 +362,7 @@ public class SellerStoreServiceIntegrationTest {
                     .isInstanceOf(BbangleException.class)
                     .satisfies(e -> {
                         BbangleException ex = (BbangleException) e;
-                        Assertions.assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
+                        assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
                     });
             }
 
@@ -390,7 +389,7 @@ public class SellerStoreServiceIntegrationTest {
                     .isInstanceOf(BbangleException.class)
                     .satisfies(e -> {
                         BbangleException ex = (BbangleException) e;
-                        Assertions.assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PROFILE);
+                        assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PROFILE);
                     });
             }
         }

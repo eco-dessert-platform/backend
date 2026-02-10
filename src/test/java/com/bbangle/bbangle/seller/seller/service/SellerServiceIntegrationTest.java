@@ -82,7 +82,7 @@ class SellerServiceIntegrationTest {
         em.clear();
 
         // when
-        Optional<Seller> result = sellerService.findByProviderAndProviderId(OauthServerType.KAKAO, seller.getProviderId());
+        Optional<Seller> result = sellerService.findByProviderAndProviderId(seller.getProvider(), seller.getProviderId());
 
         // then
         assertThat(result).isPresent();
