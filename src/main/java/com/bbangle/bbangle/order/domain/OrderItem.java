@@ -82,6 +82,9 @@ public class OrderItem extends BaseEntity {
     }
 
     public void shipOrder() {
+        if (orderStatus != OrderStatus.ORDER_CONFIRMED && orderStatus != OrderStatus.IN_PRODUCTION) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
         this.orderStatus = OrderStatus.SHIPPED;
     }
 
