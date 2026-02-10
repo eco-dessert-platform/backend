@@ -17,6 +17,7 @@ import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
 import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
@@ -132,7 +133,7 @@ public class SellerOrderServiceIntegrationTest {
         OrderSearchCommand command = OrderSearchCommand.builder()
             .sellerId(seller.getId())
             .orderDeliveryStatus(null)
-            .orderStatus(null)
+            .searchType(CompletedOrderSearchType.ORDER_NUMBER)
             .searchCondition(searchCondition)
             .page(pageable)
             .build();

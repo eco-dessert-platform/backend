@@ -25,8 +25,8 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
-import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest.OrderConfirmRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
@@ -174,7 +174,7 @@ class SellerOrderControllerSliceTest {
                 searchCondition.setIsMultipleSearch(false);
 
                 OrderSearchRequest request = new OrderSearchRequest(
-                                OrderDeliveryStatus.PREPARING, OrderStatus.PAYMENT_COMPLETED,
+                                OrderDeliveryStatus.PREPARING, CompletedOrderSearchType.ORDER_NUMBER,
                                 searchCondition);
 
                 BbanglePageResponse<OrderSearchResponse> mockResponse = new BbanglePageResponse<>(
@@ -227,7 +227,7 @@ class SellerOrderControllerSliceTest {
 
                 OrderSearchRequest request = new OrderSearchRequest(
                                 null,
-                                null,
+                                CompletedOrderSearchType.ORDER_NUMBER,
                                 searchCondition);
 
                 OrderSearchResponse orderSearchResponse = OrderSearchResponse.builder()

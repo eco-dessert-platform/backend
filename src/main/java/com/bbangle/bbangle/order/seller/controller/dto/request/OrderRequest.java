@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.order.seller.controller.dto.request;
 
 import com.bbangle.bbangle.common.dto.SearchFormDto;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
-import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,8 +23,8 @@ public class OrderRequest {
         @Schema(description = "배송상태")
         private OrderDeliveryStatus orderStatus;
 
-        @Schema(description = "키워드 타입")
-        private OrderStatus fieldType;
+        @Schema(description = "검색 상세조건")
+        private CompletedOrderSearchType searchType;
 
         @JsonUnwrapped
         @Schema(hidden = true, description = "기본 검색 조건")
@@ -40,7 +40,7 @@ public class OrderRequest {
             return OrderSearchCommand.builder()
                 .sellerId(sellerId)
                 .orderDeliveryStatus(this.orderStatus)
-                .orderStatus(this.fieldType)
+                .searchType(this.searchType)
                 .searchCondition(this.defaultSearchCondition)
                 .page(page)
                 .build();
