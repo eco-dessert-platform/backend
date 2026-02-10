@@ -31,6 +31,17 @@ public class OrderItemFixture {
             .build();
     }
 
+    public static OrderItem cancelRequestedWithProduct(Product product) {
+        return OrderItem.builder()
+            .product(product)
+            .quantity(1)
+            .productPrice(10000)
+            .unitPrice(10000)
+            .totalPrice(10000)
+            .orderStatus(OrderStatus.CANCEL_REQUESTED)
+            .build();
+    }
+
     public static OrderItem paymentCompleted() {
         return orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED);
     }
