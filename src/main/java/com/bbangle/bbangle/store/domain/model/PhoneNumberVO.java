@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.seller.domain.model;
+package com.bbangle.bbangle.store.domain.model;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -15,11 +15,11 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode // [필수] 값 객체의 동등성 비교를 위해 필요
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // [필수] JPA 리플렉션용 기본 생성자
 public class PhoneNumberVO {
-    private static final Pattern PATTERN = Pattern.compile("^[0-9]{11}$");
+    private static final Pattern PATTERN = Pattern.compile("^[0-9]{9,11}$");
 
     @Column(name = "phone", columnDefinition = "VARCHAR(20)")
     private String phoneNumber;
-    @Column(name = "sub_phone", columnDefinition = "VARCHAR(100)")
+    @Column(name = "sub_phone", columnDefinition = "VARCHAR(20)")
     private String subPhoneNumber;
 
     private PhoneNumberVO(String phoneNumber, String subPhoneNumber) {

@@ -1,5 +1,8 @@
 package com.bbangle.bbangle.order.domain;
 
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.CANCEL_REQUESTED;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
+
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -101,5 +104,19 @@ public class OrderItem extends BaseEntity {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
         }
         this.orderStatus = OrderStatus.RETURN_REJECTED;
+    }
+
+    public void cancelApprove() {
+        if (orderStatus != CANCEL_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.CANCEL_APPROVED;
+    }
+
+    public void cancelReject() {
+        if (orderStatus != CANCEL_REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.CANCEL_REJECTED;
     }
 }

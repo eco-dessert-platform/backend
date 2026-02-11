@@ -27,6 +27,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SellerStoreServiceUnitTest {
 
+    private final String profile = "test/s3/seller";
+    private final String introduce = "testIntroduce";
+    private final String phone = "01012346789";
+    private final String subPhone = "01098765432";
+    private final String email = "test1234@gmail.com";
+    private final String address = "경기도 수원시 팔달구";
+    private final String detailAddress = "화성행궁 12번지";
+
     @Mock
     private StoreRepository storeRepository;
 
@@ -66,7 +74,7 @@ class SellerStoreServiceUnitTest {
         String originalStoreName = "   StoreA ";
         String normalizedStoreName = "StoreA";
 
-        Store store = Store.createForSeller(normalizedStoreName);
+        Store store = Store.createForSeller(normalizedStoreName, profile, introduce, phone, subPhone, email, address, detailAddress);
         SellerStoreDetail detail = mock(SellerStoreDetail.class);
 
         given(storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName)).willReturn(Optional.of(store));
@@ -85,12 +93,12 @@ class SellerStoreServiceUnitTest {
 
     @Test
     @DisplayName("스토어가 존재하지만 상태가 NONE이 아니면 사용 불가")
-    void checkStoreName_storeExists_Unavailable() {
+    void checkStoreName_storeExists_unavailable() {
 
         // given
         String storeName = "StoreA";
 
-        Store store = Store.createForSeller(storeName);
+        Store store = Store.createForSeller(storeName, profile, introduce, phone, subPhone, email, address, detailAddress);
         store.changeStatus(StoreStatus.ACTIVE);
 
         given(storeRepository.findByStoreNameAndIsNotDeleted(storeName)).willReturn(Optional.of(store));

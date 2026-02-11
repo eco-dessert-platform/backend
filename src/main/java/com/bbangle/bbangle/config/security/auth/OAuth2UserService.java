@@ -8,8 +8,8 @@ import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import com.bbangle.bbangle.seller.domain.OAuth2Seller;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -37,9 +37,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2Exception(BbangleErrorCode.MISSING_NAME_NICKNAME);
         }
 
-        OAuth2Seller seller;
+        Seller seller;
         try {
-            seller = oAuth2SellerFacade.login(OAuth2ResponseCreateCommand.from(oAuth2Response));
+            seller = oAuth2SellerFacade.login(SellerCreateCommand.from(oAuth2Response));
         } catch (Exception e) {
             throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
         }
