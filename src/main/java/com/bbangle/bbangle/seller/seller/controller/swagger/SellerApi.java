@@ -4,7 +4,6 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Seller", description = "(판매자) 판매자 API")
 public interface SellerApi {
@@ -107,44 +105,6 @@ public interface SellerApi {
         @RequestBody SellerAccountUpdateRequest request,
         @AuthenticationPrincipal Long sellerId
     );
-
-
-    // TODO : v3
-    @Operation(
-        summary = "신규 판매자 생성",
-        description = "판매자 정보(JSON)와 프로필 이미지 파일을 업로드합니다."
-    )
-
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "판매자 생성 성공",
-            content = @Content(
-                schema = @Schema(implementation = CommonResult.class),
-                examples = @ExampleObject(
-                    name = "successResponse",
-                    summary = "성공응답 예시",
-                    value = """
-                        {
-                            "success" : true,
-                            "code" : 0,
-                            "message" : "SUCCESS"
-                        } 
-                        """
-                )
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "잘못된 요청 데이터",
-            content = @Content(
-                schema = @Schema(implementation = GlobalControllerAdvice.class)
-            )
-        )
-    })
-    CommonResult createSeller(
-        SellerCreateRequest request,
-        MultipartFile profileImage);
 
     @Operation(
         summary = "계좌 인증",

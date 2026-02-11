@@ -3,6 +3,7 @@ package com.bbangle.bbangle.store.seller.controller.swagger;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +13,30 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Seller Store", description = "(판매자) 스토어 API")
 public interface SellerStoreApi {
+
+    @Operation(
+        summary = "스토어 생성 및 판매자 등록",
+        description = """
+            ### 스토어 정보(JSON)와 프로필 이미지 파일을 업로드합니다.
+            - 만약 중복 체크를 통해 조회한 스토어를 등록할 경우 JSON에 storeId가 필요합니다.
+            - 새로 스토어를 생성한 후 등록하는 경우 storeId는 null이여야 합니다.
+            - 기존 스토어 프로필 경로와 이미지 파일 둘 다 없을 경우 예외가 발생합니다.
+            - 둘 중 하나는 반드시 필요합니다.
+            """
+    )
+    SingleResult<StoreResponse.StoreRegisterResult> registerStore(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    );
 
     @Operation(
         summary = "(판매자) 스토어 검색",
