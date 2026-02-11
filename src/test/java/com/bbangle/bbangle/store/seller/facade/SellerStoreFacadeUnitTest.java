@@ -14,7 +14,6 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
@@ -74,7 +73,7 @@ class SellerStoreFacadeUnitTest {
             StoreResponse.SellerStoreDetail storeDetail = mock(StoreResponse.SellerStoreDetail.class);
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            given(seller.getCertificationStatus()).willReturn(CertificationStatus.NEW);
+            given(seller.isRegisterAvailable()).willReturn(true);
             given(s3Service.saveAndReturnWithCdn(anyString(), eq(multipartFile))).willReturn(imagePath);
             given(sellerStoreService.createStore(request, imagePath)).willReturn(store);
             given(store.getStatus()).willReturn(StoreStatus.NONE);
@@ -89,16 +88,15 @@ class SellerStoreFacadeUnitTest {
             verify(s3Service, never()).deleteImage(imagePath);
         }
 
-        @ParameterizedTest
-        @EnumSource(value = CertificationStatus.class, names = {"PENDING", "APPROVED"})
+        @Test
         @DisplayName("이미 스토어를 등록한 판매자는 예외가 발생한다.")
-        void fail_registerStoreForSeller_when_certificationStatus_isNot_new(CertificationStatus status) {
+        void fail_registerStoreForSeller_with_alreadyRegisteredSeller() {
 
             // given
             Seller seller = mock(Seller.class);
 
             given(sellerService.getSellerById(1L)).willReturn(seller);
-            given(seller.getCertificationStatus()).willReturn(status);
+            given(seller.isRegisterAvailable()).willReturn(false);
 
             // when & then
             assertThatThrownBy(() -> sellerStoreFacade.registerStoreForSeller(
@@ -123,7 +121,7 @@ class SellerStoreFacadeUnitTest {
             Store store = mock(Store.class);
 
             given(sellerService.getSellerById(1L)).willReturn(seller);
-            given(seller.getCertificationStatus()).willReturn(CertificationStatus.NEW);
+            given(seller.isRegisterAvailable()).willReturn(true);
             given(s3Service.saveAndReturnWithCdn(any(), any())).willReturn("cdn/path");
             given(sellerStoreService.createStore(any(), any())).willReturn(store);
             given(store.getStatus()).willReturn(status);
@@ -142,14 +140,14 @@ class SellerStoreFacadeUnitTest {
         }
 
         @Test
-        @DisplayName("판매자 생성 중 DB 예외가 발생하면 업로드된 S3 이미지를 삭제하고 예외를 던진다.")
+        @DisplayName("스토어 등록 중 DB 예외가 발생하면 업로드된 S3 이미지를 삭제하고 예외를 던진다.")
         void fail_registerStoreForSeller_rollback_s3_by_exception() {
 
             // given
             Seller seller = mock(Seller.class);
 
             given(sellerService.getSellerById(1L)).willReturn(seller);
-            given(seller.getCertificationStatus()).willReturn(CertificationStatus.NEW);
+            given(seller.isRegisterAvailable()).willReturn(true);
             given(s3Service.saveAndReturnWithCdn(any(), any())).willReturn("cdn/error");
             given(sellerStoreService.createStore(any(), any())).willThrow(new RuntimeException());
 

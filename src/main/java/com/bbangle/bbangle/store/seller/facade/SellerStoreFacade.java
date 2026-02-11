@@ -4,7 +4,6 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreStatus;
@@ -41,7 +40,7 @@ public class SellerStoreFacade {
 
         // 판매자 계정 조회 -> 만약 판매자 계정이 [승인 / 대기] 상태일 경우 등록 불가
         Seller seller = sellerService.getSellerById(sellerId);
-        if (seller.getCertificationStatus() == CertificationStatus.APPROVED || seller.getCertificationStatus() == CertificationStatus.PENDING) {
+        if (!seller.isRegisterAvailable()) {
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
         }
 
