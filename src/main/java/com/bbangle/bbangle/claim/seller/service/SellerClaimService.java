@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.claim.seller.service;
 
+import com.bbangle.bbangle.claim.domain.CancelRequest;
 import com.bbangle.bbangle.claim.domain.Claim;
 import com.bbangle.bbangle.claim.domain.ReturnRequest;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
@@ -30,26 +31,50 @@ public class SellerClaimService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
 
         if (claim instanceof ReturnRequest returnRequest) {
-            switch (decisionType) {
-                case APPROVE -> {
-                    returnRequest.approve(reason);
-                    OrderItem orderItem = returnRequest.getOrderItem();
-                    orderItem.returnApprove();
-                    OrderItemHistory history = OrderItemHistory.create(orderItem);
-                    orderItemHistoryRepository.save(history);
-                }
-                case REJECT -> {
-                    returnRequest.reject(reason);
-                    OrderItem orderItem = returnRequest.getOrderItem();
-                    orderItem.returnReject();
-                    OrderItemHistory history = OrderItemHistory.create(orderItem);
-                    orderItemHistoryRepository.save(history);
-                }
-            }
-            return;
+            processReturnDecision(returnRequest, decisionType, reason);
+        } else if (claim instanceof CancelRequest cancelRequest) {
+            processCancelDecision(cancelRequest, decisionType, reason);
+        } else {
+            throw new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND);
         }
+    }
 
-        throw new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND);
+    private void processCancelDecision(CancelRequest cancelRequest, DecisionType decisionType, String reason) {
+        switch (decisionType) {
+            case APPROVE -> {
+                cancelRequest.approve(reason);
+                OrderItem orderItem = cancelRequest.getOrderItem();
+                orderItem.cancelApprove();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
+            }
+            case REJECT -> {
+                cancelRequest.reject(reason);
+                OrderItem orderItem = cancelRequest.getOrderItem();
+                orderItem.cancelReject();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
+            }
+        }
+    }
+
+    private void processReturnDecision(ReturnRequest returnRequest, DecisionType decisionType, String reason) {
+        switch (decisionType) {
+            case APPROVE -> {
+                returnRequest.approve(reason);
+                OrderItem orderItem = returnRequest.getOrderItem();
+                orderItem.returnApprove();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
+            }
+            case REJECT -> {
+                returnRequest.reject(reason);
+                OrderItem orderItem = returnRequest.getOrderItem();
+                orderItem.returnReject();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
+            }
+        }
     }
 
 }
