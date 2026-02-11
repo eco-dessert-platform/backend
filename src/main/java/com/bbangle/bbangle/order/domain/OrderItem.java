@@ -9,21 +9,13 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -73,14 +65,14 @@ public class OrderItem extends BaseEntity {
 
     @Builder
     public OrderItem(
-        Integer quantity,
-        Integer productPrice,
-        Integer unitPrice,
-        OrderStatus orderStatus,
-        OrderDeliveryStatus orderDeliveryStatus,
-        Integer totalPrice,
-        Order order,
-        Product product
+            Integer quantity,
+            Integer productPrice,
+            Integer unitPrice,
+            OrderStatus orderStatus,
+            OrderDeliveryStatus orderDeliveryStatus,
+            Integer totalPrice,
+            Order order,
+            Product product
     ) {
         this.quantity = quantity;
         this.productPrice = productPrice;
@@ -91,6 +83,14 @@ public class OrderItem extends BaseEntity {
         this.order = order;
         this.product = product;
     }
+
+    public void shipOrder() {
+        if (orderStatus != OrderStatus.ORDER_CONFIRMED && orderStatus != OrderStatus.IN_PRODUCTION) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.SHIPPED;
+    }
+
 
     public void returnApprove() {
         if (orderStatus != RETURN_REQUESTED) {

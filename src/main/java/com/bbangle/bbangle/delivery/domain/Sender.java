@@ -26,4 +26,18 @@ public class Sender {
     @Column(length = 10)
     private String senderZipCode;
 
+    private Sender(String senderName, String senderPhone, String senderAddress,
+                   String senderAddressDetail, String senderZipCode) {
+        this.senderName = senderName;
+        this.senderPhone = senderPhone;
+        this.senderAddress = senderAddress;
+        this.senderAddressDetail = senderAddressDetail;
+        this.senderZipCode = senderZipCode;
+    }
+
+    public static Sender of(String name, String phone, String address,
+                             String addressDetail, String zipCode) {
+        return new Sender(name, phone, address, addressDetail, zipCode);
+    }
+
 }

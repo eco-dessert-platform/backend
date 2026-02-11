@@ -29,6 +29,7 @@ public class OrderDelivery extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Embedded
@@ -41,11 +42,34 @@ public class OrderDelivery extends BaseEntity {
     private Shipping shipping;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", columnDefinition = "VARCHAR(20)")
+    @Column(name = "status", length = 30)
     private OrderDeliveryStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
+
+    private OrderDelivery(Sender sender, Receiver receiver, Shipping shipping,
+                          OrderDeliveryStatus status, OrderItem orderItem) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.shipping = shipping;
+        this.status = status;
+        this.orderItem = orderItem;
+    }
+
+    public static OrderDelivery create(Sender sender, Receiver receiver, Shipping shipping,
+                                       OrderDeliveryStatus status, OrderItem orderItem) {
+        return new OrderDelivery(sender, receiver, shipping, status, orderItem);
+    }
+
+    public void registerShipment(String courierName, String trackingNumber) {
+        if (this.shipping == null) {
+            this.shipping = Shipping.of(courierName, trackingNumber);
+        } else {
+            this.shipping.updateShippingInfo(courierName, trackingNumber);
+        }
+        this.status = OrderDeliveryStatus.DELIVERING;
+    }
 
 }
