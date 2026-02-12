@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -74,7 +75,10 @@ public enum BbangleErrorCode {
     CSV_NOT_CONVERT_ERROR(-57, "CSV 파일을 리스트로 변환 도중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_VALID_INDEX(-58, "유효하지 않은 CSV 컬럼값 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INPUT_STREAM_NOT_CLOSE(-59, "InputStream이 정상적으로 종료되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-
+    INVALID_REMOVE_PRODUCTS_REQUEST(-60, "옵션 전체삭제가 아닌경우 옵션 ID가 하나라도 있어야합니다.", BAD_REQUEST),
+    INVALID_STOCK_AMOUNT(-61, "재고 수량은 0이상이여야 합니다.", BAD_REQUEST),
+    NOT_FOUND_OPTION(-62, "존재하지 않는 상품 옵션입니다", NOT_FOUND),
+    INVALID_DECREASE_STOCK_AMOUNT(-63, "감소하려는 수보다 현재 재고가 더 작습니다.", BAD_REQUEST),
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_CLIENT_ERROR(-601, "AWS SDK 클라이언트 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -92,39 +96,43 @@ public enum BbangleErrorCode {
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // Seller Error (700~720)
-    INVALID_PHONE_NUMBER(-700, "유효하지 않은 핸드폰 번호 입니다.", BAD_REQUEST),
-    INVALID_EMAIL(-702, "유효하지 않은 이메일 형식 입니다.", BAD_REQUEST),
-    INVALID_ADDRESS(-703, "유효하지 않은 주소 입니다.", BAD_REQUEST),
-    INVALID_DETAIL_ADDRESS(-704, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
-    INVALID_CERTIFICATION_STATUS(-705, "승인 상태가 비어 있습니다.", BAD_REQUEST),
-    INVALID_PROFILE(-706, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST),
-    SELLER_CREATION_FAILED(-708, "Seller 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    SELLER_DOCUMENT_NAME_REQUIRED(-709, "서류 파일명은 필수입니다.", BAD_REQUEST),
-    SELLER_DOCUMENT_URL_REQUIRED(-710, "서류 URL은 필수입니다.", BAD_REQUEST),
-    SELLER_DOCUMENT_TYPE_REQUIRED(-711, "서류 타입은 필수입니다.", BAD_REQUEST),
-    INVALID_DOCUMENT_FILE_EXTENSION(-712, "서류 파일은 jpg, jpeg, png, pdf 형식만 가능합니다.", BAD_REQUEST),
-    SELLER_NOT_FOUND(-713, "존재하지 않는 판매자입니다.", NOT_FOUND),
-    ACCOUNT_VERIFICATION_NOT_FOUND(-714, "존재하지 않는 인증정보입니다.", NOT_FOUND),
-    ACCOUNT_NOT_VERIFIED(-715, "인증되지 않은 계좌입니다.", BAD_REQUEST),
-    ORDER_NOT_FOUND(-716, "존재하지 않는 주문입니다.", NOT_FOUND),
-    ORDER_ITEM_NOT_FOUND(-717, "존재하지 않는 주문상품입니다.", NOT_FOUND),
-    ORDER_ACCESS_DENIED(-718, "해당 주문에 대한 접근 권한이 없습니다.", FORBIDDEN),
-    PAYMENT_NOT_FOUND(-719, "존재하지 않는 결제정보입니다.", NOT_FOUND),
+    INVALID_CERTIFICATION_STATUS(-700, "승인 상태가 비어 있습니다.", BAD_REQUEST),
+    SELLER_CREATION_FAILED(-701, "Seller 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    SELLER_DOCUMENT_NAME_REQUIRED(-702, "서류 파일명은 필수입니다.", BAD_REQUEST),
+    SELLER_DOCUMENT_URL_REQUIRED(-703, "서류 URL은 필수입니다.", BAD_REQUEST),
+    SELLER_DOCUMENT_TYPE_REQUIRED(-704, "서류 타입은 필수입니다.", BAD_REQUEST),
+    INVALID_DOCUMENT_FILE_EXTENSION(-705, "서류 파일은 jpg, jpeg, png, pdf 형식만 가능합니다.", BAD_REQUEST),
+    SELLER_NOT_FOUND(-706, "존재하지 않는 판매자입니다.", NOT_FOUND),
+    ACCOUNT_VERIFICATION_NOT_FOUND(-707, "존재하지 않는 인증정보입니다.", NOT_FOUND),
+    ACCOUNT_NOT_VERIFIED(-708, "인증되지 않은 계좌입니다.", BAD_REQUEST),
+    ORDER_NOT_FOUND(-709, "존재하지 않는 주문입니다.", NOT_FOUND),
+    ORDER_ITEM_NOT_FOUND(-710, "존재하지 않는 주문상품입니다.", NOT_FOUND),
+    ORDER_ACCESS_DENIED(-711, "해당 주문에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    ENCRYPTION_FAILED(-712, "암호화 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    DECRYPTION_FAILED(-713, "복호화 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALREADY_REGISTER_STORE(-714, "이미 스토어를 등록한 판매자 계정입니다.", BAD_REQUEST),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
     INVALID_STORE_NAME(-722, "유효하지 않은 스토어 이름입니다.", BAD_REQUEST),
     INVALID_STORE_ID(-723, "유효하지 않은 스토어 아이디 입니다", BAD_REQUEST),
-
+    INVALID_STORE_INTRODUCE(-724, "유효하지 않은 스토어 한 줄 소개입니다.", BAD_REQUEST),
+    INVALID_PROFILE(-725, "프로필 이미지 경로가 비어있습니다.", BAD_REQUEST),
+    INVALID_PHONE_NUMBER(-726, "유효하지 않은 핸드폰 번호 입니다.", BAD_REQUEST),
+    INVALID_EMAIL(-727, "유효하지 않은 이메일 형식 입니다.", BAD_REQUEST),
+    INVALID_ADDRESS(-728, "유효하지 않은 주소 입니다.", BAD_REQUEST),
+    INVALID_DETAIL_ADDRESS(-729, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
+    INVALID_SHORT_DESCRIPTION(-730, "유효하지 않은 한 줄 소개입니다.", BAD_REQUEST),
+    ALREADY_RESERVED_STORE(-731, "이미 등록된 스토어입니다.", BAD_REQUEST),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
-    INVALID_ADMIN_ID(-740, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
-    ADMIN_INVALID_PASSWORD(-742, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
-    INVALID_REFRESH_TOKEN(-743, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
-    NOT_SUPPORTED_SERVER(-744, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
-    MISSING_NAME_NICKNAME(-745, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    _UNAUTHORIZED(-746, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    INVALID_ADMIN_ID(-742, "유효하지 않은 관리자 아이디 입니다.", BAD_REQUEST),
+    ADMIN_INVALID_PASSWORD(-743, "비밀번호가 일치하지 않습니다.", BAD_REQUEST),
+    INVALID_REFRESH_TOKEN(-744, "유효하지 않은 리프레시 토큰입니다.", BAD_REQUEST),
+    NOT_SUPPORTED_SERVER(-745, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
+    MISSING_NAME_NICKNAME(-746, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
+    _UNAUTHORIZED(-747, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),
@@ -134,8 +142,15 @@ public enum BbangleErrorCode {
     IMAGE_COUNT_MISMATCH(-765, "이미지 파일 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
     IMAGE_NOT_MATCHED(-766, "HTML의 이미지 태그 개수와 원본 이미지 src 개수가 일치하지 않습니다.", BAD_REQUEST),
     NOT_FIND_NOTICE(-767, "Notice의 정보를 찾을 수 없습니다.", BAD_REQUEST),
-    ADMIN_NOTICE_UPDATE_FAILED(-768, "공지사항 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    ADMIN_NOTICE_UPDATE_FAILED(-768, "공지사항 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    // Claim Error(771 ~ 780)
+    CLAIM_NOT_FOUND(-771, "해당 claim을 찾을 수 없습니다", BAD_REQUEST),
+    SELLER_CLAIM_MISMATCH(-772, "Claim과 판매자 ID가 일치하지 않습니다", UNAUTHORIZED),
+    CLAIM_INVALID_STATUS(-773, "이미 처리된 Claim 입니다", BAD_REQUEST),
+
+    // Order Error(781 ~ 800)
+    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST);
 
     private final int code;
     private final String message;

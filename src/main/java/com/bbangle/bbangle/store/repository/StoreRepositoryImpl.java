@@ -11,12 +11,10 @@ import com.bbangle.bbangle.board.customer.dto.QAiLearningStoreDto;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
-import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,40 +100,36 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .fetchOne());
     }
 
-
     @Override
-    public CursorPagination<StoreInfo> findNextCursorPage(List<Long> storeIds) {
-
-        if (storeIds == null || storeIds.isEmpty()) {
-            return CursorPagination.of(Collections.emptyList(), PAGE_SIZE, 0L, SellerStoreInfo.StoreInfo::id);
-        }
-        ///  추출한 아이디를 통해 조회
-        List<Store> stores = queryFactory
-            .selectFrom(store)
-            .where(store.id.in(storeIds))
-            .limit(PAGE_SIZE + 1) // PAGE_SIZE는 상수값 20 고정
-            .orderBy(store.createdAt.desc(), store.id.desc())
-            .fetch();
-
-        List<SellerStoreInfo.StoreInfo> response = stores.stream()
-            .map(StoreInfo::from)
-            .toList();
-
-
-        return CursorPagination.of(response, PAGE_SIZE, null, SellerStoreInfo.StoreInfo::id);
+    public Optional<Store> findByStoreNameAndIsNotDeleted(String storeName) {
+        return Optional.ofNullable(queryFactory.selectFrom(store)
+            .where(store.name.eq(storeName)
+                .and(store.isDeleted.eq(false)))
+            .fetchOne());
     }
 
-
-    ///  페이징 처리를 위한 스토어 이름 검색 메서드
     @Override
-    public List<Store> getStoreByStoreName(String storeName) {
+    public CursorPagination<StoreInfo> findByStoreNameWithCursor(String storeName, Long cursorId) {
 
-        return queryFactory.selectFrom(store)
-            .where(store.name.contains(storeName)
-                .and(store.isDeleted.eq(false))
-                .and(store.status.eq(StoreStatus.NONE)))
+        List<Store> stores = queryFactory
+            .selectFrom(store)
+            .where(
+                Expressions.stringTemplate("REPLACE({0}, ' ', '')", store.name)
+                    .contains(storeName),
+                store.isDeleted.eq(false),
+                cursorId != null ? store.id.goe(cursorId) : null
+            )
+            .orderBy(store.id.asc())
             .limit(PAGE_SIZE + 1)
-            .orderBy(store.createdAt.desc(), store.id.desc())
-            .stream().toList();
+            .fetch();
+
+        List<StoreInfo> response = stores.stream().map(StoreInfo::from).toList();
+
+        return CursorPagination.of(
+            response,
+            PAGE_SIZE,
+            null,
+            StoreInfo::id
+        );
     }
 }

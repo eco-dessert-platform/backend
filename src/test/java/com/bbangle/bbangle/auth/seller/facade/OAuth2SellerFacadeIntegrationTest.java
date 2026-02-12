@@ -2,14 +2,12 @@ package com.bbangle.bbangle.auth.seller.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
-import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
@@ -17,10 +15,10 @@ import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.seller.repository.OAuth2SellerRepository;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import jakarta.persistence.EntityManager;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +46,7 @@ class OAuth2SellerFacadeIntegrationTest {
     OAuth2SellerFacade oAuth2SellerFacade;
 
     @Autowired
-    OAuth2SellerRepository oAuth2SellerRepository;
+    SellerRepository sellerRepository;
 
     @Autowired
     RedisRepository redisRepository;
@@ -60,7 +57,7 @@ class OAuth2SellerFacadeIntegrationTest {
     @Autowired
     EntityManager em;
 
-    @MockBean
+    @Autowired
     TokenProvider tokenProvider;
 
     @Test
@@ -68,8 +65,8 @@ class OAuth2SellerFacadeIntegrationTest {
     void success_login_seller_create() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
@@ -82,7 +79,7 @@ class OAuth2SellerFacadeIntegrationTest {
         em.clear();
 
         // then
-        OAuth2Seller savedSeller = oAuth2SellerRepository.findByProviderAndProviderId(
+        Seller savedSeller = sellerRepository.findByProviderAndProviderId(
                 command.provider(), command.providerId()
         ).orElseThrow();
 
@@ -101,24 +98,24 @@ class OAuth2SellerFacadeIntegrationTest {
     void success_login_seller_exist() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
                         .providerId("12345")
                         .build();
 
-        OAuth2Seller existingSeller = oAuth2SellerRepository.saveAndFlush(
-                OAuth2Seller.create(
-                        command.resolvedName(),
-                        command.provider(),
-                        command.providerId()
-                )
+        Seller existingSeller = sellerRepository.saveAndFlush(
+            Seller.create(
+                command.resolvedName(),
+                command.provider(),
+                command.providerId()
+            )
         );
 
         // when
-        OAuth2Seller result = oAuth2SellerFacade.login(command);
+        Seller result = oAuth2SellerFacade.login(command);
 
         // then
         assertThat(result).isNotNull();
@@ -137,8 +134,8 @@ class OAuth2SellerFacadeIntegrationTest {
     void login_unique_constraint_violation() throws Exception {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .name("test")
                         .nickname("test")
                         .provider(OauthServerType.KAKAO)
@@ -149,7 +146,7 @@ class OAuth2SellerFacadeIntegrationTest {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
-        List<Future<OAuth2Seller>> futures = new ArrayList<>();
+        List<Future<Seller>> futures = new ArrayList<>();
 
         // when
         for (int i = 0; i < threadCount; i++) {
@@ -168,11 +165,11 @@ class OAuth2SellerFacadeIntegrationTest {
         executorService.shutdown();
 
         // then
-        assertThat(oAuth2SellerRepository.count()).isEqualTo(1);    // DB에는 판매자 게정이 1개만 존재해야한다.
+        assertThat(sellerRepository.count()).isEqualTo(1);    // DB에는 판매자 계정이 1개만 존재해야한다.
 
         // 모든 스레드가 동일한 판매자 계정을 반환해야한다.
         Set<Long> sellerIds = new HashSet<>();
-        for (Future<OAuth2Seller> future : futures) {
+        for (Future<Seller> future : futures) {
             sellerIds.add(future.get().getId());
         }
 
@@ -193,16 +190,13 @@ class OAuth2SellerFacadeIntegrationTest {
 
         redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, sellerInfo, Duration.ofMinutes(5));
 
-        given(tokenProvider.generateToken(eq(1L), eq(Role.ROLE_SELLER), any()))
-            .willReturn("mockToken");
-
         // when
-        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+        GenerateTokenDTO response = oAuth2SellerFacade.generateToken(code);
 
         // then
         assertThat(response.sellerId()).isEqualTo(1L);
-        assertThat(response.refreshToken()).isEqualTo("mockToken");
-        assertThat(response.accessToken()).isEqualTo("mockToken");
+        assertThat(response.refreshToken()).isNotBlank();
+        assertThat(response.accessToken()).isNotBlank();
         assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
 
         assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class))
@@ -212,7 +206,7 @@ class OAuth2SellerFacadeIntegrationTest {
             .findByUserIdAndUserRole(1L, Role.ROLE_SELLER)
             .orElseThrow();
 
-        assertThat(saved.getRefreshToken()).isEqualTo("mockToken");
+        assertThat(saved.getRefreshToken()).isEqualTo(response.refreshToken());
     }
 
     @Test
@@ -224,6 +218,48 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // when & then
         assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 유효하면 토큰을 재발급한다.")
+    void success_reissueToken() {
+
+        // given
+        Long sellerId = 1L;
+        Role role = Role.ROLE_SELLER;
+        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
+
+        RefreshToken entity = RefreshToken.create(sellerId, role, refreshToken);
+        RefreshToken oldToken = refreshTokenRepository.save(entity);
+
+        // when
+        TokenResponse result = oAuth2SellerFacade.reissueToken(refreshToken);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.accessToken()).isNotNull();
+        assertThat(result.refreshToken()).isNotNull();
+
+        RefreshToken updated = refreshTokenRepository.findByUserIdAndUserRole(sellerId, role).orElseThrow();
+        assertThat(oldToken.getId()).isNotEqualTo(updated.getId());
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 DB에 없으면 예외 발생")
+    void failure_reissueToken_notExist() {
+
+        // given
+        Long sellerId = 1L;
+        Role role = Role.ROLE_SELLER;
+        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
             .isInstanceOf(BbangleException.class)
             .satisfies(e -> {
                 BbangleException ex = (BbangleException) e;

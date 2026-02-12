@@ -4,21 +4,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
-import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
+import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.seller.seller.service.OAuth2SellerService;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.seller.service.SellerService;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,39 +45,42 @@ class OAuth2SellerFacadeUnitTest {
     private OAuth2SellerFacade oAuth2SellerFacade;
 
     @Mock
-    private OAuth2SellerService oAuth2SellerService;
+    private SellerService sellerService;
 
     @Mock
     private OAuthSellerService oAuthSellerService;
+
+    @Mock
+    private TokenProvider tokenProvider;
 
     @Test
     @DisplayName("판매자 계정이 없으면 새로 생성한다.")
     void success_login_seller_create() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .provider(provider)
                         .providerId(providerId)
                         .name("test")
                         .nickname("test")
                         .build();
 
-        OAuth2Seller seller = OAuth2Seller.create("test", provider, providerId);
+        Seller seller = Seller.create("test", provider, providerId);
 
-        given(oAuth2SellerService.findByProviderAndProviderId(provider, providerId))
+        given(sellerService.findByProviderAndProviderId(provider, providerId))
                 .willReturn(Optional.empty());  // 테이블에 판매자 계정이 존재하지 않는다고 가정
 
-        given(oAuth2SellerService.createOAuth2Seller(command)).willReturn(seller);    // 판매자 게정을 생성한다고 가정
+        given(sellerService.createOAuth2Seller(command)).willReturn(seller);    // 판매자 계정을 생성한다고 가정
 
         // when
-        OAuth2Seller result = oAuth2SellerFacade.login(command);
+        Seller result = oAuth2SellerFacade.login(command);
 
         // then
         assertThat(result).isEqualTo(seller);
 
-        verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
-        verify(oAuth2SellerService).createOAuth2Seller(any(OAuth2ResponseCreateCommand.class));
+        verify(sellerService).findByProviderAndProviderId(provider, providerId);
+        verify(sellerService).createOAuth2Seller(any(SellerCreateCommand.class));
     }
 
     @Test
@@ -80,27 +88,27 @@ class OAuth2SellerFacadeUnitTest {
     void success_login_seller_exist() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .provider(provider)
                         .providerId(providerId)
                         .name("test")
                         .nickname("test")
                         .build();
 
-        OAuth2Seller seller = OAuth2Seller.create("test", provider, providerId);
+        Seller seller = Seller.create("test", provider, providerId);
 
-        given(oAuth2SellerService.findByProviderAndProviderId(provider, providerId))
+        given(sellerService.findByProviderAndProviderId(provider, providerId))
                 .willReturn(Optional.of(seller));
 
         // when
-        OAuth2Seller result = oAuth2SellerFacade.login(command);
+        Seller result = oAuth2SellerFacade.login(command);
 
         // then
         assertThat(result).isEqualTo(seller);
 
-        verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
-        verify(oAuth2SellerService, never()).createOAuth2Seller(any()); // 판매자 게정 생성 메서드가 호출되지 않았는지 확인
+        verify(sellerService).findByProviderAndProviderId(provider, providerId);
+        verify(sellerService, never()).createOAuth2Seller(any()); // 판매자 계정 생성 메서드가 호출되지 않았는지 확인
     }
 
     @Test
@@ -108,34 +116,34 @@ class OAuth2SellerFacadeUnitTest {
     void login_seller_unique_constraint_violation() {
 
         // given
-        OAuth2ResponseCreateCommand command =
-                OAuth2ResponseCreateCommand.builder()
+        SellerCreateCommand command =
+                SellerCreateCommand.builder()
                         .provider(provider)
                         .providerId(providerId)
                         .name("test")
                         .nickname("test")
                         .build();
 
-        OAuth2Seller seller = OAuth2Seller.create("test", provider, providerId);
+        Seller seller = Seller.create("test", provider, providerId);
 
-        given(oAuth2SellerService.findByProviderAndProviderId(provider, providerId))
+        given(sellerService.findByProviderAndProviderId(provider, providerId))
                 .willReturn(Optional.empty())    // 최초 조회 시 판매자 계정이 없다고 가정
                 .willReturn(Optional.of(seller));   // 두번째 조회 시 판매자 계정이 존재한다고 가정
 
-        given(oAuth2SellerService.createOAuth2Seller(command))
+        given(sellerService.createOAuth2Seller(command))
                 .willThrow(DataIntegrityViolationException.class);  // 판매자 계정 생성 시 UNIQUE 충돌이 일어났다고 가정
 
         // when
-        OAuth2Seller result = oAuth2SellerFacade.login(command);
+        Seller result = oAuth2SellerFacade.login(command);
 
         // then
         assertThat(result).isEqualTo(seller);
 
         // 첫번째 조회 -> 판매자 계정 없음 -> 판매자 계정 생성 -> UNIQUE 충돌 -> 판매자 재조회
-        InOrder inOrder = inOrder(oAuth2SellerService);
-        inOrder.verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
-        inOrder.verify(oAuth2SellerService).createOAuth2Seller(any());
-        inOrder.verify(oAuth2SellerService).findByProviderAndProviderId(provider, providerId);
+        InOrder inOrder = inOrder(sellerService);
+        inOrder.verify(sellerService).findByProviderAndProviderId(provider, providerId);
+        inOrder.verify(sellerService).createOAuth2Seller(any());
+        inOrder.verify(sellerService).findByProviderAndProviderId(provider, providerId);
     }
 
     @Test
@@ -155,7 +163,7 @@ class OAuth2SellerFacadeUnitTest {
         given(oAuthSellerService.generateAccessToken(1L, Role.ROLE_SELLER)).willReturn("accessToken");
 
         // when
-        GenerateTokenResponse response = oAuth2SellerFacade.generateToken(code);
+        GenerateTokenDTO response = oAuth2SellerFacade.generateToken(code);
 
         // then
         assertThat(response.refreshToken()).isEqualTo("refreshToken");
@@ -179,5 +187,89 @@ class OAuth2SellerFacadeUnitTest {
         // when & then
         assertThatThrownBy(() -> oAuth2SellerFacade.generateToken("code"))
             .isInstanceOf(BbangleException.class);
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 유효하면 토큰을 재발급한다.")
+    void success_reissueToken() {
+
+        // given
+        String refreshToken = "validRefreshToken";
+        TokenClaimsDTO tokenClaimsDTO = TokenClaimsDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .build();
+
+        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(tokenClaimsDTO);
+
+        willDoNothing().given(oAuthSellerService).refreshTokenValidate(refreshToken);
+        willDoNothing().given(oAuthSellerService).deleteRefreshToken(refreshToken);
+
+        given(oAuthSellerService.generateRefreshToken(1L, Role.ROLE_SELLER)).willReturn("newRefreshToken");
+        given(oAuthSellerService.generateAccessToken(1L, Role.ROLE_SELLER)).willReturn("newAccessToken");
+
+        // when
+        TokenResponse response = oAuth2SellerFacade.reissueToken(refreshToken);
+
+        // then
+        assertThat(response.refreshToken()).isEqualTo("newRefreshToken");
+        assertThat(response.accessToken()).isEqualTo("newAccessToken");
+
+        InOrder inOrder = inOrder(tokenProvider, oAuthSellerService);
+        inOrder.verify(tokenProvider).parseRefreshToken(refreshToken);
+        inOrder.verify(oAuthSellerService).refreshTokenValidate(refreshToken);
+        inOrder.verify(oAuthSellerService).deleteRefreshToken(refreshToken);
+        inOrder.verify(oAuthSellerService).generateRefreshToken(1L, Role.ROLE_SELLER);
+        inOrder.verify(oAuthSellerService).generateAccessToken(1L, Role.ROLE_SELLER);
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 만료되면 예외 발생")
+    void failure_reissueToken_expired() {
+
+        // given
+        String refreshToken = "expiredRefreshToken";
+
+        given(tokenProvider.parseRefreshToken(refreshToken)).willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED));
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
+
+        verify(oAuthSellerService, never()).refreshTokenValidate(refreshToken);
+        verify(oAuthSellerService, never()).deleteRefreshToken(any());
+        verify(oAuthSellerService, never()).generateRefreshToken(any(), any());
+        verify(oAuthSellerService, never()).generateAccessToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("Refresh Token이 DB에 없으면 예외 발생")
+    void failure_reissueToken_notExist() {
+
+        // given
+        String refreshToken = "invalidRefreshToken";
+        TokenClaimsDTO tokenClaimsDTO = TokenClaimsDTO.builder()
+            .id(1L)
+            .role(Role.ROLE_SELLER)
+            .build();
+
+        given(tokenProvider.parseRefreshToken(refreshToken)).willReturn(tokenClaimsDTO);
+        willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED)).given(oAuthSellerService).refreshTokenValidate(refreshToken);
+
+        // when & then
+        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
+
+        verify(oAuthSellerService, never()).deleteRefreshToken(any());
+        verify(oAuthSellerService, never()).generateRefreshToken(any(), any());
+        verify(oAuthSellerService, never()).generateAccessToken(any(), any());
     }
 }

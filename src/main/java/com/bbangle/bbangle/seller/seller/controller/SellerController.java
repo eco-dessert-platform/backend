@@ -3,14 +3,16 @@ package com.bbangle.bbangle.seller.seller.controller;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerCreateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
 import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
+import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -22,9 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +34,7 @@ public class SellerController implements SellerApi {
     private final ResponseService responseService;
     private final SellerService sellerService;
     private final SellerFacade sellerFacade;
+    private final AccountVerificationService accountVerificationService;
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
@@ -43,7 +44,7 @@ public class SellerController implements SellerApi {
         return responseService.getListResult(sellerFacade.registerDocuments(request.toCommand(sellerId)));
     }
 
-
+    // TODO : v3 - Store 상세 정보 변경 API (Store/Seller/Controller로 이동할 것)
     @PutMapping
     @Override
     public CommonResult updateSeller(
@@ -54,6 +55,7 @@ public class SellerController implements SellerApi {
         return responseService.getSuccessResult();
     }
 
+    // TODO : v3 - Store 이름 변경 API (Store/Seller/Controller로 이동할 것)
     @PatchMapping("/store-name")
     @Override
     public CommonResult updateStoreName(
@@ -74,22 +76,14 @@ public class SellerController implements SellerApi {
         return responseService.getSuccessResult();
     }
 
-
-    // TODO : v3
+    @PostMapping("/account-verifications")
     @Override
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public CommonResult createSeller(
-        @Valid @RequestPart("request") SellerCreateRequest request,
-        @RequestPart("profileImage") MultipartFile profileImage
+    public CommonResult accountVerification(
+        @RequestBody @Valid AccountVerificationRequest request,
+        @AuthenticationPrincipal Long sellerId
     ) {
-        sellerFacade.registerSeller(request.toCommand(), profileImage, request.storeId());
-        return responseService.getSuccessResult();
-    }
-
-
-    @Override
-    public CommonResult accountVerification(String accountNumber, String sellerName) {
-        return responseService.getSuccessResult();
+        AccountVerificationInfo info = accountVerificationService.verifyAccount(request.toCommand(sellerId));
+        return responseService.getSingleResult(info);
     }
 
 }

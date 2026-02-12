@@ -3,10 +3,14 @@ package com.bbangle.bbangle.store.seller.service;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,47 +20,75 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
+    private final SellerStoreMapper sellerStoreMapper;
 
     @Transactional
-    public Store registerStoreForSeller(Long storeId, String storeName) {
-        // 1. 크롤링된 스토어 사용하는 경우
-        if (storeId != null) {
-            return storeRepository.findById(storeId)
+    public Store createStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
+        // 1. DB에 존재하는 스토어를 사용하는 경우
+        if (request.storeId() != null) {
+            Store store = storeRepository.findById(request.storeId())
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
-        }
-        // 중복검사 진행
-        if (storeRepository.existsByStoreName(storeName)) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+
+            // 1-1. 새로 업로드한 이미지 파일이 없을 경우 기존의 스토어 프로필을 사용
+            String newProfile = profileImagePath == null ? request.profile() : profileImagePath;
+
+            store.updateDetail(
+                newProfile,
+                request.introduce(),
+                request.phoneNumber(),
+                request.subPhoneNumber(),
+                request.email(),
+                request.originAddress(),
+                request.originAddressDetail()
+            );
+
+            return store;
         }
 
         // 2. 새로운 스토어 생성하는 경우
-        return storeRepository.save(Store.createForSeller(storeName));
+        if (profileImagePath == null || profileImagePath.isEmpty()) throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
+
+        return storeRepository.save(
+            Store.createForSeller(
+                request.storeName(),
+                profileImagePath,
+                request.introduce(),
+                request.phoneNumber(),
+                request.subPhoneNumber(),
+                request.email(),
+                request.originAddress(),
+                request.originAddressDetail()
+            )
+        );
+    }
+
+    @Transactional
+    public void registerStore(Seller seller, Store store) {
+        seller.registerStore(store);
     }
 
     @Transactional(readOnly = true)
-    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName){
-        String normalizedStoreName = normalize(storeName);
-        if (normalizedStoreName == null) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-        // 1. 스토어명이 중복이라면 사용할 수없다.
-        if (storeRepository.existsByStoreName((normalizedStoreName))){
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
+    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName, Long cursorId) {
+        String normalizedStoreName = storeName.replaceAll("\\s+", "");
 
-        /// 페이징 처리를 위한 +1 조회 진행
-        ///중복되지 않은 스토어명들을 조회하고 id 값을 List로 모아 페이징 처리 로직으로 전달
-        List<Long> storeIds = storeRepository.getStoreByStoreName(normalizedStoreName).stream().map(Store::getId).toList();
-
-        // 2. 스토어 명이 중복이 아니라면 사용 가능하다
-         return storeRepository.findNextCursorPage(storeIds);
+        return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
-    private String normalize(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        // → "   " 같은 공백-only 문자열이면 null로 간주
-        return trimmed.isEmpty() ? null : trimmed;
-    }
+    public StoreResponse.StoreNameCheck checkStoreName(String storeName) {
+        String normalizedStoreName = storeName.strip();
 
+        return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName)
+            .map(store ->
+                StoreResponse.StoreNameCheck.builder()
+                    .available(StoreStatus.NONE.equals(store.getStatus()))
+                    .store(sellerStoreMapper.toSellerStoreDetail(store))
+                    .build()
+            )
+            .orElseGet(() ->
+                StoreResponse.StoreNameCheck.builder()
+                    .available(true)
+                    .store(null)
+                    .build()
+            );
+    }
 }

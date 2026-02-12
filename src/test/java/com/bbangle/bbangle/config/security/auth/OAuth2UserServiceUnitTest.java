@@ -14,9 +14,9 @@ import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import com.bbangle.bbangle.seller.domain.OAuth2Seller;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.seller.seller.service.command.OAuth2ResponseCreateCommand;
+import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -74,7 +74,7 @@ class OAuth2UserServiceUnitTest {
         // OAuth2 Server에서 조회한 User Info
         OAuth2User oAuth2User = kakaoOAuth2User();
 
-        OAuth2Seller seller = OAuth2Seller.create(
+        Seller seller = Seller.create(
                 "test",
                 OauthServerType.KAKAO,
                 "12345"
@@ -99,7 +99,7 @@ class OAuth2UserServiceUnitTest {
         assertThat(details.name()).isEqualTo(seller.getName());
         assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
 
-        verify(oAuth2SellerFacade).login(any(OAuth2ResponseCreateCommand.class));
+        verify(oAuth2SellerFacade).login(any(SellerCreateCommand.class));
     }
 
     @Test
@@ -122,7 +122,7 @@ class OAuth2UserServiceUnitTest {
                 "sub"
         );
 
-        OAuth2Seller seller = OAuth2Seller.create(
+        Seller seller = Seller.create(
                 "test",
                 OauthServerType.GOOGLE,
                 "12345"
@@ -147,7 +147,7 @@ class OAuth2UserServiceUnitTest {
         assertThat(details.name()).isEqualTo(seller.getName());
         assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
 
-        verify(oAuth2SellerFacade).login(any(OAuth2ResponseCreateCommand.class));
+        verify(oAuth2SellerFacade).login(any(SellerCreateCommand.class));
     }
 
     @Test

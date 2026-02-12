@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.admin.service;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -42,4 +43,12 @@ public class AdminBoardService {
         productInfoNoticeRepository.softDeleteByBoardIds(boardIds);
     }
 
+    @Transactional
+    public void deleteProducts(RemoveProductsCommand command) {
+        if (command.removeAll()) {
+            productRepository.softDeleteByBoardId(command.boardId());
+        } else {
+            productRepository.softDeleteByProductIds(command.productIds());
+        }
+    }
 }

@@ -1,15 +1,18 @@
 package com.bbangle.bbangle.seller.seller.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
@@ -47,21 +50,24 @@ class AccountVerificationServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // arrange: 테스트용 스토어와 판매자 생성
-        Store store = Store.builder()
-            .name("테스트 스토어")
-            .build();
-        storeRepository.save(store);
-
-        testSeller = Seller.create(
-            "01012345678",
+        Store store = Store.createForSeller(
+            "테스트 스토어",
+            "https://example.com/profile.jpg",
+            null,
+            "01087654321",
             "01087654321",
             "test@example.com",
             "서울특별시 강남구 테헤란로 123",
-            "456호",
-            "https://example.com/profile.jpg",
-            CertificationStatus.PENDING,
-            store
+            "456호"
         );
+        storeRepository.save(store);
+
+        testSeller = Seller.create(
+            "test",
+            OauthServerType.GOOGLE,
+            "12345"
+        );
+        testSeller.registerStore(store);
         sellerRepository.save(testSeller);
 
         em.flush();
@@ -115,13 +121,50 @@ class AccountVerificationServiceIntegrationTest {
             .isInstanceOf(Exception.class);
     }
 
+    @Test
+    @DisplayName("계좌 인증 요청이 성공한다")
+    void success_verify_account() {
+        // arrange
+        Seller seller = sellerRepository.findById(testSeller.getId()).orElseThrow();
+        VerifyAccountCommand command = new VerifyAccountCommand(
+            seller.getId(),
+            "92",
+            "123412341234"
+        );
+
+        // act
+        AccountVerificationInfo result = accountVerificationService.verifyAccount(command);
+
+        // assert
+        assertThat(result).isNotNull();
+        assertThat(result.sellerId()).isEqualTo(seller.getId());
+        assertThat(result.verified()).isTrue();
+        assertThat(result.createdAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 판매자로 계좌 인증 요청 시 예외가 발생한다")
+    void fail_verify_account_with_non_existent_seller() {
+        // arrange
+        VerifyAccountCommand command = new VerifyAccountCommand(
+            99999L,
+            "92",
+            "123412341234"
+        );
+
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.SELLER_NOT_FOUND.getMessage());
+    }
+
     /**
      * 테스트용 AccountVerification 생성 헬퍼 메서드
      */
     private AccountVerification createAccountVerification(Seller seller, boolean verified) {
-        AccountVerification accountVerification = new AccountVerification(
-            "테스트은행",
-            "1234567890",
+        AccountVerification accountVerification = AccountVerification.create(
+            "92",
+            "encryptedAccountNumber",
             "홍길동",
             verified,
             seller

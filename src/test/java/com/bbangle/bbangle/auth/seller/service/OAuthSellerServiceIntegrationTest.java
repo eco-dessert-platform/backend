@@ -2,6 +2,7 @@ package com.bbangle.bbangle.auth.seller.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -127,5 +128,55 @@ class OAuthSellerServiceIntegrationTest {
             .orElseThrow();
 
         assertThat(updated.getRefreshToken()).isEqualTo("newToken");
+    }
+
+    @Test
+    @DisplayName("DB에 Refresh Token이 존재하면 통과한다.")
+    void refreshTokenValidate_existToken() {
+
+        // given
+        String refreshToken = "validRefreshToken";
+        RefreshToken existing = RefreshToken.create(1L, Role.ROLE_SELLER, refreshToken);
+        refreshTokenRepository.save(existing);
+
+        // when & then
+        assertDoesNotThrow(() -> service.refreshTokenValidate(refreshToken));
+    }
+
+    @Test
+    @DisplayName("DB에 Refresh Token이 없으면 UNAUTHORIZED 예외")
+    void refreshTokenValidate_notExistToken() {
+
+        // given
+        String refreshToken = "invalidRefreshToken";
+
+        // when & then
+        assertThatThrownBy(() -> service.refreshTokenValidate(refreshToken))
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
+            });
+    }
+
+    @Test
+    @DisplayName("로그아웃 시 DB의 Refresh Token을 삭제한다.")
+    void deleteRefreshToken() {
+
+        // given
+        String refreshToken = "refreshToken";
+        RefreshToken exist = RefreshToken.create(
+            1L,
+            Role.ROLE_SELLER,
+            refreshToken
+        );
+        refreshTokenRepository.save(exist);
+
+        // when
+        service.deleteRefreshToken(refreshToken);
+
+        // then
+        assertThat(refreshTokenRepository.findByUserIdAndUserRole(1L, Role.ROLE_SELLER)).isEmpty();
+        assertThat(refreshTokenRepository.findByRefreshToken(refreshToken)).isEmpty();
     }
 }
