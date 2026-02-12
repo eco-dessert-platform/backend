@@ -110,7 +110,7 @@ public class SellerOrderController implements SellerOrderApi {
     }
 
     @Override
-    @PostMapping("/orders")
+    @PostMapping("/list")
     public SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
         @AuthenticationPrincipal Long sellerId,
         @RequestBody OrderSearchRequest request,

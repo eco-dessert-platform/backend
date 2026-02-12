@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.order.seller.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
@@ -241,5 +241,102 @@ class SellerOrderServiceUnitTest {
 
         // 결제 정보 검증
         assertThat(response.paymentInfo()).isNotNull();
+    }
+
+    @DisplayName("OrderItem이 없는 주문은 스킵되고 나머지는 정상 조회된다")
+    @Test
+    void givenOrdersWithMissingOrderItem_whenOrderSearch_thenSkipsInvalidOrders() {
+        // given
+        Store boardStore = StoreFixture.defaultStore();
+        ReflectionTestUtils.setField(boardStore, "id", 2L);
+        var board = BoardFixture.defaultBoardWithStore(boardStore, "카카오커피");
+        var product = ProductFixture.create(board, "카카오커피");
+
+        // 정상 주문 (OrderItem 있음)
+        Order validOrder = OrderFixture.createDefaultOrder();
+        ReflectionTestUtils.setField(validOrder, "id", 1L);
+        OrderItem validOrderItem = OrderItemFixture.createOrderItemWithProduct(product);
+        ReflectionTestUtils.setField(validOrderItem, "id", 10L);
+        validOrder.addOrderItem(validOrderItem);
+        Payment validPayment = PaymentFixture.createDefaultPayment(validOrder);
+        ReflectionTestUtils.setField(validOrder, "payment", validPayment);
+
+        // 비정상 주문 (OrderItem 없음)
+        Order invalidOrder = OrderFixture.createDefaultOrder();
+        ReflectionTestUtils.setField(invalidOrder, "id", 2L);
+        // OrderItem을 추가하지 않음
+        Payment invalidPayment = PaymentFixture.createDefaultPayment(invalidOrder);
+        ReflectionTestUtils.setField(invalidOrder, "payment", invalidPayment);
+
+        BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(
+            List.of(validOrder, invalidOrder),
+            0, 10, 1, 2L
+        );
+
+        OrderSearchCommand command = OrderSearchCommand.builder()
+            .sellerId(1L)
+            .orderDeliveryStatus(null)
+            .searchType(CompletedOrderSearchType.ORDER_NUMBER)
+            .page(PageRequest.of(0, 10))
+            .build();
+
+        given(orderRepository.searchOrderList(command)).willReturn(orderPage);
+        given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L)))
+            .willReturn(Collections.emptyList());
+
+        // when
+        BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sut.orderSearch(command);
+
+        // then
+        assertThat(result.content()).asList().hasSize(1);  // 정상 주문 1개만
+        assertThat(result.content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
+    }
+
+    @DisplayName("Payment가 없는 주문은 스킵되고 나머지는 정상 조회된다")
+    @Test
+    void givenOrdersWithMissingPayment_whenOrderSearch_thenSkipsInvalidOrders() {
+        // given
+        Store boardStore = StoreFixture.defaultStore();
+        ReflectionTestUtils.setField(boardStore, "id", 2L);
+        var board = BoardFixture.defaultBoardWithStore(boardStore, "카카오커피");
+        var product = ProductFixture.create(board, "카카오커피");
+
+        // 정상 주문 (Payment 있음)
+        Order validOrder = OrderFixture.createDefaultOrder();
+        ReflectionTestUtils.setField(validOrder, "id", 1L);
+        OrderItem validOrderItem = OrderItemFixture.createOrderItemWithProduct(product);
+        ReflectionTestUtils.setField(validOrderItem, "id", 10L);
+        validOrder.addOrderItem(validOrderItem);
+        Payment validPayment = PaymentFixture.createDefaultPayment(validOrder);
+        ReflectionTestUtils.setField(validOrder, "payment", validPayment);
+
+        // 비정상 주문 (Payment 없음)
+        Order invalidOrder = OrderFixture.createDefaultOrder();
+        ReflectionTestUtils.setField(invalidOrder, "id", 2L);
+        OrderItem invalidOrderItem = OrderItemFixture.createOrderItemWithProduct(product);
+        ReflectionTestUtils.setField(invalidOrderItem, "id", 11L);
+        invalidOrder.addOrderItem(invalidOrderItem);
+        // Payment를 설정하지 않음 (null)
+
+        BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(
+            List.of(validOrder, invalidOrder),
+            0, 10, 1, 2L
+        );
+
+        OrderSearchCommand command = OrderSearchCommand.builder()
+            .sellerId(1L)
+            .page(PageRequest.of(0, 10))
+            .build();
+
+        given(orderRepository.searchOrderList(command)).willReturn(orderPage);
+        given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L, 11L)))
+            .willReturn(Collections.emptyList());
+
+        // when
+        BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sut.orderSearch(command);
+
+        // then
+        assertThat(result.content()).asList().hasSize(1);
+        assertThat(result.content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
     }
 }

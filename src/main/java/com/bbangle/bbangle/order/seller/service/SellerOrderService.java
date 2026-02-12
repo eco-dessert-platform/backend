@@ -25,9 +25,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SellerOrderService {
@@ -84,30 +86,49 @@ public class SellerOrderService {
         Map<Long, OrderDelivery> latestDeliveryMap = fetchLatestDeliveries(orderPage.content());
 
         List<OrderSearchResponse> responses = new ArrayList<>();
+        int skippedCount = 0;
 
         for (Order order : orderPage.content()) {
-            List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
+            try {
+                List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
 
-            if (orderItemList.isEmpty()) {
-                throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+                if (orderItemList.isEmpty()) {
+                    log.warn("주문 데이터 무결성 문제 - OrderItem 누락: orderId={}, orderNumber={}",
+                        order.getId(), order.getOrderNumber());
+                    skippedCount++;
+                    continue;
+                }
+
+                Payment payment = order.getPayment();
+                if (payment == null) {
+                    log.warn("주문 데이터 무결성 문제 - Payment 누락: orderId={}, orderNumber={}",
+                        order.getId(), order.getOrderNumber());
+                    skippedCount++;
+                    continue;
+                }
+                PaymentInfo paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
+                    payment.getPaymentMethod().getDescription());
+
+                OrderDelivery firstDelivery = order.getOrderItems().stream()
+                    .map(item -> latestDeliveryMap.get(item.getId()))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+
+                OrderSearchResponse response = OrderSearchResponse.from(
+                    order, orderItemList, paymentInfo, firstDelivery);
+                responses.add(response);
+
+            } catch (Exception e) {
+                log.error("주문 조회 중 예외 발생 - orderId={}, orderNumber={}",
+                    order.getId(), order.getOrderNumber(), e);
+                skippedCount++;
             }
+        }
 
-            Payment payment = order.getPayment();
-            if (payment == null) {
-                throw new BbangleException(BbangleErrorCode.PAYMENT_NOT_FOUND);
-            }
-            PaymentInfo paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
-                payment.getPaymentMethod().getDescription());
-
-            OrderDelivery firstDelivery = order.getOrderItems().stream()
-                .map(item -> latestDeliveryMap.get(item.getId()))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-
-            OrderSearchResponse response = OrderSearchResponse.from(
-                order, orderItemList, paymentInfo, firstDelivery);
-            responses.add(response);
+        if (skippedCount > 0) {
+            log.warn("주문 조회에서 {}건의 주문을 스킵했습니다. sellerId={}",
+                skippedCount, command.sellerId());
         }
 
         return new BbanglePageResponse<>(

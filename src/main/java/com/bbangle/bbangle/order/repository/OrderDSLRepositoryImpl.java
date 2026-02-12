@@ -14,7 +14,12 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -32,21 +37,34 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     @Override
     public BbanglePageResponse<Order> searchOrderList(OrderSearchCommand command) {
         Pageable pageable = command.page();
+
+        // 1단계: Order ID만 조회 (페이징 적용)
+        List<Long> orderIds = fetchOrderIds(command, pageable);
+
+        // 2단계: Order 엔티티 fetchJoin 조회
+        List<Order> orders = fetchOrdersWithDetails(orderIds);
+
+        // 3단계: count 쿼리
+        Long total = fetchTotalCount(command);
+
+        return BbanglePageResponse.of(new PageImpl<>(orders, pageable, total));
+    }
+
+    private List<Long> fetchOrderIds(OrderSearchCommand command, Pageable pageable) {
         CompletedOrderSearchType searchType = command.searchType();
         String keyword = command.searchCondition() != null
             ? command.searchCondition().getKeyword()
             : null;
 
-        JPAQuery<Order> dataQuery = queryFactory
-            .selectFrom(order)
-            .distinct()
-            .leftJoin(order.seller, seller).fetchJoin()
-            .leftJoin(order.orderItems, orderItem).fetchJoin()
-            .leftJoin(order.payment).fetchJoin();
+        JPAQuery<Long> idQuery = queryFactory
+            .select(order.id)
+            .from(order)
+            .leftJoin(order.seller, seller)
+            .leftJoin(order.orderItems, orderItem);
 
-        addKeywordJoins(dataQuery, searchType, keyword);
+        addKeywordJoins(idQuery, searchType, keyword);
 
-        List<Order> orders = dataQuery
+        return idQuery
             .where(
                 seller.id.eq(command.sellerId()),
                 dateRangePredicate(
@@ -54,17 +72,50 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                     command.searchCondition().getEndDate().atTime(23, 59, 59)),
                 orderStatusPredicate(command.orderDeliveryStatus()),
                 keywordPredicate(searchType, keyword))
-            .orderBy(order.orderDate.desc())
+            .orderBy(order.orderDate.desc(), order.id.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
+    }
+
+    private List<Order> fetchOrdersWithDetails(List<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Order> orders = queryFactory
+            .selectFrom(order)
+            .distinct()
+            .leftJoin(order.seller, seller).fetchJoin()
+            .leftJoin(order.orderItems, orderItem).fetchJoin()
+            .leftJoin(order.payment).fetchJoin()
+            .where(order.id.in(orderIds))
+            .fetch();
+
+        return restoreOriginalOrder(orders, orderIds);
+    }
+
+    private List<Order> restoreOriginalOrder(List<Order> orders, List<Long> orderIds) {
+        Map<Long, Order> orderMap = orders.stream()
+            .collect(Collectors.toMap(Order::getId, Function.identity()));
+
+        return orderIds.stream()
+            .map(orderMap::get)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    private Long fetchTotalCount(OrderSearchCommand command) {
+        CompletedOrderSearchType searchType = command.searchType();
+        String keyword = command.searchCondition() != null
+            ? command.searchCondition().getKeyword()
+            : null;
 
         JPAQuery<Long> countQuery = queryFactory
             .select(order.countDistinct())
             .from(order)
             .leftJoin(order.seller, seller)
-            .leftJoin(order.orderItems, orderItem)
-            .leftJoin(order.payment);
+            .leftJoin(order.orderItems, orderItem);
 
         addKeywordJoins(countQuery, searchType, keyword);
 
@@ -78,7 +129,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                 keywordPredicate(searchType, keyword))
             .fetchOne();
 
-        return BbanglePageResponse.of(new PageImpl<>(orders, pageable, total != null ? total : 0L));
+        return total != null ? total : 0L;
     }
 
     private void addKeywordJoins(JPAQuery<?> query, CompletedOrderSearchType searchType,
