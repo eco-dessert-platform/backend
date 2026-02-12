@@ -10,7 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis.InfoDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -74,7 +74,7 @@ class CustomSuccessHandlerUnitTest {
 
         // then
         ArgumentCaptor<String> uuidCaptor = ArgumentCaptor.forClass(String.class);  //  UUID 값 저장
-        ArgumentCaptor<OAuth2InfoRedisDTO> dtoCaptor = ArgumentCaptor.forClass(OAuth2InfoRedisDTO.class);
+        ArgumentCaptor<InfoDTO> dtoCaptor = ArgumentCaptor.forClass(InfoDTO.class);
 
         verify(redisRepository).setFromDTO(
                 eq("oauth2:code"),
@@ -84,7 +84,7 @@ class CustomSuccessHandlerUnitTest {
         );
 
         // Map 검증
-        OAuth2InfoRedisDTO value = dtoCaptor.getValue();
+        InfoDTO value = dtoCaptor.getValue();
         assertThat(value.id()).isEqualTo(1L);
         assertThat(value.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(value.status()).isEqualTo(CertificationStatus.NEW);

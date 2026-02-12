@@ -3,7 +3,6 @@ package com.bbangle.bbangle.config.security;
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
 import com.bbangle.bbangle.config.security.auth.OAuth2ClientValidationFilter;
-import com.bbangle.bbangle.config.security.auth.OAuth2HandlerProperties;
 import com.bbangle.bbangle.config.security.auth.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -45,17 +44,9 @@ public class OAuth2SecurityConfig {
                 .failureHandler(failureHandler)
             )
             .addFilterBefore(
-                validationFilter(),
+                new OAuth2ClientValidationFilter(clientRegistrationRepository, failureHandler),
                 OAuth2AuthorizationRequestRedirectFilter.class
             );
         return http.build();
-    }
-
-    @Bean
-    public OAuth2ClientValidationFilter validationFilter() {
-        return new OAuth2ClientValidationFilter(
-            clientRegistrationRepository,
-            oAuth2HandlerProperties
-        );
     }
 }

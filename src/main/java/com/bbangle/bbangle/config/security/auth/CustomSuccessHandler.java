@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis.InfoDTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
@@ -40,7 +41,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             redisRepository.setFromDTO(
                 OAUTH_CODE_NAMESPACE,
                 uuid.toString(),
-                OAuth2InfoRedisDTO.builder()
+                InfoDTO.builder()
                     .id(oAuth2User.id())
                     .role(oAuth2User.role())
                     .status(oAuth2User.status())

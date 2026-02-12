@@ -11,7 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis.InfoDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
@@ -152,7 +152,7 @@ class OAuth2SellerFacadeUnitTest {
 
         // given
         String code = "authCode";
-        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+        InfoDTO sellerInfo = InfoDTO.builder()
             .id(1L)
             .role(Role.ROLE_SELLER)
             .status(CertificationStatus.NEW)
