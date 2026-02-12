@@ -114,7 +114,7 @@ public class SellerOrderController implements SellerOrderApi {
     public SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
         @AuthenticationPrincipal Long sellerId,
         @RequestBody OrderSearchRequest request,
-        Pageable pageable) {
+        @PageableDefault(size = 100, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
         BbanglePageResponse<OrderSearchResponse> response = sellerOrderService.orderSearch(
             request.toCommand(sellerId, pageable));

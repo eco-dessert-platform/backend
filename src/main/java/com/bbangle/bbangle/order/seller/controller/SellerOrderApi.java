@@ -55,7 +55,7 @@ public interface SellerOrderApi {
         @Parameter(description = "판매자 ID")
         Long sellerId,
         @Valid OrderRequest.OrderSearchRequest request,
-        Pageable pageable);
+        @ParameterObject Pageable pageable);
 
     @Operation(summary = "(판매자) 발주 확인")
     SingleResult<OrderConfirmResponse> confirmOrder(
