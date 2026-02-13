@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum BbangleErrorCode {
 
+    TEST_ERROR_CODE(0, "테스트용 에러 코드입니다.", BAD_REQUEST),
+
     UNKNOWN_CATEGORY(-1, "올바르지 않은 Category 입니다. 다시 입력해주세요", BAD_REQUEST),
     DUPLICATE_NICKNAME(-2, "중복된 닉네임이에요!", CONFLICT),
     EXCEED_NICKNAME_LENGTH(-3, "닉네임은 20자 제한이에요!", BAD_REQUEST),
@@ -133,6 +135,7 @@ public enum BbangleErrorCode {
     NOT_SUPPORTED_SERVER(-745, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
     MISSING_NAME_NICKNAME(-746, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     _UNAUTHORIZED(-747, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    OAUTH_MISSING_PARAMS(-748, "OAuth 파라미터가 존재하지 않습니다.", BAD_REQUEST),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),
