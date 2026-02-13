@@ -24,18 +24,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(toBuilder = true)
 @Getter
 @Table(name = "order_item")
 @Entity
@@ -85,16 +79,14 @@ public class OrderItem extends BaseEntity {
     }
 
     /**
-     * 양방향 연관관계 설정용 패키지 전용 메서드
-     * Order.addOrderItem()을 통해서만 호출되어야 합니다.
+     * 양방향 연관관계 설정용 패키지 전용 메서드 Order.addOrderItem()을 통해서만 호출되어야 합니다.
      */
     void setOrder(Order order) {
         this.order = order;
     }
 
     /**
-     * 주문 항목에 배송 정보를 추가합니다.
-     * 양방향 연관관계를 안전하게 설정합니다.
+     * 주문 항목에 배송 정보를 추가합니다. 양방향 연관관계를 안전하게 설정합니다.
      */
     public void addOrderDelivery(OrderDelivery orderDelivery) {
         this.orderDeliveries.add(orderDelivery);

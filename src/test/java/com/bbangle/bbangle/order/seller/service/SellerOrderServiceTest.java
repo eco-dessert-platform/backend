@@ -1,5 +1,12 @@
 package com.bbangle.bbangle.order.seller.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
+
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
 import com.bbangle.bbangle.delivery.domain.Shipping;
@@ -18,9 +25,12 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderRespo
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,17 +39,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.times;
 
 @DisplayName("[비즈니스 로직] SellerOrderService")
 @ExtendWith(MockitoExtension.class)
@@ -66,16 +65,16 @@ class SellerOrderServiceTest {
         // given
         Long orderId = 999L;
         OrderConfirmCommand command = OrderConfirmCommand.builder()
-                .sellerId(1L)
-                .orderId(orderId)
-                .orderItemIds(List.of(1L, 2L))
-                .build();
+            .sellerId(1L)
+            .orderId(orderId)
+            .orderItemIds(List.of(1L, 2L))
+            .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.empty());
 
         // when
         BbangleException result = assertThrows(BbangleException.class,
-                () -> sut.confirmOrder(command));
+            () -> sut.confirmOrder(command));
 
         // then
         then(orderRepository).should(times(1)).findById(orderId);
@@ -104,17 +103,17 @@ class SellerOrderServiceTest {
         ReflectionTestUtils.setField(skipItem, "order", order);
 
         OrderConfirmCommand command = OrderConfirmCommand.builder()
-                .sellerId(sellerId)
-                .orderId(orderId)
-                .orderItemIds(List.of(10L, 11L))
-                .build();
+            .sellerId(sellerId)
+            .orderId(orderId)
+            .orderItemIds(List.of(10L, 11L))
+            .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
         given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
         given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
-                .willReturn(2L);
+            .willReturn(2L);
         given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(10L, 11L)))
-                .willReturn(List.of(okItem, skipItem));
+            .willReturn(List.of(okItem, skipItem));
 
         // when
         OrderConfirmResponse result = sut.confirmOrder(command);
@@ -127,8 +126,8 @@ class SellerOrderServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.content().orderId()).isEqualTo(orderId);
         assertThat(result.content().confirmedOrderItemIds())
-                .asList()
-                .containsExactly(10L);
+            .asList()
+            .containsExactly(10L);
 
         assertThat(okItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
         assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
@@ -143,16 +142,16 @@ class SellerOrderServiceTest {
         void givenNullOrderItemIds_whenRegisterShipment_thenThrowsException() {
             // given
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(1L)
-                    .orderId(1L)
-                    .orderItemIds(null)
-                    .courierName("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build();
+                .sellerId(1L)
+                .orderId(1L)
+                .orderItemIds(null)
+                .courierName("CJ대한통운")
+                .trackingNumber("1234567890")
+                .build();
 
             // when
             BbangleException result = assertThrows(BbangleException.class,
-                    () -> sut.registerShipment(command));
+                () -> sut.registerShipment(command));
 
             // then
             assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
@@ -163,16 +162,16 @@ class SellerOrderServiceTest {
         void givenEmptyOrderItemIds_whenRegisterShipment_thenThrowsException() {
             // given
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(1L)
-                    .orderId(1L)
-                    .orderItemIds(List.of())
-                    .courierName("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build();
+                .sellerId(1L)
+                .orderId(1L)
+                .orderItemIds(List.of())
+                .courierName("CJ대한통운")
+                .trackingNumber("1234567890")
+                .build();
 
             // when
             BbangleException result = assertThrows(BbangleException.class,
-                    () -> sut.registerShipment(command));
+                () -> sut.registerShipment(command));
 
             // then
             assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
@@ -184,18 +183,18 @@ class SellerOrderServiceTest {
             // given
             Long orderId = 999L;
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(1L)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(1L, 2L))
-                    .courierName("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build();
+                .sellerId(1L)
+                .orderId(orderId)
+                .orderItemIds(List.of(1L, 2L))
+                .courierName("CJ대한통운")
+                .trackingNumber("1234567890")
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.empty());
 
             // when
             BbangleException result = assertThrows(BbangleException.class,
-                    () -> sut.registerShipment(command));
+                () -> sut.registerShipment(command));
 
             // then
             then(orderRepository).should(times(1)).findById(orderId);
@@ -213,19 +212,19 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(order, "id", orderId);
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(sellerId)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(1L, 2L))
-                    .courierName("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build();
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(1L, 2L))
+                .courierName("CJ대한통운")
+                .trackingNumber("1234567890")
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.empty());
 
             // when
             BbangleException result = assertThrows(BbangleException.class,
-                    () -> sut.registerShipment(command));
+                () -> sut.registerShipment(command));
 
             // then
             then(orderRepository).should(times(1)).findById(orderId);
@@ -252,27 +251,27 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(seller, "store", store);
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(sellerId)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(1L, 2L))
-                    .courierName("CJ대한통운")
-                    .trackingNumber("1234567890")
-                    .build();
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(1L, 2L))
+                .courierName("CJ대한통운")
+                .trackingNumber("1234567890")
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
             given(orderItemRepository.countOwnedOrderItems(orderId, List.of(1L, 2L), storeId))
-                    .willReturn(0L);
+                .willReturn(0L);
 
             // when
             BbangleException result = assertThrows(BbangleException.class,
-                    () -> sut.registerShipment(command));
+                () -> sut.registerShipment(command));
 
             // then
             then(orderRepository).should(times(1)).findById(orderId);
             then(sellerRepository).should(times(1)).findByIdWithStore(sellerId);
             then(orderItemRepository).should(times(1))
-                    .countOwnedOrderItems(orderId, List.of(1L, 2L), storeId);
+                .countOwnedOrderItems(orderId, List.of(1L, 2L), storeId);
             assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
         }
 
@@ -306,32 +305,32 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(store, "name", "테스트 스토어");
 
             PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
+            ReflectionTestUtils.setField(store, "phoneNumberVO", phoneNumberVO);
+            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
+            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
 
             Seller seller = newEntity(Seller.class);
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
-            ReflectionTestUtils.setField(seller, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(seller, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(seller, "originAddressDetail", "테헤란로 123");
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(sellerId)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(10L, 11L))
-                    .courierName(courierName)
-                    .trackingNumber(trackingNumber)
-                    .build();
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 11L))
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
             given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
-                    .willReturn(2L);
+                .willReturn(2L);
             given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L)))
-                    .willReturn(List.of(orderItem1, orderItem2));
+                .willReturn(List.of(orderItem1, orderItem2));
             given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L, 11L)))
-                    .willReturn(List.of());
+                .willReturn(List.of());
             given(orderDeliveryRepository.save(any(OrderDelivery.class)))
-                    .willAnswer(invocation -> invocation.getArgument(0));
+                .willAnswer(invocation -> invocation.getArgument(0));
 
             // when
             ShipmentRegisterResponse result = sut.registerShipment(command);
@@ -340,20 +339,20 @@ class SellerOrderServiceTest {
             then(orderRepository).should(times(1)).findById(orderId);
             then(sellerRepository).should(times(1)).findByIdWithStore(sellerId);
             then(orderItemRepository).should(times(1))
-                    .countOwnedOrderItems(orderId, List.of(10L, 11L), storeId);
+                .countOwnedOrderItems(orderId, List.of(10L, 11L), storeId);
             then(orderItemRepository).should(times(1))
-                    .findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L));
+                .findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L));
             then(orderDeliveryRepository).should(times(1)).findByOrderItemIdIn(List.of(10L, 11L));
             then(orderDeliveryRepository).should(times(2)).save(any(OrderDelivery.class));
 
             assertThat(result).isNotNull();
             assertThat(result.orderId()).isEqualTo(orderId);
             assertThat(result.successOrderItemIds())
-                    .asList()
-                    .containsExactlyInAnyOrder(10L, 11L);
+                .asList()
+                .containsExactlyInAnyOrder(10L, 11L);
             assertThat(result.failedOrderItemIds())
-                    .asList()
-                    .isEmpty();
+                .asList()
+                .isEmpty();
             assertThat(result.courierName()).isEqualTo(courierName);
             assertThat(result.trackingNumber()).isEqualTo(trackingNumber);
             assertThat(result.shippedAt()).isNotNull();
@@ -392,30 +391,30 @@ class SellerOrderServiceTest {
 
             Shipping shipping = Shipping.empty();
             OrderDelivery existingDelivery = OrderDelivery.create(
-                    Sender.of("테스트 스토어", "01012345678", "서울시", "강남구", "12345"),
-                    Receiver.of("홍길동", "01098765432", null, null, null, null),
-                    shipping,
-                    OrderDeliveryStatus.PREPARING,
-                    orderItem1
+                Sender.of("테스트 스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                shipping,
+                OrderDeliveryStatus.PREPARING,
+                orderItem1
             );
             ReflectionTestUtils.setField(existingDelivery, "id", 1L);
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(sellerId)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(10L))
-                    .courierName(courierName)
-                    .trackingNumber(trackingNumber)
-                    .build();
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L))
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
             given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
-                    .willReturn(1L);
+                .willReturn(1L);
             given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
-                    .willReturn(List.of(orderItem1));
+                .willReturn(List.of(orderItem1));
             given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
-                    .willReturn(List.of(existingDelivery));
+                .willReturn(List.of(existingDelivery));
 
             // when
             ShipmentRegisterResponse result = sut.registerShipment(command);
@@ -426,11 +425,11 @@ class SellerOrderServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.orderId()).isEqualTo(orderId);
             assertThat(result.successOrderItemIds())
-                    .asList()
-                    .containsExactly(10L);
+                .asList()
+                .containsExactly(10L);
             assertThat(result.failedOrderItemIds())
-                    .asList()
-                    .isEmpty();
+                .asList()
+                .isEmpty();
 
             assertThat(existingDelivery.getStatus()).isEqualTo(OrderDeliveryStatus.DELIVERING);
             assertThat(existingDelivery.getShipping().getCourierName()).isEqualTo(courierName);
@@ -462,45 +461,45 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(store, "name", "테스트 스토어");
 
             PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
+            ReflectionTestUtils.setField(store, "phoneNumberVO", phoneNumberVO);
+            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
+            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
 
             Seller seller = newEntity(Seller.class);
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
-            ReflectionTestUtils.setField(seller, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(seller, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(seller, "originAddressDetail", "테헤란로 123");
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                    .sellerId(sellerId)
-                    .orderId(orderId)
-                    .orderItemIds(List.of(10L, 10L, 10L))
-                    .courierName(courierName)
-                    .trackingNumber(trackingNumber)
-                    .build();
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 10L, 10L))
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
+                .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
             given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
-                    .willReturn(1L);
+                .willReturn(1L);
             given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
-                    .willReturn(List.of(orderItem1));
+                .willReturn(List.of(orderItem1));
             given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
-                    .willReturn(List.of());
+                .willReturn(List.of());
             given(orderDeliveryRepository.save(any(OrderDelivery.class)))
-                    .willAnswer(invocation -> invocation.getArgument(0));
+                .willAnswer(invocation -> invocation.getArgument(0));
 
             // when
             ShipmentRegisterResponse result = sut.registerShipment(command);
 
             // then
             then(orderItemRepository).should(times(1))
-                    .countOwnedOrderItems(orderId, List.of(10L), storeId);
+                .countOwnedOrderItems(orderId, List.of(10L), storeId);
             then(orderItemRepository).should(times(1))
-                    .findByOrderIdAndIdInWithOrder(orderId, List.of(10L));
+                .findByOrderIdAndIdInWithOrder(orderId, List.of(10L));
 
             assertThat(result.successOrderItemIds())
-                    .asList()
-                    .containsExactly(10L);
+                .asList()
+                .containsExactly(10L);
         }
     }
 

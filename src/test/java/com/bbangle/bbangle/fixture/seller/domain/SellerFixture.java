@@ -46,68 +46,53 @@ public final class SellerFixture {
     }
 
     public static Seller createDefaultSeller(Store store) {
-        return Seller.create(
-            "01012345678",
-            "02123456789",
-            "seller@example.com",
-            "서울시 강남구",
-            "테스트 빌딩 123호",
-            "테스트 판매자 프로필",
-            CertificationStatus.APPROVED,
-            store
-        );
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
     }
 
     public static Seller createSellerWithPhone(String phone, String subPhone, Store store) {
-        return Seller.create(
-            phone,
-            subPhone,
-            "seller@example.com",
-            "서울시 강남구",
-            "테스트 빌딩 123호",
-            "테스트 판매자 프로필",
-            CertificationStatus.APPROVED,
-            store
-        );
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
     }
 
     public static Seller createSellerWithEmail(String email, Store store) {
-        return Seller.create(
-            "01012345678",
-            "02123456789",
-            email,
-            "서울시 강남구",
-            "테스트 빌딩 123호",
-            "테스트 판매자 프로필",
-            CertificationStatus.APPROVED,
-            store
-        );
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
     }
 
     public static Seller createSellerWithAddress(String addressLine, String detailAddress, Store store) {
-        return Seller.create(
-            "01012345678",
-            "02123456789",
-            "seller@example.com",
-            addressLine,
-            detailAddress,
-            "테스트 판매자 프로필",
-            CertificationStatus.APPROVED,
-            store
-        );
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
     }
 
     public static Seller createSellerWithStatus(CertificationStatus status, Store store) {
-        return Seller.create(
-            "01012345678",
-            "02123456789",
-            "seller@example.com",
-            "서울시 강남구",
-            "테스트 빌딩 123호",
-            "테스트 판매자 프로필",
-            status,
-            store
-        );
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(status)
+            .store(store)
+            .build();
     }
 
 }

@@ -19,8 +19,7 @@ public final class OrderItemFixture {
             .unitPrice(25000)
             .totalPrice(50000)
             .orderStatus(OrderStatus.PAYMENT_COMPLETED)
-            .orderDeliveryStatus(OrderDeliveryStatus.PREPARING)
-            .orderDeliveries(new ArrayList<>());
+            .orderDeliveryStatus(OrderDeliveryStatus.PREPARING);
     }
 
     public static OrderItem createDefaultOrderItem() {

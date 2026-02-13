@@ -128,8 +128,8 @@ class SellerOrderServiceUnitTest {
 
         // 응답 검증: PAYMENT_COMPLETED였던 것만 포함
         assertThat(result).isNotNull();
-        assertThat(result.orderId()).isEqualTo(orderId);
-        assertThat(result.confirmedOrderItemIds())
+        assertThat(result.content().orderId()).isEqualTo(orderId);
+        assertThat(result.content().confirmedOrderItemIds())
             .asList()
             .containsExactly(10L);
 

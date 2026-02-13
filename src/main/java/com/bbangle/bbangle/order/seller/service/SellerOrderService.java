@@ -9,25 +9,25 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderDelivery;
 import com.bbangle.bbangle.order.domain.OrderItem;
-import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
+import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderItemListResponse.OrderItemList;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
-import com.bbangle.bbangle.order.seller.controller.model.PaymentInfo;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
+import com.bbangle.bbangle.order.seller.controller.model.PaymentInfo;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
-import com.bbangle.bbangle.payment.domain.Payment;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
+import com.bbangle.bbangle.payment.domain.Payment;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -193,9 +193,9 @@ public class SellerOrderService {
 
         Sender sender = Sender.of(
             seller.getStore().getName(),
-            seller.getPhoneNumberVO() != null ? seller.getPhoneNumberVO().getPhoneNumber() : null,
-            seller.getOriginAddressLine(),
-            seller.getOriginAddressDetail(),
+            seller.getStore().getPhoneNumberVO() != null ? seller.getStore().getPhoneNumberVO().getPhoneNumber() : null,
+            seller.getStore().getOriginAddressLine(),
+            seller.getStore().getOriginAddressDetail(),
             null
         );
 
