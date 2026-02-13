@@ -67,8 +67,6 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
         redisRepository.setFromDTO(OAUTH_STATE_NAMESPACE, state, dto, OAUTH_STATE_TTL);
 
-        log.debug("OAuth2AuthorizationRequest State : {} Params : {}", state, dto);
-
         return authorizationRequest;
     }
 }

@@ -8,7 +8,7 @@ public class OAuth2Redis {
 
     @Builder
     public record OAuthParams(
-        String user,    // user | seller
+        String user,    // customer | seller
         String profile  // local | prod
     ) {}
 

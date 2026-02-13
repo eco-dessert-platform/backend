@@ -34,9 +34,8 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             AuthenticationException exception
     ) throws IOException, ServletException {
 
-        // TODO : 파라미터를 꺼내기
-        String state = request.getParameter(OAuth2ParameterNames.STATE);
-        OAuth2Redis.OAuthParams dto = redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuth2Redis.OAuthParams.class);
+        OAuth2Redis.OAuthParams dto = createOAuth2Params(request);
+        // TODO : 삭제하기
         log.debug("CustomFailureHandler Params : {}", dto);
 
         if (exception instanceof OAuth2Exception ex) {
@@ -49,7 +48,7 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
                 log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
             }
 
-            response.sendRedirect(createRedirectUrl(code));
+            response.sendRedirect(oauth2HandlerProperties.getErrorUrl(dto, code));
             return;
         }
 
@@ -62,11 +61,25 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
         );
         
         slackAdaptor.sendAlert(request, exception);
-        response.sendRedirect(createRedirectUrl(null));
+        response.sendRedirect(oauth2HandlerProperties.getErrorUrl(dto, null));
     }
 
-    private String createRedirectUrl(BbangleErrorCode code) {
-        if (code == null) return oauth2HandlerProperties.error() + "?error=" + "UNKNOWN_ERROR";
-        return oauth2HandlerProperties.error() + "?error=" + code + "&code=" + code.getCode();
+    private OAuth2Redis.OAuthParams createOAuth2Params(HttpServletRequest request) {
+
+        String state = request.getParameter(OAuth2ParameterNames.STATE);
+        if (state == null) {
+            String user = request.getParameter("user");
+            String profile = request.getParameter("profile");
+
+            if (user == null || profile == null)
+                throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
+
+            return OAuth2Redis.OAuthParams.builder()
+                .user(user)
+                .profile(profile)
+                .build();
+        }
+
+        return redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuth2Redis.OAuthParams.class);
     }
 }

@@ -38,9 +38,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        // TODO : 파라미터를 꺼내기
         String state = request.getParameter(OAuth2ParameterNames.STATE);
         OAuth2Redis.OAuthParams dto = redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuth2Redis.OAuthParams.class);
+        // TODO : 삭제하기
         log.debug("CustomSuccessHandler Params : {}", dto);
 
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
@@ -61,10 +61,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
         }
 
-        response.sendRedirect(createRedirectUrl(uuid));
-    }
-
-    private String createRedirectUrl(UUID uuid) {
-        return oauth2HandlerProperties.success() + "?generateToken=" + uuid;
+        response.sendRedirect(oauth2HandlerProperties.getSuccessUrl(dto, uuid));
     }
 }
