@@ -233,21 +233,19 @@ public class SellerOrderService {
                 List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
 
                 if (orderItemList.isEmpty()) {
-                    log.warn("주문 데이터 무결성 문제 - OrderItem 누락: orderId={}, orderNumber={}",
+                    log.info("주문에 OrderItem 없음 (상품 정보 누락 상태): orderId={}, orderNumber={}",
                         order.getId(), order.getOrderNumber());
-                    skippedCount++;
-                    continue;
                 }
 
                 Payment payment = order.getPayment();
-                if (payment == null) {
-                    log.warn("주문 데이터 무결성 문제 - Payment 누락: orderId={}, orderNumber={}",
+                PaymentInfo paymentInfo = null;
+                if (payment != null) {
+                    paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
+                        payment.getPaymentMethod().getDescription());
+                } else {
+                    log.info("결제 정보 없음 (결제 대기 상태): orderId={}, orderNumber={}",
                         order.getId(), order.getOrderNumber());
-                    skippedCount++;
-                    continue;
                 }
-                PaymentInfo paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
-                    payment.getPaymentMethod().getDescription());
 
                 OrderDelivery firstDelivery = order.getOrderItems().stream()
                     .map(item -> latestDeliveryMap.get(item.getId()))

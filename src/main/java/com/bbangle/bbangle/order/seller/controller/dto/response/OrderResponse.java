@@ -49,10 +49,6 @@ public class OrderResponse {
             PaymentInfo paymentInfo,
             OrderDelivery firstDelivery
         ) {
-            if (order.getOrderItems().isEmpty()) {
-                throw new IllegalArgumentException("Order must have at least one OrderItem");
-            }
-
             return OrderSearchResponse.builder()
                 .orderNumber(order.getOrderNumber())
                 .recipientName(extractRecipientName(order, firstDelivery))
