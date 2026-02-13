@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
 
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final CustomFailureHandler failureHandler;
 
     @Override
     protected void doFilterInternal(
@@ -35,13 +33,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
 
             if (client == null) {
                 log.warn("Client Registration Id: [{}] - {}", registrationId, BbangleErrorCode.NOT_SUPPORTED_SERVER);
-
-                failureHandler.onAuthenticationFailure(
-                    request,
-                    response,
-                    new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER)
-                );
-
+                response.sendRedirect("/oauth.html?error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.name());
                 return;
             }
         }

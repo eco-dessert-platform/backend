@@ -46,7 +46,7 @@ public class OAuth2SecurityConfig {
                 .failureHandler(failureHandler)
             )
             .addFilterBefore(
-                new OAuth2ClientValidationFilter(clientRegistrationRepository, failureHandler),
+                new OAuth2ClientValidationFilter(clientRegistrationRepository),
                 OAuth2AuthorizationRequestRedirectFilter.class
             );
         return http.build();
