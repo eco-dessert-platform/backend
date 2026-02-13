@@ -2,7 +2,7 @@ package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.OAuth2Response;
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis.OAuthParams;
 import com.bbangle.bbangle.auth.oauth.client.google.dto.GoogleResponse;
 import com.bbangle.bbangle.auth.oauth.client.kakao.dto.KakaoResponse;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
@@ -37,11 +37,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
 
-        // TODO : 파라미터를 꺼내서 seller인지 customer인지 로직 분기점 구현
-        OAuth2Redis.OAuthParams dto = getParams(
+        OAuthParams dto = getParams(
             (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())
         );
-        log.debug("OAuth2UserService Params : {}", dto);
 
         OAuth2User oAuth2User = loadOAuth2User(request);
         String registrationId = request.getClientRegistration().getRegistrationId();
@@ -52,6 +50,33 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2Exception(BbangleErrorCode.MISSING_NAME_NICKNAME);
         }
 
+        return switch (dto.user()) {
+            case "seller" -> createCustomSellerDetails(oAuth2Response);
+            case "customer" -> createCustomCustomerDetails(oAuth2Response);
+            default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
+        };
+    }
+
+    protected OAuth2User loadOAuth2User(OAuth2UserRequest request) {
+        return super.loadUser(request);
+    }
+
+    private OAuthParams getParams(ServletRequestAttributes requestAttributes) {
+        HttpServletRequest request = requestAttributes.getRequest();
+        String state = request.getParameter("state");
+
+        return redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuthParams.class);
+    }
+
+    private OAuth2Response createOAuth2Response(String registrationId, OAuth2User oAuth2User) {
+        return switch (registrationId) {
+            case "kakao" -> new KakaoResponse(oAuth2User.getAttributes());
+            case "google" -> new GoogleResponse(oAuth2User.getAttributes());
+            default -> throw new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
+        };
+    }
+
+    private CustomUserDetails createCustomSellerDetails(OAuth2Response oAuth2Response) {
         Seller seller;
         try {
             seller = oAuth2SellerFacade.login(SellerCreateCommand.from(oAuth2Response));
@@ -67,23 +92,26 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             .build();
     }
 
-    private OAuth2Response createOAuth2Response(String registrationId, OAuth2User oAuth2User) {
-        return switch (registrationId) {
-            case "kakao" -> new KakaoResponse(oAuth2User.getAttributes());
-            case "google" -> new GoogleResponse(oAuth2User.getAttributes());
-            default -> throw new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
-        };
-    }
+    // TODO : Customer 로그인 로직 추가하기
+    private CustomUserDetails createCustomCustomerDetails(OAuth2Response oAuth2Response) {
+/*        Member member = null;
+        try {
+            // Customer OAuth 로그인은 추후에 CustomerOauthService.login() 메서드를 리팩토링하여 사용
+            // Customer도 Seller와 마찬가지로 providerId, provider, name or nickname, profileImg만 저장함
+            // CustomerOauthService.login()에서 Member 엔티티를 반환하도록 변경
+            CustomerOauthService.login();
+        } catch (Exception e) {
+            throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
+        }
 
-    protected OAuth2User loadOAuth2User(OAuth2UserRequest request) {
-        return super.loadUser(request);
-    }
+        return CustomUserDetails.builder()
+            .id(member.getId())
+            .role(Role.ROLE_CUSTOMER)
+            .name(member.getName())
+            .status(null)
+            .build();*/
 
-    private OAuth2Redis.OAuthParams getParams(ServletRequestAttributes requestAttributes) {
-        HttpServletRequest request = requestAttributes.getRequest();
-        String state = request.getParameter("state");
-        log.debug("State : {}", state);
-
-        return redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuth2Redis.OAuthParams.class);
+        throw new OAuth2Exception(BbangleErrorCode._NOT_SUPPORTED_YET,
+            new UnsupportedOperationException("Customer 로그인 기능은 아직 구현되지 않았습니다."));
     }
 }
