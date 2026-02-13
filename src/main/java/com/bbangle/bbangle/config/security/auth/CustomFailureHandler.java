@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.config.security.auth;
 
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis;
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.ServletException;
@@ -12,7 +10,6 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomFailureHandler implements AuthenticationFailureHandler {
 
-    public static final String OAUTH_STATE_NAMESPACE = "oauth2:params";
-
     private final SlackAdaptor slackAdaptor;
-    private final OAuth2HandlerProperties oauth2HandlerProperties;
-    private final RedisRepository redisRepository;
 
     @Override
     public void onAuthenticationFailure(
@@ -33,10 +26,6 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
             HttpServletResponse response,
             AuthenticationException exception
     ) throws IOException, ServletException {
-
-        OAuth2Redis.OAuthParams dto = createOAuth2Params(request);
-        // TODO : 삭제하기
-        log.debug("CustomFailureHandler Params : {}", dto);
 
         if (exception instanceof OAuth2Exception ex) {
             BbangleErrorCode code = ex.getCode();
@@ -48,7 +37,7 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
                 log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
             }
 
-            response.sendRedirect(oauth2HandlerProperties.getErrorUrl(dto, code));
+            response.sendRedirect("/oauth.html?error=" + code.name());
             return;
         }
 
@@ -61,25 +50,6 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
         );
         
         slackAdaptor.sendAlert(request, exception);
-        response.sendRedirect(oauth2HandlerProperties.getErrorUrl(dto, null));
-    }
-
-    private OAuth2Redis.OAuthParams createOAuth2Params(HttpServletRequest request) {
-
-        String state = request.getParameter(OAuth2ParameterNames.STATE);
-        if (state == null) {
-            String user = request.getParameter("user");
-            String profile = request.getParameter("profile");
-
-            if (user == null || profile == null)
-                throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
-
-            return OAuth2Redis.OAuthParams.builder()
-                .user(user)
-                .profile(profile)
-                .build();
-        }
-
-        return redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuth2Redis.OAuthParams.class);
+        response.sendRedirect("/oauth.html?error=UNKNOWN_ERROR");
     }
 }

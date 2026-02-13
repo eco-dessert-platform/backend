@@ -89,7 +89,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
-    _NOT_SUPPORTED_YET(-993, "아직 구현되지 않은 기능입니다.", HttpStatus.NOT_IMPLEMENTED),
+    _NOT_SUPPORTED_YET(-993, "아직 지원하지 않는 기능입니다.", HttpStatus.NOT_IMPLEMENTED),
     _BAD_REQUEST(-994, "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),

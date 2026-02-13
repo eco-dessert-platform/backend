@@ -15,7 +15,8 @@ public record CustomUserDetails (
         Long id,
         Role role,
         String name,
-        CertificationStatus status
+        CertificationStatus status,
+        OAuth2Redis.OAuthParams params
 ) implements OAuth2User {
 
     @Override
