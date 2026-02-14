@@ -11,7 +11,6 @@ import com.bbangle.bbangle.seller.seller.service.SellerDocumentService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.RegisterDocumentCommand;
 import com.bbangle.bbangle.seller.seller.service.info.SellerDocumentInfo;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,18 +81,17 @@ public class SellerFacade {
 
     public SellerResponse.RegisteredStoreDetail getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
-        Store store = seller.getStore();
 
-        if (store == null) {
+        if (seller.getStore() == null) {
             return SellerResponse.RegisteredStoreDetail.builder()
                 .sellerId(seller.getId())
                 .store(null)
                 .build();
-        } else {
-            return SellerResponse.RegisteredStoreDetail.builder()
-                .sellerId(seller.getId())
-                .store(sellerStoreMapper.toSellerStoreDetail(store))
-                .build();
         }
+
+        return SellerResponse.RegisteredStoreDetail.builder()
+            .sellerId(seller.getId())
+            .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
+            .build();
     }
 }
