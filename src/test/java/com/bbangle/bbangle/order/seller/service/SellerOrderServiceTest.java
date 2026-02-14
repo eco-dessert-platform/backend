@@ -1,5 +1,12 @@
 package com.bbangle.bbangle.order.seller.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
+
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
 import com.bbangle.bbangle.delivery.domain.Shipping;
@@ -18,9 +25,12 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderRespo
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,17 +39,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.times;
 
 @DisplayName("[비즈니스 로직] SellerOrderService")
 @ExtendWith(MockitoExtension.class)
@@ -132,6 +131,16 @@ class SellerOrderServiceTest {
 
         assertThat(okItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
         assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
+    }
+
+    private <T> T newEntity(Class<T> clazz) {
+        try {
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Nested
@@ -501,16 +510,6 @@ class SellerOrderServiceTest {
             assertThat(result.successOrderItemIds())
                     .asList()
                     .containsExactly(10L);
-        }
-    }
-
-    private <T> T newEntity(Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 }
