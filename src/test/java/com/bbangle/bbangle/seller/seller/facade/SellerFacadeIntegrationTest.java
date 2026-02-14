@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-@DisplayName("[통합테스트] SellerFacadeUnitTest")
+@DisplayName("[통합테스트] SellerFacade")
 @Transactional
 class SellerFacadeIntegrationTest extends S3IntegrationTestSupport {
 

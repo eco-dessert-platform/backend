@@ -28,7 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@DisplayName("[단위테스트] SellerFacadeUnitTest")
+@DisplayName("[단위테스트] SellerFacade")
 @ExtendWith(MockitoExtension.class)
 class SellerFacadeUnitTest {
 

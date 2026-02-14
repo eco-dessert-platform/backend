@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-@DisplayName("[컨트롤러 테스트] SellerControllerTest")
+@DisplayName("[컨트롤러 테스트] SellerController")
 @WebMvcTest(controllers = SellerController.class)
 @Import({
     TestSlackAdaptorConfig.class,
