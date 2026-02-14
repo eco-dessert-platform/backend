@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.seller.seller.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
@@ -8,6 +9,7 @@ import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAcco
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerResponse.RegisteredStoreDetail;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
 import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
 import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +38,14 @@ public class SellerController implements SellerApi {
     private final SellerService sellerService;
     private final SellerFacade sellerFacade;
     private final AccountVerificationService accountVerificationService;
+
+    @Override
+    @GetMapping()
+    public SingleResult<RegisteredStoreDetail> getRegisteredStoreDetail(Long sellerId) {
+        return responseService.getSingleResult(
+            sellerFacade.getRegisteredStoreDetail(sellerId)
+        );
+    }
 
     @PostMapping(value = "/documents", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public CommonResult registerDocuments(
