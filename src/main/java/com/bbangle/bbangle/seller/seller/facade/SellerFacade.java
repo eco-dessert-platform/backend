@@ -82,16 +82,11 @@ public class SellerFacade {
     public SellerResponse.RegisteredStoreDetail getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
 
-        if (seller.getStore() == null) {
-            return SellerResponse.RegisteredStoreDetail.builder()
-                .sellerId(seller.getId())
-                .store(null)
-                .build();
-        }
-
         return SellerResponse.RegisteredStoreDetail.builder()
             .sellerId(seller.getId())
-            .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
+            .store(seller.getStore() != null ?
+                sellerStoreMapper.toSellerStoreDetail(seller.getStore())
+                : null)
             .build();
     }
 }
