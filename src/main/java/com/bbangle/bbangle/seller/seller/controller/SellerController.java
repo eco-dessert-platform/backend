@@ -41,7 +41,9 @@ public class SellerController implements SellerApi {
 
     @Override
     @GetMapping()
-    public SingleResult<RegisteredStoreDetail> getRegisteredStoreDetail(Long sellerId) {
+    public SingleResult<RegisteredStoreDetail> getRegisteredStoreDetail(
+        @AuthenticationPrincipal Long sellerId
+    ) {
         return responseService.getSingleResult(
             sellerFacade.getRegisteredStoreDetail(sellerId)
         );
