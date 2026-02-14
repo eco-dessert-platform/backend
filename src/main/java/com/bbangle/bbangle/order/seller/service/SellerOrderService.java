@@ -185,9 +185,9 @@ public class SellerOrderService {
 
         Sender sender = Sender.of(
             seller.getStore().getName(),
-            seller.getPhoneNumberVO() != null ? seller.getPhoneNumberVO().getPhoneNumber() : null,
-            seller.getOriginAddressLine(),
-            seller.getOriginAddressDetail(),
+            seller.getStore().getPhoneNumberVO() != null ? seller.getStore().getPhoneNumberVO().getPhoneNumber() : null,
+            seller.getStore().getOriginAddressLine(),
+            seller.getStore().getOriginAddressDetail(),
             null
         );
 
