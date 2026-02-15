@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.OAuthParams;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
@@ -33,14 +34,20 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
+        OAuthParams dto = OAuth2DTO.getParams(request, getClass());
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
-        UUID uuid = UUID.randomUUID();
+        UUID uuid = generateCode(oAuth2User);
 
+        getRedirectStrategy().sendRedirect(request, response, createRedirectUrl(dto, uuid));
+    }
+
+    private UUID generateCode(CustomUserDetails oAuth2User) {
+        UUID uuid = UUID.randomUUID();
         try {
             redisRepository.setFromDTO(
                 OAUTH_CODE_NAMESPACE,
                 uuid.toString(),
-                OAuth2InfoRedisDTO.builder()
+                OAuth2DTO.InfoDTO.builder()
                     .id(oAuth2User.id())
                     .role(oAuth2User.role())
                     .status(oAuth2User.status())
@@ -50,11 +57,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } catch (Exception e) {
             throw new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR, e);
         }
-
-        response.sendRedirect(createRedirectUrl(uuid));
+        return uuid;
     }
 
-    private String createRedirectUrl(UUID uuid) {
-        return oauth2HandlerProperties.success() + "?generateToken=" + uuid;
+    private String createRedirectUrl(OAuthParams params, UUID uuid) {
+        return oauth2HandlerProperties.getSuccessUrl(uuid, params);
     }
 }

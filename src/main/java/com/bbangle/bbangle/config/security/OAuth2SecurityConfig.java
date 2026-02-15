@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.config.security;
 
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
+import com.bbangle.bbangle.config.security.auth.CustomOAuth2AuthorizationRequestResolver;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
 import com.bbangle.bbangle.config.security.auth.OAuth2ClientValidationFilter;
 import com.bbangle.bbangle.config.security.auth.OAuth2HandlerProperties;
@@ -26,6 +27,7 @@ public class OAuth2SecurityConfig {
     private final CustomFailureHandler failureHandler;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2HandlerProperties oAuth2HandlerProperties;
+    private final CustomOAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver;
 
     @Bean
     @Order(1)
@@ -37,8 +39,9 @@ public class OAuth2SecurityConfig {
             )
             .csrf(AbstractHttpConfigurer::disable)
             .oauth2Login(oauth2 -> oauth2
-                .authorizationEndpoint(endpoint ->
-                    endpoint.baseUri(SellerApiPath.PREFIX + "/oauth2/authorization"))
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestResolver(oAuth2AuthorizationRequestResolver)
+                )
                 .userInfoEndpoint(config ->
                     config.userService(oAuth2UserService))
                 .successHandler(successHandler)
