@@ -5,11 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2Redis.OAuthParams;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -66,6 +68,23 @@ class OAuth2UserServiceUnitTest {
         );
     }
 
+    private OAuth2User googleOAuth2User() {
+        Map<String, Object> attributes = Map.of(
+            "sub", 12345,
+            "name", "test",
+            "given_name", "temp",
+            "picture", "test.png",
+            "email", "test.com",
+            "email_verified", true
+        );
+        // OAuth2 Server에서 조회한 User Info
+        return new DefaultOAuth2User(
+            List.of(() -> "OAUTH2_USER"),
+            attributes,
+            "sub"
+        );
+    }
+
     @Test
     @DisplayName("Kakao OAuth2 로그인 성공 시 CustomUserDetails를 반환한다.")
     void success_login_seller_kakao() {
@@ -73,6 +92,8 @@ class OAuth2UserServiceUnitTest {
         // given
         // OAuth2 Server에서 조회한 User Info
         OAuth2User oAuth2User = kakaoOAuth2User();
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         Seller seller = Seller.create(
                 "test",
@@ -92,12 +113,12 @@ class OAuth2UserServiceUnitTest {
         OAuth2User result = oAuth2UserService.loadUser(request);
 
         // then
-        assertThat(result).isInstanceOf(CustomUserDetails.class);
-
         CustomUserDetails details = (CustomUserDetails) result;
+
         assertThat(details.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(details.name()).isEqualTo(seller.getName());
         assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
+        assertThat(details.params()).isEqualTo(params);
 
         verify(oAuth2SellerFacade).login(any(SellerCreateCommand.class));
     }
@@ -107,20 +128,10 @@ class OAuth2UserServiceUnitTest {
     void success_login_seller_google() {
 
         // given
-        Map<String, Object> attributes = Map.of(
-                "sub", 12345,
-                "name", "test",
-                "given_name", "temp",
-                "picture", "test.png",
-                "email", "test.com",
-                "email_verified", true
-        );
         // OAuth2 Server에서 조회한 User Info
-        OAuth2User oAuth2User = new DefaultOAuth2User(
-                List.of(() -> "OAUTH2_USER"),
-                attributes,
-                "sub"
-        );
+        OAuth2User oAuth2User = googleOAuth2User();
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         Seller seller = Seller.create(
                 "test",
@@ -140,12 +151,11 @@ class OAuth2UserServiceUnitTest {
         OAuth2User result = oAuth2UserService.loadUser(request);
 
         // then
-        assertThat(result).isInstanceOf(CustomUserDetails.class);
-
         CustomUserDetails details = (CustomUserDetails) result;
         assertThat(details.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(details.name()).isEqualTo(seller.getName());
         assertThat(details.status()).isEqualTo(CertificationStatus.NEW);
+        assertThat(details.params()).isEqualTo(params);
 
         verify(oAuth2SellerFacade).login(any(SellerCreateCommand.class));
     }
@@ -157,6 +167,8 @@ class OAuth2UserServiceUnitTest {
         // given
         // OAuth2 Server에서 조회한 User Info
         OAuth2User oAuth2User = kakaoOAuth2User();
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         RuntimeException originalEx = new RuntimeException(BbangleErrorCode.INTERNAL_SERVER_ERROR.getMessage());
 
@@ -185,6 +197,8 @@ class OAuth2UserServiceUnitTest {
         // given
         // OAuth2 Server에서 조회한 User Info
         OAuth2User oAuth2User = kakaoOAuth2User();
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         given(request.getClientRegistration()).willReturn(clientRegistration);
         given(clientRegistration.getRegistrationId()).willReturn("facebook");
@@ -219,6 +233,8 @@ class OAuth2UserServiceUnitTest {
             attributes,
             "id"
         );
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         given(request.getClientRegistration()).willReturn(clientRegistration);
         given(clientRegistration.getRegistrationId()).willReturn("kakao");
@@ -255,6 +271,8 @@ class OAuth2UserServiceUnitTest {
             attributes,
             "sub"
         );
+        OAuthParams params = new OAuthParams("seller", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
 
         given(request.getClientRegistration()).willReturn(clientRegistration);
         given(clientRegistration.getRegistrationId()).willReturn("google");
@@ -271,5 +289,45 @@ class OAuth2UserServiceUnitTest {
             });
 
         verify(oAuth2SellerFacade, never()).login(any());
+    }
+
+    @Test
+    @DisplayName("state에 해당하는 OAuthParams가 없으면 예외를 던진다.")
+    void fail_when_oauth_params_null() {
+
+        doThrow(new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS)).when(oAuth2UserService).getParams();
+
+        assertThatThrownBy(() -> oAuth2UserService.loadUser(request))
+            .isInstanceOf(OAuth2Exception.class)
+            .satisfies(ex -> {
+                OAuth2Exception oAuth2Ex = (OAuth2Exception) ex;
+                assertThat(oAuth2Ex.getCode())
+                    .isEqualTo(BbangleErrorCode.OAUTH_INVALID_PARAMS);
+            });
+
+        verify(oAuth2SellerFacade, never()).login(any());
+    }
+
+    @Test
+    @DisplayName("user 값이 seller/customer가 아니면 OAUTH_INVALID_PARAMS 예외를 던진다.")
+    void fail_when_invalid_user_type() {
+
+        OAuthParams params = new OAuthParams("admin", "test");
+        doReturn(params).when(oAuth2UserService).getParams();
+
+        OAuth2User oAuth2User = kakaoOAuth2User();
+
+        given(request.getClientRegistration()).willReturn(clientRegistration);
+        given(clientRegistration.getRegistrationId()).willReturn("kakao");
+
+        doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
+
+        assertThatThrownBy(() -> oAuth2UserService.loadUser(request))
+            .isInstanceOf(OAuth2Exception.class)
+            .satisfies(ex -> {
+                OAuth2Exception oAuth2Ex = (OAuth2Exception) ex;
+                assertThat(oAuth2Ex.getCode())
+                    .isEqualTo(BbangleErrorCode.OAUTH_INVALID_PARAMS);
+            });
     }
 }

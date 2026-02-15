@@ -37,10 +37,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
 
-        OAuthParams dto = getParams(
-            (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())
-        );
-
+        OAuthParams dto = getParams();
         OAuth2User oAuth2User = loadOAuth2User(request);
         String registrationId = request.getClientRegistration().getRegistrationId();
 
@@ -61,7 +58,8 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         return super.loadUser(request);
     }
 
-    private OAuthParams getParams(ServletRequestAttributes requestAttributes) {
+    protected OAuthParams getParams() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
         HttpServletRequest request = requestAttributes.getRequest();
         String state = request.getParameter("state");
 

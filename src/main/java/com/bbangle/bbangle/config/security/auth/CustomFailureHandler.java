@@ -5,10 +5,10 @@ import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
@@ -28,64 +28,75 @@ public class CustomFailureHandler implements AuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException exception
-    ) throws IOException, ServletException {
+        HttpServletRequest request,
+        HttpServletResponse response,
+        AuthenticationException exception
+    ) throws IOException {
 
-        OAuthParams dto;
-        try {
-            dto = getParams(request);
-        } catch (OAuth2Exception e) {
-            response.sendRedirect("/oauth.html?error=" + BbangleErrorCode.OAUTH_INVALID_PARAMS);
+        Optional<OAuthParams> optionalParams = extractParams(request);
+
+        if (optionalParams.isEmpty()) {
+            redirectInvalidParams(response);
             return;
         }
 
-        if (exception instanceof OAuth2Exception ex) {
-            BbangleErrorCode code = ex.getCode();
+        OAuthParams params = optionalParams.get();
 
-            if (code.getHttpStatus().is5xxServerError()) {
-                log.error(ex.getMessage(), ex);
-                slackAdaptor.sendAlert(request, ex);
-            } else {
-                log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
-            }
-
-            if (code.equals(BbangleErrorCode.OAUTH_INVALID_PARAMS)) {
-                response.sendRedirect("/oauth.html?error=" + code.name());
-                return;
-            }
-
-            response.sendRedirect(oAuth2HandlerProperties.getErrorUrl(dto, code));
+        if (exception instanceof OAuth2Exception oAuth2Exception) {
+            handleOAuth2Exception(request, response, params, oAuth2Exception);
             return;
         }
 
-        // TODO : 간헐적으로 발생하는 에러를 분석하기 위해 추가 - 추후 삭제 예정
-        log.error("Authentication error occurred - FailureHandler | class : {} | message : {} | cause : {}",
-            exception.getClass().getName(),
-            exception.getMessage(),
-            exception.getCause(),
-            exception
-        );
-        
-        slackAdaptor.sendAlert(request, exception);
-        response.sendRedirect(oAuth2HandlerProperties.getErrorUrl(dto, null));
+        handleUnknownException(request, response, params, exception);
     }
 
-    private OAuthParams getParams(HttpServletRequest request) {
+    private Optional<OAuthParams> extractParams(HttpServletRequest request) {
         String state = request.getParameter("state");
-
         if (state == null) {
-            throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
+            return Optional.empty();
         }
 
         OAuthParams dto = redisRepository.getDTOAndDelete(OAUTH_STATE_NAMESPACE, state, OAuthParams.class);
 
-        if (dto == null) {
-            throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
-        }
-
-        return dto;
+        return Optional.ofNullable(dto);
     }
 
+    private void handleOAuth2Exception(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        OAuthParams params,
+        OAuth2Exception exception
+    ) throws IOException {
+        BbangleErrorCode code = exception.getCode();
+
+        if (code.getHttpStatus().is5xxServerError()) {
+            log.error(exception.getMessage(), exception);
+            slackAdaptor.sendAlert(request, exception);
+        } else {
+            log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
+        }
+
+        if (code == BbangleErrorCode.OAUTH_INVALID_PARAMS) {
+            redirectInvalidParams(response);
+            return;
+        }
+
+        response.sendRedirect(oAuth2HandlerProperties.getErrorUrl(params, code));
+    }
+
+    private void handleUnknownException(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        OAuthParams params,
+        AuthenticationException exception
+    ) throws IOException {
+        log.error("Authentication error occurred", exception);
+        slackAdaptor.sendAlert(request, exception);
+
+        response.sendRedirect(oAuth2HandlerProperties.getErrorUrl(params, null));
+    }
+
+    private void redirectInvalidParams(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth.html?error=" + BbangleErrorCode.OAUTH_INVALID_PARAMS.name());
+    }
 }
