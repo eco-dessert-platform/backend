@@ -17,12 +17,23 @@ public record OAuth2HandlerProperties (
         return domain + uri;
     }
 
+    public String getErrorUrl(OAuthParams params, BbangleErrorCode code) {
+        String domain = domain().getDomain(params);
+        String uri = redirect().getErrorUri(code);
+        return domain + uri;
+    }
+
     public record RedirectUrl(
         String success,
         String error
     ) {
         private String getSuccessUri(UUID uuid) {
             return success + "?generateToken=" + uuid;
+        }
+
+        private String getErrorUri(BbangleErrorCode code) {
+            if (code == null) return error + "?error=" + "UNKNOWN_ERROR";
+            return error + "?error=" + code + "&code=" + code.getCode();
         }
     }
 
@@ -37,10 +48,10 @@ public record OAuth2HandlerProperties (
                 case "prod" -> switch (params.user()) {
                     case "seller" -> seller;
                     case "customer" -> customer;
-                    default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
+                    default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
                 };
 
-                default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
+                default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
             };
         }
     }

@@ -57,8 +57,12 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         if (authorizationRequest == null) return null;
 
         String state = authorizationRequest.getState();
-        String user = request.getParameter("user");
-        String profile = request.getParameter("profile");
+        String user = (String) request.getAttribute("oauth_user");
+        String profile = (String) request.getAttribute("oauth_profile");
+
+        if (user == null || profile == null) {
+            return authorizationRequest;
+        }
 
         OAuth2Redis.OAuthParams dto = OAuth2Redis.OAuthParams.builder()
             .user(user)

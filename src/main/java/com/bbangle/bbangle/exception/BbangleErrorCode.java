@@ -136,7 +136,7 @@ public enum BbangleErrorCode {
     NOT_SUPPORTED_SERVER(-745, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
     MISSING_NAME_NICKNAME(-746, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     _UNAUTHORIZED(-747, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
-    OAUTH_MISSING_PARAMS(-748, "OAuth 파라미터가 존재하지 않습니다.", BAD_REQUEST),
+    OAUTH_INVALID_PARAMS(-748, "유효하지 않은 파라미터입니다.", BAD_REQUEST),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),

@@ -53,7 +53,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         return switch (dto.user()) {
             case "seller" -> createCustomSellerDetails(oAuth2Response, dto);
             case "customer" -> createCustomCustomerDetails(oAuth2Response, dto);
-            default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_MISSING_PARAMS);
+            default -> throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
         };
     }
 
@@ -66,7 +66,8 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String state = request.getParameter("state");
 
         OAuthParams dto = redisRepository.getDTO(OAUTH_STATE_NAMESPACE, state, OAuthParams.class);
-        dto.validate();
+
+        if (dto == null) throw new OAuth2Exception(BbangleErrorCode.OAUTH_INVALID_PARAMS);
 
         return dto;
     }
