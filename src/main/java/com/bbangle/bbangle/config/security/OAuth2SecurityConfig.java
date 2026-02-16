@@ -68,7 +68,7 @@ public class OAuth2SecurityConfig {
     }
 
     @Bean
-    public CustomOAuth2AuthorizationRequestResolver OAuth2Resolver(
+    public CustomOAuth2AuthorizationRequestResolver oAuth2Resolver(
         ClientRegistrationRepository clientRegistrationRepository
     ) {
         return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository);

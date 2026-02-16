@@ -80,7 +80,7 @@ class OAuthSellerServiceUnitTest {
             redisRepository.getDTOAndDelete(
                 OAuthSellerService.OAUTH_CODE_NAMESPACE,
                 "code",
-                OAuth2DTO.class
+                OAuth2DTO.InfoDTO.class
             )
         ).willReturn(null);
 

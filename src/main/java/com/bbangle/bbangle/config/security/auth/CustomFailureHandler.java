@@ -21,37 +21,41 @@ import org.springframework.stereotype.Component;
 public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private static final String DEFAULT_OAUTH_PAGE = "/oauth.html";
+
     private final SlackAdaptor slackAdaptor;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final OAuth2StateParser stateParser;
 
     @Override
     public void onAuthenticationFailure(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException exception
+        HttpServletRequest request,
+        HttpServletResponse response,
+        AuthenticationException exception
     ) throws IOException, ServletException {
 
-        BbangleErrorCode code = extractErrorCode(exception);
-
+        OAuthParams oauthParams;
         try {
-            OAuthParams dto = stateParser.getParams(request.getParameter("state"));
-            handleLoggingAndAlert(request, exception, code);
-            redirectToErrorPage(request, response, dto, code);
+            oauthParams = stateParser.getParams(request.getParameter("state"));
         } catch (OAuth2Exception e) {
-            log.error("State parameter parsing failed", e);
-            slackAdaptor.sendAlert(request, e);
-            redirectToDefault(request, response, e);
-        } catch (Exception e) {
-            log.error("Unexpected exception in FailureHandler", e);
-            slackAdaptor.sendAlert(request, e);
-            redirectToDefault(request, response, null);
+            handleStateParsingFailure(request, response, e);
+            return;
         }
+
+        BbangleErrorCode errorCode = extractErrorCode(exception);
+        handleLoggingAndAlert(request, exception, errorCode);
+        sendRedirect(request, response, errorCode, oauthParams);
     }
 
-    private BbangleErrorCode extractErrorCode(AuthenticationException exception) {
-        if (exception instanceof OAuth2Exception ex) return ex.getCode();
-        return null;
+    private void handleStateParsingFailure(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        OAuth2Exception e
+    ) throws IOException {
+        log.error("State Parsing failed", e);
+        slackAdaptor.sendAlert(request, e);
+
+        String url = DEFAULT_OAUTH_PAGE + "?error=" + e.getCode().name();
+        getRedirectStrategy().sendRedirect(request, response, url);
     }
 
     private void handleLoggingAndAlert(
@@ -59,41 +63,30 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         AuthenticationException exception,
         BbangleErrorCode code
     ) {
-        if (code != null && code.getHttpStatus().is5xxServerError()) {  // 서버 내부 에러
+        if (code == null) {
+            log.error("Unexpected Authentication Error: {}", exception.getMessage(), exception);
+        } else if (code.getHttpStatus().is5xxServerError()) {
             log.error("OAuth2 Authentication Failed [{}]: {}", code, exception.getMessage(), exception);
-            slackAdaptor.sendAlert(request, exception);
-        } else if (code != null) {  // 클라이언트/인증 에러
-            log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
-        } else {    // 예기치 못한 내부 오류
-            log.error("Unexpected authentication error in FailureHandler | class: {} | message: {} | cause: {}",
-                exception.getClass().getName(),
-                exception.getMessage(),
-                exception.getCause(),
-                exception
-            );
-            slackAdaptor.sendAlert(request, exception);
-        }
-    }
-
-    private void redirectToDefault(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        OAuth2Exception e
-    ) throws IOException {
-        String url = (e == null) ? DEFAULT_OAUTH_PAGE : DEFAULT_OAUTH_PAGE + "?error=" + e.getCode().name();
-        getRedirectStrategy().sendRedirect(request, response, url);
-    }
-
-    private void redirectToErrorPage(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        OAuthParams params,
-        BbangleErrorCode code
-    ) throws IOException {
-        if (params == null) {
-            getRedirectStrategy().sendRedirect(request, response, DEFAULT_OAUTH_PAGE + "?error=" + code.name());
         } else {
-            getRedirectStrategy().sendRedirect(request, response, oauth2HandlerProperties.getErrorUrl(code, params));
+            log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
+            return;
         }
+
+        slackAdaptor.sendAlert(request, exception);
+    }
+
+    private void sendRedirect(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        BbangleErrorCode code,
+        OAuthParams params
+    ) throws IOException {
+        String targetUrl = oauth2HandlerProperties.getErrorUrl(code, params);
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private BbangleErrorCode extractErrorCode(AuthenticationException exception) {
+        if (exception instanceof OAuth2Exception ex) return ex.getCode();
+        return null;
     }
 }

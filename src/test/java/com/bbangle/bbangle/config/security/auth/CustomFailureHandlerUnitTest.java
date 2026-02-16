@@ -100,17 +100,20 @@ class CustomFailureHandlerUnitTest {
     void failure_unknown_error() throws Exception {
 
         // given
-        AuthenticationException exception = new AuthenticationException("unknown") {};
+        OAuthParams params = mock(OAuthParams.class);
+        AuthenticationException exception = mock(AuthenticationException.class);
+        given(exception.getMessage()).willReturn("unknown");
 
         given(request.getParameter("state")).willReturn("valid");
-        given(stateParser.getParams(any())).willReturn(any());
+        given(stateParser.getParams(any())).willReturn(params);
+        given(oauth2HandlerProperties.getErrorUrl(null, params)).willReturn("https://test.com/error");
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);
 
         // then
         verify(slackAdaptor).sendAlert(request, exception);
-        verify(response).sendRedirect("/oauth.html");
+        verify(response).sendRedirect("https://test.com/error");
     }
 
     @Test
