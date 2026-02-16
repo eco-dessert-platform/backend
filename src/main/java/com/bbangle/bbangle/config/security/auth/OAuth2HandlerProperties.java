@@ -13,14 +13,14 @@ public record OAuth2HandlerProperties (
     Domain domain
 ) {
     public String getSuccessUrl(UUID uuid, OAuthParams params) {
-        String domain = domain().getDomain(params.getProfile(), params.getUser());
+        String domain = domain().getDomain(params.profile(), params.user());
         String uri = redirect().createSuccessUrl(uuid);
 
         return domain + uri;
     }
 
     public String getErrorUrl(BbangleErrorCode code, OAuthParams params) {
-        String domain = domain().getDomain(params.getProfile(), params.getUser());
+        String domain = domain().getDomain(params.profile(), params.user());
         String uri = redirect().createErrorUrl(code);
 
         return domain + uri;

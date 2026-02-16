@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.config.security.auth;
 
+import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,14 +18,18 @@ import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Profile("!test")
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
 
@@ -32,6 +38,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final OAuth2StateParser stateParser;
 
     @Override
     protected void doFilterInternal(
@@ -107,19 +114,15 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         String user = request.getParameter("user");
         String profile = request.getParameter(PARAM_PROFILE);
 
-        OAuth2DTO.OAuthParams dto = OAuth2DTO.OAuthParams.builder()
-            .user(user)
-            .profile(profile)
-            .build();
-
-        if (!dto.valid()) {
-            BbangleErrorCode code = BbangleErrorCode.INVALID_OAUTH_PARAMS;
-            log.warn("Invalid OAuth2 parameters: {} - {}", dto, code);
+        try {
+            stateParser.getParams(user, profile);
+            return true;
+        } catch (OAuth2Exception e) {
+            BbangleErrorCode code = e.getCode();
+            log.warn("Invalid OAuth2 parameters: user={}, profile={} - {}", user, profile, code);
             redirectStrategy.sendRedirect(request, response, createRedirectUrl(request, code));
-
             return false;
         }
-        return true;
     }
 
     private String createRedirectUrl(HttpServletRequest request, BbangleErrorCode code) {

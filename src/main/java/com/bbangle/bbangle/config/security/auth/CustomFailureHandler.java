@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.config.security.auth;
 
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
+import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.OAuthParams;
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -23,6 +23,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
     private static final String DEFAULT_OAUTH_PAGE = "/oauth.html";
     private final SlackAdaptor slackAdaptor;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
+    private final OAuth2StateParser stateParser;
 
     @Override
     public void onAuthenticationFailure(
@@ -34,7 +35,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         BbangleErrorCode code = extractErrorCode(exception);
 
         try {
-            OAuthParams dto = parseStateParameter(request);
+            OAuthParams dto = stateParser.getParams(request.getParameter("state"), getClass());
             handleLoggingAndAlert(request, exception, code);
             redirectToErrorPage(request, response, dto, code);
         } catch (OAuth2Exception e) {
@@ -46,11 +47,6 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
             slackAdaptor.sendAlert(request, e);
             redirectToDefault(request, response, null);
         }
-    }
-
-    private OAuthParams parseStateParameter(HttpServletRequest request) throws OAuth2Exception {
-        String stateParam = request.getParameter("state");
-        return OAuth2DTO.Parser.getParams(stateParam, getClass());
     }
 
     private BbangleErrorCode extractErrorCode(AuthenticationException exception) {

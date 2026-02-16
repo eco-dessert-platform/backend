@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.config.security.auth;
 
+import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.OAuthParams;
@@ -26,6 +27,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final RedisRepository redisRepository;
+    private final OAuth2StateParser stateParser;
 
     @Override
     public void onAuthenticationSuccess(
@@ -34,7 +36,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        OAuthParams dto = OAuth2DTO.Parser.getParams(request.getParameter("state"), getClass());
+        OAuthParams dto = stateParser.getParams(request.getParameter("state"), getClass());
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
         UUID uuid = generateCode(oAuth2User);
 
