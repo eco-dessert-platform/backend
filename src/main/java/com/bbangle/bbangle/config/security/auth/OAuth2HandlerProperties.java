@@ -65,9 +65,10 @@ public record OAuth2HandlerProperties (
         }
 
         public String getDomain(String referer) {
-            if (referer.equals(local)) return local;
-            if (referer.equals(customer)) return customer;
-            if (referer.equals(seller)) return seller;
+            if (referer == null || referer.isBlank()) return local;
+            if (referer.contains(local)) return local;
+            if (referer.contains(customer)) return customer;
+            if (referer.contains(seller)) return seller;
             return local;
         }
     }
