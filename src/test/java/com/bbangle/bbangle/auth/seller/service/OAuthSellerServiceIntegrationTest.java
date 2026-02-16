@@ -67,7 +67,7 @@ class OAuthSellerServiceIntegrationTest {
         assertThat(result.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(result.status()).isEqualTo(CertificationStatus.NEW);
 
-        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code", OAuth2DTO.class))
+        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code", OAuth2DTO.InfoDTO.class))
             .isNull();
     }
 

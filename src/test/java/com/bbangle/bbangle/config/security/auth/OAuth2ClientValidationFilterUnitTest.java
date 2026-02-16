@@ -42,9 +42,6 @@ class OAuth2ClientValidationFilterUnitTest {
     private ClientRegistrationRepository clientRegistrationRepository;
 
     @Mock
-    private OAuth2HandlerProperties oAuth2HandlerProperties;
-
-    @Mock
     private FilterChain filterChain;
 
     @Mock
@@ -59,17 +56,23 @@ class OAuth2ClientValidationFilterUnitTest {
         response = new MockHttpServletResponse();
     }
 
+    private OAuth2HandlerProperties mockProp() {
+        OAuth2HandlerProperties.RedirectUrl redirect = new OAuth2HandlerProperties.RedirectUrl("/login", "/login");
+        OAuth2HandlerProperties.Domain domain = new OAuth2HandlerProperties.Domain("test", "test", "test");
+        return new OAuth2HandlerProperties(redirect, domain);
+    }
+
     @Test
     @DisplayName("등록되지 않은 OAuth2 Client 요청 시 프론트의 에러 페이지로 리다이렉트한다.")
     void redirect_client_not_found() throws Exception {
 
         // given
         request.setRequestURI("/oauth2/authorization/test");
+        request.addHeader("Referer", "test");
 
-        OAuth2HandlerProperties.RedirectUrl redirect = mock(OAuth2HandlerProperties.RedirectUrl.class);
+        OAuth2HandlerProperties props = mockProp();
+        filter = new OAuth2ClientValidationFilter(clientRegistrationRepository, props, stateParser);
 
-        given(oAuth2HandlerProperties.redirect()).willReturn(redirect);
-        given(redirect.error()).willReturn("/login");
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
 
         // when
@@ -77,10 +80,41 @@ class OAuth2ClientValidationFilterUnitTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
+        assertThat(response.getRedirectedUrl()).startsWith("test/login");
         assertThat(response.getRedirectedUrl())
-            .contains("/login")
             .contains("error=" + BbangleErrorCode.NOT_SUPPORTED_SERVER)
             .contains("code=" + BbangleErrorCode.NOT_SUPPORTED_SERVER.getCode());
+
+        verify(filterChain, never()).doFilter(any(), any());
+    }
+
+    @Test
+    @DisplayName("OAuth2 파라미터가 유효하지 않으면 프론트의 에러 페이지로 리다이렉트한다.")
+    void redirect_invalid_oauth_params() throws Exception {
+
+        // given
+        request.setRequestURI("/oauth2/authorization/test");
+        request.setParameter("user", "INVALID"); // dto.valid() false 유도
+        request.addHeader("Referer", "test");
+
+        OAuth2HandlerProperties props = mockProp();
+        filter = new OAuth2ClientValidationFilter(clientRegistrationRepository, props, stateParser);
+
+        ClientRegistration clientRegistration = mock(ClientRegistration.class);
+
+        given(stateParser.getParams(any(), anyString())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
+        given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
+
+        // when
+        filter.doFilter(request, response, filterChain);
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
+
+        assertThat(response.getRedirectedUrl()).startsWith("test/login");
+        assertThat(response.getRedirectedUrl())
+            .contains("error=" + BbangleErrorCode.INVALID_OAUTH_PARAMS)
+            .contains("code=" + BbangleErrorCode.INVALID_OAUTH_PARAMS.getCode());
 
         verify(filterChain, never()).doFilter(any(), any());
     }
@@ -133,36 +167,6 @@ class OAuth2ClientValidationFilterUnitTest {
         HttpServletRequest wrappedRequest = captor.getValue();
         assertThat(wrappedRequest.getParameter("profile")).isEqualTo(OAuth2DTO.defaultProfile(null));
         assertThat(response.getRedirectedUrl()).isNull();
-    }
-
-    @Test
-    @DisplayName("OAuth2 파라미터가 유효하지 않으면 프론트의 에러 페이지로 리다이렉트한다.")
-    void redirect_invalid_oauth_params() throws Exception {
-
-        // given
-        request.setRequestURI("/oauth2/authorization/test");
-        request.setParameter("user", "INVALID"); // dto.valid() false 유도
-
-        ClientRegistration clientRegistration = mock(ClientRegistration.class);
-        OAuth2HandlerProperties.RedirectUrl redirect = mock(OAuth2HandlerProperties.RedirectUrl.class);
-
-        given(stateParser.getParams(any(), anyString())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
-        given(oAuth2HandlerProperties.redirect()).willReturn(redirect);
-        given(redirect.error()).willReturn("/login");
-        given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
-
-        // when
-        filter.doFilter(request, response, filterChain);
-
-        // then
-        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
-
-        assertThat(response.getRedirectedUrl())
-            .contains("/login")
-            .contains("error=" + BbangleErrorCode.INVALID_OAUTH_PARAMS)
-            .contains("code=" + BbangleErrorCode.INVALID_OAUTH_PARAMS.getCode());
-
-        verify(filterChain, never()).doFilter(any(), any());
     }
 
     @Test

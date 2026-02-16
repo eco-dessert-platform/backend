@@ -252,6 +252,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("google");
+            given(stateParser.getParams(any())).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 

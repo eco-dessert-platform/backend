@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -122,14 +121,6 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     }
 
     private String createRedirectUrl(HttpServletRequest request, BbangleErrorCode code) {
-        // ServletUriComponentsBuilder는 현재 요청(request)의 스키마, 호스트, 포트를 자동으로 가져옵니다.
-        // (Forwarded 헤더가 설정되어 있다면 그 값을 우선합니다)
-        return ServletUriComponentsBuilder.fromRequestUri(request)
-            .replacePath(oauth2HandlerProperties.redirect().error()) // path 교체
-            .replaceQuery(null) // 기존 쿼리 제거
-            .queryParam("error", code)
-            .queryParam("code", code.getCode())
-            .build()
-            .toUriString();
+        return oauth2HandlerProperties.getErrorUrl(code, request.getHeader("Referer"));
     }
 }

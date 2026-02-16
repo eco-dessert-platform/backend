@@ -15,14 +15,18 @@ public record OAuth2HandlerProperties (
     public String getSuccessUrl(UUID uuid, OAuthParams params) {
         String domain = domain().getDomain(params.profile(), params.user());
         String uri = redirect().createSuccessUrl(uuid);
-
         return domain + uri;
     }
 
     public String getErrorUrl(BbangleErrorCode code, OAuthParams params) {
         String domain = domain().getDomain(params.profile(), params.user());
         String uri = redirect().createErrorUrl(code);
+        return domain + uri;
+    }
 
+    public String getErrorUrl(BbangleErrorCode code, String referer) {
+        String domain = domain().getDomain(referer);
+        String uri = redirect().createErrorUrl(code);
         return domain + uri;
     }
 
@@ -58,6 +62,13 @@ public record OAuth2HandlerProperties (
                     case SELLER -> seller;
                 };
             };
+        }
+
+        public String getDomain(String referer) {
+            if (referer.equals(local)) return local;
+            if (referer.equals(customer)) return customer;
+            if (referer.equals(seller)) return seller;
+            return local;
         }
     }
 }
