@@ -1,11 +1,10 @@
 package com.bbangle.bbangle.config.security.auth;
 
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.OAuth2Response;
 import com.bbangle.bbangle.auth.oauth.client.dto.CustomUserDetails;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.OAuthParams;
-import com.bbangle.bbangle.auth.oauth.client.google.dto.GoogleResponse;
-import com.bbangle.bbangle.auth.oauth.client.kakao.dto.KakaoResponse;
 import com.bbangle.bbangle.auth.seller.facade.OAuth2SellerFacade;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -54,15 +53,15 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
         HttpServletRequest request = requestAttributes.getRequest();
 
-        return OAuth2DTO.getParams(request, getClass());
+        return OAuth2DTO.Parser.getParams(
+            request.getParameter("state"),
+            getClass()
+        );
     }
 
     private OAuth2Response createOAuth2Response(String registrationId, OAuth2User oAuth2User) {
-        OAuth2Response response = switch (registrationId) {
-            case "kakao" -> new KakaoResponse(oAuth2User.getAttributes());
-            case "google" -> new GoogleResponse(oAuth2User.getAttributes());
-            default -> throw new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
-        };
+        OauthServerType serverType = OauthServerType.fromName(registrationId);
+        OAuth2Response response = serverType.create(oAuth2User.getAttributes());
 
         if (response.getName() == null && response.getNickname() == null) {
             throw new OAuth2Exception(BbangleErrorCode.MISSING_NAME_NICKNAME);

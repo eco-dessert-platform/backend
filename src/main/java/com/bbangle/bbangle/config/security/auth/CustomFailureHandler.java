@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+    private static final String DEFAULT_OAUTH_PAGE = "/oauth.html";
     private final SlackAdaptor slackAdaptor;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
 
@@ -30,12 +31,26 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
             AuthenticationException exception
     ) throws IOException, ServletException {
 
-        OAuthParams dto = OAuth2DTO.getParams(request, getClass());
-
         BbangleErrorCode code = extractErrorCode(exception);
-        handleLoggingAndAlert(request, exception, code);
 
-        getRedirectStrategy().sendRedirect(request, response, createRedirectUrl(dto, code));
+        try {
+            OAuthParams dto = parseStateParameter(request);
+            handleLoggingAndAlert(request, exception, code);
+            redirectToErrorPage(request, response, dto, code);
+        } catch (OAuth2Exception e) {
+            log.error("State parameter parsing failed", e);
+            slackAdaptor.sendAlert(request, e);
+            redirectToDefault(request, response, e);
+        } catch (Exception e) {
+            log.error("Unexpected exception in FailureHandler", e);
+            slackAdaptor.sendAlert(request, e);
+            redirectToDefault(request, response, null);
+        }
+    }
+
+    private OAuthParams parseStateParameter(HttpServletRequest request) throws OAuth2Exception {
+        String stateParam = request.getParameter("state");
+        return OAuth2DTO.Parser.getParams(stateParam, getClass());
     }
 
     private BbangleErrorCode extractErrorCode(AuthenticationException exception) {
@@ -43,14 +58,18 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         return null;
     }
 
-    private void handleLoggingAndAlert(HttpServletRequest request, AuthenticationException exception, BbangleErrorCode code) {
-        if (code != null && code.getHttpStatus().is5xxServerError()) {
-            log.error(exception.getMessage(), exception);
+    private void handleLoggingAndAlert(
+        HttpServletRequest request,
+        AuthenticationException exception,
+        BbangleErrorCode code
+    ) {
+        if (code != null && code.getHttpStatus().is5xxServerError()) {  // 서버 내부 에러
+            log.error("OAuth2 Authentication Failed [{}]: {}", code, exception.getMessage(), exception);
             slackAdaptor.sendAlert(request, exception);
-        } else if (code != null) {
+        } else if (code != null) {  // 클라이언트/인증 에러
             log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
-        } else {
-            log.error("Authentication error occurred - FailureHandler | class : {} | message : {} | cause : {}",
+        } else {    // 예기치 못한 내부 오류
+            log.error("Unexpected authentication error in FailureHandler | class: {} | message: {} | cause: {}",
                 exception.getClass().getName(),
                 exception.getMessage(),
                 exception.getCause(),
@@ -60,7 +79,25 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         }
     }
 
-    private String createRedirectUrl(OAuthParams params, BbangleErrorCode code) {
-        return oauth2HandlerProperties.getErrorUrl(code, params);
+    private void redirectToDefault(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        OAuth2Exception e
+    ) throws IOException {
+        String url = (e == null) ? DEFAULT_OAUTH_PAGE : DEFAULT_OAUTH_PAGE + "?error=" + e.getCode().name();
+        getRedirectStrategy().sendRedirect(request, response, url);
+    }
+
+    private void redirectToErrorPage(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        OAuthParams params,
+        BbangleErrorCode code
+    ) throws IOException {
+        if (params == null) {
+            getRedirectStrategy().sendRedirect(request, response, DEFAULT_OAUTH_PAGE + "?error=" + code.name());
+        } else {
+            getRedirectStrategy().sendRedirect(request, response, oauth2HandlerProperties.getErrorUrl(code, params));
+        }
     }
 }
