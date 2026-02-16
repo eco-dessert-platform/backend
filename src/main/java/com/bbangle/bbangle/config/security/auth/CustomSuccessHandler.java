@@ -34,7 +34,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        OAuthParams dto = OAuth2DTO.getParams(request, getClass());
+        OAuthParams dto = OAuth2DTO.Parser.getParams(request.getParameter("state"), getClass());
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
         UUID uuid = generateCode(oAuth2User);
 
