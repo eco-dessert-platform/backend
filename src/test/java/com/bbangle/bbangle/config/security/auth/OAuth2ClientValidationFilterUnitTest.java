@@ -42,6 +42,9 @@ class OAuth2ClientValidationFilterUnitTest {
     private ClientRegistrationRepository clientRegistrationRepository;
 
     @Mock
+    private OAuth2HandlerProperties oauth2HandlerProperties;
+
+    @Mock
     private FilterChain filterChain;
 
     @Mock
@@ -56,12 +59,6 @@ class OAuth2ClientValidationFilterUnitTest {
         response = new MockHttpServletResponse();
     }
 
-    private OAuth2HandlerProperties mockProp() {
-        OAuth2HandlerProperties.RedirectUrl redirect = new OAuth2HandlerProperties.RedirectUrl("/login", "/login");
-        OAuth2HandlerProperties.Domain domain = new OAuth2HandlerProperties.Domain("test", "test", "test");
-        return new OAuth2HandlerProperties(redirect, domain);
-    }
-
     @Test
     @DisplayName("등록되지 않은 OAuth2 Client 요청 시 프론트의 에러 페이지로 리다이렉트한다.")
     void redirect_client_not_found() throws Exception {
@@ -70,10 +67,13 @@ class OAuth2ClientValidationFilterUnitTest {
         request.setRequestURI("/oauth2/authorization/test");
         request.addHeader("Referer", "test");
 
-        OAuth2HandlerProperties props = mockProp();
-        filter = new OAuth2ClientValidationFilter(clientRegistrationRepository, props, stateParser);
-
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
+        given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.NOT_SUPPORTED_SERVER, "test"))
+            .willAnswer(invocation -> {
+                BbangleErrorCode code = invocation.getArgument(0);
+                String referer = invocation.getArgument(1);
+                return referer + "/login?error=" + code + "&code=" + code.getCode();
+            });
 
         // when
         filter.doFilter(request, response, filterChain);
@@ -97,13 +97,16 @@ class OAuth2ClientValidationFilterUnitTest {
         request.setParameter("user", "INVALID"); // dto.valid() false 유도
         request.addHeader("Referer", "test");
 
-        OAuth2HandlerProperties props = mockProp();
-        filter = new OAuth2ClientValidationFilter(clientRegistrationRepository, props, stateParser);
-
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
 
         given(stateParser.getParams(any(), anyString())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
+        given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.INVALID_OAUTH_PARAMS, "test"))
+            .willAnswer(invocation -> {
+                BbangleErrorCode code = invocation.getArgument(0);
+                String referer = invocation.getArgument(1);
+                return referer + "/login?error=" + code + "&code=" + code.getCode();
+            });
 
         // when
         filter.doFilter(request, response, filterChain);
