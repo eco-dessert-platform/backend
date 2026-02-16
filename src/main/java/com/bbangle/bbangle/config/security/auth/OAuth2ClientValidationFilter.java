@@ -28,7 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
 
-    private final String PARAM_PROFILE = "profile";
+    private static final String PARAM_PROFILE = "profile";
 
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
