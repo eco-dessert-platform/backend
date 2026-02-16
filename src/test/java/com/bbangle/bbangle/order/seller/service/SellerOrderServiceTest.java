@@ -18,7 +18,7 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderRespo
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.PhoneNumberVO;
+import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import org.junit.jupiter.api.DisplayName;
@@ -304,15 +304,13 @@ class SellerOrderServiceTest {
             Store store = newEntity(Store.class);
             ReflectionTestUtils.setField(store, "id", storeId);
             ReflectionTestUtils.setField(store, "name", "테스트 스토어");
-
-            PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
+            ReflectionTestUtils.setField(store, "phoneNumberVO", PhoneNumberVO.of("01012345678", null));
+            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
+            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
 
             Seller seller = newEntity(Seller.class);
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
-            ReflectionTestUtils.setField(seller, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(seller, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(seller, "originAddressDetail", "테헤란로 123");
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                     .sellerId(sellerId)
@@ -460,15 +458,13 @@ class SellerOrderServiceTest {
             Store store = newEntity(Store.class);
             ReflectionTestUtils.setField(store, "id", storeId);
             ReflectionTestUtils.setField(store, "name", "테스트 스토어");
-
-            PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
+            ReflectionTestUtils.setField(store, "phoneNumberVO", PhoneNumberVO.of("01012345678", null));
+            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
+            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
 
             Seller seller = newEntity(Seller.class);
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
-            ReflectionTestUtils.setField(seller, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(seller, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(seller, "originAddressDetail", "테헤란로 123");
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                     .sellerId(sellerId)

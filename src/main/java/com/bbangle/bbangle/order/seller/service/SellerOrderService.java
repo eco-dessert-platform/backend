@@ -19,6 +19,7 @@ import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderCo
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.store.domain.Store;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -182,12 +183,13 @@ public class SellerOrderService {
 
     private OrderDelivery createOrderDelivery(OrderItem orderItem, Seller seller) {
         Order order = orderItem.getOrder();
+        Store store = seller.getStore();
 
         Sender sender = Sender.of(
-            seller.getStore().getName(),
-            seller.getPhoneNumberVO() != null ? seller.getPhoneNumberVO().getPhoneNumber() : null,
-            seller.getOriginAddressLine(),
-            seller.getOriginAddressDetail(),
+            store.getName(),
+            store.getPhoneNumberVO() != null ? store.getPhoneNumberVO().getPhoneNumber() : null,
+            store.getOriginAddressLine(),
+            store.getOriginAddressDetail(),
             null
         );
 
