@@ -82,7 +82,7 @@ class CustomSuccessHandlerUnitTest {
 
         // Parser static 메서드 mocking 필요
         OAuthParams params = mock(OAuthParams.class);
-        given(stateParser.getParams(eq(fakeState), any(Class.class))).willReturn(params);
+        given(stateParser.getParams(eq(fakeState))).willReturn(params);
 
         // redirect URL mock
         given(oauth2HandlerProperties.getSuccessUrl(any(), eq(params)))
@@ -130,7 +130,7 @@ class CustomSuccessHandlerUnitTest {
         given(request.getParameter("state")).willReturn("state");
 
         OAuthParams params = mock(OAuthParams.class);
-        given(stateParser.getParams(any(), any(Class.class))).willReturn(params);
+        given(stateParser.getParams(any())).willReturn(params);
 
         RuntimeException originalEx = new RuntimeException("Redis Down");
         doThrow(originalEx).when(redisRepository).setFromDTO(any(), any(), any(), any());

@@ -51,7 +51,6 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         String encodedProfile = Base64.getUrlEncoder().encodeToString(profile.getBytes(StandardCharsets.UTF_8));
 
         String state = encodedState + "|" + encodedUser + "|" + encodedProfile;
-        log.info("[CustomOAuth2AuthorizationRequestResolver] - state:{}", state);
 
         return OAuth2AuthorizationRequest.from(authorizationRequest)
             .state(state)

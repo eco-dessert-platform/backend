@@ -74,6 +74,8 @@ public interface SellerOauthApi {
         |-----------|------|------|
         |NOT_SUPPORTED_SERVER|-744|지원하지 않는 OAuth2 로그인 서버입니다.|
         |MISSING_NAME_NICKNAME|-745|이름과 닉네임이 전부 비공개 상태입니다.|
+        |INVALID_OAUTH_PARAMS|-748|유효하지 않은 파라미터입니다.|
+        |_NOT_SUPPORTED_YET|-993|아직 지원하지 않는 기능입니다.|
         |INTERNAL_SERVER_ERROR|-999|서버 내부 에러입니다. (ex : DB Down)|
         |UNKNOWN_ERROR|null|에러 코드 표에 작성된 Error Code 이외의 기타 예외 상황|
         """

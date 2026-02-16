@@ -119,7 +119,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any(), any(Class.class))).willReturn(sellerParams());
+            given(stateParser.getParams(any())).willReturn(sellerParams());
 
             // super.loadUser() mocking
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
@@ -161,7 +161,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any(), any(Class.class))).willReturn(sellerParams());
+            given(stateParser.getParams(any())).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 
@@ -210,7 +210,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("google");
-            given(stateParser.getParams(any(), any(Class.class))).willReturn(sellerParams());
+            given(stateParser.getParams(any())).willReturn(sellerParams());
 
             // super.loadUser() mocking
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
@@ -284,7 +284,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any(), any(Class.class))).willReturn(sellerParams());
+            given(stateParser.getParams(any())).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 

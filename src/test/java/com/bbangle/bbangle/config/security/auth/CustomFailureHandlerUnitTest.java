@@ -60,7 +60,7 @@ class CustomFailureHandlerUnitTest {
         OAuthParams params = mock(OAuthParams.class);
 
         given(request.getParameter("state")).willReturn("valid-state");
-        given(stateParser.getParams(any(), any(Class.class))).willReturn(params);
+        given(stateParser.getParams(any())).willReturn(params);
 
         given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.INTERNAL_SERVER_ERROR, params))
             .willReturn("https://test.com/error");
@@ -82,7 +82,7 @@ class CustomFailureHandlerUnitTest {
         OAuthParams params = mock(OAuthParams.class);
 
         given(request.getParameter("state")).willReturn("valid-state");
-        given(stateParser.getParams(any(), any(Class.class))).willReturn(params);
+        given(stateParser.getParams(any())).willReturn(params);
 
         given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.NOT_SUPPORTED_SERVER, params))
             .willReturn("https://test.com/error");
@@ -103,7 +103,7 @@ class CustomFailureHandlerUnitTest {
         AuthenticationException exception = new AuthenticationException("unknown") {};
 
         given(request.getParameter("state")).willReturn("valid");
-        given(stateParser.getParams(any(), any(Class.class))).willReturn(any());
+        given(stateParser.getParams(any())).willReturn(any());
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);
@@ -121,7 +121,7 @@ class CustomFailureHandlerUnitTest {
         AuthenticationException exception = new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR);
 
         given(request.getParameter("state")).willReturn("invalid");
-        given(stateParser.getParams(any(), any(Class.class))).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
+        given(stateParser.getParams(any())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);

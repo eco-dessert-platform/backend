@@ -22,19 +22,16 @@ public class OAuth2StateParser {
         }
     }
 
-    public <T> OAuthParams getParams(String stateParam, Class<T> clazz) {
+    public OAuthParams getParams(String stateParam) {
         if (stateParam == null || stateParam.isBlank()) throw new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS);
 
         String[] parts = stateParam.split("\\|");
         if (parts.length < 3) throw new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS);
 
-        String csrfState = safeBase64Decode(parts[0]);
         String user = safeBase64Decode(parts[1]);
         String profile = safeBase64Decode(parts[2]);
 
-        OAuthParams dto = getParams(user, profile);
-        log.info("[{}] - State:{} | params:{}", clazz.getSimpleName(), csrfState, dto);
-        return dto;
+        return getParams(user, profile);
     }
 
     public OAuthParams getParams(String user, String profile) {

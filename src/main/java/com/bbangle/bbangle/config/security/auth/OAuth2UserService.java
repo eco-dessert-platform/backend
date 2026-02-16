@@ -57,7 +57,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
         HttpServletRequest request = servletAttributes.getRequest();
 
-        return stateParser.getParams(request.getParameter("state"), getClass());
+        return stateParser.getParams(request.getParameter("state"));
     }
 
     private OAuth2Response createOAuth2Response(String registrationId, OAuth2User oAuth2User) {

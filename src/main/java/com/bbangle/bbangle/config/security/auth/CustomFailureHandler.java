@@ -35,7 +35,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         BbangleErrorCode code = extractErrorCode(exception);
 
         try {
-            OAuthParams dto = stateParser.getParams(request.getParameter("state"), getClass());
+            OAuthParams dto = stateParser.getParams(request.getParameter("state"));
             handleLoggingAndAlert(request, exception, code);
             redirectToErrorPage(request, response, dto, code);
         } catch (OAuth2Exception e) {
