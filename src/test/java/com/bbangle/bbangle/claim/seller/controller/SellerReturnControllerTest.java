@@ -61,7 +61,7 @@ class SellerReturnControllerTest {
     private SellerReturnService sellerReturnService;
 
     @Nested
-    @DisplayName("POST /api/v1/seller/returns/{returnId}/decision")
+    @DisplayName("POST /api/v1/seller/returns/decision")
     class ReturnDecision {
 
         @Test

@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.seller.controller.dto.CancelDecisionRequest;
-import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
+import com.bbangle.bbangle.claim.seller.service.SellerCancelService;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
@@ -58,10 +58,10 @@ class SellerCancelControllerTest {
     private JsonDataEncoder jsonDataEncoder;
 
     @MockBean
-    private SellerReturnService sellerReturnService;
+    private SellerCancelService sellerCancelService;
 
     @Nested
-    @DisplayName("POST /api/v1/seller/cancels/{cancelId}/decision")
+    @DisplayName("POST /api/v1/seller/cancels/decision")
     class CancelDecision {
 
         @Test
@@ -72,7 +72,7 @@ class SellerCancelControllerTest {
             List<Long> cancelIds = List.of(1L);
             CancelDecisionRequest request = new CancelDecisionRequest(cancelIds, DecisionType.APPROVE, "취소 승인");
 
-            willDoNothing().given(sellerReturnService)
+            willDoNothing().given(sellerCancelService)
                 .decision(any(), any(), any(DecisionType.class), any());
 
             // when & then
@@ -87,7 +87,7 @@ class SellerCancelControllerTest {
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.message").value("SUCCESS"));
 
-            then(sellerReturnService).should()
+            then(sellerCancelService).should()
                 .decision(eq(cancelIds), isNull(), eq(DecisionType.APPROVE), eq("취소 승인"));
         }
 
@@ -99,7 +99,7 @@ class SellerCancelControllerTest {
             List<Long> cancelIds = List.of(1L);
             CancelDecisionRequest request = new CancelDecisionRequest(cancelIds, DecisionType.REJECT, "취소 거절 사유");
 
-            willDoNothing().given(sellerReturnService)
+            willDoNothing().given(sellerCancelService)
                 .decision(any(), any(), any(DecisionType.class), any());
 
             // when & then
@@ -114,7 +114,7 @@ class SellerCancelControllerTest {
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.message").value("SUCCESS"));
 
-            then(sellerReturnService).should()
+            then(sellerCancelService).should()
                 .decision(eq(cancelIds), isNull(), eq(DecisionType.REJECT), eq("취소 거절 사유"));
         }
 
@@ -145,7 +145,7 @@ class SellerCancelControllerTest {
             CancelDecisionRequest request = new CancelDecisionRequest(cancelIds, DecisionType.APPROVE, "승인");
 
             willThrow(new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND))
-                .given(sellerReturnService)
+                .given(sellerCancelService)
                 .decision(any(), any(), any(DecisionType.class), any());
 
             // when & then
@@ -170,7 +170,7 @@ class SellerCancelControllerTest {
             CancelDecisionRequest request = new CancelDecisionRequest(cancelIds, DecisionType.APPROVE, "승인");
 
             willThrow(new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH))
-                .given(sellerReturnService)
+                .given(sellerCancelService)
                 .decision(any(), any(), any(DecisionType.class), any());
 
             // when & then
@@ -195,12 +195,12 @@ class SellerCancelControllerTest {
             CancelDecisionRequest request = new CancelDecisionRequest(cancelIds, DecisionType.APPROVE, "승인");
 
             willThrow(new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS))
-                .given(sellerReturnService)
+                .given(sellerCancelService)
                 .decision(any(), any(), any(DecisionType.class), any());
 
             // when & then
             mvc.perform(
-                    post(BASE_URL + "/{cancelId}/decision")
+                    post(BASE_URL + "/decision")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonDataEncoder.encode(request))
                 )
