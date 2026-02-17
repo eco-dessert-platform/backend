@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.config.security.auth;
 
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -43,13 +42,10 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
         String user = request.getParameter("user");
         String profile = request.getParameter("profile");
-        if (user == null || profile == null) return authorizationRequest;
+        if (user == null) return authorizationRequest;
+        profile = OAuth2DTO.defaultProfile(profile);
 
-        String csrfState = authorizationRequest.getState();
-        String encodedUser = Base64.getUrlEncoder().withoutPadding().encodeToString(user.getBytes(StandardCharsets.UTF_8));
-        String encodedProfile = Base64.getUrlEncoder().withoutPadding().encodeToString(profile.getBytes(StandardCharsets.UTF_8));
-
-        String state = csrfState + "|" + encodedUser + "|" + encodedProfile;
+        String state = authorizationRequest.getState() + "." + user + "." + profile;
 
         return OAuth2AuthorizationRequest.from(authorizationRequest)
             .state(state)

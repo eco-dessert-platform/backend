@@ -32,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 @DisplayName("[단위테스트] CustomSuccessHandler")
 @ExtendWith(MockitoExtension.class)
@@ -78,7 +79,7 @@ class CustomSuccessHandlerUnitTest {
 
         // state mock
         String fakeState = "encoded-state";
-        given(request.getParameter("state")).willReturn(fakeState);
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn(fakeState);
 
         // Parser static 메서드 mocking 필요
         OAuthParams params = mock(OAuthParams.class);
@@ -127,10 +128,10 @@ class CustomSuccessHandlerUnitTest {
             .build();
 
         given(authentication.getPrincipal()).willReturn(userDetails);
-        given(request.getParameter("state")).willReturn("state");
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn("exception-state");
 
         OAuthParams params = mock(OAuthParams.class);
-        given(stateParser.getParams(any())).willReturn(params);
+        given(stateParser.getParams("exception-state")).willReturn(params);
 
         RuntimeException originalEx = new RuntimeException("Redis Down");
         doThrow(originalEx).when(redisRepository).setFromDTO(any(), any(), any(), any());

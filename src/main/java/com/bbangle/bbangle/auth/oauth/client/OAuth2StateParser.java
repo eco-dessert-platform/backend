@@ -5,8 +5,6 @@ import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.ProfileType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.UserType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,24 +12,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuth2StateParser {
 
-    private String safeBase64Decode(String encoded) {
-        try {
-            return new String(Base64.getUrlDecoder().decode(encoded), StandardCharsets.UTF_8);
-        } catch (IllegalArgumentException e) {
-            throw new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS, e);
-        }
-    }
-
     public OAuthParams getParams(String stateParam) {
         if (stateParam == null || stateParam.isBlank()) throw new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS);
 
-        String[] parts = stateParam.split("\\|");
+        String[] parts = stateParam.split("\\.");
         if (parts.length < 3) throw new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS);
 
-        String user = safeBase64Decode(parts[1]);
-        String profile = safeBase64Decode(parts[2]);
-
-        return getParams(user, profile);
+        return getParams(parts[1], parts[2]);
     }
 
     public OAuthParams getParams(String user, String profile) {

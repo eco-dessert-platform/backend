@@ -12,6 +12,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
 
         OAuthParams oauthParams;
         try {
-            oauthParams = stateParser.getParams(request.getParameter("state"));
+            oauthParams = stateParser.getParams(request.getParameter(OAuth2ParameterNames.STATE));
         } catch (OAuth2Exception e) {
             handleStateParsingFailure(request, response, e);
             return;

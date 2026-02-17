@@ -16,6 +16,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        OAuthParams dto = stateParser.getParams(request.getParameter("state"));
+        OAuthParams dto = stateParser.getParams(request.getParameter(OAuth2ParameterNames.STATE));
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
         UUID uuid = generateCode(oAuth2User);
 

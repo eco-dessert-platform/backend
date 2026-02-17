@@ -36,6 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -44,6 +45,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @DisplayName("[단위테스트] OAuth2UserService")
 @ExtendWith(MockitoExtension.class)
 class OAuth2UserServiceUnitTest {
+
+    private static final String DUMMY_STATE = "dummy-state";
 
     @Spy
     @InjectMocks
@@ -89,7 +92,7 @@ class OAuth2UserServiceUnitTest {
     @BeforeEach
     void setUpRequestContext() {
         MockHttpServletRequest servletRequest = new MockHttpServletRequest();
-        servletRequest.setParameter("state", "dummy-state");
+        servletRequest.setParameter(OAuth2ParameterNames.STATE, DUMMY_STATE);
 
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(servletRequest));
     }
@@ -119,7 +122,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any())).willReturn(sellerParams());
+            given(stateParser.getParams(DUMMY_STATE)).willReturn(sellerParams());
 
             // super.loadUser() mocking
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
@@ -161,7 +164,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any())).willReturn(sellerParams());
+            given(stateParser.getParams(DUMMY_STATE)).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 
@@ -210,7 +213,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("google");
-            given(stateParser.getParams(any())).willReturn(sellerParams());
+            given(stateParser.getParams(DUMMY_STATE)).willReturn(sellerParams());
 
             // super.loadUser() mocking
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
@@ -252,7 +255,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("google");
-            given(stateParser.getParams(any())).willReturn(sellerParams());
+            given(stateParser.getParams(DUMMY_STATE)).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 
@@ -285,7 +288,7 @@ class OAuth2UserServiceUnitTest {
 
             given(request.getClientRegistration()).willReturn(clientRegistration);
             given(clientRegistration.getRegistrationId()).willReturn("kakao");
-            given(stateParser.getParams(any())).willReturn(sellerParams());
+            given(stateParser.getParams(DUMMY_STATE)).willReturn(sellerParams());
 
             doReturn(oAuth2User).when(oAuth2UserService).loadOAuth2User(any());
 

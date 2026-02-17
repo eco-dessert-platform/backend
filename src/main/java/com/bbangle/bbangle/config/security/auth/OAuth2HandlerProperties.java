@@ -30,13 +30,13 @@ public record OAuth2HandlerProperties (
         String domain = domain().getDomain(referer);
         String uri = redirect().createErrorUri(code);
 
-        if (domain == null) return DEFAULT_OAUTH_PAGE + uri;
+        if (domain == null)
+            return DEFAULT_OAUTH_PAGE + "?error=" + code.toString() + "&code=" + code.getCode();
         return domain + uri;
     }
 
     public String getDefaultErrorUrl(BbangleErrorCode code) {
-        String uri = redirect().createErrorUri(code);
-        return DEFAULT_OAUTH_PAGE + uri;
+        return DEFAULT_OAUTH_PAGE + "?error=" + code.toString() + "&code=" + code.getCode();
     }
 
     public record RedirectUrl(

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 @DisplayName("[단위테스트] CustomFailureHandler")
 @ExtendWith(MockitoExtension.class)
@@ -59,8 +60,8 @@ class CustomFailureHandlerUnitTest {
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR);
         OAuthParams params = mock(OAuthParams.class);
 
-        given(request.getParameter("state")).willReturn("valid-state");
-        given(stateParser.getParams(any())).willReturn(params);
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn("valid-state");
+        given(stateParser.getParams("valid-state")).willReturn(params);
 
         given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.INTERNAL_SERVER_ERROR, params))
             .willReturn("https://test.com/error");
@@ -81,8 +82,8 @@ class CustomFailureHandlerUnitTest {
         OAuth2Exception exception = new OAuth2Exception(BbangleErrorCode.NOT_SUPPORTED_SERVER);
         OAuthParams params = mock(OAuthParams.class);
 
-        given(request.getParameter("state")).willReturn("valid-state");
-        given(stateParser.getParams(any())).willReturn(params);
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn("valid-state");
+        given(stateParser.getParams("valid-state")).willReturn(params);
 
         given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.NOT_SUPPORTED_SERVER, params))
             .willReturn("https://test.com/error");
@@ -104,8 +105,8 @@ class CustomFailureHandlerUnitTest {
         AuthenticationException exception = mock(AuthenticationException.class);
         given(exception.getMessage()).willReturn("unknown");
 
-        given(request.getParameter("state")).willReturn("valid");
-        given(stateParser.getParams(any())).willReturn(params);
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn("valid");
+        given(stateParser.getParams("valid")).willReturn(params);
         given(oauth2HandlerProperties.getErrorUrl(null, params)).willReturn("https://test.com/error");
 
         // when
@@ -123,8 +124,8 @@ class CustomFailureHandlerUnitTest {
         // given
         AuthenticationException exception = new OAuth2Exception(BbangleErrorCode.INTERNAL_SERVER_ERROR);
 
-        given(request.getParameter("state")).willReturn("invalid");
-        given(stateParser.getParams(any())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
+        given(request.getParameter(OAuth2ParameterNames.STATE)).willReturn("invalid");
+        given(stateParser.getParams("invalid")).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
         given(oauth2HandlerProperties.getDefaultErrorUrl(BbangleErrorCode.INVALID_OAUTH_PARAMS))
             .willReturn("/oauth.html?error=INVALID_OAUTH_PARAMS");
 
