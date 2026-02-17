@@ -1,11 +1,12 @@
 package com.bbangle.bbangle.board.seller.controller;
 
-import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardReqeust;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
-import com.bbangle.bbangle.board.seller.service.BoardUploadService;
+import com.bbangle.bbangle.board.seller.facade.SellerBoardFacade;
+import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
@@ -19,7 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,18 +39,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class SellerBoardController implements SellerBoardApi {
 
     private final ResponseService responseService;
-    private final BoardUploadService boardUploadService;
+    private final SellerBoardFacade sellerBoardFacade;
 
-    @PostMapping("/board/{storeId}")
-    @Override
-    public CommonResult upload(
-        @PathVariable Long storeId,
-        @RequestBody BoardUploadRequest request) {
-        boardUploadService.upload(storeId, request);
-        return responseService.getSuccessResult();
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SingleResult<BoardInfo> createBoard(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @ModelAttribute CreateBoardReqeust request
+    ) {
+        return responseService.getSingleResult(
+            sellerBoardFacade.createBoard(request.toCommand(sellerId))
+        );
     }
 
-    @Override
     @GetMapping("/{storeId}/boards")
     public SingleResult<BbanglePageResponse<SellerBoardSearchResponse>> searchProductBoard(
         @Valid
@@ -64,7 +68,6 @@ public class SellerBoardController implements SellerBoardApi {
         return responseService.getSingleResult(res);
     }
 
-    @Override
     @PutMapping("/{boardId}")
     public CommonResult changeProductBoard(
         @PathVariable(name = "boardId") Long boardId,
@@ -74,7 +77,6 @@ public class SellerBoardController implements SellerBoardApi {
         return responseService.getSingleResult(request);
     }
 
-    @Override
     @PostMapping("/{boardId}/copy")
     public CommonResult copyProductBoard(
         @PathVariable(name = "boardId") Long boardId,
@@ -82,8 +84,6 @@ public class SellerBoardController implements SellerBoardApi {
         return responseService.getSuccessResult();
     }
 
-
-    @Override
     @PostMapping("/delete-boards")
     public CommonResult removeProductBoards(
         @RequestParam(name = "storeId") Long storeId,
