@@ -39,9 +39,10 @@ public class SellerBoardService {
             command.deliveryCondition(),
             command.deliveryCompany(),
             command.productInfoNotice().toProductInfoNotice(),
-            command.boardDetail().toBoardDetail(),
-            productImgs
+            command.boardDetail().toBoardDetail()
         );
+
+        board.addProductImgs(productImgs);
 
         List<Product> products = command.products().stream()
             .map(productCommand -> productCommand.toProduct(board))

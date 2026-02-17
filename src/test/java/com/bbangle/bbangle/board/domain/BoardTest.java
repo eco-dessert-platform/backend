@@ -39,8 +39,9 @@ class BoardTest {
             Board board = Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", 10,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, productImgs
+                "CJ대한통운", productInfoNotice, boardDetail
             );
+            board.addProductImgs(productImgs);
 
             // then
             assertThat(board.getStore()).isEqualTo(store);
@@ -67,7 +68,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, null, 10000, "RATE", 10,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -81,7 +82,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "  ", 10000, "RATE", 10,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -95,7 +96,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", -1, "RATE", 10,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -109,7 +110,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", 0,
                 -1, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -128,7 +129,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", 101,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -142,7 +143,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", -1,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -161,7 +162,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", 10000, "AMOUNT", 10001,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -175,7 +176,7 @@ class BoardTest {
             assertThatThrownBy(() -> Board.sellerCreate(
                 store, "테스트 게시글", 10000, "AMOUNT", -1,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             ))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
@@ -194,7 +195,7 @@ class BoardTest {
             Board board = Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", 10,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             );
 
             // then
@@ -209,7 +210,7 @@ class BoardTest {
             Board board = Board.sellerCreate(
                 store, "테스트 게시글", 10000, "AMOUNT", 2000,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             );
 
             // then
@@ -224,7 +225,7 @@ class BoardTest {
             Board board = Board.sellerCreate(
                 store, "테스트 게시글", 10000, "RATE", 0,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             );
 
             // then
@@ -239,7 +240,7 @@ class BoardTest {
             Board board = Board.sellerCreate(
                 store, "테스트 게시글", 0, "AMOUNT", 0,
                 3000, 30000, false, "T_09_10", "NORMAL",
-                "CJ대한통운", productInfoNotice, boardDetail, List.of()
+                "CJ대한통운", productInfoNotice, boardDetail
             );
 
             // then

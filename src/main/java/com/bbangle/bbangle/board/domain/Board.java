@@ -125,6 +125,11 @@ public class Board extends SoftDeleteBaseEntity {
         boardDetail.updateBoard(this);
     }
 
+    public void addProductImgs(List<ProductImg> productImgs) {
+        this.productImgs.addAll(productImgs);
+        productImgs.forEach(img -> img.updateBoard(this));
+    }
+
     public static Board sellerCreate(
         Store store,
         String title,
@@ -138,8 +143,7 @@ public class Board extends SoftDeleteBaseEntity {
         String deliveryCondition,
         String deliveryCompany,
         ProductInfoNotice productInfoNotice,
-        BoardDetail boardDetail,
-        List<ProductImg> productImgs
+        BoardDetail boardDetail
     ) {
         DiscountType parsedDiscountType = DiscountType.from(discountType);
         ProductionStartTime parsedProductionStartTime = ProductionStartTime.from(productionStartTime);
@@ -164,8 +168,6 @@ public class Board extends SoftDeleteBaseEntity {
         board.view = 0;
         board.status = false;
         board.addBoardDetails(boardDetail);
-        productImgs.forEach(img -> img.updateBoard(board));
-        board.productImgs = productImgs;
         return board;
     }
 
