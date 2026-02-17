@@ -46,11 +46,10 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         if (user == null || profile == null) return authorizationRequest;
 
         String csrfState = authorizationRequest.getState();
-        String encodedState = Base64.getUrlEncoder().encodeToString(csrfState.getBytes(StandardCharsets.UTF_8));
         String encodedUser = Base64.getUrlEncoder().encodeToString(user.getBytes(StandardCharsets.UTF_8));
         String encodedProfile = Base64.getUrlEncoder().encodeToString(profile.getBytes(StandardCharsets.UTF_8));
 
-        String state = encodedState + "|" + encodedUser + "|" + encodedProfile;
+        String state = csrfState + "|" + encodedUser + "|" + encodedProfile;
 
         return OAuth2AuthorizationRequest.from(authorizationRequest)
             .state(state)
