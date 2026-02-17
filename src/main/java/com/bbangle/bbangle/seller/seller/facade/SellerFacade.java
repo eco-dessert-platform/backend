@@ -1,13 +1,17 @@
 package com.bbangle.bbangle.seller.seller.facade;
 
 import com.bbangle.bbangle.image.customer.service.S3Service;
+import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.seller.controller.dto.SellerResponse;
 import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
 import com.bbangle.bbangle.seller.seller.facade.dto.DocumentUploadInfo;
 import com.bbangle.bbangle.seller.seller.facade.dto.UploadedDocument;
 import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerDocumentService;
+import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.RegisterDocumentCommand;
 import com.bbangle.bbangle.seller.seller.service.info.SellerDocumentInfo;
+import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,8 @@ public class SellerFacade {
     private final S3Service s3Service;
     private final SellerDocumentService sellerDocumentService;
     private final AccountVerificationService accountVerificationService;
+    private final SellerService sellerService;
+    private final SellerStoreMapper sellerStoreMapper;
 
     @Transactional
     public List<SellerDocumentInfo> registerDocuments(RegisterDocumentsCommand command) {
@@ -71,5 +77,16 @@ public class SellerFacade {
             });
             throw e;
         }
+    }
+
+    public SellerResponse.RegisteredStoreDetail getRegisteredStoreDetail(Long sellerId) {
+        Seller seller = sellerService.getSellerById(sellerId);
+
+        return SellerResponse.RegisteredStoreDetail.builder()
+            .sellerId(seller.getId())
+            .store(seller.getStore() != null ?
+                sellerStoreMapper.toSellerStoreDetail(seller.getStore())
+                : null)
+            .build();
     }
 }

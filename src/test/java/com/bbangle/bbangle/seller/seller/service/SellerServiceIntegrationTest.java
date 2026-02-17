@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 
-@DisplayName("[통합테스트] SellerServiceIntegrationTest")
+@DisplayName("[통합테스트] SellerService")
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
