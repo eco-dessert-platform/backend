@@ -20,8 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    private static final String DEFAULT_OAUTH_PAGE = "/oauth.html";
-
     private final SlackAdaptor slackAdaptor;
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final OAuth2StateParser stateParser;
@@ -54,8 +52,8 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         log.error("State Parsing failed", e);
         slackAdaptor.sendAlert(request, e);
 
-        String url = DEFAULT_OAUTH_PAGE + "?error=" + e.getCode().name();
-        getRedirectStrategy().sendRedirect(request, response, url);
+        String targetUrl = oauth2HandlerProperties.getDefaultErrorUrl(e.getCode());
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     private void handleLoggingAndAlert(

@@ -125,6 +125,8 @@ class CustomFailureHandlerUnitTest {
 
         given(request.getParameter("state")).willReturn("invalid");
         given(stateParser.getParams(any())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
+        given(oauth2HandlerProperties.getDefaultErrorUrl(BbangleErrorCode.INVALID_OAUTH_PARAMS))
+            .willReturn("/oauth.html?error=INVALID_OAUTH_PARAMS");
 
         // when
         customFailureHandler.onAuthenticationFailure(request, response, exception);

@@ -121,6 +121,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     }
 
     private String createRedirectUrl(HttpServletRequest request, BbangleErrorCode code) {
-        return oauth2HandlerProperties.getErrorUrl(code, request.getHeader("Referer"));
+        String referer = request.getHeader("Referer");
+        return oauth2HandlerProperties.getErrorUrlWithReferer(code, referer);
     }
 }

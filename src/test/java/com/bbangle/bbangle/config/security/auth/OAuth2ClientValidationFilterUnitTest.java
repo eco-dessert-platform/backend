@@ -68,7 +68,7 @@ class OAuth2ClientValidationFilterUnitTest {
         request.addHeader("Referer", "test");
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
-        given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.NOT_SUPPORTED_SERVER, "test"))
+        given(oauth2HandlerProperties.getErrorUrlWithReferer(BbangleErrorCode.NOT_SUPPORTED_SERVER, "test"))
             .willAnswer(invocation -> {
                 BbangleErrorCode code = invocation.getArgument(0);
                 String referer = invocation.getArgument(1);
@@ -101,7 +101,7 @@ class OAuth2ClientValidationFilterUnitTest {
 
         given(stateParser.getParams(any(), anyString())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
-        given(oauth2HandlerProperties.getErrorUrl(BbangleErrorCode.INVALID_OAUTH_PARAMS, "test"))
+        given(oauth2HandlerProperties.getErrorUrlWithReferer(BbangleErrorCode.INVALID_OAUTH_PARAMS, "test"))
             .willAnswer(invocation -> {
                 BbangleErrorCode code = invocation.getArgument(0);
                 String referer = invocation.getArgument(1);

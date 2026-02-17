@@ -12,37 +12,47 @@ public record OAuth2HandlerProperties (
     RedirectUrl redirect,
     Domain domain
 ) {
+    private static final String DEFAULT_OAUTH_PAGE = "/oauth.html";
+
     public String getSuccessUrl(UUID uuid, OAuthParams params) {
         String domain = domain().getDomain(params.profile(), params.user());
-        String uri = redirect().createSuccessUrl(uuid);
+        String uri = redirect().createSuccessUri(uuid);
         return domain + uri;
     }
 
     public String getErrorUrl(BbangleErrorCode code, OAuthParams params) {
         String domain = domain().getDomain(params.profile(), params.user());
-        String uri = redirect().createErrorUrl(code);
+        String uri = redirect().createErrorUri(code);
         return domain + uri;
     }
 
-    public String getErrorUrl(BbangleErrorCode code, String referer) {
+    public String getErrorUrlWithReferer(BbangleErrorCode code, String referer) {
         String domain = domain().getDomain(referer);
-        String uri = redirect().createErrorUrl(code);
+        String uri = redirect().createErrorUri(code);
+
+        if (domain == null) return DEFAULT_OAUTH_PAGE + uri;
         return domain + uri;
+    }
+
+    public String getDefaultErrorUrl(BbangleErrorCode code) {
+        String uri = redirect().createErrorUri(code);
+        return DEFAULT_OAUTH_PAGE + uri;
     }
 
     public record RedirectUrl(
         String success,
         String error
     ) {
-        private String createSuccessUrl(UUID uuid) {
+        private String createSuccessUri(UUID uuid) {
             return success + "?generateToken=" + uuid;
         }
 
-        private String createErrorUrl(BbangleErrorCode code) {
+        private String createErrorUri(BbangleErrorCode code) {
             StringBuilder url = new StringBuilder(error);
-            String error = code != null ? code.toString() : "UNKNOWN_ERROR";
 
+            String error = code != null ? code.toString() : "UNKNOWN_ERROR";
             url.append("?error=").append(error);
+
             if (code != null) url.append("&code=").append(code.getCode());
 
             return url.toString();
@@ -65,11 +75,11 @@ public record OAuth2HandlerProperties (
         }
 
         public String getDomain(String referer) {
-            if (referer == null || referer.isBlank()) return local;
+            if (referer == null || referer.isBlank()) return null;
             if (referer.contains(local)) return local;
             if (referer.contains(customer)) return customer;
             if (referer.contains(seller)) return seller;
-            return local;
+            return null;
         }
     }
 }
