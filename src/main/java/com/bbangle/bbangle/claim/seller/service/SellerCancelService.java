@@ -29,21 +29,25 @@ public class SellerCancelService {
 
         List<CancelRequest> cancelRequests = cancelRequestRepository.findAllById(cancelIds);
         for (CancelRequest cancelRequest : cancelRequests) {
-            switch (decisionType) {
-                case APPROVE -> {
-                    cancelRequest.approve(reason);
-                    OrderItem orderItem = cancelRequest.getOrderItem();
-                    orderItem.cancelApprove();
-                    OrderItemHistory history = OrderItemHistory.create(orderItem);
-                    orderItemHistoryRepository.save(history);
-                }
-                case REJECT -> {
-                    cancelRequest.reject(reason);
-                    OrderItem orderItem = cancelRequest.getOrderItem();
-                    orderItem.cancelReject();
-                    OrderItemHistory history = OrderItemHistory.create(orderItem);
-                    orderItemHistoryRepository.save(history);
-                }
+            processDecision(cancelRequest, decisionType, reason);
+        }
+    }
+
+    private void processDecision(CancelRequest cancelRequest, DecisionType decisionType, String reason) {
+        switch (decisionType) {
+            case APPROVE -> {
+                cancelRequest.approve(reason);
+                OrderItem orderItem = cancelRequest.getOrderItem();
+                orderItem.cancelApprove();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
+            }
+            case REJECT -> {
+                cancelRequest.reject(reason);
+                OrderItem orderItem = cancelRequest.getOrderItem();
+                orderItem.cancelReject();
+                OrderItemHistory history = OrderItemHistory.create(orderItem);
+                orderItemHistoryRepository.save(history);
             }
         }
     }
