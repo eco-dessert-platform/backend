@@ -6,7 +6,8 @@ public enum TagEnum {
     HIGH_PROTEIN("highProtein"),
     SUGAR_FREE("sugarFree"),
     VEGAN("vegan"),
-    KETOGENIC("ketogenic");
+    KETOGENIC("ketogenic"),
+    LOW_FAT("lowFat");
 
     private final String label;
 

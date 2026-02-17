@@ -9,6 +9,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -48,7 +50,7 @@ public class Board extends SoftDeleteBaseEntity {
     @JoinColumn(name = "product_info_notice_id")
     private ProductInfoNotice productInfoNotice;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "board_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private BoardDetail boardDetail;
 
@@ -57,6 +59,13 @@ public class Board extends SoftDeleteBaseEntity {
 
     @Column(name = "price")
     private int price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type")
+    private DiscountType discountType;
+
+    @Column(name = "discount_value")
+    private int discountValue;
 
     @Column(name = "discount_rate")
     private int discountRate;
@@ -74,7 +83,7 @@ public class Board extends SoftDeleteBaseEntity {
     private Integer freeShippingConditions;
 
     @Column(name = "view")
-    private int view;
+    private Integer view;
 
     @Column(name = "discount_price")
     private int discountPrice;
@@ -82,8 +91,19 @@ public class Board extends SoftDeleteBaseEntity {
     @Column(name = "courier")
     private String courier;
 
+    @Column(name = "delivery_condition")
+    private String deliveryCondition;
+
     @Column(name = "is_crawling", columnDefinition = "tinyint")
-    private boolean isCrawling;
+    private Boolean isCrawling;
+
+    // 신선식품 여부
+    @Column(name = "is_fresh", columnDefinition = "tinyint")
+    private Boolean isFresh;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "production_start_time")
+    private ProductionStartTime productionStartTime;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
     private List<Product> products = new ArrayList<>();
@@ -105,29 +125,83 @@ public class Board extends SoftDeleteBaseEntity {
         boardDetail.updateBoard(this);
     }
 
-    public Board(Store store, String title, int price, int discountRate,
-                 int deliveryFee, Integer freeShippingConditions, ProductInfoNotice productInfoNotice) {
-        validate(price, discountRate, deliveryFee);
+    public static Board sellerCreate(
+        Store store,
+        String title,
+        Integer price,
+        String discountType,
+        Integer discountValue,
+        Integer deliveryFee,
+        Integer freeShippingConditions,
+        Boolean isFresh,
+        String productionStartTime,
+        String deliveryCondition,
+        String deliveryCompany,
+        ProductInfoNotice productInfoNotice,
+        BoardDetail boardDetail,
+        List<ProductImg> productImgs
+    ) {
+        DiscountType parsedDiscountType = DiscountType.from(discountType);
+        ProductionStartTime parsedProductionStartTime = ProductionStartTime.from(productionStartTime);
+        validate(title, price, parsedDiscountType, discountValue, deliveryFee);
 
-        this.store = store;
-        this.title = title;
-        this.price = price;
-        this.discountRate = discountRate;
-        this.deliveryFee = deliveryFee;
-        this.freeShippingConditions = freeShippingConditions;
-        this.productInfoNotice = productInfoNotice;
+        Board board = new Board();
+        board.store = store;
+        board.title = title;
+        board.price = price;
+        board.discountType = parsedDiscountType;
+        board.discountValue = discountValue;
+        board.discountRate = calculateDiscountRate(price, parsedDiscountType, discountValue);
+        board.discountPrice = calculateDiscountPrice(price, parsedDiscountType, discountValue);
+        board.deliveryFee = deliveryFee;
+        board.freeShippingConditions = freeShippingConditions;
+        board.isFresh = isFresh;
+        board.productionStartTime = parsedProductionStartTime;
+        board.deliveryCondition = deliveryCondition;
+        board.courier = deliveryCompany;
+        board.productInfoNotice = productInfoNotice;
+        board.isCrawling = false;
+        board.view = 0;
+        board.status = false;
+        board.addBoardDetails(boardDetail);
+        productImgs.forEach(img -> img.updateBoard(board));
+        board.productImgs = productImgs;
+        return board;
     }
 
-    private void validate(int price, int discountRate, int deliveryFee) {
+    private static void validate(String title, int price, DiscountType discountType, Integer discountValue, Integer deliveryFee) {
+        if (title == null || title.isBlank()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_TITLE);
+        }
         if (price < 0) {
             throw new BbangleException(BbangleErrorCode.INVALID_BOARD_PRICE);
         }
-        if (discountRate < 0 || discountRate > 100) {
+        if (discountType == DiscountType.RATE && (discountValue < 0 || discountValue > 100)) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_DISCOUNT);
+        }
+        if (discountType == DiscountType.AMOUNT && (discountValue < 0 || discountValue > price)) {
             throw new BbangleException(BbangleErrorCode.INVALID_BOARD_DISCOUNT);
         }
         if (deliveryFee < 0) {
             throw new BbangleException(BbangleErrorCode.INVALID_DELIVERY_FEE);
         }
+    }
+
+    private static int calculateDiscountRate(Integer price, DiscountType discountType, Integer discountValue) {
+        if (discountType == DiscountType.RATE) {
+            return discountValue;
+        }
+        if (price == 0) {
+            return 0;
+        }
+        return (discountValue * 100) / price;
+    }
+
+    private static int calculateDiscountPrice(Integer price, DiscountType discountType, Integer discountValue) {
+        if (discountType == DiscountType.RATE) {
+            return price - (price * discountValue / 100);
+        }
+        return price - discountValue;
     }
 
     public List<String> getTags() {
