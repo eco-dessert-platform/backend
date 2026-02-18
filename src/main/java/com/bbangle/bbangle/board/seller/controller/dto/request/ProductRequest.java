@@ -1,34 +1,41 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "상품 등록 요청 DTO")
-public record ProductRequest(
+public class ProductRequest {
+
     @Schema(description = "상품 카테고리")
-    Category category,
+    private String category;
 
     @Schema(description = "상품명", example = "비건 쿠키")
-    String title,
+    private String title;
 
     @Schema(description = "성분 카테고리")
-    DietaryTagsRequest dietaryTags,
+    private DietaryTagsRequest dietaryTags;
 
     @Schema(description = "게시글 가격에 추가되는 금액", example = "1000")
-    int plusPriceWithBoardPrice,
+    private int plusPriceWithBoardPrice;
 
     @Schema(description = "재고 수량", example = "100")
-    int stock,
+    private int stock;
 
     @Schema(description = "주문 가능 요일 정보")
-    AvailabilityRequest availability,
+    private AvailabilityRequest availability;
 
     @Schema(description = "영양 정보")
-    NutritionInfoRequest nutritionInfo
-) {
+    private NutritionInfoRequest nutritionInfo;
 
     public Product toEntity(Board board) {
         return new Product(
@@ -37,26 +44,26 @@ public record ProductRequest(
             plusPriceWithBoardPrice,
             category,
             stock,
-            dietaryTags.glutenFreeTag(),
-            dietaryTags.highProteinTag(),
-            dietaryTags.sugarFreeTag(),
-            dietaryTags.veganTag(),
-            dietaryTags.ketogenicTag(),
-            availability.monday(),
-            availability.tuesday(),
-            availability.wednesday(),
-            availability.thursday(),
-            availability.friday(),
-            availability.saturday(),
-            availability.sunday(),
+            dietaryTags.isGlutenFreeTag(),
+            dietaryTags.isHighProteinTag(),
+            dietaryTags.isSugarFreeTag(),
+            dietaryTags.isVeganTag(),
+            dietaryTags.isKetogenicTag(),
+            availability.isMonday(),
+            availability.isTuesday(),
+            availability.isWednesday(),
+            availability.isThursday(),
+            availability.isFriday(),
+            availability.isSaturday(),
+            availability.isSunday(),
             new Nutrition(
-                nutritionInfo.totalWeight(),
-                nutritionInfo.servingSize(),
-                nutritionInfo.carbohydrates(),
-                nutritionInfo.sugars(),
-                nutritionInfo.protein(),
-                nutritionInfo.fat(),
-                nutritionInfo.calories()
+                nutritionInfo.getTotalWeight(),
+                nutritionInfo.getServingSize(),
+                nutritionInfo.getCarbohydrates(),
+                nutritionInfo.getSugars(),
+                nutritionInfo.getProtein(),
+                nutritionInfo.getFat(),
+                nutritionInfo.getCalories()
             )
         );
     }

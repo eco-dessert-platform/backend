@@ -1,9 +1,10 @@
 package com.bbangle.bbangle.board.seller.controller.swagger;
 
-import com.bbangle.bbangle.board.seller.controller.dto.request.BoardUploadRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
+import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
@@ -17,19 +18,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "SellerBoards", description = "판매자 상품 게시글 관련 API")
 public interface SellerBoardApi {
 
-    // TODO: v2
-    @Operation(summary = "판매자 게시글 등록")
-    CommonResult upload(
-        @Parameter(description = "스토어 ID") @PathVariable Long storeId,
-        @RequestBody BoardUploadRequest request
+    @Operation(summary = "상품 게시글 등록")
+    SingleResult<BoardInfo> createBoard(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long sellerId,
+        @Valid @ModelAttribute CreateBoardRequest request
     );
 
     @Operation(
