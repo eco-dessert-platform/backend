@@ -301,6 +301,45 @@ class SellerBoardFacadeIntegrationTest extends S3IntegrationTestSupport {
             assertThat(savedBoard.getProducts()).hasSize(2);
         }
 
+        @DisplayName("content에 script 태그가 포함되면 sanitize되어 저장된다.")
+        @Test
+        void givenXssContent_whenCreateBoard_thenScriptTagIsSanitized() {
+            // given
+            String xssContent = "<p>정상 내용</p><script>alert('xss')</script>";
+
+            CreateBoardFacadeCommand command = CreateBoardFacadeCommand.builder()
+                .sellerId(1L)
+                .storeId(store.getId())
+                .title("XSS 테스트 상품")
+                .price(15000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(3000)
+                .freeShippingConditions(30000)
+                .isFresh(false)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("일반배송")
+                .deliveryCompany("CJ대한통운")
+                .thumbnailImgFile(createMockImage("thumbnail.png"))
+                .productImgs(null)
+                .boardDetailImages(null)
+                .products(List.of(createProductRequest()))
+                .boardDetailRequest(new BoardDetailRequest(xssContent))
+                .productInfoNoticeRequest(createProductInfoNoticeRequest())
+                .build();
+
+            // when
+            BoardInfo result = sellerBoardFacade.createBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board savedBoard = boardRepository.findById(result.boardId()).orElseThrow();
+            assertThat(savedBoard.getBoardDetail().getContent()).doesNotContain("<script>");
+            assertThat(savedBoard.getBoardDetail().getContent()).contains("정상 내용");
+        }
+
         @DisplayName("존재하지 않는 storeId로 요청하면 STORE_NOT_FOUND 예외가 발생한다.")
         @Test
         void givenNonExistingStoreId_whenCreateBoard_thenThrowsException() {

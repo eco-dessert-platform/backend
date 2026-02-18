@@ -63,7 +63,7 @@ public class SellerBoardFacade {
         List<String> uploadedUrls
     ) {
         if (detailImages == null || detailImages.isEmpty()) {
-            return new BoardDetailCommand(content);
+            return new BoardDetailCommand(htmlContentProcessor.sanitize(content));
         }
 
         Map<String, String> cdnUrlMap = new HashMap<>();
@@ -75,7 +75,7 @@ public class SellerBoardFacade {
         }
 
         String convertedContent = htmlContentProcessor.changeToCdn(content, cdnUrlMap);
-        return new BoardDetailCommand(convertedContent);
+        return new BoardDetailCommand(htmlContentProcessor.sanitize(convertedContent));
     }
 
     private List<ProductImgCommand> uploadProductImages(

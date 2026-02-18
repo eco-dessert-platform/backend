@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
 import com.bbangle.bbangle.board.seller.facade.command.CreateBoardFacadeCommand;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class CreateBoardReqeust {
     private Integer deliveryFee;
     private Integer freeShippingConditions;
     private List<ProductRequest> products;
+    @Valid
     private BoardDetailRequest boardDetailRequest;
     private ProductInfoNoticeRequest productInfoNoticeRequest;
     private MultipartFile thumbnailImgFile;
