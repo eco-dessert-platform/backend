@@ -58,7 +58,7 @@ public enum BbangleErrorCode {
     INVALID_TOKEN_TYPE(-41, "유효하지 않은 형태소 타입입니다.", NOT_FOUND),
     AlREADY_ON_REVIEWLIKE(-42, "이미 좋아요를 누른 리뷰 댓글입니다.", NOT_FOUND),
     NOTFOUND_DELIVERYCOMPANY(-43, "존재하지 않는 택배회사입니다.", NOT_FOUND),
-    INVALID_BOARD_TITLE(-43, "게시글 제목은 필수입니다.", BAD_REQUEST),
+    INVALID_BOARD_TITLE(-68, "게시글 제목은 필수입니다.", BAD_REQUEST),
     INVALID_BOARD_PRICE(-44, "가격은 음수가 될 수 없습니다.", BAD_REQUEST),
     INVALID_BOARD_DISCOUNT(-45, "할인 값이 유효하지 않습니다. (퍼센트: 0~100, 원: 0~상품가격)", BAD_REQUEST),
     INVALID_DELIVERY_FEE(-46, "배송비는 음수가 될 수 없습니다.", BAD_REQUEST),
