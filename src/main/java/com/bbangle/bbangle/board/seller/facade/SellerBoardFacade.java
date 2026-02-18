@@ -101,9 +101,12 @@ public class SellerBoardFacade {
     }
 
     private void rollbackUploadedImages(List<String> uploadedUrls) {
-        uploadedUrls.forEach(url -> {
-            log.error("Board 생성 실패로 인한 S3 이미지 롤백: {}", url);
-            s3Service.deleteImage(url);
-        });
+        for (String url : uploadedUrls) {
+            try {
+                s3Service.deleteImage(url);
+            } catch (Exception e) {
+                log.error("Board 생성 실패로 인한 S3 이미지 롤백 중 오류 발생: {}", url, e);
+            }
+        }
     }
 }
