@@ -48,7 +48,7 @@ public class ProductInfoNoticeRequest {
     private String transgenic;
 
     @Schema(description = "소비자 안전을 위한 주의사항", example = "배송 즉시 냉동보관 해주세요", defaultValue = "배송 즉시 냉동보관 해주세요")
-    private String customerWaring;
+    private String customerWarning;
 
     @Schema(description = "수입 식품의 경우", example = "해당사항 없음", defaultValue = "해당사항 없음")
     private String importFood;
@@ -66,7 +66,7 @@ public class ProductInfoNoticeRequest {
             rawMaterialName,
             nutritionInfo,
             transgenic,
-            customerWaring,
+            customerWarning,
             importFood
         );
     }

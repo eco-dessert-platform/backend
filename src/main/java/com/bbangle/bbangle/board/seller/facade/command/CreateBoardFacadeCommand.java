@@ -75,7 +75,7 @@ public record CreateBoardFacadeCommand(
             .rawMaterialName(productInfoNoticeRequest.getRawMaterialName())
             .nutritionInfo(productInfoNoticeRequest.getNutritionInfo())
             .transgenic(productInfoNoticeRequest.getTransgenic())
-            .customerWarning(productInfoNoticeRequest.getCustomerWaring())
+            .customerWarning(productInfoNoticeRequest.getCustomerWarning())
             .importFood(productInfoNoticeRequest.getImportFood())
             .build();
     }
