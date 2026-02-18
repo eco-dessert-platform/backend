@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.seller.controller;
 
-import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardReqeust;
+import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
@@ -44,7 +44,7 @@ public class SellerBoardController implements SellerBoardApi {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public SingleResult<BoardInfo> createBoard(
         @AuthenticationPrincipal Long sellerId,
-        @Valid @ModelAttribute CreateBoardReqeust request
+        @Valid @ModelAttribute CreateBoardRequest request
     ) {
         return responseService.getSingleResult(
             sellerBoardFacade.createBoard(request.toCommand(sellerId))

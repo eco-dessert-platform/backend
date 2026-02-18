@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreateBoardReqeust {
+public class CreateBoardRequest {
 
     private Long storeId;
     private String title;

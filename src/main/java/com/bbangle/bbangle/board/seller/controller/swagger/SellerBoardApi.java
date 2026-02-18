@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.seller.controller.swagger;
 
-import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardReqeust;
+import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
@@ -32,7 +32,7 @@ public interface SellerBoardApi {
     @Operation(summary = "상품 게시글 등록")
     SingleResult<BoardInfo> createBoard(
         @Parameter(hidden = true) @AuthenticationPrincipal Long sellerId,
-        @Valid @ModelAttribute CreateBoardReqeust request
+        @Valid @ModelAttribute CreateBoardRequest request
     );
 
     @Operation(
