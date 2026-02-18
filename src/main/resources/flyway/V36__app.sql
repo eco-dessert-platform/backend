@@ -12,6 +12,12 @@ SET discount_value = discount_rate,
     discount_type = 'RATE'
 WHERE discount_rate > 0;
 
+-- discount_rate = 0인 행은 할인 없음으로 처리
+UPDATE product_board
+SET discount_value = 0,
+    discount_type = 'RATE'
+WHERE discount_type IS NULL;
+
 -- product 테이블에 누락된 컬럼 추가
 ALTER TABLE product
     ADD COLUMN IF NOT EXISTS low_fat_tag TINYINT(1) NOT NULL DEFAULT 0;
