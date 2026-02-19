@@ -17,7 +17,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     @EntityGraph(attributePaths = {"store", "boardDetail", "boardStatistic"})
     Optional<Board> findById(Long boardId);
 
-    @EntityGraph(attributePaths = {"store", "productInfoNotice", "boardDetail", "products", "productImgs"})
+    @EntityGraph(attributePaths = {"store", "productInfoNotice", "boardDetail"})
     Optional<Board> findWithAllById(Long boardId);
 
     @EntityGraph(attributePaths = {"boardStatistic"})
