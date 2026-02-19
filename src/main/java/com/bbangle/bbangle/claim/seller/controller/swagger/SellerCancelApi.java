@@ -14,8 +14,6 @@ public interface SellerCancelApi {
         description = "취소 요청에 대해 승인 또는 거절 처리를 수행한다."
     )
     CommonResult cancelDecision(
-        @Parameter(description = "취소 요청 ID", example = "101", required = true)
-        Long cancelId,
         CancelDecisionRequest cancelDecisionRequest,
         @Parameter(hidden = true) Long sellerId
     );

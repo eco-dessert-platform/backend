@@ -14,8 +14,6 @@ public interface SellerReturnApi {
         description = "반품 요청에 대해 승인 또는 거절 처리를 수행한다."
     )
     CommonResult returnDecision(
-        @Parameter(description = "반품 요청 ID", example = "101", required = true)
-        Long returnId,
         ReturnDecisionRequest returnDecisionRequest,
         @Parameter(hidden = true) Long sellerId
     );

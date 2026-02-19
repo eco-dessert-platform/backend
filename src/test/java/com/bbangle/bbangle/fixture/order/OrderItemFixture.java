@@ -50,6 +50,18 @@ public class OrderItemFixture {
         return orderItemWithStatus(OrderStatus.ORDER_CONFIRMED);
     }
 
+    public static OrderItem orderPayed() {
+        return orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED);
+    }
+
+    public static OrderItem orderCancelRequested() {
+        return orderItemWithStatus(OrderStatus.CANCEL_REQUESTED);
+    }
+
+    public static OrderItem orderReturnRequested() {
+        return orderItemWithStatus(OrderStatus.RETURN_REQUESTED);
+    }
+
     public static OrderItem statusNull() {
         return orderItemWithStatus(null);
     }
