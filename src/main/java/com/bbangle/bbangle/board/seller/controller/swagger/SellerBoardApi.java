@@ -2,7 +2,7 @@ package com.bbangle.bbangle.board.seller.controller.swagger;
 
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
-import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -104,31 +104,51 @@ public interface SellerBoardApi {
         @ParameterObject
         ProductBoardSearchRequest request);
 
-    @Operation(summary = "판매자 상품 게시글 수정", description = "상품 게시글을 수정합니다.")
-
+    @Operation(
+        summary = "판매자 상품 게시글 수정",
+        description = "상품 게시글을 수정합니다. multipart/form-data 형식으로 전송합니다. " +
+            "thumbnailImgFile이 없으면 existingThumbnailUrl로 기존 썸네일을 유지합니다. " +
+            "products[].productId가 null이면 신규 상품으로 추가됩니다."
+    )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "상품 게시글 수정",
-            content = @Content(schema = @Schema(implementation = CommonResult.class),
-                examples = @ExampleObject(name = "successResponse",
+        @ApiResponse(
+            responseCode = "200",
+            description = "상품 게시글 수정 성공",
+            content = @Content(
+                schema = @Schema(implementation = SingleResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
                     summary = "성공응답 예시",
                     value = """
                         {
                             "success": true,
                             "code": 0,
                             "message": "SUCCESS",
+                            "content": {
+                                "boardId": 1,
+                                "title": "수정된 상품명",
+                                "createdAt": "2024-01-01T00:00:00"
+                            }
                         }
-                        """))),
-        @ApiResponse(
-            responseCode = "400", description = "잘못된 요청 데이터",
-            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class)
+                        """
+                )
             )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "해당 게시글에 대한 접근 권한 없음",
+            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "게시글을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
         )
-    }
-    )
-    CommonResult changeProductBoard(
-        @Parameter(name = "storeId", description = "스토어 ID", example = "1") Long storeId,
-        @Parameter(name = "boardId", description = "게시글 ID", example = "1") Long boardId,
-        ProductBoardUpdateRequest request);
+    })
+    SingleResult<BoardInfo> changeProductBoard(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long sellerId,
+        @Parameter(name = "boardId", description = "수정할 게시글 ID", example = "1") Long boardId,
+        @Valid @ModelAttribute UpdateBoardRequest request);
 
 
     @Operation(

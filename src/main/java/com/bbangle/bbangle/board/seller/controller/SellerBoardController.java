@@ -2,7 +2,7 @@ package com.bbangle.bbangle.board.seller.controller;
 
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
-import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardUpdateRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
 import com.bbangle.bbangle.board.seller.facade.SellerBoardFacade;
@@ -68,13 +68,15 @@ public class SellerBoardController implements SellerBoardApi {
         return responseService.getSingleResult(res);
     }
 
-    @PutMapping("/{boardId}")
-    public CommonResult changeProductBoard(
+    @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SingleResult<BoardInfo> changeProductBoard(
+        @AuthenticationPrincipal Long sellerId,
         @PathVariable(name = "boardId") Long boardId,
-        @RequestParam(name = "storeId") Long storeId,
-        @Valid @RequestBody ProductBoardUpdateRequest request) {
-        // TODO: 비즈니스 로직 구현 예정
-        return responseService.getSingleResult(request);
+        @Valid @ModelAttribute UpdateBoardRequest request
+    ) {
+        return responseService.getSingleResult(
+            sellerBoardFacade.updateBoard(request.toCommand(sellerId, boardId))
+        );
     }
 
     @PostMapping("/{boardId}/copy")
