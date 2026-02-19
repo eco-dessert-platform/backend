@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.seller.facade;
 
 import com.bbangle.bbangle.board.seller.facade.command.CreateBoardFacadeCommand;
+import com.bbangle.bbangle.board.seller.facade.command.UpdateBoardFacadeCommand;
 import com.bbangle.bbangle.board.seller.service.SellerBoardService;
 import com.bbangle.bbangle.board.seller.service.command.BoardDetailCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
@@ -98,6 +99,64 @@ public class SellerBoardFacade {
         }
 
         return productImgCommands;
+    }
+
+    public BoardInfo updateBoard(UpdateBoardFacadeCommand command) {
+        List<String> uploadedUrls = new ArrayList<>();
+        try {
+            String thumbnailUrl;
+            if (command.thumbnailImgFile() != null) {
+                thumbnailUrl = s3Service.saveAndReturnWithCdn(BOARD_IMAGE_FOLDER, command.thumbnailImgFile());
+                uploadedUrls.add(thumbnailUrl);
+            } else {
+                thumbnailUrl = command.existingThumbnailUrl();
+            }
+
+            List<ProductImgCommand> productImgCommands = buildProductImgCommands(
+                thumbnailUrl,
+                command.newSubImages(),
+                command.existingSubImageUrls(),
+                uploadedUrls
+            );
+
+            BoardDetailCommand boardDetailCommand = processBoardDetailContent(
+                command.boardDetailRequest().getContent(),
+                command.boardDetailImages(),
+                uploadedUrls
+            );
+
+            return sellerBoardService.updateBoard(
+                command.toServiceCommand(productImgCommands, boardDetailCommand)
+            );
+        } catch (Exception e) {
+            rollbackUploadedImages(uploadedUrls);
+            throw e;
+        }
+    }
+
+    private List<ProductImgCommand> buildProductImgCommands(
+        String thumbnailUrl,
+        List<MultipartFile> newSubImages,
+        List<String> existingSubImageUrls,
+        List<String> uploadedUrls
+    ) {
+        List<ProductImgCommand> commands = new ArrayList<>();
+        commands.add(new ProductImgCommand(thumbnailUrl, 0));
+
+        int order = 1;
+        if (existingSubImageUrls != null) {
+            for (String url : existingSubImageUrls) {
+                commands.add(new ProductImgCommand(url, order++));
+            }
+        }
+        if (newSubImages != null) {
+            for (MultipartFile file : newSubImages) {
+                String url = s3Service.saveAndReturnWithCdn(BOARD_IMAGE_FOLDER, file);
+                uploadedUrls.add(url);
+                commands.add(new ProductImgCommand(url, order++));
+            }
+        }
+        return commands;
     }
 
     private void rollbackUploadedImages(List<String> uploadedUrls) {
