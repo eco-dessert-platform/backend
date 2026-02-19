@@ -26,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -50,6 +51,9 @@ class OAuth2ClientValidationFilterUnitTest {
     @Mock
     private OAuth2StateParser stateParser;
 
+    @Mock
+    private Environment environment;
+
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
 
@@ -68,6 +72,7 @@ class OAuth2ClientValidationFilterUnitTest {
         request.addHeader("Referer", "test");
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
+        given(environment.getActiveProfiles()).willReturn(new String[]{"test"});
         given(oauth2HandlerProperties.getErrorUrlWithReferer(BbangleErrorCode.NOT_SUPPORTED_SERVER, "test"))
             .willAnswer(invocation -> {
                 BbangleErrorCode code = invocation.getArgument(0);
@@ -101,6 +106,7 @@ class OAuth2ClientValidationFilterUnitTest {
 
         given(stateParser.getParams(any(), anyString())).willThrow(new OAuth2Exception(BbangleErrorCode.INVALID_OAUTH_PARAMS));
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
+        given(environment.getActiveProfiles()).willReturn(new String[]{"test"});
         given(oauth2HandlerProperties.getErrorUrlWithReferer(BbangleErrorCode.INVALID_OAUTH_PARAMS, "test"))
             .willAnswer(invocation -> {
                 BbangleErrorCode code = invocation.getArgument(0);
@@ -134,6 +140,7 @@ class OAuth2ClientValidationFilterUnitTest {
         OAuth2DTO.OAuthParams params = mock(OAuth2DTO.OAuthParams.class);
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
+        given(environment.getActiveProfiles()).willReturn(new String[]{"test"});
         given(stateParser.getParams(anyString(), anyString())).willReturn(params);
 
         // when
@@ -157,6 +164,7 @@ class OAuth2ClientValidationFilterUnitTest {
         OAuth2DTO.OAuthParams params = mock(OAuth2DTO.OAuthParams.class);
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(clientRegistration);
+        given(environment.getActiveProfiles()).willReturn(new String[]{"test"});
         given(stateParser.getParams(anyString(), anyString())).willReturn(params);
 
         // when

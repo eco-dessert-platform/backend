@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -34,6 +36,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     private final OAuth2HandlerProperties oauth2HandlerProperties;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
     private final OAuth2StateParser stateParser;
+    private final Environment environment;
 
     @Override
     protected void doFilterInternal(
@@ -54,24 +57,26 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
 
     private HttpServletRequest wrapRequestDefaultParams(HttpServletRequest request) {
         String profile = OAuth2DTO.defaultProfile(request.getParameter(PARAM_PROFILE));
+        profile = OAuth2DTO.defaultProfile(Arrays.asList(environment.getActiveProfiles()), profile);
+        String finalProfile = profile;
 
         return new HttpServletRequestWrapper(request) {
             @Override
             public String getParameter(String name) {
-                if (PARAM_PROFILE.equals(name)) return profile;
+                if (PARAM_PROFILE.equals(name)) return finalProfile;
                 return super.getParameter(name);
             }
 
             @Override
             public Map<String, String[]> getParameterMap() {
                 Map<String, String[]> map = new HashMap<>(super.getParameterMap());
-                map.put(PARAM_PROFILE, new String[]{profile});
+                map.put(PARAM_PROFILE, new String[]{finalProfile});
                 return Collections.unmodifiableMap(map);
             }
 
             @Override
             public String[] getParameterValues(String name) {
-                if (PARAM_PROFILE.equals(name)) return new String[]{profile};
+                if (PARAM_PROFILE.equals(name)) return new String[]{finalProfile};
                 return super.getParameterValues(name);
             }
 

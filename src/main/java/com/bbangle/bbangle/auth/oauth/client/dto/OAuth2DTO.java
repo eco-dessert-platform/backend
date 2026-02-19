@@ -2,6 +2,7 @@ package com.bbangle.bbangle.auth.oauth.client.dto;
 
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
+import java.util.List;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,17 @@ public class OAuth2DTO {
         } catch (IllegalArgumentException e) {
             return ProfileType.PROD.name().toLowerCase();
         }
+    }
+
+    public static String defaultProfile(List<String> serverProfiles, String profile) {
+        boolean isProdServer = serverProfiles.stream()
+            .anyMatch(p -> p.equalsIgnoreCase(ProfileType.PROD.name()));
+
+        if (isProdServer) {
+            return ProfileType.PROD.name().toLowerCase();
+        }
+
+        return profile;
     }
 
     public enum UserType {CUSTOMER, SELLER}

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -58,12 +59,14 @@ public class OAuth2SecurityConfig {
     public OAuth2ClientValidationFilter validationFilter(
         ClientRegistrationRepository clientRegistrationRepository,
         OAuth2HandlerProperties oauth2HandlerProperties,
-        OAuth2StateParser stateParser
+        OAuth2StateParser stateParser,
+        Environment environment
     ) {
         return new OAuth2ClientValidationFilter(
             clientRegistrationRepository,
             oauth2HandlerProperties,
-            stateParser
+            stateParser,
+            environment
         );
     }
 
