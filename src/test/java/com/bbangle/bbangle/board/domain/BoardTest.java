@@ -185,6 +185,136 @@ class BoardTest {
     }
 
     @Nested
+    @DisplayName("update 메서드")
+    class Update {
+
+        private Board createDefaultBoard() {
+            return Board.sellerCreate(
+                store, "기존 게시글", 10000, "RATE", 10,
+                3000, 30000, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+        }
+
+        @Test
+        @DisplayName("정상적인 입력으로 Board를 수정한다")
+        void success() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when
+            board.update("수정된 게시글", 20000, "AMOUNT", 5000, 2500, 50000,
+                true, "T_07_08", "COLD", "우체국택배");
+
+            // then
+            assertThat(board.getTitle()).isEqualTo("수정된 게시글");
+            assertThat(board.getPrice()).isEqualTo(20000);
+            assertThat(board.getDiscountType()).isEqualTo(DiscountType.AMOUNT);
+            assertThat(board.getDiscountValue()).isEqualTo(5000);
+            assertThat(board.getDiscountPrice()).isEqualTo(15000);
+            assertThat(board.getDeliveryFee()).isEqualTo(2500);
+            assertThat(board.getFreeShippingConditions()).isEqualTo(50000);
+            assertThat(board.getIsFresh()).isTrue();
+            assertThat(board.getCourier()).isEqualTo("우체국택배");
+        }
+
+        @Test
+        @DisplayName("title이 blank이면 예외가 발생한다")
+        void failWhenTitleIsBlank() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when & then
+            assertThatThrownBy(() -> board.update(
+                "  ", 10000, "RATE", 10, 3000, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운"
+            ))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_BOARD_TITLE);
+        }
+
+        @Test
+        @DisplayName("price가 음수이면 예외가 발생한다")
+        void failWhenPriceIsNegative() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when & then
+            assertThatThrownBy(() -> board.update(
+                "수정된 게시글", -1, "RATE", 10, 3000, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운"
+            ))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_BOARD_PRICE);
+        }
+
+        @Test
+        @DisplayName("RATE 할인율이 100을 초과하면 예외가 발생한다")
+        void failWhenRateExceeds100() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when & then
+            assertThatThrownBy(() -> board.update(
+                "수정된 게시글", 10000, "RATE", 101, 3000, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운"
+            ))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_BOARD_DISCOUNT);
+        }
+
+        @Test
+        @DisplayName("AMOUNT 할인금액이 가격을 초과하면 예외가 발생한다")
+        void failWhenAmountExceedsPrice() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when & then
+            assertThatThrownBy(() -> board.update(
+                "수정된 게시글", 10000, "AMOUNT", 10001, 3000, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운"
+            ))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_BOARD_DISCOUNT);
+        }
+
+        @Test
+        @DisplayName("deliveryFee가 음수이면 예외가 발생한다")
+        void failWhenDeliveryFeeIsNegative() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when & then
+            assertThatThrownBy(() -> board.update(
+                "수정된 게시글", 10000, "RATE", 10, -1, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운"
+            ))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_DELIVERY_FEE);
+        }
+
+        @Test
+        @DisplayName("RATE 타입으로 수정하면 discountRate와 discountPrice가 재계산된다")
+        void recalculatesDiscountWithRate() {
+            // given
+            Board board = createDefaultBoard();
+
+            // when
+            board.update("수정된 게시글", 20000, "RATE", 20, 3000, 30000,
+                false, "T_09_10", "NORMAL", "CJ대한통운");
+
+            // then
+            assertThat(board.getDiscountRate()).isEqualTo(20);
+            assertThat(board.getDiscountPrice()).isEqualTo(16000);
+        }
+    }
+
+    @Nested
     @DisplayName("할인가격 계산")
     class DiscountPriceCalculation {
 
