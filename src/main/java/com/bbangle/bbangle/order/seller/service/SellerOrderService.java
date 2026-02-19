@@ -15,8 +15,10 @@ import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentContent;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentModifyCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -129,6 +131,59 @@ public class SellerOrderService {
             shippedAt
         );
         return ShipmentRegisterResponse.of(content);
+    }
+
+    @Transactional
+    public ShipmentModifyResponse modifyShipment(ShipmentModifyCommand command) {
+        List<Long> uniqueOrderItemIds = validateAndDeduplicateIds(command.orderItemIds());
+        int requestedCount = uniqueOrderItemIds.size();
+
+        Order order = getOrderOrThrow(command.orderId());
+        Seller seller = getSellerWithStoreOrThrow(command.sellerId());
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdInWithOrder(
+            order.getId(), uniqueOrderItemIds
+        );
+        List<Long> notFoundIds = computeNotFoundIds(uniqueOrderItemIds, orderItems);
+        List<Long> foundIds = orderItems.stream().map(OrderItem::getId).toList();
+        if (!foundIds.isEmpty()) {
+            assertOwnedOrderItems(order.getId(), foundIds, seller.getStore().getId());
+        }
+        Map<Long, OrderDelivery> deliveryMap = loadDeliveryMap(foundIds);
+
+        List<Long> successIds = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>(notFoundIds);
+        LocalDateTime shippedAt = null;
+
+        for (OrderItem orderItem : orderItems) {
+            try {
+                OrderDelivery delivery = deliveryMap.get(orderItem.getId());
+                if (delivery == null) {
+                    throw new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND);
+                }
+                delivery.modifyShipment(command.courierName(), command.trackingNumber());
+
+                successIds.add(orderItem.getId());
+                shippedAt = delivery.getShipping().getShippedAt();
+            } catch (BbangleException e) {
+                log.warn("운송장 수정 실패 - orderId: {}, orderItemId: {}, sellerId: {}, reason: {}",
+                    command.orderId(), orderItem.getId(), command.sellerId(), e.getMessage());
+                failedIds.add(orderItem.getId());
+            }
+        }
+
+        boolean hasSuccess = !successIds.isEmpty();
+        SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(
+            requestedCount, successIds.size(), failedIds.size()
+        );
+        ShipmentContent content = ShipmentContent.of(
+            order.getId(), summary,
+            successIds, failedIds,
+            hasSuccess ? command.courierName() : null,
+            hasSuccess ? command.trackingNumber() : null,
+            shippedAt
+        );
+        return ShipmentModifyResponse.of(content);
     }
 
     private List<Long> validateAndDeduplicateIds(List<Long> orderItemIds) {

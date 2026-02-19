@@ -143,4 +143,19 @@ public class SellerOrderResponse {
                 .build();
         }
     }
+
+    @Builder
+    @Schema(description = "판매자 운송장 수정 응답 DTO")
+    public record ShipmentModifyResponse(
+
+        @Schema(description = "운송장 수정 결과 컨텐츠")
+        ShipmentContent content
+
+    ) {
+        public static ShipmentModifyResponse of(ShipmentContent content) {
+            return ShipmentModifyResponse.builder()
+                .content(content)
+                .build();
+        }
+    }
 }

@@ -22,4 +22,14 @@ public class SellerOrderCommand {
         Long sellerId
     ) {
     }
+
+    @Builder
+    public record ShipmentModifyCommand(
+        Long orderId,
+        List<Long> orderItemIds,
+        String courierName,
+        String trackingNumber,
+        Long sellerId
+    ) {
+    }
 }
