@@ -87,8 +87,8 @@ public record OAuth2HandlerProperties (
         public String getDomain(String referer) {
             if (referer == null || referer.isBlank()) return null;
             if (referer.contains(local)) return local;  // Referer 헤더가 local인 경우
-            if (referer.contains(customer)) return customer;    // Referer 헤더가 Seller 사이트 도메인인 경우
-            if (referer.contains(seller)) return seller;    // Referer 헤더가 Customer 사이트 도메인인 경우
+            if (referer.contains(customer)) return customer;    // Referer 헤더가 Customer 사이트 도메인인 경우
+            if (referer.contains(seller)) return seller;    // Referer 헤더가 Seller 사이트 도메인인 경우
             return null;
         }
     }
