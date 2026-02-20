@@ -39,13 +39,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
+        // 1. state 파라미터로부터 값을 추출하여 OAuthParams DTO를 생성
         OAuthParams dto = stateParser.getParams(request.getParameter(OAuth2ParameterNames.STATE));
+        // 2. UserService에서 전달한 DTO 추출
         CustomUserDetails oAuth2User = (CustomUserDetails) authentication.getPrincipal();
+        // 3. 로그인한 User 정보를 Redis에 저장
         UUID uuid = generateCode(oAuth2User);
 
+        // 4. OAuthParams 값에 따라 동적으로 리다이렉트
         getRedirectStrategy().sendRedirect(request, response, createRedirectUrl(dto, uuid));
     }
 
+    // Redis에 로그인한 User 정보 저장
     private UUID generateCode(CustomUserDetails oAuth2User) {
         UUID uuid = UUID.randomUUID();
         try {
@@ -65,6 +70,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         return uuid;
     }
 
+    // OAuth2 로그인 성공 시 리다이렉트할 URL 생성
     private String createRedirectUrl(OAuthParams params, UUID uuid) {
         return oauth2HandlerProperties.getSuccessUrl(uuid, params);
     }

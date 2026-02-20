@@ -32,19 +32,27 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         AuthenticationException exception
     ) throws IOException, ServletException {
 
+        // 1. state 파라미터로부터 값을 추출하여 OAuthParams DTO를 생성
         OAuthParams oauthParams;
         try {
             oauthParams = stateParser.getParams(request.getParameter(OAuth2ParameterNames.STATE));
         } catch (OAuth2Exception e) {
+            // 1-1. State 값이 변조되었을 경우 서버 자체 HTML 파일을 출력
             handleStateParsingFailure(request, response, e);
             return;
         }
 
+        // 2. BbangleErrorCode 추출
         BbangleErrorCode errorCode = extractErrorCode(exception);
+
+        // 3. 예외 메세지 로그 출력 및 예외 종류에 따라 Slack에 알림
         handleLoggingAndAlert(request, exception, errorCode);
+
+        // 4. OAuthParams 값에 따라 동적으로 리다이렉트
         sendRedirect(request, response, errorCode, oauthParams);
     }
 
+    // State 파라미터 파싱 실패 시 서버 자체 HTML 파일을 출력하는 메서드
     private void handleStateParsingFailure(
         HttpServletRequest request,
         HttpServletResponse response,
@@ -57,16 +65,17 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
+    // 로그 출력 및 Slack 알림 메서드
     private void handleLoggingAndAlert(
         HttpServletRequest request,
         AuthenticationException exception,
         BbangleErrorCode code
     ) {
-        if (code == null) {
+        if (code == null) { // BbangleErrorCode가 아닌 경우 - Slack에 알림
             log.error("Unexpected Authentication Error: {}", exception.getMessage(), exception);
-        } else if (code.getHttpStatus().is5xxServerError()) {
+        } else if (code.getHttpStatus().is5xxServerError()) {   // 500번대 예외일 경우 - Slack에 알림
             log.error("OAuth2 Authentication Failed [{}]: {}", code, exception.getMessage(), exception);
-        } else {
+        } else {    // 400번대 BbangleErrorCode 예외인 경우 로그만 출력
             log.warn("OAuth2 Authentication Failed: [{}] {}", code, code.getMessage());
             return;
         }
@@ -74,6 +83,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         slackAdaptor.sendAlert(request, exception);
     }
 
+    // OAuth2 로그인 실패 시 리다이렉트할 URL 생성
     private void sendRedirect(
         HttpServletRequest request,
         HttpServletResponse response,

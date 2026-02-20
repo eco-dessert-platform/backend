@@ -32,6 +32,13 @@ public interface SellerOauthApi {
         ### 🔗 OAuth2 로그인 시작 URL - AJAX 호출이 아닌 Redirect를 사용하셔야합니다.
         - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}`
         - **OauthServerType**은 반드시 **소문자**로 작성하셔야합니다.
+        
+        ### ⚠️ 에러 코드 표
+        | Parameter | Option | 필수 여부 | 설명 |
+        |-----------|------|------|
+        |User|customer / seller|필수|**Customer** 로그인인지 **Seller** 로그인인지 여부|
+        |Profile|local / prod|필수 아님|**Localhost**에서 요청한건지 **배포한 사이트**에서 요청한건지 여부|
+        - Profile 파라미터의 경우 **prod**가 기본값입니다.
 
         ---
         ### ✅ 로그인 성공 시

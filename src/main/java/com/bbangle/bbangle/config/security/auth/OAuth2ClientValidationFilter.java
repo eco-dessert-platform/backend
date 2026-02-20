@@ -46,17 +46,27 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String uri = request.getRequestURI();
 
+        // OAuth2 로그인 요청일 경우 검증
         if (uri.contains("/oauth2/authorization/")) {
+            // 현재 서버의 프로파일이 Prod일 경우 profile 파라미터의 값을 prod로 고정
+            // profile 파라미터의 값이 부적절할 경우 prod로 고정
             request = wrapRequestDefaultParams(request);
+
+            // OAuth2 요청이 Kakao, Google이 아닌 경우 이전 페이지로 리다이렉트
             if (!validateClientRegistration(uri, request, response)) return;
+
+            // user 파라미터 값이 부적절한 경우 이전 페이지로 리다이렉트
             if (!validateOAuth2Params(request, response)) return;
         }
 
         filterChain.doFilter(request, response);
     }
 
+    // 파라미터 값을 덮어 씌우는 메서드
     private HttpServletRequest wrapRequestDefaultParams(HttpServletRequest request) {
+        // profile 파라미터 값이 부적절한 경우 prod로 고정
         String profile = OAuth2DTO.defaultProfile(request.getParameter(PARAM_PROFILE));
+        // 실행 중인 서버 프로파일 값을 추출 > profile 파라미터 값을 prod로 고정
         profile = OAuth2DTO.defaultProfile(Arrays.asList(environment.getActiveProfiles()), profile);
         String finalProfile = profile;
 
@@ -89,6 +99,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         };
     }
 
+    // Kakao, Google OAuth2 요청인지 검증하는 메서드
     private boolean validateClientRegistration(
         String uri,
         HttpServletRequest request,
@@ -107,6 +118,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         return true;
     }
 
+    // 파라미터 값 검증 메서드
     private boolean validateOAuth2Params(
         HttpServletRequest request,
         HttpServletResponse response
@@ -125,6 +137,8 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         }
     }
 
+    // 리다이렉트 URL 생성 메서드 - Referer 헤더를 통해 리다이렉트할 URL을 결정
+    // 만약 Referer가 없을 경우 서버 자체 HTML 파일을 출력
     private String createRedirectUrl(HttpServletRequest request, BbangleErrorCode code) {
         String referer = request.getHeader("Referer");
         return oauth2HandlerProperties.getErrorUrlWithReferer(code, referer);
