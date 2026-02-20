@@ -22,6 +22,12 @@ public class SellerStoreService {
     private final StoreRepository storeRepository;
     private final SellerStoreMapper sellerStoreMapper;
 
+    @Transactional(readOnly = true)
+    public Store findStore(Long storeId) {
+        return storeRepository.findById(storeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
+    }
+
     @Transactional
     public Store createStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
         // 1. DB에 존재하는 스토어를 사용하는 경우
@@ -46,7 +52,9 @@ public class SellerStoreService {
         }
 
         // 2. 새로운 스토어 생성하는 경우
-        if (profileImagePath == null || profileImagePath.isEmpty()) throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
+        if (profileImagePath == null || profileImagePath.isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
+        }
 
         return storeRepository.save(
             Store.createForSeller(

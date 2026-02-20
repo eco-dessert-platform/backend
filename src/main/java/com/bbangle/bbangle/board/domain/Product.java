@@ -81,6 +81,9 @@ public class Product extends SoftDeleteBaseEntity {
     @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
 
+    @Column(name = "low_fat_tag", columnDefinition = "tinyint")
+    private boolean lowFatTag;
+
     @Column(name = "monday", columnDefinition = "tinyint")
     private boolean monday;
 
@@ -120,7 +123,7 @@ public class Product extends SoftDeleteBaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<SegmentIntolerance> segmentIntolerances = new ArrayList<>();
 
-    public Product(Board board, String title, int price, Category category, int stock,
+    public Product(Board board, String title, int price, String category, int stock,
                    boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,
                    boolean ketogenicTag, boolean monday, boolean tuesday, boolean wednesday,
                    boolean thursday, boolean friday, boolean saturday, boolean sunday,
@@ -132,7 +135,7 @@ public class Product extends SoftDeleteBaseEntity {
         this.store = board.getStore();
         this.title = title;
         this.price = price;
-        this.category = category;
+        this.category = Category.from(category);
         this.stock = stock;
         this.glutenFreeTag = glutenFreeTag;
         this.highProteinTag = highProteinTag;
@@ -153,7 +156,7 @@ public class Product extends SoftDeleteBaseEntity {
     private void validate(String title,
                           boolean monday, boolean tuesday, boolean wednesday,
                           boolean thursday, boolean friday, boolean saturday, boolean sunday) {
-        if (title.length() < 3 || title.length() > 50) {
+        if (title == null || title.length() < 3 || title.length() > 50) {
             throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_NAME);
         }
         if (!monday && !tuesday && !wednesday && !thursday && !friday && !saturday && !sunday) {
@@ -168,7 +171,8 @@ public class Product extends SoftDeleteBaseEntity {
                 Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN.label()),
                 Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE.label()),
                 Map.entry(veganTag, TagEnum.VEGAN.label()),
-                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label())
+                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label()),
+                Map.entry(lowFatTag, TagEnum.LOW_FAT.label())
             )
             .filter(Map.Entry::getKey)
             .map(Map.Entry::getValue)

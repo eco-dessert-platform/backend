@@ -133,6 +133,16 @@ class SellerOrderServiceTest {
         assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
     }
 
+    private <T> T newEntity(Class<T> clazz) {
+        try {
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Nested
     @DisplayName("운송장 입력 테스트")
     class RegisterShipmentTest {
@@ -500,16 +510,6 @@ class SellerOrderServiceTest {
             assertThat(result.successOrderItemIds())
                 .asList()
                 .containsExactly(10L);
-        }
-    }
-
-    private <T> T newEntity(Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 }
