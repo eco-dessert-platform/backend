@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.auth.seller.controller.swagger;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.ProfileType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.UserType;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -15,10 +17,10 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Seller Oauth Login", description = "(판매자) 로그인 Oauth API")
 public interface SellerOauthApi {
-
 
     @Operation(
         summary = "판매자 Oauth 로그인 (Redirect)",
@@ -32,13 +34,6 @@ public interface SellerOauthApi {
         ### 🔗 OAuth2 로그인 시작 URL - AJAX 호출이 아닌 Redirect를 사용하셔야합니다.
         - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}`
         - **OauthServerType**은 반드시 **소문자**로 작성하셔야합니다.
-        
-        ### ⚠️ 에러 코드 표
-        | Parameter | Option | 필수 여부 | 설명 |
-        |-----------|------|------|
-        |User|customer / seller|필수|**Customer** 로그인인지 **Seller** 로그인인지 여부|
-        |Profile|local / prod|필수 아님|**Localhost**에서 요청한건지 **배포한 사이트**에서 요청한건지 여부|
-        - Profile 파라미터의 경우 **prod**가 기본값입니다.
 
         ---
         ### ✅ 로그인 성공 시
@@ -90,8 +85,15 @@ public interface SellerOauthApi {
     })
     void sellerLogin(
         @Parameter(description = "Oauth 서비스 종류", example = "KAKAO, GOOGLE")
-        @PathVariable("oauthServerType") OauthServerType oauthServerType
-    );
+        @PathVariable
+        OauthServerType oauthServerType,
+        @Parameter(description = "로그인 할 계정 종류 - 대소문자 무시", example = "customer, seller")
+        @RequestParam("user")
+        UserType userType,
+        @Parameter(description = "요청한 프론트 환경 - 대소문자 무시, 기본값 = prod", example = "local, prod")
+        @RequestParam(value = "profile", required = false, defaultValue = "prod")
+        ProfileType profileType
+        );
 
     @Operation(
         summary = "판매자 Token 발급 및 계정 상태 조회",
