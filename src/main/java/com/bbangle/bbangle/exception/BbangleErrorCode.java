@@ -155,7 +155,8 @@ public enum BbangleErrorCode {
     CLAIM_INVALID_STATUS(-773, "이미 처리된 Claim 입니다", BAD_REQUEST),
 
     // Order Error(781 ~ 800)
-    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST);
+    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST),
+    RETURN_NOT_ALLOWED(-782, "반품 요청이 불가능한 상태입니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

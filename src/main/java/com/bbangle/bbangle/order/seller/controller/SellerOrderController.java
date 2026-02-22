@@ -13,7 +13,9 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailRespo
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
+import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
 import com.bbangle.bbangle.order.seller.service.SellerOrderService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -39,6 +41,8 @@ public class SellerOrderController implements SellerOrderApi {
     private final ResponseService responseService;
 
     private final SellerOrderService sellerOrderService;
+
+    private final SellerReturnService sellerReturnService;
 
     @Override
     @GetMapping("/completed")
@@ -141,6 +145,17 @@ public class SellerOrderController implements SellerOrderApi {
         @Valid @RequestBody SellerOrderRequest.ShipmentRegisterRequest request
     ) {
         var result = sellerOrderService.registerShipment(request.toCommand(sellerId, orderId));
+        return responseService.getSingleResult(result);
+    }
+
+    @PostMapping("/{orderId}/returns")
+    @Override
+    public SingleResult<ReturnCreateResponse> createReturn(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.ReturnCreateRequest request
+    ) {
+        var result = sellerReturnService.createReturn(request.toCommand(sellerId, orderId));
         return responseService.getSingleResult(result);
     }
 

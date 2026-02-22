@@ -11,6 +11,7 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailRespo
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -70,5 +71,12 @@ public interface SellerOrderApi {
         @AuthenticationPrincipal Long sellerId,
         @PathVariable Long orderId,
         @Valid @RequestBody SellerOrderRequest.ShipmentRegisterRequest request
+    );
+
+    @Operation(summary = "(판매자) 반품 요청 생성")
+    SingleResult<ReturnCreateResponse> createReturn(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.ReturnCreateRequest request
     );
 }
