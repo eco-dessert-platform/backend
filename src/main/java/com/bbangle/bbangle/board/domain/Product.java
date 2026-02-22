@@ -186,7 +186,7 @@ public class Product extends SoftDeleteBaseEntity {
         validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
 
         this.title = title;
-        this.price = this.board.getPrice() + plusPriceWithBoardPrice;
+        this.price = plusPriceWithBoardPrice;
         this.category = Category.from(category);
         this.stock = stock;
         this.soldout = stock == 0;

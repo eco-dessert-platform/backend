@@ -152,7 +152,7 @@ class ProductTest {
 
             // then
             assertThat(product.getTitle()).isEqualTo("수정된상품");
-            assertThat(product.getPrice()).isEqualTo(board.getPrice() + 500);
+            assertThat(product.getPrice()).isEqualTo(500);
             assertThat(product.getCategory()).isEqualTo(Category.COOKIE);
             assertThat(product.getStock()).isEqualTo(20);
             assertThat(product.isSoldout()).isFalse();
@@ -229,18 +229,10 @@ class ProductTest {
         }
 
         @Test
-        @DisplayName("board price 변경 후 update 호출 시 price가 재계산된다")
-        void priceRecalculatedAfterBoardPriceChange() {
+        @DisplayName("update 호출 시 price는 plusPriceWithBoardPrice 값으로 저장된다")
+        void priceStoredAsPlusPriceWithBoardPrice() {
             // given
-            Board updatedBoard = BoardFixture.defaultBoard();
-            updatedBoard.update("게시글", 20000, "RATE", 0, 0, 0,
-                false, "T_09_10", "NORMAL", "CJ대한통운");
-            Product product = new Product(
-                updatedBoard, "기존상품", updatedBoard.getPrice(), "BREAD", 10,
-                false, false, false, false, false,
-                true, false, false, false, false, false, false,
-                nutrition
-            );
+            Product product = createDefaultProduct();
 
             // when
             product.update("기존상품", 1000, "BREAD", 10,
@@ -249,7 +241,7 @@ class ProductTest {
                 nutrition);
 
             // then
-            assertThat(product.getPrice()).isEqualTo(21000); // 20000 + 1000
+            assertThat(product.getPrice()).isEqualTo(1000);
         }
     }
 
