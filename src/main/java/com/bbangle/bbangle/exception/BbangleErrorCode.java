@@ -118,6 +118,7 @@ public enum BbangleErrorCode {
     ALREADY_REGISTER_STORE(-714, "이미 스토어를 등록한 판매자 계정입니다.", BAD_REQUEST),
     FORBIDDEN_BOARD_ACCESS(-715, "해당 게시글에 대한 접근 권한이 없습니다.", FORBIDDEN),
     PRODUCT_NOT_FOUND(-716, "존재하지 않는 상품입니다.", NOT_FOUND),
+    MISSING_BOARD_THUMBNAIL(-717, "썸네일 이미지는 필수입니다. 새 파일 또는 기존 URL을 제공해주세요.", BAD_REQUEST),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),

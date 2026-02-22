@@ -7,6 +7,8 @@ import com.bbangle.bbangle.board.seller.service.command.BoardDetailCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.service.HtmlContentProcessor;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
@@ -110,6 +112,9 @@ public class SellerBoardFacade {
                 uploadedUrls.add(thumbnailUrl);
             } else {
                 thumbnailUrl = command.existingThumbnailUrl();
+            }
+            if (thumbnailUrl == null) {
+                throw new BbangleException(BbangleErrorCode.MISSING_BOARD_THUMBNAIL);
             }
 
             List<ProductImgCommand> productImgCommands = buildProductImgCommands(
