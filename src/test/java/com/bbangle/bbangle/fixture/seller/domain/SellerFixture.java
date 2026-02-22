@@ -44,4 +44,55 @@ public final class SellerFixture {
         ReflectionTestUtils.setField(seller, "id", id);
         return seller;
     }
+
+    public static Seller createDefaultSeller(Store store) {
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
+    }
+
+    public static Seller createSellerWithPhone(String phone, String subPhone, Store store) {
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
+    }
+
+    public static Seller createSellerWithEmail(String email, Store store) {
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
+    }
+
+    public static Seller createSellerWithAddress(String addressLine, String detailAddress, Store store) {
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
+    }
+
+    public static Seller createSellerWithStatus(CertificationStatus status, Store store) {
+        return Seller.builder()
+            .name("테스트 판매자")
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(status)
+            .store(store)
+            .build();
+    }
+
 }

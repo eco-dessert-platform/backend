@@ -47,7 +47,7 @@ public class NoticeFixture {
 
     private static void setCreatedAt(Notice notice, LocalDateTime createdAt) {
         try {
-            Field field = notice.getClass().getSuperclass().getSuperclass().getDeclaredField("createdAt");
+            Field field = notice.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("createdAt");
             field.setAccessible(true);
             field.set(notice, createdAt);
         } catch (NoSuchFieldException | IllegalAccessException e) {
