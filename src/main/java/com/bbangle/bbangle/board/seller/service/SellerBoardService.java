@@ -144,7 +144,9 @@ public class SellerBoardService {
 
         List<Product> newProducts = new ArrayList<>();
         for (UpdateProductCommand cmd : productCommands) {
-            if (cmd.productId() != null && existingMap.containsKey(cmd.productId())) {
+            if (cmd.productId() == null) {
+                newProducts.add(cmd.toNewProduct(board));
+            } else if (existingMap.containsKey(cmd.productId())) {
                 existingMap.get(cmd.productId()).update(
                     cmd.title(),
                     cmd.plusPriceWithBoardPrice(),
@@ -165,7 +167,7 @@ public class SellerBoardService {
                     cmd.nutrition()
                 );
             } else {
-                newProducts.add(cmd.toNewProduct(board));
+                throw new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND);
             }
         }
 
