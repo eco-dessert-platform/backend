@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.auth.seller.controller;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.ProfileType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.UserType;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
@@ -41,7 +43,9 @@ public class SellerOauthController implements SellerOauthApi {
     @Override
     @GetMapping("/authorization/{oauthServerType}")
     public void sellerLogin(
-        @PathVariable("oauthServerType") OauthServerType oauthServerType
+        @PathVariable OauthServerType oauthServerType,
+        UserType userType,
+        ProfileType profileType
     ) {}
 
     @Override
@@ -63,6 +67,7 @@ public class SellerOauthController implements SellerOauthApi {
         );
     }
 
+    // TODO : reissue, logout API 이동
     @Override
     @PostMapping("/reissue")
     public CommonResult reissueToken(
