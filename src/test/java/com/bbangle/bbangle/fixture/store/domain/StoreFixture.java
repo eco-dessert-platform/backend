@@ -26,6 +26,19 @@ public final class StoreFixture {
             .build();
     }
 
+    public static Store defaultStore_1() {
+        return Store.createForSeller(
+            "가게명",
+            "profile.png",
+            "테스트 가게",
+            "01012345678",
+            null,
+            "test@example.com",
+            "서울시 강남구",
+            "123동"
+        );
+    }
+
     public static Store defaultStore() {
         return baseBuilder("빵그리의 오븐", StoreStatus.NONE);
     }

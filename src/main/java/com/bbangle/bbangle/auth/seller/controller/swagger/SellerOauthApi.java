@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.auth.seller.controller.swagger;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.ProfileType;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.UserType;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenRequest;
 import com.bbangle.bbangle.auth.seller.controller.dto.GenerateTokenResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -15,10 +17,10 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Seller Oauth Login", description = "(판매자) 로그인 Oauth API")
 public interface SellerOauthApi {
-
 
     @Operation(
         summary = "판매자 Oauth 로그인 (Redirect)",
@@ -30,8 +32,10 @@ public interface SellerOauthApi {
 
         ---
         ### 🔗 OAuth2 로그인 시작 URL - AJAX 호출이 아닌 Redirect를 사용하셔야합니다.
-        - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}`
+        - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}?user={UserType}&profile={ProfileType}`
         - **OauthServerType**은 반드시 **소문자**로 작성하셔야합니다.
+        - **user** 파라미터는 필수입니다.
+        - profile 파라미터는 prod가 기본값으로 설정되어있습니다.
 
         ---
         ### ✅ 로그인 성공 시
@@ -74,6 +78,8 @@ public interface SellerOauthApi {
         |-----------|------|------|
         |NOT_SUPPORTED_SERVER|-744|지원하지 않는 OAuth2 로그인 서버입니다.|
         |MISSING_NAME_NICKNAME|-745|이름과 닉네임이 전부 비공개 상태입니다.|
+        |INVALID_OAUTH_PARAMS|-748|유효하지 않은 파라미터입니다.|
+        |_NOT_SUPPORTED_YET|-993|아직 지원하지 않는 기능입니다.|
         |INTERNAL_SERVER_ERROR|-999|서버 내부 에러입니다. (ex : DB Down)|
         |UNKNOWN_ERROR|null|에러 코드 표에 작성된 Error Code 이외의 기타 예외 상황|
         """
@@ -81,7 +87,14 @@ public interface SellerOauthApi {
     })
     void sellerLogin(
         @Parameter(description = "Oauth 서비스 종류", example = "KAKAO, GOOGLE")
-        @PathVariable("oauthServerType") OauthServerType oauthServerType
+        @PathVariable
+        OauthServerType oauthServerType,
+        @Parameter(description = "로그인 할 계정 종류 - 대소문자 무시", example = "customer, seller")
+        @RequestParam("user")
+        UserType userType,
+        @Parameter(description = "요청한 프론트 환경 - 대소문자 무시, 기본값 = prod", example = "local, prod")
+        @RequestParam(value = "profile", required = false, defaultValue = "prod")
+        ProfileType profileType
     );
 
     @Operation(

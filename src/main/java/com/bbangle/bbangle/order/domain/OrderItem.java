@@ -9,13 +9,25 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -55,6 +67,9 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    private List<OrderDelivery> orderDeliveries = new ArrayList<>();
+
     public boolean confirmOrder() {
         if (this.orderStatus != OrderStatus.PAYMENT_COMPLETED) {
             return false;
@@ -63,16 +78,38 @@ public class OrderItem extends BaseEntity {
         return true;
     }
 
+    /**
+     * 양방향 연관관계 설정용 패키지 전용 메서드 Order.addOrderItem()을 통해서만 호출되어야 합니다.
+     */
+    void setOrder(Order order) {
+        this.order = order;
+    }
+
+    /**
+     * 주문 항목에 배송 정보를 추가합니다. 양방향 연관관계를 안전하게 설정합니다.
+     */
+    public void addOrderDelivery(OrderDelivery orderDelivery) {
+        this.orderDeliveries.add(orderDelivery);
+        orderDelivery.setOrderItem(this);
+    }
+
+    /**
+     * 여러 배송 정보를 한 번에 추가합니다.
+     */
+    public void addOrderDeliveries(List<OrderDelivery> orderDeliveries) {
+        orderDeliveries.forEach(this::addOrderDelivery);
+    }
+
     @Builder
     public OrderItem(
-            Integer quantity,
-            Integer productPrice,
-            Integer unitPrice,
-            OrderStatus orderStatus,
-            OrderDeliveryStatus orderDeliveryStatus,
-            Integer totalPrice,
-            Order order,
-            Product product
+        Integer quantity,
+        Integer productPrice,
+        Integer unitPrice,
+        OrderStatus orderStatus,
+        OrderDeliveryStatus orderDeliveryStatus,
+        Integer totalPrice,
+        Order order,
+        Product product
     ) {
         this.quantity = quantity;
         this.productPrice = productPrice;
