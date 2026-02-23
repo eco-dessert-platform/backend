@@ -68,7 +68,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void redirect_client_not_found() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI("/oauth/authorization/test");
         request.addHeader("Referer", "test");
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
@@ -98,7 +98,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void redirect_invalid_oauth_params() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI("/oauth/authorization/test");
         request.setParameter("user", "INVALID"); // dto.valid() false 유도
         request.addHeader("Referer", "test");
 
@@ -133,7 +133,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void pass_client_exists() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI("/oauth/authorization/test");
         request.setParameter("user", UserType.CUSTOMER.toString());
 
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
@@ -157,7 +157,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void oauth2_profileParam_default_wrapping() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI("/oauth/authorization/test");
         request.setParameter("user", UserType.CUSTOMER.toString());
 
         ClientRegistration clientRegistration = mock(ClientRegistration.class);

@@ -47,7 +47,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // OAuth2 로그인 요청일 경우 검증
-        if (uri.contains("/oauth2/authorization/")) {
+        if (uri.contains("/oauth/authorization/")) {
             // 현재 서버의 프로파일이 Prod일 경우 profile 파라미터의 값을 prod로 고정
             // profile 파라미터의 값이 부적절할 경우 prod로 고정
             request = wrapRequestDefaultParams(request);

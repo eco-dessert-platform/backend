@@ -37,7 +37,7 @@ public class OAuth2SecurityConfig {
     ) throws Exception {
         http
             .securityMatcher(
-                SellerApiPath.PREFIX + "/oauth2/**",
+                "/api/v1/oauth/authorization/**",
                 "/login/oauth2/**"
             )
             .csrf(AbstractHttpConfigurer::disable)
