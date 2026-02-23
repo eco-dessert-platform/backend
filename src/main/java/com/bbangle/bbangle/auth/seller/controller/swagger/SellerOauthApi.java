@@ -32,8 +32,10 @@ public interface SellerOauthApi {
 
         ---
         ### 🔗 OAuth2 로그인 시작 URL - AJAX 호출이 아닌 Redirect를 사용하셔야합니다.
-        - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}`
+        - `GET /api/v1/seller/oauth2/authorization/{OauthServerType}?user={UserType}&profile={ProfileType}`
         - **OauthServerType**은 반드시 **소문자**로 작성하셔야합니다.
+        - **user** 파라미터는 필수입니다.
+        - profile 파라미터는 prod가 기본값으로 설정되어있습니다.
 
         ---
         ### ✅ 로그인 성공 시
@@ -93,7 +95,7 @@ public interface SellerOauthApi {
         @Parameter(description = "요청한 프론트 환경 - 대소문자 무시, 기본값 = prod", example = "local, prod")
         @RequestParam(value = "profile", required = false, defaultValue = "prod")
         ProfileType profileType
-        );
+    );
 
     @Operation(
         summary = "판매자 Token 발급 및 계정 상태 조회",

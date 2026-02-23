@@ -18,7 +18,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         ClientRegistrationRepository clientRegistrationRepository
     ) {
         this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
-            // TODO : OAuth 로그인 URL 변경하기 - 지금은 seller.prefix로 설정되어있음
+            // TODO : OAuth 로그인 URL 변경하기
             clientRegistrationRepository, SellerApiPath.PREFIX + "/oauth2/authorization"
         );
     }

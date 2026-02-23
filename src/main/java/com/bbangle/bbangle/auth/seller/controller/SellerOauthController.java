@@ -67,6 +67,7 @@ public class SellerOauthController implements SellerOauthApi {
         );
     }
 
+    // TODO : reissue, logout API 이동
     @Override
     @PostMapping("/reissue")
     public CommonResult reissueToken(
