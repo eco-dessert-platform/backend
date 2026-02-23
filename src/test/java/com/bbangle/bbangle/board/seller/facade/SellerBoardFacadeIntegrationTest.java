@@ -16,11 +16,16 @@ import com.bbangle.bbangle.board.seller.controller.dto.request.DietaryTagsReques
 import com.bbangle.bbangle.board.seller.controller.dto.request.NutritionInfoRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductInfoNoticeRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateProductRequest;
 import com.bbangle.bbangle.board.seller.facade.command.CreateBoardFacadeCommand;
+import com.bbangle.bbangle.board.seller.facade.command.UpdateBoardFacadeCommand;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.config.S3IntegrationTestSupport;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
@@ -45,6 +50,9 @@ class SellerBoardFacadeIntegrationTest extends S3IntegrationTestSupport {
 
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private SellerRepository sellerRepository;
 
     @Autowired
     private EntityManager em;
@@ -401,6 +409,171 @@ class SellerBoardFacadeIntegrationTest extends S3IntegrationTestSupport {
         }
     }
 
+    @Nested
+    @DisplayName("updateBoard() 테스트")
+    class UpdateBoardTest {
+
+        private Seller seller;
+        private Long boardId;
+        private String existingThumbnailUrl;
+
+        @BeforeEach
+        void setUp() {
+            seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
+
+            BoardInfo boardInfo = sellerBoardFacade.createBoard(createValidCommand(store.getId()));
+            boardId = boardInfo.boardId();
+
+            em.flush();
+            em.clear();
+
+            Board savedBoard = boardRepository.findById(boardId).orElseThrow();
+            existingThumbnailUrl = savedBoard.getThumbnail();
+        }
+
+        @DisplayName("정상적인 입력으로 Board 기본 정보가 수정된다.")
+        @Test
+        void givenValidCommand_whenUpdateBoard_thenBoardInfoUpdated() {
+            // given
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId(), boardId)
+                .title("수정된 상품명")
+                .existingThumbnailUrl(existingThumbnailUrl)
+                .build();
+
+            // when
+            BoardInfo result = sellerBoardFacade.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+            Board updatedBoard = boardRepository.findById(result.boardId()).orElseThrow();
+            assertThat(updatedBoard.getTitle()).isEqualTo("수정된 상품명");
+        }
+
+        @DisplayName("새 썸네일 파일을 제공하면 새 이미지 URL이 저장된다.")
+        @Test
+        void givenNewThumbnailFile_whenUpdateBoard_thenThumbnailUrlChanges() {
+            // given
+            MockMultipartFile newThumbnail = createMockImage("new-thumbnail.png");
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId(), boardId)
+                .thumbnailImgFile(newThumbnail)
+                .existingThumbnailUrl(null)
+                .build();
+
+            // when
+            sellerBoardFacade.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+            Board updatedBoard = boardRepository.findById(boardId).orElseThrow();
+            List<ProductImg> activeImgs = updatedBoard.getProductImgs().stream()
+                .filter(img -> !img.isDeleted())
+                .toList();
+            assertThat(activeImgs).hasSize(1);
+            assertThat(activeImgs.get(0).getUrl()).isNotEqualTo(existingThumbnailUrl);
+        }
+
+        @DisplayName("썸네일 파일을 제공하지 않으면 기존 썸네일 URL이 유지된다.")
+        @Test
+        void givenNoThumbnailFile_whenUpdateBoard_thenExistingThumbnailKept() {
+            // given
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId(), boardId)
+                .thumbnailImgFile(null)
+                .existingThumbnailUrl(existingThumbnailUrl)
+                .build();
+
+            // when
+            sellerBoardFacade.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+            Board updatedBoard = boardRepository.findById(boardId).orElseThrow();
+            List<ProductImg> activeImgs = updatedBoard.getProductImgs().stream()
+                .filter(img -> !img.isDeleted())
+                .toList();
+            assertThat(activeImgs.get(0).getUrl()).isEqualTo(existingThumbnailUrl);
+        }
+
+        @DisplayName("기존 서브 이미지 URL과 새 파일을 조합하면 모두 저장된다.")
+        @Test
+        void givenExistingAndNewSubImages_whenUpdateBoard_thenAllImagesSaved() {
+            // given
+            MockMultipartFile newSubImage = createMockImage("new-sub.png");
+            String existingSubUrl = "https://cdn.example.com/existing-sub.png";
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId(), boardId)
+                .existingThumbnailUrl(existingThumbnailUrl)
+                .existingSubImageUrls(List.of(existingSubUrl))
+                .newSubImages(List.of(newSubImage))
+                .build();
+
+            // when
+            sellerBoardFacade.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+            Board updatedBoard = boardRepository.findById(boardId).orElseThrow();
+            List<ProductImg> activeImgs = updatedBoard.getProductImgs().stream()
+                .filter(img -> !img.isDeleted())
+                .toList();
+            assertThat(activeImgs).hasSize(3); // thumbnail + existing sub + new upload
+        }
+
+        @DisplayName("다른 셀러로 수정 시도하면 예외가 발생한다.")
+        @Test
+        void givenWrongSeller_whenUpdateBoard_thenThrowsForbiddenException() {
+            // given
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId() + 999, boardId)
+                .existingThumbnailUrl(existingThumbnailUrl)
+                .build();
+
+            // when & then
+            assertThatThrownBy(() -> sellerBoardFacade.updateBoard(command))
+                .isInstanceOf(BbangleException.class);
+        }
+
+        @DisplayName("존재하지 않는 boardId로 수정 시도하면 예외가 발생한다.")
+        @Test
+        void givenNonExistingBoardId_whenUpdateBoard_thenThrowsException() {
+            // given
+            UpdateBoardFacadeCommand command = buildUpdateCommand(seller.getId(), 999999L)
+                .existingThumbnailUrl(existingThumbnailUrl)
+                .build();
+
+            // when & then
+            assertThatThrownBy(() -> sellerBoardFacade.updateBoard(command))
+                .isInstanceOf(BbangleException.class);
+        }
+
+        private UpdateBoardFacadeCommand.UpdateBoardFacadeCommandBuilder buildUpdateCommand(
+            Long sellerId, Long boardId
+        ) {
+            return UpdateBoardFacadeCommand.builder()
+                .sellerId(sellerId)
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(12000)
+                .discountType("RATE")
+                .discountValue(10)
+                .deliveryFee(3000)
+                .freeShippingConditions(30000)
+                .isFresh(false)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("일반배송")
+                .deliveryCompany("CJ대한통운")
+                .thumbnailImgFile(null)
+                .existingThumbnailUrl(null)
+                .newSubImages(null)
+                .existingSubImageUrls(null)
+                .boardDetailImages(null)
+                .products(List.of(createUpdateProductRequest(null)))
+                .boardDetailRequest(new BoardDetailRequest("<p>수정된 상세설명</p>"))
+                .productInfoNoticeRequest(createProductInfoNoticeRequest());
+        }
+    }
+
     private CreateBoardFacadeCommand createValidCommand(Long storeId) {
         return CreateBoardFacadeCommand.builder()
             .sellerId(1L)
@@ -440,6 +613,19 @@ class SellerBoardFacadeIntegrationTest extends S3IntegrationTestSupport {
             new DietaryTagsRequest(true, false, true, false, false),
             0,
             100,
+            new AvailabilityRequest(true, true, true, true, true, false, false),
+            new NutritionInfoRequest(300, 50, 30, 5, 10, 8, 200)
+        );
+    }
+
+    private UpdateProductRequest createUpdateProductRequest(Long productId) {
+        return new UpdateProductRequest(
+            productId,
+            "BREAD",
+            "수정된 식빵",
+            new DietaryTagsRequest(true, false, true, false, false),
+            0,
+            80,
             new AvailabilityRequest(true, true, true, true, true, false, false),
             new NutritionInfoRequest(300, 50, 30, 5, 10, 8, 200)
         );

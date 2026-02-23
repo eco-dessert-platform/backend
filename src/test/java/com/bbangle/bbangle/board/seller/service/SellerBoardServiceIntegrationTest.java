@@ -13,9 +13,15 @@ import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceComman
 import com.bbangle.bbangle.board.seller.service.command.ProductCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductInfoNoticeCommand;
+import com.bbangle.bbangle.board.seller.service.command.UpdateBoardServiceCommand;
+import com.bbangle.bbangle.board.seller.service.command.UpdateProductCommand;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
@@ -43,6 +49,9 @@ class SellerBoardServiceIntegrationTest {
 
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private SellerRepository sellerRepository;
 
     @Autowired
     private EntityManager em;
@@ -359,6 +368,293 @@ class SellerBoardServiceIntegrationTest {
             // when & then
             assertThatThrownBy(() -> sellerBoardService.createBoard(command))
                 .isInstanceOf(BbangleException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("updateBoard 메서드")
+    class UpdateBoard {
+
+        private Seller seller;
+        private Long boardId;
+
+        @BeforeEach
+        void setUpUpdateBoard() {
+            seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
+            BoardInfo created = sellerBoardService.createBoard(createValidCommand(store));
+            boardId = created.boardId();
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("정상적인 입력으로 Board 기본 정보가 수정된다")
+        void success_updatesBasicBoardInfo() {
+            // given
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), boardId);
+
+            // when
+            BoardInfo result = sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(result.boardId()).orElseThrow();
+            assertThat(updatedBoard.getTitle()).isEqualTo("수정된 상품명");
+            assertThat(updatedBoard.getPrice()).isEqualTo(20000);
+            assertThat(updatedBoard.getDeliveryFee()).isEqualTo(2500);
+        }
+
+        @Test
+        @DisplayName("ProductInfoNotice가 수정된다")
+        void success_updatesProductInfoNotice() {
+            // given
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), boardId);
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            assertThat(updatedBoard.getProductInfoNotice().getProductName()).isEqualTo("수정된 상품명");
+            assertThat(updatedBoard.getProductInfoNotice().getManufacturer()).isEqualTo("수정 제조사");
+        }
+
+        @Test
+        @DisplayName("BoardDetail content가 수정된다")
+        void success_updatesBoardDetail() {
+            // given
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), boardId);
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            assertThat(updatedBoard.getBoardDetail().getContent()).isEqualTo("<p>수정된 상세내용</p>");
+        }
+
+        @Test
+        @DisplayName("기존 ProductImg가 soft-delete되고 새 이미지로 교체된다")
+        void success_replacesProductImgs() {
+            // given
+            UpdateBoardServiceCommand command = UpdateBoardServiceCommand.builder()
+                .sellerId(seller.getId())
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(20000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(2500)
+                .freeShippingConditions(50000)
+                .isFresh(true)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("COLD")
+                .deliveryCompany("우체국택배")
+                .productImgs(List.of(
+                    new ProductImgCommand("https://cdn.example.com/new-thumbnail.jpg", 0),
+                    new ProductImgCommand("https://cdn.example.com/new-sub.jpg", 1)
+                ))
+                .products(List.of(createUpdateProductCommand(null)))
+                .boardDetail(new BoardDetailCommand("<p>수정된 상세내용</p>"))
+                .productInfoNotice(createUpdateNoticeCommand())
+                .build();
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            List<ProductImg> activeImgs = updatedBoard.getProductImgs().stream()
+                .filter(img -> !img.isDeleted())
+                .toList();
+            assertThat(activeImgs).hasSize(2);
+            assertThat(activeImgs).extracting(ProductImg::getUrl)
+                .contains("https://cdn.example.com/new-thumbnail.jpg");
+        }
+
+        @Test
+        @DisplayName("요청에 없는 기존 Product가 soft-delete된다")
+        void success_softDeletesRemovedProduct() {
+            // given - 기존 board에 product가 1개 있는 상태에서 products를 빈 목록으로 수정
+            UpdateBoardServiceCommand command = UpdateBoardServiceCommand.builder()
+                .sellerId(seller.getId())
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(20000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(2500)
+                .freeShippingConditions(50000)
+                .isFresh(true)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("COLD")
+                .deliveryCompany("우체국택배")
+                .productImgs(List.of(
+                    new ProductImgCommand("https://cdn.example.com/thumbnail.jpg", 0)
+                ))
+                .products(List.of())
+                .boardDetail(new BoardDetailCommand("<p>수정된 상세내용</p>"))
+                .productInfoNotice(createUpdateNoticeCommand())
+                .build();
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            long activeProducts = updatedBoard.getProducts().stream()
+                .filter(p -> !p.isDeleted())
+                .count();
+            assertThat(activeProducts).isZero();
+        }
+
+        @Test
+        @DisplayName("신규 Product가 추가된다")
+        void success_addsNewProduct() {
+            // given
+            UpdateBoardServiceCommand command = UpdateBoardServiceCommand.builder()
+                .sellerId(seller.getId())
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(20000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(2500)
+                .freeShippingConditions(50000)
+                .isFresh(true)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("COLD")
+                .deliveryCompany("우체국택배")
+                .productImgs(List.of(
+                    new ProductImgCommand("https://cdn.example.com/thumbnail.jpg", 0)
+                ))
+                .products(List.of(
+                    createUpdateProductCommand(null),
+                    createUpdateProductCommand(null)
+                ))
+                .boardDetail(new BoardDetailCommand("<p>수정된 상세내용</p>"))
+                .productInfoNotice(createUpdateNoticeCommand())
+                .build();
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            long activeProducts = updatedBoard.getProducts().stream()
+                .filter(p -> !p.isDeleted())
+                .count();
+            assertThat(activeProducts).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("다른 셀러의 Board를 수정하면 FORBIDDEN_BOARD_ACCESS 예외가 발생한다")
+        void fail_whenNotOwner_throwsForbiddenException() {
+            // given
+            Store anotherStore = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            Seller anotherSeller = sellerRepository.saveAndFlush(
+                SellerFixture.defaultSeller(anotherStore));
+            UpdateBoardServiceCommand command = createValidUpdateCommand(anotherSeller.getId(), boardId);
+
+            // when & then
+            assertThatThrownBy(() -> sellerBoardService.updateBoard(command))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 boardId로 수정하면 BOARD_NOT_FOUND 예외가 발생한다")
+        void fail_whenBoardNotFound_throwsException() {
+            // given
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), 999999L);
+
+            // when & then
+            assertThatThrownBy(() -> sellerBoardService.updateBoard(command))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
+        }
+
+        private UpdateBoardServiceCommand createValidUpdateCommand(Long sellerId, Long boardId) {
+            return UpdateBoardServiceCommand.builder()
+                .sellerId(sellerId)
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(20000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(2500)
+                .freeShippingConditions(50000)
+                .isFresh(true)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("COLD")
+                .deliveryCompany("우체국택배")
+                .productImgs(List.of(
+                    new ProductImgCommand("https://cdn.example.com/new-thumbnail.jpg", 0)
+                ))
+                .products(List.of(createUpdateProductCommand(null)))
+                .boardDetail(new BoardDetailCommand("<p>수정된 상세내용</p>"))
+                .productInfoNotice(createUpdateNoticeCommand())
+                .build();
+        }
+
+        private UpdateProductCommand createUpdateProductCommand(Long productId) {
+            return UpdateProductCommand.builder()
+                .productId(productId)
+                .title("수정된 상품옵션")
+                .category("BREAD")
+                .plusPriceWithBoardPrice(0)
+                .stock(50)
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(false)
+                .ketogenicTag(false)
+                .monday(true)
+                .tuesday(true)
+                .wednesday(false)
+                .thursday(false)
+                .friday(false)
+                .saturday(false)
+                .sunday(false)
+                .nutrition(new Nutrition(200, 50, 25, 5, 8, 6, 150))
+                .build();
+        }
+
+        private ProductInfoNoticeCommand createUpdateNoticeCommand() {
+            return ProductInfoNoticeCommand.builder()
+                .productName("수정된 상품명")
+                .foodType("빵류")
+                .manufacturer("수정 제조사")
+                .originLocation("부산광역시")
+                .manufactureDate("제조일자 별도 표기")
+                .expirationDate("제조일로부터 3일")
+                .storageGuide("냉장보관")
+                .packagingQuantityUnit("1개")
+                .rawMaterialName("밀가루, 설탕")
+                .nutritionInfo("별도 표기")
+                .transgenic("해당없음")
+                .customerWarning("알레르기 주의")
+                .importFood("해당없음")
+                .build();
         }
     }
 

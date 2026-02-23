@@ -39,6 +39,10 @@ public class BoardDetail extends SoftDeleteBaseEntity {
         return HtmlUtils.convertHtmlWithFullImageUrls2(content);
     }
 
+    public void update(String content) {
+        this.content = content;
+    }
+
     public void updateBoard(Board board) {
         this.board = board;
     }

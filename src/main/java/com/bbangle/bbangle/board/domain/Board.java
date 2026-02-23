@@ -206,6 +206,36 @@ public class Board extends SoftDeleteBaseEntity {
         return price - discountValue;
     }
 
+    public void update(
+        String title,
+        Integer price,
+        String discountType,
+        Integer discountValue,
+        Integer deliveryFee,
+        Integer freeShippingConditions,
+        Boolean isFresh,
+        String productionStartTime,
+        String deliveryCondition,
+        String deliveryCompany
+    ) {
+        DiscountType parsedDiscountType = DiscountType.from(discountType);
+        ProductionStartTime parsedProductionStartTime = ProductionStartTime.from(productionStartTime);
+        validate(title, price, parsedDiscountType, discountValue, deliveryFee);
+
+        this.title = title;
+        this.price = price;
+        this.discountType = parsedDiscountType;
+        this.discountValue = discountValue;
+        this.discountRate = calculateDiscountRate(price, parsedDiscountType, discountValue);
+        this.discountPrice = calculateDiscountPrice(price, parsedDiscountType, discountValue);
+        this.deliveryFee = deliveryFee;
+        this.freeShippingConditions = freeShippingConditions;
+        this.isFresh = isFresh;
+        this.productionStartTime = parsedProductionStartTime;
+        this.deliveryCondition = deliveryCondition;
+        this.courier = deliveryCompany;
+    }
+
     public List<String> getTags() {
         return products.stream()
             .map(Product::getTags)

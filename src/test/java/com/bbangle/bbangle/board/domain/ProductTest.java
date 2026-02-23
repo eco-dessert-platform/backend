@@ -122,6 +122,130 @@ class ProductTest {
     }
 
     @Nested
+    @DisplayName("update 메서드")
+    class Update {
+
+        private final Board board = BoardFixture.defaultBoard();
+        private final Nutrition nutrition = new Nutrition(100, 50, 30, 10, 5, 3, 200);
+
+        private Product createDefaultProduct() {
+            return new Product(
+                board, "기존상품", board.getPrice(), "BREAD", 10,
+                true, false, false, false, false,
+                true, false, false, false, false, false, false,
+                nutrition
+            );
+        }
+
+        @Test
+        @DisplayName("정상적인 입력으로 Product를 수정한다")
+        void success() {
+            // given
+            Product product = createDefaultProduct();
+            Nutrition newNutrition = new Nutrition(200, 100, 60, 20, 10, 6, 400);
+
+            // when
+            product.update("수정된상품", 500, "COOKIE", 20,
+                false, true, false, false, false,
+                false, true, false, false, false, false, false,
+                newNutrition);
+
+            // then
+            assertThat(product.getTitle()).isEqualTo("수정된상품");
+            assertThat(product.getPrice()).isEqualTo(500);
+            assertThat(product.getCategory()).isEqualTo(Category.COOKIE);
+            assertThat(product.getStock()).isEqualTo(20);
+            assertThat(product.isSoldout()).isFalse();
+            assertThat(product.isGlutenFreeTag()).isFalse();
+            assertThat(product.isHighProteinTag()).isTrue();
+            assertThat(product.isTuesday()).isTrue();
+            assertThat(product.getNutrition()).isEqualTo(newNutrition);
+        }
+
+        @Test
+        @DisplayName("stock이 0으로 수정되면 soldout이 true가 된다")
+        void soldoutWhenStockBecomesZero() {
+            // given
+            Product product = createDefaultProduct();
+
+            // when
+            product.update("기존상품", 0, "BREAD", 0,
+                true, false, false, false, false,
+                true, false, false, false, false, false, false,
+                nutrition);
+
+            // then
+            assertThat(product.getStock()).isZero();
+            assertThat(product.isSoldout()).isTrue();
+        }
+
+        @Test
+        @DisplayName("title이 3자 미만이면 예외가 발생한다")
+        void failWhenTitleTooShort() {
+            // given
+            Product product = createDefaultProduct();
+
+            // when & then
+            assertThatThrownBy(() -> product.update("ab", 0, "BREAD", 10,
+                false, false, false, false, false,
+                true, false, false, false, false, false, false,
+                nutrition))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_PRODUCT_NAME);
+        }
+
+        @Test
+        @DisplayName("title이 50자 초과이면 예외가 발생한다")
+        void failWhenTitleTooLong() {
+            // given
+            Product product = createDefaultProduct();
+            String longTitle = "가".repeat(51);
+
+            // when & then
+            assertThatThrownBy(() -> product.update(longTitle, 0, "BREAD", 10,
+                false, false, false, false, false,
+                true, false, false, false, false, false, false,
+                nutrition))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_PRODUCT_NAME);
+        }
+
+        @Test
+        @DisplayName("배송 요일이 하나도 선택되지 않으면 예외가 발생한다")
+        void failWhenNoDeliveryDay() {
+            // given
+            Product product = createDefaultProduct();
+
+            // when & then
+            assertThatThrownBy(() -> product.update("기존상품", 0, "BREAD", 10,
+                false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                nutrition))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.INVALID_PRODUCT_DELIVERY_DAY);
+        }
+
+        @Test
+        @DisplayName("update 호출 시 price는 plusPriceWithBoardPrice 값으로 저장된다")
+        void priceStoredAsPlusPriceWithBoardPrice() {
+            // given
+            Product product = createDefaultProduct();
+
+            // when
+            product.update("기존상품", 1000, "BREAD", 10,
+                false, false, false, false, false,
+                true, false, false, false, false, false, false,
+                nutrition);
+
+            // then
+            assertThat(product.getPrice()).isEqualTo(1000);
+        }
+    }
+
+    @Nested
     @DisplayName("getTags 메서드")
     class GetTags {
 

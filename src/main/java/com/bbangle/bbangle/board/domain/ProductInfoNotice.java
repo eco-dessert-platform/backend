@@ -56,6 +56,37 @@ public class ProductInfoNotice extends SoftDeleteBaseEntity {
         this.importFood = importFood;
     }
 
+    public void update(
+        String productName,
+        String foodType,
+        String manufacturer,
+        String originLocation,
+        String manufactureDate,
+        String expirationDate,
+        String storageGuide,
+        String packagingQuantityUnit,
+        String rawMaterialName,
+        String nutritionInfo,
+        String transgenic,
+        String customerWarning,
+        String importFood
+    ) {
+        validate(productName);
+        this.productName = productName;
+        this.foodType = foodType;
+        this.manufacturer = manufacturer;
+        this.originLocation = originLocation;
+        this.manufactureDate = manufactureDate;
+        this.expirationDate = expirationDate;
+        this.storageGuide = storageGuide;
+        this.packagingQuantityUnit = packagingQuantityUnit;
+        this.rawMaterialName = rawMaterialName;
+        this.nutritionInfo = nutritionInfo;
+        this.transgenic = transgenic;
+        this.customerWarning = customerWarning;
+        this.importFood = importFood;
+    }
+
     private void validate(String productName) {
         if (productName == null || productName.length() < 3 || productName.length() > 50) {
             throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_INFO_NOTICE_NAME);

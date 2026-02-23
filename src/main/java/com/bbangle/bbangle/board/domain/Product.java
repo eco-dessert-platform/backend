@@ -164,6 +164,47 @@ public class Product extends SoftDeleteBaseEntity {
         }
     }
 
+    public void update(
+        String title,
+        int plusPriceWithBoardPrice,
+        String category,
+        int stock,
+        boolean glutenFreeTag,
+        boolean highProteinTag,
+        boolean sugarFreeTag,
+        boolean veganTag,
+        boolean ketogenicTag,
+        boolean monday,
+        boolean tuesday,
+        boolean wednesday,
+        boolean thursday,
+        boolean friday,
+        boolean saturday,
+        boolean sunday,
+        Nutrition nutrition
+    ) {
+        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
+
+        this.title = title;
+        this.price = plusPriceWithBoardPrice;
+        this.category = Category.from(category);
+        this.stock = stock;
+        this.soldout = stock == 0;
+        this.glutenFreeTag = glutenFreeTag;
+        this.highProteinTag = highProteinTag;
+        this.sugarFreeTag = sugarFreeTag;
+        this.veganTag = veganTag;
+        this.ketogenicTag = ketogenicTag;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
+        this.nutrition = nutrition;
+    }
+
     // True인 태그 스트링 리스트로 만들어 반환
     public List<String> getTags() {
         return Stream.of(
