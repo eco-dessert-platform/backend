@@ -28,6 +28,15 @@ public class SellerOrderCommand {
     }
 
     @Builder
+    public record ShipmentModifyCommand(
+        Long orderId,
+        List<Long> orderItemIds,
+        String courierName,
+        String trackingNumber,
+        Long sellerId
+     ) {
+    }
+    @Builder
     public record OrderSearchCommand(
         Long sellerId,
         OrderDeliveryStatus orderDeliveryStatus,

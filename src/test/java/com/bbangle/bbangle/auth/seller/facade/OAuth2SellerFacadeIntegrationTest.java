@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
@@ -182,7 +182,7 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // given
         String code = "oAuthCode";
-        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+        OAuth2DTO.InfoDTO sellerInfo = OAuth2DTO.InfoDTO.builder()
             .id(1L)
             .role(Role.ROLE_SELLER)
             .status(CertificationStatus.NEW)
@@ -199,7 +199,7 @@ class OAuth2SellerFacadeIntegrationTest {
         assertThat(response.accessToken()).isNotBlank();
         assertThat(response.status()).isEqualTo(CertificationStatus.NEW);
 
-        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class))
+        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, code, OAuth2DTO.class))
             .isNull();
 
         RefreshToken saved = refreshTokenRepository

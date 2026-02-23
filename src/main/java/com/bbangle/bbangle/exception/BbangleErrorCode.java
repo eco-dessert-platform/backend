@@ -92,6 +92,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    _NOT_SUPPORTED_YET(-993, "아직 지원하지 않는 기능입니다.", HttpStatus.NOT_IMPLEMENTED),
     _BAD_REQUEST(-994, "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
         HttpStatus.INTERNAL_SERVER_ERROR),
@@ -138,6 +139,7 @@ public enum BbangleErrorCode {
     NOT_SUPPORTED_SERVER(-745, "지원하지 않는 로그인 서버입니다.", BAD_REQUEST),
     MISSING_NAME_NICKNAME(-746, "이름 또는 닉네임이 비공개 상태입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     _UNAUTHORIZED(-747, "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    INVALID_OAUTH_PARAMS(-748, "유효하지 않은 파라미터입니다.", BAD_REQUEST),
 
     // NOTICE Error(761~770)
     TITLE_IS_EMPTY(-761, "제목이 존재하지 않습니다.", BAD_REQUEST),
@@ -158,6 +160,8 @@ public enum BbangleErrorCode {
     ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST),
     RETURN_NOT_ALLOWED(-782, "반품 요청이 불가능한 상태입니다.", BAD_REQUEST),
     EXCHANGE_NOT_ALLOWED(-784, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST);
+    DELIVERY_NOT_FOUND(-782, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
+    DELIVERY_MODIFY_NOT_ALLOWED(-783, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

@@ -70,9 +70,14 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 oauth2:
+  # OAuth2 로그인 인증 후 리다이렉트할 URL 및 도메인을 화이트리스트 방식으로 관리
   redirect:
     success: ${OAUTH2_REDIRECT_SUCCESS}
     error: ${OAUTH2_REDIRECT_ERROR}
+  domain:
+    local: ${LOCAL_DOMAIN}
+    seller: ${SELLER_DOMAIN}
+    customer: ${CUSTOMER_DOMAIN}
 
 jwt:
   issuer: ${JWT_ISSUER}

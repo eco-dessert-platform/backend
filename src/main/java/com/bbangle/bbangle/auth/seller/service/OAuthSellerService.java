@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.auth.seller.service;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
@@ -27,10 +27,10 @@ public class OAuthSellerService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public OAuth2InfoRedisDTO getSellerInfoFromRedis(String code) {
-        OAuth2InfoRedisDTO sellerInfo;
+    public OAuth2DTO.InfoDTO getSellerInfoFromRedis(String code) {
+        OAuth2DTO.InfoDTO sellerInfo;
         try {
-            sellerInfo = redisRepository.getDTOAndDelete(OAUTH_CODE_NAMESPACE, code, OAuth2InfoRedisDTO.class);
+            sellerInfo = redisRepository.getDTOAndDelete(OAUTH_CODE_NAMESPACE, code, OAuth2DTO.InfoDTO.class);
         } catch (Exception e) {
             log.warn("Redis 조회/삭제 실패 : ", e);
             throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);

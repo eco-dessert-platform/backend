@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.auth.domain.RefreshToken;
-import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2InfoRedisDTO;
+import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
@@ -51,7 +51,7 @@ class OAuthSellerServiceIntegrationTest {
     void success_getSellerInfoFromRedis() {
 
         // given
-        OAuth2InfoRedisDTO sellerInfo = OAuth2InfoRedisDTO.builder()
+        OAuth2DTO.InfoDTO sellerInfo = OAuth2DTO.InfoDTO.builder()
             .id(1L)
             .role(Role.ROLE_SELLER)
             .status(CertificationStatus.NEW)
@@ -60,14 +60,14 @@ class OAuthSellerServiceIntegrationTest {
         redisRepository.setFromDTO(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code", sellerInfo, Duration.ofMinutes(5));
 
         // when
-        OAuth2InfoRedisDTO result = service.getSellerInfoFromRedis("code");
+        OAuth2DTO.InfoDTO result = service.getSellerInfoFromRedis("code");
 
         // then
         assertThat(result.id()).isEqualTo(1L);
         assertThat(result.role()).isEqualTo(Role.ROLE_SELLER);
         assertThat(result.status()).isEqualTo(CertificationStatus.NEW);
 
-        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code", OAuth2InfoRedisDTO.class))
+        assertThat(redisRepository.getDTOAndDelete(OAuthSellerService.OAUTH_CODE_NAMESPACE, "code", OAuth2DTO.InfoDTO.class))
             .isNull();
     }
 

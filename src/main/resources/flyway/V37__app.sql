@@ -1,4 +1,4 @@
--- V35__app.sql
+-- V37__app.sql
 -- 1. Orders 테이블
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS seller_id BIGINT NULL AFTER member_id;
 CREATE INDEX IF NOT EXISTS seller_id ON orders (seller_id);
