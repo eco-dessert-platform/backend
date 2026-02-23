@@ -6,13 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.bbangle.bbangle.auth.domain.RefreshToken;
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
-import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
 import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
-import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
@@ -56,9 +54,6 @@ class OAuth2SellerFacadeIntegrationTest {
 
     @Autowired
     EntityManager em;
-
-    @Autowired
-    TokenProvider tokenProvider;
 
     @Test
     @DisplayName("판매자 계정이 없으면 새로 생성한다.")
@@ -218,48 +213,6 @@ class OAuth2SellerFacadeIntegrationTest {
 
         // when & then
         assertThatThrownBy(() -> oAuth2SellerFacade.generateToken(code))
-            .isInstanceOf(BbangleException.class)
-            .satisfies(e -> {
-                BbangleException ex = (BbangleException) e;
-                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode._UNAUTHORIZED);
-            });
-    }
-
-    @Test
-    @DisplayName("Refresh Token이 유효하면 토큰을 재발급한다.")
-    void success_reissueToken() {
-
-        // given
-        Long sellerId = 1L;
-        Role role = Role.ROLE_SELLER;
-        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
-
-        RefreshToken entity = RefreshToken.create(sellerId, role, refreshToken);
-        RefreshToken oldToken = refreshTokenRepository.save(entity);
-
-        // when
-        TokenResponse result = oAuth2SellerFacade.reissueToken(refreshToken);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.accessToken()).isNotNull();
-        assertThat(result.refreshToken()).isNotNull();
-
-        RefreshToken updated = refreshTokenRepository.findByUserIdAndUserRole(sellerId, role).orElseThrow();
-        assertThat(oldToken.getId()).isNotEqualTo(updated.getId());
-    }
-
-    @Test
-    @DisplayName("Refresh Token이 DB에 없으면 예외 발생")
-    void failure_reissueToken_notExist() {
-
-        // given
-        Long sellerId = 1L;
-        Role role = Role.ROLE_SELLER;
-        String refreshToken = tokenProvider.generateToken(sellerId, role, Duration.ofDays(14));
-
-        // when & then
-        assertThatThrownBy(() -> oAuth2SellerFacade.reissueToken(refreshToken))
             .isInstanceOf(BbangleException.class)
             .satisfies(e -> {
                 BbangleException ex = (BbangleException) e;

@@ -1,11 +1,9 @@
 package com.bbangle.bbangle.auth.seller.facade;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
-import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
-import com.bbangle.bbangle.auth.oauth.client.dto.TokenResponse;
+import com.bbangle.bbangle.auth.oauth.client.service.OAuthService;
 import com.bbangle.bbangle.auth.seller.facade.dto.GenerateTokenDTO;
 import com.bbangle.bbangle.auth.seller.service.OAuthSellerService;
-import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
@@ -19,10 +17,8 @@ public class OAuth2SellerFacade {
 
     // OAuth 작업과 관련된 Service 레이어
     private final OAuthSellerService oAuthSellerService;
-
     private final SellerService sellerService;
-
-    private final TokenProvider tokenProvider;
+    private final OAuthService oAuthService;
 
     public Seller login(SellerCreateCommand response) {
         try {
@@ -43,8 +39,8 @@ public class OAuth2SellerFacade {
     public GenerateTokenDTO generateToken(String code) {
 
         OAuth2DTO.InfoDTO sellerInfo = oAuthSellerService.getSellerInfoFromRedis(code);
-        String refreshToken = oAuthSellerService.generateRefreshToken(sellerInfo.id(), sellerInfo.role());
-        String accessToken = oAuthSellerService.generateAccessToken(sellerInfo.id(), sellerInfo.role());
+        String refreshToken = oAuthService.generateRefreshToken(sellerInfo.id(), sellerInfo.role());
+        String accessToken = oAuthService.generateAccessToken(sellerInfo.id(), sellerInfo.role());
 
         return GenerateTokenDTO.of(
             refreshToken,
@@ -52,21 +48,5 @@ public class OAuth2SellerFacade {
             sellerInfo.id(),
             sellerInfo.status()
         );
-    }
-
-    public TokenResponse reissueToken(String refreshToken) {
-
-        TokenClaimsDTO claims = tokenProvider.parseRefreshToken(refreshToken);
-
-        oAuthSellerService.refreshTokenValidate(refreshToken);
-        oAuthSellerService.deleteRefreshToken(refreshToken);
-
-        String newRefreshToken = oAuthSellerService.generateRefreshToken(claims.id(), claims.role());
-        String newAccessToken = oAuthSellerService.generateAccessToken(claims.id(), claims.role());
-
-        return TokenResponse.builder()
-            .refreshToken(newRefreshToken)
-            .accessToken(newAccessToken)
-            .build();
     }
 }
