@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class TokenProvider {
+    public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
     private static final String USER_KEY = "id";
     private static final String ROLE_KEY = "role";
     private final JwtProperties jwtProperties;

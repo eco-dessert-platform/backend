@@ -6,7 +6,6 @@ import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,15 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OAuthService {
 
-    public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
-
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public String generateRefreshToken(Long userId, Role role) {
-        String refreshToken = tokenProvider.generateToken(userId, role, REFRESH_TOKEN_DURATION);
+        String refreshToken = tokenProvider.generateToken(userId, role, TokenProvider.REFRESH_TOKEN_DURATION);
 
         refreshTokenRepository.findByUserIdAndUserRole(userId, role)
             .ifPresentOrElse(
@@ -39,7 +35,7 @@ public class OAuthService {
     }
 
     public String generateAccessToken(Long userId, Role role) {
-        return tokenProvider.generateToken(userId, role, ACCESS_TOKEN_DURATION);
+        return tokenProvider.generateToken(userId, role, TokenProvider.ACCESS_TOKEN_DURATION);
     }
 
     @Transactional(readOnly = true)

@@ -12,6 +12,7 @@ import com.bbangle.bbangle.auth.oauth.client.service.OAuthService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.PublicApiPath;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,7 +55,7 @@ public class OAuthController implements OAuthApi {
 
         TokenResponse dto = oAuthFacade.reissueToken(refreshToken);
         response.setHeader("Authorization", "Bearer " + dto.accessToken());
-        response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken(), Duration.ofDays(14)).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, createCookie(dto.refreshToken(), TokenProvider.REFRESH_TOKEN_DURATION).toString());
 
         return responseService.getSuccessResult();
     }
