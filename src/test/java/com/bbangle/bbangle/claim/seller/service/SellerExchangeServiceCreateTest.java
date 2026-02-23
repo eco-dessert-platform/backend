@@ -7,8 +7,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
-import com.bbangle.bbangle.claim.repository.ReturnRequestRepository;
-import com.bbangle.bbangle.claim.seller.service.model.ReturnCreateCommand;
+import com.bbangle.bbangle.claim.repository.ExchangeRequestRepository;
+import com.bbangle.bbangle.claim.seller.service.model.ExchangeCreateCommand;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
@@ -18,7 +18,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
-import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeCreateResponse;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -31,15 +31,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@DisplayName("[단위 테스트] SellerReturnService - createReturn")
+@DisplayName("[단위 테스트] SellerExchangeService - createExchange")
 @ExtendWith(MockitoExtension.class)
-class SellerReturnServiceCreateTest {
+class SellerExchangeServiceCreateTest {
 
     @InjectMocks
-    private SellerReturnService sut;
+    private SellerExchangeService sut;
 
     @Mock
-    private ReturnRequestRepository returnRequestRepository;
+    private ExchangeRequestRepository exchangeRequestRepository;
 
     @Mock
     private OrderItemHistoryRepository orderItemHistoryRepository;
@@ -53,9 +53,9 @@ class SellerReturnServiceCreateTest {
     @Mock
     private SellerRepository sellerRepository;
 
-    @DisplayName("SHIPPED 상태의 주문상품에 대해 반품 요청이 성공한다.")
+    @DisplayName("SHIPPED 상태의 주문상품에 대해 교환 요청이 성공한다.")
     @Test
-    void givenShippedOrderItem_whenCreateReturn_thenSuccess() {
+    void givenShippedOrderItem_whenCreateExchange_thenSuccess() {
         // given
         Long orderId = 1L;
         Long sellerId = 1L;
@@ -67,7 +67,7 @@ class SellerReturnServiceCreateTest {
         OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED);
         ReflectionTestUtils.setField(orderItem, "id", 10L);
 
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L))
@@ -82,7 +82,7 @@ class SellerReturnServiceCreateTest {
             .willReturn(1L);
 
         // when
-        ReturnCreateResponse result = sut.createReturn(command);
+        ExchangeCreateResponse result = sut.createExchange(command);
 
         // then
         assertThat(result).isNotNull();
@@ -92,15 +92,15 @@ class SellerReturnServiceCreateTest {
         assertThat(result.content().summary().requestedCount()).isEqualTo(1);
         assertThat(result.content().summary().successCount()).isEqualTo(1);
         assertThat(result.content().summary().failCount()).isEqualTo(0);
-        assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REQUESTED);
+        assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_REQUEST);
 
-        then(returnRequestRepository).should(times(1)).saveAll(anyList());
+        then(exchangeRequestRepository).should(times(1)).saveAll(anyList());
         then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
     }
 
-    @DisplayName("PURCHASE_CONFIRMED 상태의 주문상품에 대해 반품 요청이 성공한다.")
+    @DisplayName("PURCHASE_CONFIRMED 상태의 주문상품에 대해 교환 요청이 성공한다.")
     @Test
-    void givenPurchaseConfirmedOrderItem_whenCreateReturn_thenSuccess() {
+    void givenPurchaseConfirmedOrderItem_whenCreateExchange_thenSuccess() {
         // given
         Long orderId = 1L;
         Long sellerId = 1L;
@@ -112,11 +112,11 @@ class SellerReturnServiceCreateTest {
         OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
         ReflectionTestUtils.setField(orderItem, "id", 10L);
 
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L))
-            .reason("단순 변심")
+            .reason("사이즈 변경")
             .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
@@ -127,21 +127,21 @@ class SellerReturnServiceCreateTest {
             .willReturn(1L);
 
         // when
-        ReturnCreateResponse result = sut.createReturn(command);
+        ExchangeCreateResponse result = sut.createExchange(command);
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.content().successOrderItemIds()).containsExactly(10L);
         assertThat(result.content().failedOrderItemIds()).isEmpty();
-        assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REQUESTED);
+        assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_REQUEST);
 
-        then(returnRequestRepository).should(times(1)).saveAll(anyList());
+        then(exchangeRequestRepository).should(times(1)).saveAll(anyList());
         then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
     }
 
-    @DisplayName("혼합 상태(SHIPPED + ORDER_CONFIRMED)에서 SHIPPED만 반품 성공하고, ORDER_CONFIRMED는 실패한다.")
+    @DisplayName("혼합 상태(SHIPPED + ORDER_CONFIRMED)에서 SHIPPED만 교환 성공하고, ORDER_CONFIRMED는 실패한다.")
     @Test
-    void givenMixedStatusOrderItems_whenCreateReturn_thenPartialSuccess() {
+    void givenMixedStatusOrderItems_whenCreateExchange_thenPartialSuccess() {
         // given
         Long orderId = 1L;
         Long sellerId = 1L;
@@ -156,7 +156,7 @@ class SellerReturnServiceCreateTest {
         OrderItem confirmedItem = OrderItemFixture.orderItemWithStatus(OrderStatus.ORDER_CONFIRMED);
         ReflectionTestUtils.setField(confirmedItem, "id", 11L);
 
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L, 11L))
@@ -171,7 +171,7 @@ class SellerReturnServiceCreateTest {
             .willReturn(2L);
 
         // when
-        ReturnCreateResponse result = sut.createReturn(command);
+        ExchangeCreateResponse result = sut.createExchange(command);
 
         // then
         assertThat(result.content().summary().requestedCount()).isEqualTo(2);
@@ -180,16 +180,16 @@ class SellerReturnServiceCreateTest {
         assertThat(result.content().successOrderItemIds()).containsExactly(10L);
         assertThat(result.content().failedOrderItemIds()).containsExactly(11L);
 
-        assertThat(shippedItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REQUESTED);
+        assertThat(shippedItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_REQUEST);
         assertThat(confirmedItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
 
-        then(returnRequestRepository).should(times(1)).saveAll(anyList());
+        then(exchangeRequestRepository).should(times(1)).saveAll(anyList());
         then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
     }
 
     @DisplayName("허용되지 않는 상태(PAYMENT_COMPLETED)의 주문상품은 모두 실패한다.")
     @Test
-    void givenInvalidStatusOrderItems_whenCreateReturn_thenAllFail() {
+    void givenInvalidStatusOrderItems_whenCreateExchange_thenAllFail() {
         // given
         Long orderId = 1L;
         Long sellerId = 1L;
@@ -201,11 +201,11 @@ class SellerReturnServiceCreateTest {
         OrderItem paymentCompletedItem = OrderItemFixture.orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED);
         ReflectionTestUtils.setField(paymentCompletedItem, "id", 10L);
 
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L))
-            .reason("반품 테스트")
+            .reason("교환 테스트")
             .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
@@ -216,7 +216,7 @@ class SellerReturnServiceCreateTest {
             .willReturn(1L);
 
         // when
-        ReturnCreateResponse result = sut.createReturn(command);
+        ExchangeCreateResponse result = sut.createExchange(command);
 
         // then
         assertThat(result.content().summary().successCount()).isEqualTo(0);
@@ -226,27 +226,27 @@ class SellerReturnServiceCreateTest {
 
         assertThat(paymentCompletedItem.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_COMPLETED);
 
-        then(returnRequestRepository).should(times(1)).saveAll(anyList());
+        then(exchangeRequestRepository).should(times(1)).saveAll(anyList());
         then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
     }
 
     @DisplayName("존재하지 않는 orderId이면 ORDER_NOT_FOUND 예외가 발생한다.")
     @Test
-    void givenNonExistingOrderId_whenCreateReturn_thenThrowsException() {
+    void givenNonExistingOrderId_whenCreateExchange_thenThrowsException() {
         // given
         Long orderId = 999L;
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(1L)
             .orderId(orderId)
             .orderItemIds(List.of(1L))
-            .reason("반품 사유")
+            .reason("교환 사유")
             .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.empty());
 
         // when
         BbangleException result = assertThrows(BbangleException.class,
-            () -> sut.createReturn(command));
+            () -> sut.createExchange(command));
 
         // then
         assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
@@ -254,7 +254,7 @@ class SellerReturnServiceCreateTest {
 
     @DisplayName("소유권이 없는 주문상품이면 ORDER_ACCESS_DENIED 예외가 발생한다.")
     @Test
-    void givenNonOwnerSeller_whenCreateReturn_thenThrowsException() {
+    void givenNonOwnerSeller_whenCreateExchange_thenThrowsException() {
         // given
         Long orderId = 1L;
         Long sellerId = 1L;
@@ -266,11 +266,11 @@ class SellerReturnServiceCreateTest {
         OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED);
         ReflectionTestUtils.setField(orderItem, "id", 10L);
 
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(sellerId)
             .orderId(orderId)
             .orderItemIds(List.of(10L))
-            .reason("반품 사유")
+            .reason("교환 사유")
             .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
@@ -282,7 +282,7 @@ class SellerReturnServiceCreateTest {
 
         // when
         BbangleException result = assertThrows(BbangleException.class,
-            () -> sut.createReturn(command));
+            () -> sut.createExchange(command));
 
         // then
         assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
@@ -290,18 +290,18 @@ class SellerReturnServiceCreateTest {
 
     @DisplayName("orderItemIds가 비어있으면 ORDER_ITEM_NOT_FOUND 예외가 발생한다.")
     @Test
-    void givenEmptyOrderItemIds_whenCreateReturn_thenThrowsException() {
+    void givenEmptyOrderItemIds_whenCreateExchange_thenThrowsException() {
         // given
-        ReturnCreateCommand command = ReturnCreateCommand.builder()
+        ExchangeCreateCommand command = ExchangeCreateCommand.builder()
             .sellerId(1L)
             .orderId(1L)
             .orderItemIds(List.of())
-            .reason("반품 사유")
+            .reason("교환 사유")
             .build();
 
         // when
         BbangleException result = assertThrows(BbangleException.class,
-            () -> sut.createReturn(command));
+            () -> sut.createExchange(command));
 
         // then
         assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
