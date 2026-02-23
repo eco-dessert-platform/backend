@@ -159,9 +159,9 @@ public enum BbangleErrorCode {
     // Order Error(781 ~ 800)
     ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST),
     RETURN_NOT_ALLOWED(-782, "반품 요청이 불가능한 상태입니다.", BAD_REQUEST),
-    EXCHANGE_NOT_ALLOWED(-784, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST);
-    DELIVERY_NOT_FOUND(-782, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
-    DELIVERY_MODIFY_NOT_ALLOWED(-783, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST);
+    EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
+    DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
+    DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

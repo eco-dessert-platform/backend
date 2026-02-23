@@ -106,6 +106,10 @@ public class SellerOrderRequest {
                 .orderItemIds(orderItemIds)
                 .reason(reason)
                 .sellerComment(sellerComment)
+                .build();
+        }
+    }
+
     @Schema(description = "판매자 운송장 수정 요청 DTO")
     public record ShipmentModifyRequest(
 

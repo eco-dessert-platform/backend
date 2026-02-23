@@ -87,6 +87,8 @@ public interface SellerOrderApi {
         @AuthenticationPrincipal Long sellerId,
         @PathVariable Long orderId,
         @Valid @RequestBody SellerOrderRequest.ExchangeCreateRequest request
+    );
+
     @Operation(summary = "(판매자) 운송장 수정")
     SingleResult<ShipmentModifyResponse> modifyShipment(
         @AuthenticationPrincipal Long sellerId,

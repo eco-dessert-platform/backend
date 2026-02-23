@@ -173,6 +173,9 @@ public class SellerOrderController implements SellerOrderApi {
         @Valid @RequestBody SellerOrderRequest.ExchangeCreateRequest request
     ) {
         var result = sellerExchangeService.createExchange(request.toCommand(sellerId, orderId));
+        return responseService.getSingleResult(result);
+    }
+
     @PatchMapping("/{orderId}/shipment")
     @Override
     public SingleResult<ShipmentModifyResponse> modifyShipment(
