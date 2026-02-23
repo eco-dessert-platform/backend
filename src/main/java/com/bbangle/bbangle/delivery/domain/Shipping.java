@@ -46,4 +46,9 @@ public class Shipping {
         this.shippedAt = LocalDateTime.now();
     }
 
+    public void modifyShippingInfo(String courierName, String trackingNumber) {
+        this.courierName = courierName;
+        this.trackingNumber = trackingNumber;
+    }
+
 }

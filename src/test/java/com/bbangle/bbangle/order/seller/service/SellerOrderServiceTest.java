@@ -21,8 +21,10 @@ import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentModifyCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -59,87 +61,180 @@ class SellerOrderServiceTest {
     @Mock
     private SellerRepository sellerRepository;
 
-    @DisplayName("주문이 존재하지 않으면 ORDER_NOT_FOUND 예외가 발생한다.")
-    @Test
-    void givenNonExistingOrderId_whenConfirmOrder_thenThrowsException() {
-        // given
-        Long orderId = 999L;
-        OrderConfirmCommand command = OrderConfirmCommand.builder()
-            .sellerId(1L)
-            .orderId(orderId)
-            .orderItemIds(List.of(1L, 2L))
-            .build();
+    @Nested
+    @DisplayName("발주 확인 테스트")
+    class ConfirmOrderTest {
 
-        given(orderRepository.findById(orderId)).willReturn(Optional.empty());
+        @DisplayName("주문이 존재하지 않으면 ORDER_NOT_FOUND 예외가 발생한다.")
+        @Test
+        void givenNonExistingOrderId_whenConfirmOrder_thenThrowsException() {
+            // given
+            Long orderId = 999L;
+            OrderConfirmCommand command = OrderConfirmCommand.builder()
+                .sellerId(1L)
+                .orderId(orderId)
+                .orderItemIds(List.of(1L, 2L))
+                .build();
 
-        // when
-        BbangleException result = assertThrows(BbangleException.class,
-            () -> sut.confirmOrder(command));
+            given(orderRepository.findById(orderId)).willReturn(Optional.empty());
 
-        // then
-        then(orderRepository).should(times(1)).findById(orderId);
-        assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
-    }
+            // when
+            BbangleException result = assertThrows(BbangleException.class,
+                () -> sut.confirmOrder(command));
 
-    @DisplayName("결제 완료(PAYMENT_COMPLETED)인 주문상품만 발주확인(ORDER_CONFIRMED)되며, 성공/실패 결과가 요약 정보로 반환된다.")
-    @Test
-    void givenMixedOrderItems_whenConfirmOrder_thenConfirmOnlyPaymentCompleted() {
-        // given
-        Long orderId = 1L;
-        Long sellerId = 1L;
-        Long storeId = 100L;
+            // then
+            assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
+        }
 
-        Order order = newEntity(Order.class);
-        ReflectionTestUtils.setField(order, "id", orderId);
+        @DisplayName("소유자 검증 실패 시 ORDER_ACCESS_DENIED 예외가 발생한다.")
+        @Test
+        void givenNonOwnerSeller_whenConfirmOrder_thenThrowsException() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
 
-        OrderItem okItem = newEntity(OrderItem.class);
-        ReflectionTestUtils.setField(okItem, "id", 10L);
-        ReflectionTestUtils.setField(okItem, "orderStatus", OrderStatus.PAYMENT_COMPLETED);
-        ReflectionTestUtils.setField(okItem, "order", order);
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
 
-        OrderItem skipItem = newEntity(OrderItem.class);
-        ReflectionTestUtils.setField(skipItem, "id", 11L);
-        ReflectionTestUtils.setField(skipItem, "orderStatus", OrderStatus.ORDER_CONFIRMED);
-        ReflectionTestUtils.setField(skipItem, "order", order);
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
 
-        OrderConfirmCommand command = OrderConfirmCommand.builder()
-            .sellerId(sellerId)
-            .orderId(orderId)
-            .orderItemIds(List.of(10L, 11L))
-            .build();
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
 
-        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-        given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
-        given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
-            .willReturn(2L);
-        given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(10L, 11L)))
-            .willReturn(List.of(okItem, skipItem));
+            OrderItem item1 = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(item1, "id", 1L);
+            OrderItem item2 = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(item2, "id", 2L);
 
-        // when
-        OrderConfirmResponse result = sut.confirmOrder(command);
+            OrderConfirmCommand command = OrderConfirmCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(1L, 2L))
+                .build();
 
-        // then
-        then(orderRepository).should(times(1)).findById(orderId);
-        then(sellerRepository).should(times(1)).findStoreIdBySellerId(sellerId);
-        then(orderItemRepository).should(times(1)).findByOrderIdAndIdIn(orderId, List.of(10L, 11L));
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(1L, 2L)))
+                .willReturn(List.of(item1, item2));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(1L, 2L), storeId))
+                .willReturn(0L);
 
-        assertThat(result).isNotNull();
-        assertThat(result.content().orderId()).isEqualTo(orderId);
-        assertThat(result.content().confirmedOrderItemIds())
-            .asList()
-            .containsExactly(10L);
+            // when
+            BbangleException result = assertThrows(BbangleException.class,
+                () -> sut.confirmOrder(command));
 
-        assertThat(okItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
-        assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
-    }
+            // then
+            assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
+        }
 
-    private <T> T newEntity(Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        @DisplayName("DB에서 조회되지 않는 orderItemId는 failedIds에 포함된다.")
+        @Test
+        void givenNotFoundOrderItems_whenConfirmOrder_thenIncludesInFailedIds() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem foundItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(foundItem, "id", 10L);
+            ReflectionTestUtils.setField(foundItem, "orderStatus", OrderStatus.PAYMENT_COMPLETED);
+
+            OrderConfirmCommand command = OrderConfirmCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 99L))
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(10L, 99L)))
+                .willReturn(List.of(foundItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+
+            // when
+            OrderConfirmResponse result = sut.confirmOrder(command);
+
+            // then
+            assertThat(result.content().confirmedOrderItemIds())
+                .asList()
+                .containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds())
+                .asList()
+                .containsExactly(99L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+        }
+
+        @DisplayName("PAYMENT_COMPLETED인 주문상품만 발주확인되고, 나머지는 실패로 분류된다.")
+        @Test
+        void givenMixedOrderItems_whenConfirmOrder_thenPartialSuccess() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem okItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(okItem, "id", 10L);
+            ReflectionTestUtils.setField(okItem, "orderStatus", OrderStatus.PAYMENT_COMPLETED);
+
+            OrderItem skipItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(skipItem, "id", 11L);
+            ReflectionTestUtils.setField(skipItem, "orderStatus", OrderStatus.ORDER_CONFIRMED);
+
+            OrderConfirmCommand command = OrderConfirmCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 11L))
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
+                .willReturn(2L);
+            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(10L, 11L)))
+                .willReturn(List.of(okItem, skipItem));
+
+            // when
+            OrderConfirmResponse result = sut.confirmOrder(command);
+
+            // then
+            assertThat(result.content().confirmedOrderItemIds())
+                .asList()
+                .containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds())
+                .asList()
+                .containsExactly(11L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+
+            assertThat(okItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
+            assertThat(skipItem.getOrderStatus()).isEqualTo(OrderStatus.ORDER_CONFIRMED);
         }
     }
 
@@ -167,82 +262,7 @@ class SellerOrderServiceTest {
             assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
         }
 
-        @DisplayName("orderItemIds가 비어있으면 ORDER_ITEM_NOT_FOUND 예외가 발생한다.")
-        @Test
-        void givenEmptyOrderItemIds_whenRegisterShipment_thenThrowsException() {
-            // given
-            ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                .sellerId(1L)
-                .orderId(1L)
-                .orderItemIds(List.of())
-                .courierName("CJ대한통운")
-                .trackingNumber("1234567890")
-                .build();
-
-            // when
-            BbangleException result = assertThrows(BbangleException.class,
-                () -> sut.registerShipment(command));
-
-            // then
-            assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
-        }
-
-        @DisplayName("주문이 존재하지 않으면 ORDER_NOT_FOUND 예외가 발생한다.")
-        @Test
-        void givenNonExistingOrderId_whenRegisterShipment_thenThrowsException() {
-            // given
-            Long orderId = 999L;
-            ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                .sellerId(1L)
-                .orderId(orderId)
-                .orderItemIds(List.of(1L, 2L))
-                .courierName("CJ대한통운")
-                .trackingNumber("1234567890")
-                .build();
-
-            given(orderRepository.findById(orderId)).willReturn(Optional.empty());
-
-            // when
-            BbangleException result = assertThrows(BbangleException.class,
-                () -> sut.registerShipment(command));
-
-            // then
-            then(orderRepository).should(times(1)).findById(orderId);
-            assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
-        }
-
-        @DisplayName("판매자가 존재하지 않으면 SELLER_NOT_FOUND 예외가 발생한다.")
-        @Test
-        void givenNonExistingSeller_whenRegisterShipment_thenThrowsException() {
-            // given
-            Long orderId = 1L;
-            Long sellerId = 999L;
-
-            Order order = newEntity(Order.class);
-            ReflectionTestUtils.setField(order, "id", orderId);
-
-            ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
-                .sellerId(sellerId)
-                .orderId(orderId)
-                .orderItemIds(List.of(1L, 2L))
-                .courierName("CJ대한통운")
-                .trackingNumber("1234567890")
-                .build();
-
-            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.empty());
-
-            // when
-            BbangleException result = assertThrows(BbangleException.class,
-                () -> sut.registerShipment(command));
-
-            // then
-            then(orderRepository).should(times(1)).findById(orderId);
-            then(sellerRepository).should(times(1)).findByIdWithStore(sellerId);
-            assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.SELLER_NOT_FOUND);
-        }
-
-        @DisplayName("판매자가 해당 주문상품의 소유자가 아니면 ORDER_ACCESS_DENIED 예외가 발생한다.")
+        @DisplayName("소유자 검증 실패 시 ORDER_ACCESS_DENIED 예외가 발생한다.")
         @Test
         void givenNonOwnerSeller_whenRegisterShipment_thenThrowsException() {
             // given
@@ -260,6 +280,11 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
 
+            OrderItem item1 = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(item1, "id", 1L);
+            OrderItem item2 = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(item2, "id", 2L);
+
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                 .sellerId(sellerId)
                 .orderId(orderId)
@@ -270,6 +295,8 @@ class SellerOrderServiceTest {
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(1L, 2L)))
+                .willReturn(List.of(item1, item2));
             given(orderItemRepository.countOwnedOrderItems(orderId, List.of(1L, 2L), storeId))
                 .willReturn(0L);
 
@@ -278,11 +305,69 @@ class SellerOrderServiceTest {
                 () -> sut.registerShipment(command));
 
             // then
-            then(orderRepository).should(times(1)).findById(orderId);
-            then(sellerRepository).should(times(1)).findByIdWithStore(sellerId);
-            then(orderItemRepository).should(times(1))
-                .countOwnedOrderItems(orderId, List.of(1L, 2L), storeId);
             assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
+        }
+
+        @DisplayName("DB에서 조회되지 않는 orderItemId는 failedIds에 포함된다.")
+        @Test
+        void givenNotFoundOrderItems_whenRegisterShipment_thenIncludesInFailedIds() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+            String courierName = "CJ대한통운";
+            String trackingNumber = "1234567890";
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order, "buyerName", "홍길동");
+            ReflectionTestUtils.setField(order, "buyerPhone", "01098765432");
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+            ReflectionTestUtils.setField(store, "name", "테스트 스토어");
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem foundItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(foundItem, "id", 10L);
+            ReflectionTestUtils.setField(foundItem, "order", order);
+            ReflectionTestUtils.setField(foundItem, "orderStatus", OrderStatus.ORDER_CONFIRMED);
+
+            ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 99L))
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 99L)))
+                .willReturn(List.of(foundItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L, 99L)))
+                .willReturn(List.of());
+            given(orderDeliveryRepository.save(any(OrderDelivery.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            ShipmentRegisterResponse result = sut.registerShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds())
+                .asList()
+                .containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds())
+                .asList()
+                .containsExactly(99L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
         }
 
         @DisplayName("여러 주문상품에 대해 운송장 정보가 정상적으로 등록된다.")
@@ -300,6 +385,17 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(order, "buyerName", "홍길동");
             ReflectionTestUtils.setField(order, "buyerPhone", "01098765432");
 
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+            ReflectionTestUtils.setField(store, "name", "테스트 스토어");
+            ReflectionTestUtils.setField(store, "phoneNumberVO", PhoneNumberVO.of("01012345678", null));
+            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
+            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
             OrderItem orderItem1 = newEntity(OrderItem.class);
             ReflectionTestUtils.setField(orderItem1, "id", 10L);
             ReflectionTestUtils.setField(orderItem1, "order", order);
@@ -309,19 +405,6 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(orderItem2, "id", 11L);
             ReflectionTestUtils.setField(orderItem2, "order", order);
             ReflectionTestUtils.setField(orderItem2, "orderStatus", OrderStatus.ORDER_CONFIRMED);
-
-            Store store = newEntity(Store.class);
-            ReflectionTestUtils.setField(store, "id", storeId);
-            ReflectionTestUtils.setField(store, "name", "테스트 스토어");
-
-            PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
-            ReflectionTestUtils.setField(store, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
-
-            Seller seller = newEntity(Seller.class);
-            ReflectionTestUtils.setField(seller, "id", sellerId);
-            ReflectionTestUtils.setField(seller, "store", store);
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                 .sellerId(sellerId)
@@ -346,32 +429,27 @@ class SellerOrderServiceTest {
             ShipmentRegisterResponse result = sut.registerShipment(command);
 
             // then
-            then(orderRepository).should(times(1)).findById(orderId);
-            then(sellerRepository).should(times(1)).findByIdWithStore(sellerId);
-            then(orderItemRepository).should(times(1))
-                .countOwnedOrderItems(orderId, List.of(10L, 11L), storeId);
-            then(orderItemRepository).should(times(1))
-                .findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L));
-            then(orderDeliveryRepository).should(times(1)).findByOrderItemIdIn(List.of(10L, 11L));
             then(orderDeliveryRepository).should(times(2)).save(any(OrderDelivery.class));
 
-            assertThat(result).isNotNull();
-            assertThat(result.orderId()).isEqualTo(orderId);
-            assertThat(result.successOrderItemIds())
+            assertThat(result.content().orderId()).isEqualTo(orderId);
+            assertThat(result.content().successOrderItemIds())
                 .asList()
                 .containsExactlyInAnyOrder(10L, 11L);
-            assertThat(result.failedOrderItemIds())
+            assertThat(result.content().failedOrderItemIds())
                 .asList()
                 .isEmpty();
-            assertThat(result.courierName()).isEqualTo(courierName);
-            assertThat(result.trackingNumber()).isEqualTo(trackingNumber);
-            assertThat(result.shippedAt()).isNotNull();
+            assertThat(result.content().courierName()).isEqualTo(courierName);
+            assertThat(result.content().trackingNumber()).isEqualTo(trackingNumber);
+            assertThat(result.content().shippedAt()).isNotNull();
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(2);
+            assertThat(result.content().summary().failCount()).isEqualTo(0);
 
             assertThat(orderItem1.getOrderStatus()).isEqualTo(OrderStatus.SHIPPED);
             assertThat(orderItem2.getOrderStatus()).isEqualTo(OrderStatus.SHIPPED);
         }
 
-        @DisplayName("기존 OrderDelivery가 있으면 해당 레코드를 업데이트한다.")
+        @DisplayName("기존 OrderDelivery가 있으면 새로 생성하지 않고 업데이트한다.")
         @Test
         void givenExistingOrderDelivery_whenRegisterShipment_thenUpdatesExisting() {
             // given
@@ -383,31 +461,26 @@ class SellerOrderServiceTest {
 
             Order order = newEntity(Order.class);
             ReflectionTestUtils.setField(order, "id", orderId);
-            ReflectionTestUtils.setField(order, "buyerName", "홍길동");
-            ReflectionTestUtils.setField(order, "buyerPhone", "01098765432");
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
 
             OrderItem orderItem1 = newEntity(OrderItem.class);
             ReflectionTestUtils.setField(orderItem1, "id", 10L);
             ReflectionTestUtils.setField(orderItem1, "order", order);
             ReflectionTestUtils.setField(orderItem1, "orderStatus", OrderStatus.ORDER_CONFIRMED);
 
-            Store store = newEntity(Store.class);
-            ReflectionTestUtils.setField(store, "id", storeId);
-            ReflectionTestUtils.setField(store, "name", "테스트 스토어");
-
-            Seller seller = newEntity(Seller.class);
-            ReflectionTestUtils.setField(seller, "id", sellerId);
-            ReflectionTestUtils.setField(seller, "store", store);
-
-            Shipping shipping = Shipping.empty();
             OrderDelivery existingDelivery = OrderDelivery.create(
                 Sender.of("테스트 스토어", "01012345678", "서울시", "강남구", "12345"),
                 Receiver.of("홍길동", "01098765432", null, null, null, null),
-                shipping,
+                Shipping.empty(),
                 OrderDeliveryStatus.PREPARING,
                 orderItem1
             );
-            ReflectionTestUtils.setField(existingDelivery, "id", 1L);
 
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                 .sellerId(sellerId)
@@ -432,23 +505,17 @@ class SellerOrderServiceTest {
             // then
             then(orderDeliveryRepository).should(times(0)).save(any(OrderDelivery.class));
 
-            assertThat(result).isNotNull();
-            assertThat(result.orderId()).isEqualTo(orderId);
-            assertThat(result.successOrderItemIds())
+            assertThat(result.content().successOrderItemIds())
                 .asList()
                 .containsExactly(10L);
-            assertThat(result.failedOrderItemIds())
-                .asList()
-                .isEmpty();
-
             assertThat(existingDelivery.getStatus()).isEqualTo(OrderDeliveryStatus.DELIVERING);
             assertThat(existingDelivery.getShipping().getCourierName()).isEqualTo(courierName);
             assertThat(existingDelivery.getShipping().getTrackingNumber()).isEqualTo(trackingNumber);
         }
 
-        @DisplayName("중복된 orderItemIds는 distinct 처리된다.")
+        @DisplayName("BbangleException 발생 시 해당 건만 실패, 나머지는 성공으로 분류된다.")
         @Test
-        void givenDuplicateOrderItemIds_whenRegisterShipment_thenDeduplicates() {
+        void givenMixedStatusOrderItems_whenRegisterShipment_thenPartialSuccess() {
             // given
             Long orderId = 1L;
             Long sellerId = 1L;
@@ -461,39 +528,39 @@ class SellerOrderServiceTest {
             ReflectionTestUtils.setField(order, "buyerName", "홍길동");
             ReflectionTestUtils.setField(order, "buyerPhone", "01098765432");
 
-            OrderItem orderItem1 = newEntity(OrderItem.class);
-            ReflectionTestUtils.setField(orderItem1, "id", 10L);
-            ReflectionTestUtils.setField(orderItem1, "order", order);
-            ReflectionTestUtils.setField(orderItem1, "orderStatus", OrderStatus.ORDER_CONFIRMED);
-
             Store store = newEntity(Store.class);
             ReflectionTestUtils.setField(store, "id", storeId);
             ReflectionTestUtils.setField(store, "name", "테스트 스토어");
-
-            PhoneNumberVO phoneNumberVO = PhoneNumberVO.of("01012345678", null);
-            ReflectionTestUtils.setField(store, "phoneNumberVO", phoneNumberVO);
-            ReflectionTestUtils.setField(store, "originAddressLine", "서울시 강남구");
-            ReflectionTestUtils.setField(store, "originAddressDetail", "테헤란로 123");
 
             Seller seller = newEntity(Seller.class);
             ReflectionTestUtils.setField(seller, "id", sellerId);
             ReflectionTestUtils.setField(seller, "store", store);
 
+            OrderItem successItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(successItem, "id", 10L);
+            ReflectionTestUtils.setField(successItem, "order", order);
+            ReflectionTestUtils.setField(successItem, "orderStatus", OrderStatus.ORDER_CONFIRMED);
+
+            OrderItem failItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(failItem, "id", 11L);
+            ReflectionTestUtils.setField(failItem, "order", order);
+            ReflectionTestUtils.setField(failItem, "orderStatus", OrderStatus.PAYMENT_COMPLETED);
+
             ShipmentRegisterCommand command = ShipmentRegisterCommand.builder()
                 .sellerId(sellerId)
                 .orderId(orderId)
-                .orderItemIds(List.of(10L, 10L, 10L))
+                .orderItemIds(List.of(10L, 11L))
                 .courierName(courierName)
                 .trackingNumber(trackingNumber)
                 .build();
 
             given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
             given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
-            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
-                .willReturn(1L);
-            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
-                .willReturn(List.of(orderItem1));
-            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
+                .willReturn(2L);
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L)))
+                .willReturn(List.of(successItem, failItem));
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L, 11L)))
                 .willReturn(List.of());
             given(orderDeliveryRepository.save(any(OrderDelivery.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
@@ -502,14 +569,338 @@ class SellerOrderServiceTest {
             ShipmentRegisterResponse result = sut.registerShipment(command);
 
             // then
-            then(orderItemRepository).should(times(1))
-                .countOwnedOrderItems(orderId, List.of(10L), storeId);
-            then(orderItemRepository).should(times(1))
-                .findByOrderIdAndIdInWithOrder(orderId, List.of(10L));
-
-            assertThat(result.successOrderItemIds())
+            assertThat(result.content().successOrderItemIds())
                 .asList()
                 .containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds())
+                .asList()
+                .containsExactly(11L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+
+            assertThat(successItem.getOrderStatus()).isEqualTo(OrderStatus.SHIPPED);
+            assertThat(failItem.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_COMPLETED);
+        }
+    }
+
+    @Nested
+    @DisplayName("운송장 수정 테스트")
+    class ModifyShipmentTest {
+
+        @DisplayName("배송정보가 없는 주문상품은 DELIVERY_NOT_FOUND로 실패 처리된다.")
+        @Test
+        void givenNoDelivery_whenModifyShipment_thenFailsWithDeliveryNotFound() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem orderItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(orderItem, "id", 10L);
+            ReflectionTestUtils.setField(orderItem, "order", order);
+
+            ShipmentModifyCommand command = ShipmentModifyCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L))
+                .courierName("한진택배")
+                .trackingNumber("9999999999")
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
+                .willReturn(List.of(orderItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
+                .willReturn(List.of());
+
+            // when
+            ShipmentModifyResponse result = sut.modifyShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds()).asList().isEmpty();
+            assertThat(result.content().failedOrderItemIds()).asList().containsExactly(10L);
+            assertThat(result.content().summary().successCount()).isEqualTo(0);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+            assertThat(result.content().courierName()).isNull();
+            assertThat(result.content().trackingNumber()).isNull();
+        }
+
+        @DisplayName("PREPARING 상태의 배송정보는 운송장 수정이 성공한다.")
+        @Test
+        void givenPreparingDelivery_whenModifyShipment_thenSuccess() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+            String newCourier = "한진택배";
+            String newTracking = "9999999999";
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem orderItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(orderItem, "id", 10L);
+            ReflectionTestUtils.setField(orderItem, "order", order);
+
+            OrderDelivery delivery = OrderDelivery.create(
+                Sender.of("테스트 스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                Shipping.of("CJ대한통운", "1234567890"),
+                OrderDeliveryStatus.PREPARING,
+                orderItem
+            );
+
+            ShipmentModifyCommand command = ShipmentModifyCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L))
+                .courierName(newCourier)
+                .trackingNumber(newTracking)
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
+                .willReturn(List.of(orderItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
+                .willReturn(List.of(delivery));
+
+            // when
+            ShipmentModifyResponse result = sut.modifyShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds()).asList().containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds()).asList().isEmpty();
+            assertThat(result.content().courierName()).isEqualTo(newCourier);
+            assertThat(result.content().trackingNumber()).isEqualTo(newTracking);
+            assertThat(delivery.getShipping().getCourierName()).isEqualTo(newCourier);
+            assertThat(delivery.getShipping().getTrackingNumber()).isEqualTo(newTracking);
+            assertThat(delivery.getShipping().getShippedAt()).isNotNull();
+        }
+
+        @DisplayName("DELIVERING 상태의 배송정보는 DELIVERY_MODIFY_NOT_ALLOWED로 실패 처리된다.")
+        @Test
+        void givenDeliveringDelivery_whenModifyShipment_thenFails() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem orderItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(orderItem, "id", 10L);
+            ReflectionTestUtils.setField(orderItem, "order", order);
+
+            OrderDelivery delivery = OrderDelivery.create(
+                Sender.of("테스트 스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                Shipping.of("CJ대한통운", "1234567890"),
+                OrderDeliveryStatus.DELIVERING,
+                orderItem
+            );
+
+            ShipmentModifyCommand command = ShipmentModifyCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L))
+                .courierName("한진택배")
+                .trackingNumber("9999999999")
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L)))
+                .willReturn(List.of(orderItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
+                .willReturn(List.of(delivery));
+
+            // when
+            ShipmentModifyResponse result = sut.modifyShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds()).asList().isEmpty();
+            assertThat(result.content().failedOrderItemIds()).asList().containsExactly(10L);
+            assertThat(delivery.getShipping().getCourierName()).isEqualTo("CJ대한통운");
+            assertThat(delivery.getShipping().getTrackingNumber()).isEqualTo("1234567890");
+        }
+
+        @DisplayName("수정 가능/불가능 배송정보가 혼재되면 부분 성공으로 분류된다.")
+        @Test
+        void givenMixedDeliveryStatuses_whenModifyShipment_thenPartialSuccess() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+            String newCourier = "한진택배";
+            String newTracking = "9999999999";
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem successItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(successItem, "id", 10L);
+            ReflectionTestUtils.setField(successItem, "order", order);
+
+            OrderItem failItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(failItem, "id", 11L);
+            ReflectionTestUtils.setField(failItem, "order", order);
+
+            OrderDelivery preparingDelivery = OrderDelivery.create(
+                Sender.of("스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                Shipping.of("CJ대한통운", "1111111111"),
+                OrderDeliveryStatus.PREPARING,
+                successItem
+            );
+
+            OrderDelivery deliveringDelivery = OrderDelivery.create(
+                Sender.of("스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                Shipping.of("CJ대한통운", "2222222222"),
+                OrderDeliveryStatus.DELIVERING,
+                failItem
+            );
+
+            ShipmentModifyCommand command = ShipmentModifyCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 11L))
+                .courierName(newCourier)
+                .trackingNumber(newTracking)
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 11L)))
+                .willReturn(List.of(successItem, failItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L, 11L), storeId))
+                .willReturn(2L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L, 11L)))
+                .willReturn(List.of(preparingDelivery, deliveringDelivery));
+
+            // when
+            ShipmentModifyResponse result = sut.modifyShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds()).asList().containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds()).asList().containsExactly(11L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+            assertThat(result.content().courierName()).isEqualTo(newCourier);
+            assertThat(result.content().trackingNumber()).isEqualTo(newTracking);
+
+            assertThat(preparingDelivery.getShipping().getCourierName()).isEqualTo(newCourier);
+            assertThat(deliveringDelivery.getShipping().getCourierName()).isEqualTo("CJ대한통운");
+        }
+
+        @DisplayName("DB에서 조회되지 않는 orderItemId는 failedIds에 포함된다.")
+        @Test
+        void givenNotFoundOrderItems_whenModifyShipment_thenIncludesInFailedIds() {
+            // given
+            Long orderId = 1L;
+            Long sellerId = 1L;
+            Long storeId = 100L;
+
+            Order order = newEntity(Order.class);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            Store store = newEntity(Store.class);
+            ReflectionTestUtils.setField(store, "id", storeId);
+
+            Seller seller = newEntity(Seller.class);
+            ReflectionTestUtils.setField(seller, "id", sellerId);
+            ReflectionTestUtils.setField(seller, "store", store);
+
+            OrderItem foundItem = newEntity(OrderItem.class);
+            ReflectionTestUtils.setField(foundItem, "id", 10L);
+            ReflectionTestUtils.setField(foundItem, "order", order);
+
+            OrderDelivery delivery = OrderDelivery.create(
+                Sender.of("스토어", "01012345678", "서울시", "강남구", "12345"),
+                Receiver.of("홍길동", "01098765432", null, null, null, null),
+                Shipping.of("CJ대한통운", "1234567890"),
+                OrderDeliveryStatus.PREPARING,
+                foundItem
+            );
+
+            ShipmentModifyCommand command = ShipmentModifyCommand.builder()
+                .sellerId(sellerId)
+                .orderId(orderId)
+                .orderItemIds(List.of(10L, 99L))
+                .courierName("한진택배")
+                .trackingNumber("9999999999")
+                .build();
+
+            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(sellerRepository.findByIdWithStore(sellerId)).willReturn(Optional.of(seller));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(10L, 99L)))
+                .willReturn(List.of(foundItem));
+            given(orderItemRepository.countOwnedOrderItems(orderId, List.of(10L), storeId))
+                .willReturn(1L);
+            given(orderDeliveryRepository.findByOrderItemIdIn(List.of(10L)))
+                .willReturn(List.of(delivery));
+
+            // when
+            ShipmentModifyResponse result = sut.modifyShipment(command);
+
+            // then
+            assertThat(result.content().successOrderItemIds()).asList().containsExactly(10L);
+            assertThat(result.content().failedOrderItemIds()).asList().containsExactly(99L);
+            assertThat(result.content().summary().requestedCount()).isEqualTo(2);
+            assertThat(result.content().summary().successCount()).isEqualTo(1);
+            assertThat(result.content().summary().failCount()).isEqualTo(1);
+        }
+    }
+
+    private <T> T newEntity(Class<T> clazz) {
+        try {
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

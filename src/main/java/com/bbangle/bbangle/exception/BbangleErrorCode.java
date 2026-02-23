@@ -157,7 +157,9 @@ public enum BbangleErrorCode {
     CLAIM_INVALID_STATUS(-773, "이미 처리된 Claim 입니다", BAD_REQUEST),
 
     // Order Error(781 ~ 800)
-    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST);
+    ORDER_INVALID_STATUS(-781, "요청하신 order의 상태로 변경할 수 없습니다", BAD_REQUEST),
+    DELIVERY_NOT_FOUND(-782, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
+    DELIVERY_MODIFY_NOT_ALLOWED(-783, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;
