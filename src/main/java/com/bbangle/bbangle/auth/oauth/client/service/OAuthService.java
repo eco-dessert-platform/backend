@@ -27,17 +27,13 @@ public class OAuthService {
     public String generateRefreshToken(Long userId, Role role) {
         String refreshToken = tokenProvider.generateToken(userId, role, REFRESH_TOKEN_DURATION);
 
-        RefreshToken token = refreshTokenRepository
-            .findByUserIdAndUserRole(userId, role)
-            .orElseGet(() -> RefreshToken.create(
-                userId,
-                role,
-                refreshToken
-            ));
-
-        token.update(refreshToken);
-
-        refreshTokenRepository.save(token);
+        refreshTokenRepository.findByUserIdAndUserRole(userId, role)
+            .ifPresentOrElse(
+                existing -> existing.update(refreshToken),
+                () -> refreshTokenRepository.save(
+                    RefreshToken.create(userId, role, refreshToken)
+                )
+            );
 
         return refreshToken;
     }

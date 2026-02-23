@@ -11,6 +11,7 @@ import com.bbangle.bbangle.auth.oauth.client.facade.OAuthFacade;
 import com.bbangle.bbangle.auth.oauth.client.service.OAuthService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.PublicApiPath;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/oauth")
+@RequestMapping("")
 public class OAuthController implements OAuthApi {
 
     private final ResponseService responseService;
@@ -35,7 +36,7 @@ public class OAuthController implements OAuthApi {
     private final OAuthService oAuthService;
 
     @Override
-    @GetMapping("/authorization/{oauthServerType}")
+    @GetMapping(PublicApiPath.OAUTH_PREFIX + "/{oauthServerType}")
     public void login(
         @PathVariable OauthServerType oauthServerType,
         UserType userType,
@@ -43,7 +44,7 @@ public class OAuthController implements OAuthApi {
     ) {}
 
     @Override
-    @PostMapping("/reissue")
+    @PostMapping(PublicApiPath.AUTH_PREFIX + "/reissue")
     public CommonResult reissueToken(
         @CookieValue(value = "refreshToken", required = false)
         String refreshToken,
@@ -59,14 +60,14 @@ public class OAuthController implements OAuthApi {
     }
 
     @Override
-    @DeleteMapping("/logout")
+    @DeleteMapping(PublicApiPath.AUTH_PREFIX + "/logout")
     public CommonResult logout(
         @CookieValue(value = "refreshToken", required = false)
         String refreshToken,
         HttpServletResponse response
     ) {
         if (refreshToken != null) oAuthService.deleteRefreshToken(refreshToken);
-        response.addHeader(HttpHeaders.SET_COOKIE, createCookie("", Duration.ofMillis(1)).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, createCookie("", Duration.ZERO).toString());
 
         return responseService.getSuccessResult();
     }

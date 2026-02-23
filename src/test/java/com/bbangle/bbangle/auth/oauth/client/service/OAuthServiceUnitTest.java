@@ -74,7 +74,6 @@ class OAuthServiceUnitTest {
 
             // then
             assertThat(token).isEqualTo("newToken");
-            verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
     }
 
@@ -108,7 +107,7 @@ class OAuthServiceUnitTest {
             // given
             String refreshToken = "validRefreshToken";
             RefreshToken existing = RefreshToken.create(1L, Role.ROLE_SELLER, "refreshToken");
-            given(refreshTokenRepository.findByRefreshToken(any())).willReturn(Optional.of(existing));
+            given(refreshTokenRepository.findByRefreshToken(refreshToken)).willReturn(Optional.of(existing));
 
             // when & then
             assertDoesNotThrow(() -> service.refreshTokenValidate(refreshToken));

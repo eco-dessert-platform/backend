@@ -2,6 +2,7 @@ package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
+import com.bbangle.bbangle.config.security.PublicApiPath;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.FilterChain;
@@ -47,7 +48,7 @@ public class OAuth2ClientValidationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // OAuth2 로그인 요청일 경우 검증
-        if (uri.contains("/oauth/authorization/")) {
+        if (uri.contains(PublicApiPath.OAUTH_PREFIX)) {
             // 현재 서버의 프로파일이 Prod일 경우 profile 파라미터의 값을 prod로 고정
             // profile 파라미터의 값이 부적절할 경우 prod로 고정
             request = wrapRequestDefaultParams(request);

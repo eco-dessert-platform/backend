@@ -17,6 +17,7 @@ import com.bbangle.bbangle.auth.oauth.client.service.OAuthService;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.JsonDataEncoder;
+import com.bbangle.bbangle.config.security.PublicApiPath;
 import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -74,7 +75,7 @@ class OAuthControllerTest {
         given(facade.reissueToken(refreshToken)).willReturn(tokenResponse);
 
         // when & then
-        mockMvc.perform(post("/api/v1/oauth/reissue")
+        mockMvc.perform(post(PublicApiPath.AUTH_PREFIX + "/reissue")
                 .cookie(CookieFixture.defaultCookie(refreshToken)))
             .andExpect(status().isOk())
             .andExpect(header().string("Authorization", "Bearer newAccessToken"))
@@ -91,10 +92,10 @@ class OAuthControllerTest {
     void failure_reissueToken_notExistCookie() throws Exception {
 
         // when & then
-        mockMvc.perform(post("/api/v1/oauth/reissue"))
+        mockMvc.perform(post(PublicApiPath.AUTH_PREFIX + "/reissue"))
             .andExpect(status().isUnauthorized());
 
-        // 쿠키가 없을 경우 OAuth2SellerFacade는 호출조차 하지 않음
+        // 쿠키가 없을 경우 OAuthFacade는 호출조차 하지 않음
         then(facade).shouldHaveNoInteractions();
     }
 
@@ -109,7 +110,7 @@ class OAuthControllerTest {
             .willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED));
 
         // when & then
-        mockMvc.perform(post("/api/v1/oauth/reissue")
+        mockMvc.perform(post(PublicApiPath.AUTH_PREFIX + "/reissue")
                 .cookie(CookieFixture.defaultCookie(refreshToken)))
             .andExpect(status().isUnauthorized());
     }
@@ -119,7 +120,7 @@ class OAuthControllerTest {
     void logout() throws Exception {
 
         // when & then
-        mockMvc.perform(delete("/api/v1/oauth/logout")
+        mockMvc.perform(delete(PublicApiPath.AUTH_PREFIX + "/logout")
                 .cookie(CookieFixture.defaultCookie()))
             .andExpect(status().isOk())
             .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refreshToken=")))
@@ -127,5 +128,7 @@ class OAuthControllerTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()));
+
+        then(service).should(times(1)).deleteRefreshToken("refreshToken");
     }
 }

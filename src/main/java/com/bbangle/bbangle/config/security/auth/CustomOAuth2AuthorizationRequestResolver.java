@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.config.security.auth;
 
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
+import com.bbangle.bbangle.config.security.PublicApiPath;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -17,7 +18,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         ClientRegistrationRepository clientRegistrationRepository
     ) {
         this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository, "/api/v1/oauth/authorization"
+            clientRegistrationRepository, PublicApiPath.OAUTH_PREFIX
         );
     }
 

@@ -2,6 +2,9 @@ package com.bbangle.bbangle.config.security;
 
 public class PublicApiPath {
 
+    public static final String OAUTH_PREFIX = "/api/v1/oauth/authorization";
+    public static final String AUTH_PREFIX = "/api/v1/auth";
+
     public static final String[] ANY_METHOD = {
         "/api/v1/token",
         AdminApiPath.PREFIX + "/login",
@@ -13,7 +16,8 @@ public class PublicApiPath {
         "/api/v1/stores/**",
         "/api/v1/health/**",
         "/api/v1/push/**",
-        SellerApiPath.PREFIX + "/oauth2/tokens"
+        SellerApiPath.PREFIX + "/oauth2/tokens",
+        PublicApiPath.AUTH_PREFIX + "/**"
     };
 
     public static final String[] GET_ONLY = {
