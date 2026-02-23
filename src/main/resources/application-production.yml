@@ -70,6 +70,10 @@ oauth2:
   redirect:
     success: ${OAUTH2_REDIRECT_SUCCESS}
     error: ${OAUTH2_REDIRECT_ERROR}
+  domain:
+    local: ${LOCAL_DOMAIN}
+    seller: ${SELLER_DOMAIN}
+    customer: ${CUSTOMER_DOMAIN}
 
 logging:
   config: classpath:logback/prod.xml

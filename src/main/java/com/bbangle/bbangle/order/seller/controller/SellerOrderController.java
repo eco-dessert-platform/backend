@@ -15,6 +15,7 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.Or
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeCreateResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import com.bbangle.bbangle.claim.seller.service.SellerExchangeService;
 import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
@@ -29,6 +30,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -171,6 +173,14 @@ public class SellerOrderController implements SellerOrderApi {
         @Valid @RequestBody SellerOrderRequest.ExchangeCreateRequest request
     ) {
         var result = sellerExchangeService.createExchange(request.toCommand(sellerId, orderId));
+    @PatchMapping("/{orderId}/shipment")
+    @Override
+    public SingleResult<ShipmentModifyResponse> modifyShipment(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable Long orderId,
+        @Valid @RequestBody SellerOrderRequest.ShipmentModifyRequest request
+    ) {
+        var result = sellerOrderService.modifyShipment(request.toCommand(sellerId, orderId));
         return responseService.getSingleResult(result);
     }
 

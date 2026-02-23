@@ -4,9 +4,12 @@ import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
 import com.bbangle.bbangle.delivery.domain.Shipping;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
+import java.util.Set;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -71,6 +74,12 @@ public class OrderDelivery extends BaseEntity {
         return new OrderDelivery(sender, receiver, shipping, status, orderItem);
     }
 
+    private static final Set<OrderDeliveryStatus> MODIFIABLE_STATUSES = Set.of(
+        OrderDeliveryStatus.NONE,
+        OrderDeliveryStatus.PREPARING,
+        OrderDeliveryStatus.PICKING_UP
+    );
+
     public void registerShipment(String courierName, String trackingNumber) {
         if (this.shipping == null) {
             this.shipping = Shipping.of(courierName, trackingNumber);
@@ -78,6 +87,13 @@ public class OrderDelivery extends BaseEntity {
             this.shipping.updateShippingInfo(courierName, trackingNumber);
         }
         this.status = OrderDeliveryStatus.DELIVERING;
+    }
+
+    public void modifyShipment(String courierName, String trackingNumber) {
+        if (!MODIFIABLE_STATUSES.contains(this.status)) {
+            throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+        }
+        this.shipping.modifyShippingInfo(courierName, trackingNumber);
     }
 
 }

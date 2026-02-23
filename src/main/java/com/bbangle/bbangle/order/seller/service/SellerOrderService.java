@@ -17,9 +17,12 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderItemListRes
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentContent;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
 import com.bbangle.bbangle.order.seller.controller.model.PaymentInfo;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentModifyCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.payment.domain.Payment;
@@ -31,7 +34,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import java.util.Set;
 import java.util.Objects;
+
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -51,135 +57,160 @@ public class SellerOrderService {
 
     @Transactional
     public OrderConfirmResponse confirmOrder(OrderConfirmCommand command) {
-        if (command.orderItemIds() == null || command.orderItemIds().isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
-        }
-
-        List<Long> uniqueOrderItemIds = command.orderItemIds().stream()
-            .distinct()
-            .toList();
-
+        List<Long> uniqueOrderItemIds = validateAndDeduplicateIds(command.orderItemIds());
         int requestedCount = uniqueOrderItemIds.size();
 
-        Order order = orderRepository.findById(command.orderId())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
-
-        Long storeId = getStoreIdOrThrow(command.sellerId());
-        assertOwnedOrderItems(order.getId(), uniqueOrderItemIds, storeId);
+        Order order = getOrderOrThrow(command.orderId());
+        Seller seller = getSellerWithStoreOrThrow(command.sellerId());
 
         List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdIn(
-            order.getId(),
-            uniqueOrderItemIds
+            order.getId(), uniqueOrderItemIds
         );
+        List<Long> notFoundIds = computeNotFoundIds(uniqueOrderItemIds, orderItems);
+        List<Long> foundIds = orderItems.stream().map(OrderItem::getId).toList();
+        if (!foundIds.isEmpty()) {
+            assertOwnedOrderItems(order.getId(), foundIds, seller.getStore().getId());
+        }
 
-        java.util.Set<Long> foundIds = orderItems.stream()
-            .map(OrderItem::getId)
-            .collect(java.util.stream.Collectors.toSet());
-
-        List<Long> notFoundIds = uniqueOrderItemIds.stream()
-            .filter(id -> !foundIds.contains(id))
-            .toList();
-
-        List<Long> confirmedOrderItemIds = new java.util.ArrayList<>();
-        List<Long> failedOrderItemIds = new java.util.ArrayList<>(notFoundIds);
+        List<Long> confirmedIds = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>(notFoundIds);
 
         for (OrderItem orderItem : orderItems) {
             if (orderItem.confirmOrder()) {
-                confirmedOrderItemIds.add(orderItem.getId());
+                confirmedIds.add(orderItem.getId());
             } else {
-                failedOrderItemIds.add(orderItem.getId());
+                failedIds.add(orderItem.getId());
             }
         }
 
-        int successCount = confirmedOrderItemIds.size();
-        int failCount = failedOrderItemIds.size();
-
-        SellerOrderResponse.Summary summary =
-            SellerOrderResponse.Summary.of(requestedCount, successCount, failCount);
-
-        SellerOrderResponse.Content content =
-            SellerOrderResponse.Content.of(
-                order.getId(),
-                summary,
-                confirmedOrderItemIds,
-                failedOrderItemIds
-            );
-
+        SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(
+            requestedCount, confirmedIds.size(), failedIds.size()
+        );
+        SellerOrderResponse.Content content = SellerOrderResponse.Content.of(
+            order.getId(), summary, confirmedIds, failedIds
+        );
         return OrderConfirmResponse.of(content);
     }
 
     @Transactional
     public ShipmentRegisterResponse registerShipment(ShipmentRegisterCommand command) {
-        if (command.orderItemIds() == null || command.orderItemIds().isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
-        }
+        List<Long> uniqueOrderItemIds = validateAndDeduplicateIds(command.orderItemIds());
+        int requestedCount = uniqueOrderItemIds.size();
 
-        List<Long> uniqueOrderItemIds = command.orderItemIds().stream()
-            .distinct()
-            .toList();
-
-        Order order = orderRepository.findById(command.orderId())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
-
-        Seller seller = sellerRepository.findByIdWithStore(command.sellerId())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
-
-        Long storeId = seller.getStore().getId();
-        assertOwnedOrderItems(order.getId(), uniqueOrderItemIds, storeId);
+        Order order = getOrderOrThrow(command.orderId());
+        Seller seller = getSellerWithStoreOrThrow(command.sellerId());
 
         List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdInWithOrder(
-            order.getId(),
-            uniqueOrderItemIds
+            order.getId(), uniqueOrderItemIds
         );
+        List<Long> notFoundIds = computeNotFoundIds(uniqueOrderItemIds, orderItems);
+        List<Long> foundIds = orderItems.stream().map(OrderItem::getId).toList();
+        if (!foundIds.isEmpty()) {
+            assertOwnedOrderItems(order.getId(), foundIds, seller.getStore().getId());
+        }
+        Map<Long, OrderDelivery> deliveryMap = loadDeliveryMap(uniqueOrderItemIds);
 
-        List<OrderDelivery> existingDeliveries = orderDeliveryRepository.findByOrderItemIdIn(uniqueOrderItemIds);
-        Map<Long, OrderDelivery> deliveryMap = existingDeliveries.stream()
-            .collect(Collectors.toMap(od -> od.getOrderItem().getId(), Function.identity(),
-                (existing, duplicate) -> existing));
-
-        List<Long> successOrderItemIds = new ArrayList<>();
-        List<Long> failedOrderItemIds = new ArrayList<>();
+        List<Long> successIds = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>(notFoundIds);
         LocalDateTime shippedAt = null;
 
         for (OrderItem orderItem : orderItems) {
             try {
-                OrderDelivery orderDelivery = deliveryMap.get(orderItem.getId());
-                if (orderDelivery == null) {
-                    orderDelivery = createOrderDelivery(orderItem, seller);
-                    orderDeliveryRepository.save(orderDelivery);
-                }
-
-                orderDelivery.registerShipment(command.courierName(), command.trackingNumber());
-
+                OrderDelivery delivery = getOrCreateDelivery(deliveryMap, orderItem, seller);
+                delivery.registerShipment(command.courierName(), command.trackingNumber());
                 orderItem.shipOrder();
 
-                successOrderItemIds.add(orderItem.getId());
-                shippedAt = orderDelivery.getShipping().getShippedAt();
+                successIds.add(orderItem.getId());
+                shippedAt = delivery.getShipping().getShippedAt();
             } catch (BbangleException e) {
                 log.warn("운송장 등록 실패 - orderId: {}, orderItemId: {}, sellerId: {}, reason: {}",
                     command.orderId(), orderItem.getId(), command.sellerId(), e.getMessage());
-                failedOrderItemIds.add(orderItem.getId());
+                failedIds.add(orderItem.getId());
             }
         }
 
-        boolean hasSuccess = !successOrderItemIds.isEmpty();
-
-        return ShipmentRegisterResponse.of(
-            order.getId(),
-            successOrderItemIds,
-            failedOrderItemIds,
+        boolean hasSuccess = !successIds.isEmpty();
+        SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(
+            requestedCount, successIds.size(), failedIds.size()
+        );
+        ShipmentContent content = ShipmentContent.of(
+            order.getId(), summary,
+            successIds, failedIds,
             hasSuccess ? command.courierName() : null,
             hasSuccess ? command.trackingNumber() : null,
             shippedAt
         );
+        return ShipmentRegisterResponse.of(content);
     }
 
-    private Long getStoreIdOrThrow(Long sellerId) {
-        Long storeId = sellerRepository.findStoreIdBySellerId(sellerId);
-        if (storeId == null) {
-            throw new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND);
+    @Transactional
+    public ShipmentModifyResponse modifyShipment(ShipmentModifyCommand command) {
+        List<Long> uniqueOrderItemIds = validateAndDeduplicateIds(command.orderItemIds());
+        int requestedCount = uniqueOrderItemIds.size();
+
+        Order order = getOrderOrThrow(command.orderId());
+        Seller seller = getSellerWithStoreOrThrow(command.sellerId());
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdInWithOrder(
+            order.getId(), uniqueOrderItemIds
+        );
+        List<Long> notFoundIds = computeNotFoundIds(uniqueOrderItemIds, orderItems);
+        List<Long> foundIds = orderItems.stream().map(OrderItem::getId).toList();
+        if (!foundIds.isEmpty()) {
+            assertOwnedOrderItems(order.getId(), foundIds, seller.getStore().getId());
         }
-        return storeId;
+        Map<Long, OrderDelivery> deliveryMap = loadDeliveryMap(foundIds);
+
+        List<Long> successIds = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>(notFoundIds);
+        LocalDateTime shippedAt = null;
+
+        for (OrderItem orderItem : orderItems) {
+            try {
+                OrderDelivery delivery = deliveryMap.get(orderItem.getId());
+                if (delivery == null) {
+                    throw new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND);
+                }
+                delivery.modifyShipment(command.courierName(), command.trackingNumber());
+
+                successIds.add(orderItem.getId());
+                shippedAt = delivery.getShipping().getShippedAt();
+            } catch (BbangleException e) {
+                log.warn("운송장 수정 실패 - orderId: {}, orderItemId: {}, sellerId: {}, reason: {}",
+                    command.orderId(), orderItem.getId(), command.sellerId(), e.getMessage());
+                failedIds.add(orderItem.getId());
+            }
+        }
+
+        boolean hasSuccess = !successIds.isEmpty();
+        SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(
+            requestedCount, successIds.size(), failedIds.size()
+        );
+        ShipmentContent content = ShipmentContent.of(
+            order.getId(), summary,
+            successIds, failedIds,
+            hasSuccess ? command.courierName() : null,
+            hasSuccess ? command.trackingNumber() : null,
+            shippedAt
+        );
+        return ShipmentModifyResponse.of(content);
+    }
+
+    private List<Long> validateAndDeduplicateIds(List<Long> orderItemIds) {
+        if (orderItemIds == null || orderItemIds.isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+        }
+        return orderItemIds.stream().distinct().toList();
+    }
+
+    private Order getOrderOrThrow(Long orderId) {
+        return orderRepository.findById(orderId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private Seller getSellerWithStoreOrThrow(Long sellerId) {
+        return sellerRepository.findByIdWithStore(sellerId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
     }
 
     private void assertOwnedOrderItems(Long orderId, List<Long> orderItemIds, Long storeId) {
@@ -187,6 +218,35 @@ public class SellerOrderService {
         if (ownedCount != orderItemIds.size()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
         }
+    }
+
+    private List<Long> computeNotFoundIds(List<Long> requestedIds, List<OrderItem> foundItems) {
+        Set<Long> foundIds = foundItems.stream()
+            .map(OrderItem::getId)
+            .collect(Collectors.toSet());
+        return requestedIds.stream()
+            .filter(id -> !foundIds.contains(id))
+            .toList();
+    }
+
+    private Map<Long, OrderDelivery> loadDeliveryMap(List<Long> orderItemIds) {
+        return orderDeliveryRepository.findByOrderItemIdIn(orderItemIds).stream()
+            .collect(Collectors.toMap(
+                od -> od.getOrderItem().getId(),
+                Function.identity(),
+                (existing, duplicate) -> existing
+            ));
+    }
+
+    private OrderDelivery getOrCreateDelivery(Map<Long, OrderDelivery> deliveryMap,
+                                               OrderItem orderItem, Seller seller) {
+        OrderDelivery delivery = deliveryMap.get(orderItem.getId());
+        if (delivery != null) {
+            return delivery;
+        }
+        OrderDelivery newDelivery = createOrderDelivery(orderItem, seller);
+        orderDeliveryRepository.save(newDelivery);
+        return newDelivery;
     }
 
     private OrderDelivery createOrderDelivery(OrderItem orderItem, Seller seller) {
@@ -210,12 +270,10 @@ public class SellerOrderService {
             null
         );
 
-        Shipping shipping = Shipping.empty();
-
         return OrderDelivery.create(
             sender,
             receiver,
-            shipping,
+            Shipping.empty(),
             OrderDeliveryStatus.PREPARING,
             orderItem
         );

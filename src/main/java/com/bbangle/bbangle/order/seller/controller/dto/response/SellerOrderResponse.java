@@ -30,7 +30,7 @@ public class SellerOrderResponse {
         @Schema(description = "주문 ID")
         Long orderId,
 
-        @Schema(description = "발주 확인 요약 정보")
+        @Schema(description = "처리 요약 정보")
         Summary summary,
 
         @Schema(description = "발주 확인 완료된 주문상품 ID 목록")
@@ -56,16 +56,16 @@ public class SellerOrderResponse {
     }
 
     @Builder
-    @Schema(description = "발주 확인 요약 정보")
+    @Schema(description = "처리 요약 정보")
     public record Summary(
 
         @Schema(description = "요청한 주문상품 수")
         int requestedCount,
 
-        @Schema(description = "발주 확인 성공 수")
+        @Schema(description = "성공 수")
         int successCount,
 
-        @Schema(description = "발주 확인 실패 수")
+        @Schema(description = "실패 수")
         int failCount
 
     ) {
@@ -182,8 +182,26 @@ public class SellerOrderResponse {
     @Schema(description = "판매자 운송장 정보 등록 응답 DTO")
     public record ShipmentRegisterResponse(
 
+        @Schema(description = "운송장 등록 결과 컨텐츠")
+        ShipmentContent content
+
+    ) {
+        public static ShipmentRegisterResponse of(ShipmentContent content) {
+            return ShipmentRegisterResponse.builder()
+                .content(content)
+                .build();
+        }
+    }
+
+    @Builder
+    @Schema(description = "운송장 등록 응답 컨텐츠")
+    public record ShipmentContent(
+
         @Schema(description = "주문 ID")
         Long orderId,
+
+        @Schema(description = "처리 요약 정보")
+        Summary summary,
 
         @Schema(description = "운송장 등록 성공한 주문상품 ID 목록")
         List<Long> successOrderItemIds,
@@ -201,21 +219,38 @@ public class SellerOrderResponse {
         LocalDateTime shippedAt
 
     ) {
-        public static ShipmentRegisterResponse of(
+        public static ShipmentContent of(
             Long orderId,
+            Summary summary,
             List<Long> successOrderItemIds,
             List<Long> failedOrderItemIds,
             String courierName,
             String trackingNumber,
             LocalDateTime shippedAt
         ) {
-            return ShipmentRegisterResponse.builder()
+            return ShipmentContent.builder()
                 .orderId(orderId)
+                .summary(summary)
                 .successOrderItemIds(successOrderItemIds)
                 .failedOrderItemIds(failedOrderItemIds)
                 .courierName(courierName)
                 .trackingNumber(trackingNumber)
                 .shippedAt(shippedAt)
+                .build();
+        }
+    }
+
+    @Builder
+    @Schema(description = "판매자 운송장 수정 응답 DTO")
+    public record ShipmentModifyResponse(
+
+        @Schema(description = "운송장 수정 결과 컨텐츠")
+        ShipmentContent content
+
+    ) {
+        public static ShipmentModifyResponse of(ShipmentContent content) {
+            return ShipmentModifyResponse.builder()
+                .content(content)
                 .build();
         }
     }
