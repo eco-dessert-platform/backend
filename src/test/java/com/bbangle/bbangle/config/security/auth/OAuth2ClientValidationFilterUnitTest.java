@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO;
 import com.bbangle.bbangle.auth.oauth.client.dto.OAuth2DTO.UserType;
+import com.bbangle.bbangle.config.security.PublicApiPath;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.OAuth2Exception;
 import jakarta.servlet.FilterChain;
@@ -68,7 +69,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void redirect_client_not_found() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI(PublicApiPath.OAUTH_PREFIX + "/test");
         request.addHeader("Referer", "test");
 
         given(clientRegistrationRepository.findByRegistrationId("test")).willReturn(null);
@@ -98,7 +99,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void redirect_invalid_oauth_params() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI(PublicApiPath.OAUTH_PREFIX + "/test");
         request.setParameter("user", "INVALID"); // dto.valid() false 유도
         request.addHeader("Referer", "test");
 
@@ -133,7 +134,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void pass_client_exists() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI(PublicApiPath.OAUTH_PREFIX + "/test");
         request.setParameter("user", UserType.CUSTOMER.toString());
 
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
@@ -157,7 +158,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void oauth2_profileParam_default_wrapping() throws Exception {
 
         // given
-        request.setRequestURI("/oauth2/authorization/test");
+        request.setRequestURI(PublicApiPath.OAUTH_PREFIX + "/test");
         request.setParameter("user", UserType.CUSTOMER.toString());
 
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
@@ -185,7 +186,7 @@ class OAuth2ClientValidationFilterUnitTest {
     void pass_non_oauth2_request() throws Exception {
 
         // given
-        request.setRequestURI("/api/test");
+        request.setRequestURI("/api/v1/test");
 
         // when
         filter.doFilter(request, response, filterChain);
