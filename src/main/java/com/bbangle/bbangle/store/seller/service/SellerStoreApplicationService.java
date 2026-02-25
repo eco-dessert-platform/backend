@@ -18,7 +18,7 @@ public class SellerStoreApplicationService {
     private final StoreApplicationRepository storeApplicationRepository;
 
     @Transactional
-    public StoreApplication save(
+    public StoreApplication createStoreApplication(
         StoreApplicationRequest.StoreApplicationCreateRequest request,
         String profileImagePath,
         Seller seller,
