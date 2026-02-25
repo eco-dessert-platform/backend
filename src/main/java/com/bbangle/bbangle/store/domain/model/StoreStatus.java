@@ -4,6 +4,7 @@ import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+// TODO : 제거하기
 @Getter
 @RequiredArgsConstructor
 public enum StoreStatus {

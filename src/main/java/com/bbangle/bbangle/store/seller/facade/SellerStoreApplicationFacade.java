@@ -43,9 +43,7 @@ public class SellerStoreApplicationFacade {
 
         // 판매자 계정 조회 -> 만약 판매자 계정이 [승인 / 대기] 상태일 경우 등록 불가
         Seller seller = sellerService.getSellerById(sellerId);
-        if (!seller.isRegisterAvailable()) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
-        }
+        seller.isRegisterAvailable();
 
         // Request의 StoreId가 null인데 Store 테이블에 해당 이름이 존재할 경우
         if (request.storeId() == null && sellerStoreService.checkStoreName(request.storeName()).isPresent()) {

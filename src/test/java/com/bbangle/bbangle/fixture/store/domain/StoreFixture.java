@@ -6,7 +6,7 @@ import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
 
 public final class StoreFixture {
 
-    public static final String DEFAULT_NAME = "test";
+    public static final String DEFAULT_STORE_NAME = "test";
     public static final String DEFAULT_IDENTIFIER = "12345";
     public static final String DEFAULT_PROFILE = "test.png";
     public static final String DEFAULT_INTRODUCE = "비건 베이커리";
@@ -33,7 +33,7 @@ public final class StoreFixture {
     }
 
     public static Store defaultStore() {
-        return baseBuilder(DEFAULT_NAME);
+        return baseBuilder(DEFAULT_STORE_NAME);
     }
 
     public static Store defaultStore(String name) {

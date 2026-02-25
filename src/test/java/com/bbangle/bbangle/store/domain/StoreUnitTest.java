@@ -6,9 +6,9 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_DETA
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_EMAIL;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_IDENTIFIER;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_INTRODUCE;
-import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,7 +39,7 @@ public class StoreUnitTest {
 
         // given & when
         Store store = Store.createForSeller(
-            DEFAULT_NAME, DEFAULT_PROFILE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE,
             DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE,
             DEFAULT_PHONE, DEFAULT_SUBPHONE,
             DEFAULT_EMAIL,
@@ -48,7 +48,7 @@ public class StoreUnitTest {
 
         // then
         assertThat(store).isNotNull();
-        assertThat(store.getName()).isEqualTo(DEFAULT_NAME);
+        assertThat(store.getName()).isEqualTo(DEFAULT_STORE_NAME);
         assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
         assertThat(store.getIdentifier()).isEqualTo(DEFAULT_IDENTIFIER);
         assertThat(store.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
@@ -66,7 +66,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_phone(String invalidPhone) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE,
             invalidPhone,
             DEFAULT_SUBPHONE, DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )
@@ -80,7 +80,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_sub_phone(String invalidPhone) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE,
             invalidPhone,
             DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )
@@ -94,7 +94,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_email(String invalidEmail) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE, DEFAULT_SUBPHONE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE, DEFAULT_SUBPHONE,
             invalidEmail,
             DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )

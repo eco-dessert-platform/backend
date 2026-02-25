@@ -1,11 +1,13 @@
 package com.bbangle.bbangle.store.repository;
 
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.TestContainersConfig;
 import com.bbangle.bbangle.config.QueryDslConfig;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
@@ -36,37 +38,24 @@ public class StoreRepositoryTest {
     @Autowired
     private StoreRepository storeRepository;
 
-
     @Test
     @DisplayName("스토어 이름으로 검색을 성공합니다.")
     void findByStoreNameLike_success() {
         //arrange
-        Store store = Store.builder()
-            .identifier("test123")
-            .name("testStore")
-            .introduce("This is a test store.")
-            .profile("profile.png")
-            .build();
+        Store store = StoreFixture.defaultStore();
         storeRepository.save(store);
         // act
-        String keyword = "testStore";
-        Optional<Store> result = storeRepository.findByStoreName(keyword);
+        Optional<Store> result = storeRepository.findByStoreName(DEFAULT_STORE_NAME);
         // assert
         assertThat(result).isPresent();
-        assertThat(result.get().getName()).isEqualTo("testStore");
-
+        assertThat(result.get().getName()).isEqualTo(DEFAULT_STORE_NAME);
     }
 
     @Test
     @DisplayName("검색된 스토어가 없으면 빈 값을 반환합니다.")
     void findByStoreNameLike_ReturnEmpty() {
         // arrange
-        Store store = Store.builder()
-            .identifier("test123")
-            .name("testStore")
-            .introduce("This is a test store.")
-            .profile("profile.png")
-            .build();
+        Store store = StoreFixture.defaultStore();
         storeRepository.save(store);
         // act
         String keyword = "noExist";
@@ -79,20 +68,10 @@ public class StoreRepositoryTest {
     @DisplayName("검색 결과가 여러 개일 경우 NonUniqueResultException 예외가 발생합니다.")
     void findByStoreNameLike_ThrowException_WhenMultipleResult() {
         // given
-        Store store1 = Store.builder()
-            .identifier("test123")
-            .name("Bbanggle")
-            .introduce("This is a test store.")
-            .profile("profile.png")
-            .build();
+        Store store1 = StoreFixture.defaultStore("Bbanggle");
         storeRepository.save(store1);
 
-        Store store2 = Store.builder()
-            .identifier("test123")
-            .name("Bbanggle")
-            .introduce("This is a test store.")
-            .profile("profile.png")
-            .build();
+        Store store2 = StoreFixture.defaultStore("Bbanggle");
         storeRepository.save(store2);
 
         String searchKeyword = "Bbanggle";
@@ -101,6 +80,4 @@ public class StoreRepositoryTest {
         assertThatThrownBy(() -> storeRepository.findByStoreName(searchKeyword))
             .isInstanceOf(NonUniqueResultException.class);
     }
-
-
 }
