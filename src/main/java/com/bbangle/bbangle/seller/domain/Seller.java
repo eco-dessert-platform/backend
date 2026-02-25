@@ -2,6 +2,8 @@ package com.bbangle.bbangle.seller.domain;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.common.domain.SoftDeleteCreatedAtBaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
@@ -85,19 +87,17 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
         this.certificationStatus = CertificationStatus.PENDING;
     }
 
-    // TODO : 테스트
     public void updateStatus(CertificationStatus status) {
         this.certificationStatus = status;
     }
 
+    // TODO : 테스트
     /**
      * 해당 Seller 계정이 Store 등록 가능한지 체크하는 메서드
-     *
-     * @return true = Store 등록 가능 | false = Store 등록 불가능
      */
-    public boolean isRegisterAvailable() {
-        return this.certificationStatus != CertificationStatus.PENDING
-            && this.certificationStatus != CertificationStatus.APPROVED;
+    public void isRegisterAvailable() {
+        if (this.certificationStatus != CertificationStatus.PENDING && this.certificationStatus != CertificationStatus.APPROVED)
+            throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
     }
 }
 

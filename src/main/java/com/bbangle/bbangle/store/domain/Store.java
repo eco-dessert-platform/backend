@@ -15,7 +15,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -85,6 +84,7 @@ public class Store extends SoftDeleteBaseEntity {
         String name,
         String profile,
         String introduce,
+        String identifier,
         String phone,
         String subPhone,
         String email,
@@ -93,7 +93,7 @@ public class Store extends SoftDeleteBaseEntity {
     ) {
         return Store.builder()
             .name(name)
-            .identifier(generateIdentifier())
+            .identifier(identifier)
             .profile(profile)
             .introduce(introduce)
             .phoneNumberVO(PhoneNumberVO.of(phone, subPhone))
@@ -101,13 +101,6 @@ public class Store extends SoftDeleteBaseEntity {
             .originAddressLine(originAddressLine)
             .originAddressDetail(originAddressDetail)
             .build();
-    }
-
-    // TODO : v2 - Admin이 직접 입력하는 방식
-    private static String generateIdentifier() {
-        long bits = UUID.randomUUID().getMostSignificantBits();
-        long positive = (bits == Long.MIN_VALUE) ? 0 : Math.abs(bits);
-        return String.valueOf((positive % 90000) + 10000);
     }
 
     public void updateDetail(
