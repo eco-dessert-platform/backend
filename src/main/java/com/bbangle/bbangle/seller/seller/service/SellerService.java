@@ -4,6 +4,7 @@ import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
@@ -60,4 +61,15 @@ public class SellerService {
         );
     }
 
+    // TODO : 테스트
+    @Transactional(readOnly = true)
+    public boolean existsSellerByStoreId(Long storeId) {
+        return sellerRepository.existsByStore_Id(storeId);
+    }
+
+    // TODO : 테스트
+    @Transactional
+    public void updateSellerStatus(Seller seller, CertificationStatus status) {
+        seller.updateStatus(status);
+    }
 }

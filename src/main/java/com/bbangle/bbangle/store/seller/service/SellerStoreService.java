@@ -5,12 +5,10 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
-import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
-    private final SellerStoreMapper sellerStoreMapper;
 
     @Transactional(readOnly = true)
     public Store findStore(Long storeId) {
@@ -28,6 +25,7 @@ public class SellerStoreService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
     }
 
+    // TODO : Store 생성 메서드 삭제하기 > Admin으로 이동할 예정
     @Transactional
     public Store createStore(StoreRequest.StoreCreateRequest request, String profileImagePath) {
         // 1. DB에 존재하는 스토어를 사용하는 경우
@@ -70,6 +68,7 @@ public class SellerStoreService {
         );
     }
 
+    // TODO : Admin으로 이동
     @Transactional
     public void registerStore(Seller seller, Store store) {
         seller.registerStore(store);
@@ -82,21 +81,10 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
-    public StoreResponse.StoreNameCheck checkStoreName(String storeName) {
+    // TODO : 테스트 코드 수정
+    @Transactional(readOnly = true)
+    public Optional<Store> checkStoreName(String storeName) {
         String normalizedStoreName = storeName.strip();
-
-        return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName)
-            .map(store ->
-                StoreResponse.StoreNameCheck.builder()
-                    .available(StoreStatus.NONE.equals(store.getStatus()))
-                    .store(sellerStoreMapper.toSellerStoreDetail(store))
-                    .build()
-            )
-            .orElseGet(() ->
-                StoreResponse.StoreNameCheck.builder()
-                    .available(true)
-                    .store(null)
-                    .build()
-            );
+        return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName);
     }
 }

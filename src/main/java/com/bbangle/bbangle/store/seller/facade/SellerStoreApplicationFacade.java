@@ -4,13 +4,14 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.image.customer.service.S3Service;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreRegisterResult;
-import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
+import com.bbangle.bbangle.store.domain.StoreApplication;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.StoreApplicationCreateRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
+import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreApplicationMapper;
+import com.bbangle.bbangle.store.seller.service.SellerStoreApplicationService;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -18,41 +19,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+// TODO : 테스트
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SellerStoreFacade {
+public class SellerStoreApplicationFacade {
 
     private static final String SELLER_IMAGE_FOLDER = "seller-images";
     private final S3Service s3Service;
-    private final SellerStoreService sellerStoreService;
     private final SellerService sellerService;
-    private final SellerStoreMapper sellerStoreMapper;
+    private final SellerStoreService sellerStoreService;
+    private final SellerStoreApplicationService sellerStoreApplicationService;
+    private final SellerStoreApplicationMapper sellerStoreApplicationMapper;
 
-    // TODO : 테스트
-    public StoreNameCheck checkStoreName(String storeName) {
-        Optional<Store> optionalStore = sellerStoreService.checkStoreName(storeName);
-        if (optionalStore.isEmpty()) {
-            return StoreNameCheck.builder()
-                .available(true)
-                .store(null)
-                .build();
-        }
-
-        Store store = optionalStore.get();
-        return StoreNameCheck.builder()
-            .available(!sellerService.existsSellerByStoreId(store.getId()))
-            .store(sellerStoreMapper.toSellerStoreDetail(store))
-            .build();
-    }
-
-    // TODO : 제거하기
-    public StoreRegisterResult registerStoreForSeller(
+    public StoreApplicationDetail registerStoreForSeller(
         Long sellerId,
-        StoreRequest.StoreCreateRequest request,
+        StoreApplicationCreateRequest request,
         MultipartFile profileImage
     ) {
-        // 이미지 파일과 기존 스토어의 profile 경로 둘 다 없을 경우 예외 던짐
         if ((request.profile() == null ||  request.profile().isBlank()) && profileImage == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
         }
@@ -63,23 +47,31 @@ public class SellerStoreFacade {
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
         }
 
-        // 만약 이미지 파일이 존재할 경우 S3에 이미지 파일 업로드
+        // Request의 StoreId가 null인데 Store 테이블에 해당 이름이 존재할 경우
+        if (request.storeId() == null && sellerStoreService.checkStoreName(request.storeName()).isPresent()) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
+
+        // 해당 스토어를 등록한 판매자가 있을 경우 등록 불가
+        if (request.storeId() != null && sellerService.existsSellerByStoreId(request.storeId())) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+        }
+
+        // request에 storeId가 있을 경우 조회
+        Store store = null;
+        if (request.storeId() != null) {
+            store = sellerStoreService.findStore(request.storeId());
+        }
+
         String profileImagePath = null;
         if (profileImage != null) profileImagePath = s3Service.saveAndReturnWithCdn(
             SELLER_IMAGE_FOLDER + "/" + seller.getId(), profileImage);
 
         try {
-            Store store = sellerStoreService.createStore(request, profileImagePath);
-
-            sellerStoreService.registerStore(seller, store);
-
-            return StoreResponse.StoreRegisterResult.builder()
-                .sellerId(seller.getId())
-                .store(sellerStoreMapper.toSellerStoreDetail(store))
-                .build();
-
+            StoreApplication storeApplication = sellerStoreApplicationService.save(request, profileImagePath, seller, store);
+            sellerService.updateSellerStatus(seller, CertificationStatus.PENDING);
+            return sellerStoreApplicationMapper.toStoreApplicationDetail(storeApplication);
         } catch (BbangleException e) {
-            // BbangleException일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 다시 던짐
             if (profileImagePath != null) {
                 log.warn("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
                 s3Service.deleteImage(profileImagePath);
@@ -87,7 +79,6 @@ public class SellerStoreFacade {
 
             throw e;
         } catch (Exception e) {
-            // BbangleException 이외의 예상치 못한 예외일 경우 s3에 업로드한 이미지 파일을 삭제 후 BbangleException을 새로 던짐
             log.error(e.getMessage(), e);
 
             if (profileImagePath != null) {
@@ -97,5 +88,10 @@ public class SellerStoreFacade {
 
             throw new BbangleException(BbangleErrorCode.SELLER_CREATION_FAILED);
         }
+    }
+
+    public StoreApplicationDetail findStoreApplication (Long sellerId) {
+        Optional<StoreApplication> storeApplication = sellerStoreApplicationService.findStoreApplicationBySellerId(sellerId);
+        return storeApplication.map(sellerStoreApplicationMapper::toStoreApplicationDetail).orElse(null);
     }
 }

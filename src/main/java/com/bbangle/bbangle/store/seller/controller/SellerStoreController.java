@@ -4,9 +4,11 @@ import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
+import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
@@ -33,21 +35,38 @@ public class SellerStoreController implements SellerStoreApi {
     private final ResponseService responseService;
     private final SellerStoreService sellerStoreService;
     private final SellerStoreFacade sellerStoreFacade;
+    private final SellerStoreApplicationFacade sellerStoreApplicationFacade;
 
+    // TODO : 테스트
     @Override
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public SingleResult<StoreResponse.StoreRegisterResult> registerStore(
+    @PostMapping(
+        path = "/applications",
+        consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public SingleResult<StoreApplicationResponse.StoreApplicationDetail> registerStore(
         @AuthenticationPrincipal Long sellerId,
-        @Valid @RequestPart("request") StoreRequest.StoreCreateRequest request,
+        @Valid @RequestPart("request") StoreApplicationRequest.StoreApplicationCreateRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
         return responseService.getSingleResult(
-            sellerStoreFacade.registerStoreForSeller(sellerId, request, profileImage)
+            sellerStoreApplicationFacade.registerStoreForSeller(sellerId, request, profileImage)
         );
     }
 
+    // TODO : 테스트
     @Override
-    @GetMapping("/search")
+    @GetMapping("/applications")
+    public SingleResult<StoreApplicationResponse.StoreApplicationDetail> getStoreApplication(
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        return responseService.getSingleResult(
+            sellerStoreApplicationFacade.findStoreApplication(sellerId)
+        );
+    }
+
+    // TODO : 테스트 수정
+    @Override
+    @GetMapping("/store-names")
     public SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
         @RequestParam @NotBlank(message = "스토어 이름은 필수입니다.") String storeName,
         @RequestParam(required = false) Long cursorId
@@ -57,11 +76,12 @@ public class SellerStoreController implements SellerStoreApi {
         );
     }
 
+    // TODO : 테스트 수정
     @Override
     @GetMapping("/check-name")
     public SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
         @RequestParam @NotBlank(message = "스토어 이름은 필수입니다.") String storeName
     ) {
-        return responseService.getSingleResult(sellerStoreService.checkStoreName(storeName));
+        return responseService.getSingleResult(sellerStoreFacade.checkStoreName(storeName));
     }
 }
