@@ -4,7 +4,6 @@ import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.common.domain.SoftDeleteCreatedAtBaseEntity;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -79,11 +78,16 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             .build();
     }
 
+    // TODO : v2 Admin이 승인하면 등록되도록 변경
     // 판매자 스토어 등록
     public void registerStore(Store store) {
         this.store = store;
-        this.store.changeStatus(StoreStatus.RESERVED);
         this.certificationStatus = CertificationStatus.PENDING;
+    }
+
+    // TODO : 테스트
+    public void updateStatus(CertificationStatus status) {
+        this.certificationStatus = status;
     }
 
     /**

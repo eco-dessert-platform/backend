@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.store.domain;
+package com.bbangle.bbangle.store.domain.model;
 
 import java.util.Arrays;
 import lombok.Getter;
