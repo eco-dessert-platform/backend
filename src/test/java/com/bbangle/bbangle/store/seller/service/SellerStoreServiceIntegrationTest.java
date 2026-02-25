@@ -1,24 +1,21 @@
 package com.bbangle.bbangle.store.seller.service;
 
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +58,6 @@ public class SellerStoreServiceIntegrationTest {
         // then
         assertThat(seller.getStore()).isEqualTo(store);
         assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-        assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);
     }
 
     @Nested
@@ -116,11 +112,7 @@ public class SellerStoreServiceIntegrationTest {
 
             Stream.concat(matchingNames.stream(), nonMatchingNames.stream())
                 .forEach(name -> {
-                    storeRepository.save(Store.createForSeller(
-                        name, "test.com", "introduce", "01012345678", "01012345678",
-                        "test@temp.com", "서울", "서울"
-                    ));
-
+                    storeRepository.save(StoreFixture.defaultStore(name));
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -227,171 +219,48 @@ public class SellerStoreServiceIntegrationTest {
     }
 
     @Nested
-    @DisplayName("createStore() 테스트")
-    class CreateStoreTest {
+    @DisplayName("findStoreByStoreName() 테스트")
+    class FindStoreByStoreNameTest {
 
-        @Nested
-        @DisplayName("등록하기 위한 스토어 생성 및 조회에 성공한다.")
-        class Success_CreateStoreTest {
+        @Test
+        @DisplayName("Store Name에 앞 뒤 공백이 있어도 정상적으로 Store를 조회한다.")
+        void success() {
 
-            @Test
-            @DisplayName("기존의 스토어를 조회할 경우 이미지 파일이 없으면 기존 프로필 경로를 사용한다.")
-            void with_storeId_and_without_multipartFile() {
+            // given
+            storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            String storeName = "    " + DEFAULT_STORE_NAME + "    ";
 
-                // given
-                Store store = storeRepository.save(StoreFixture.defaultStore());
-                StoreRequest.StoreCreateRequest request = new StoreRequest.StoreCreateRequest(
-                    "store",
-                    "newProfile.png",
-                    "newIntroduce",
-                    "01011112222",
-                    "01099998888",
-                    "temp@test.com",
-                    "서울",
-                    "123동",
-                    store.getId()
-                );
+            // when
+            Optional<Store> result = sellerStoreService.findStoreByStoreName(storeName);
 
-                // when
-                Store result = sellerStoreService.createStore(request, null);
-
-                // then
-                assertThat(result.getId()).isEqualTo(store.getId());
-                assertThat(result.getName()).isEqualTo(store.getName());
-                assertThat(result.getProfile()).isEqualTo(request.profile());
-                assertThat(result.getIntroduce()).isEqualTo(request.introduce());
-                assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
-                assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
-                assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
-                assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
-                assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
-            }
-
-            @Test
-            @DisplayName("기존의 스토어를 조회할 경우 이미지 파일이 존재하면 업로드한 이미지 경로를 사용한다.")
-            void with_storeId_and_multipartFile() {
-
-                // given
-                Store store = storeRepository.save(StoreFixture.defaultStore());
-                StoreRequest.StoreCreateRequest request = new StoreRequest.StoreCreateRequest(
-                    "store",
-                    "newProfile.png",
-                    "newIntroduce",
-                    "01011112222",
-                    "01099998888",
-                    "temp@test.com",
-                    "경기도",
-                    "나동",
-                    store.getId()
-                );
-                String uploadedImagePath = "cdn/new-profile.png";
-
-                // when
-                Store result = sellerStoreService.createStore(request, uploadedImagePath);
-
-                // then
-                assertThat(result.getId()).isEqualTo(store.getId());
-                assertThat(result.getName()).isEqualTo(store.getName());
-                assertThat(result.getProfile()).isEqualTo(uploadedImagePath);
-                assertThat(result.getIntroduce()).isEqualTo(request.introduce());
-                assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
-                assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
-                assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
-                assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
-                assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
-            }
-
-            @Test
-            @DisplayName("등록하기 위한 새로운 스토어를 생성한다.")
-            void createStore() {
-
-                // given
-                StoreRequest.StoreCreateRequest request = new StoreRequest.StoreCreateRequest(
-                    "store",
-                    null,
-                    "newIntroduce",
-                    "01011112222",
-                    "01099998888",
-                    "temp@test.com",
-                    "서울",
-                    "123동",
-                    null
-                );
-                String profileImage = "profile.jpg";
-
-                // when
-                Store result = sellerStoreService.createStore(request, profileImage);
-
-                // then
-                assertThat(result.getId()).isNotNull();
-                assertThat(result.getName()).isEqualTo("store");
-                assertThat(result.getProfile()).isEqualTo("profile.jpg");
-                assertThat(result.getIntroduce()).isEqualTo("newIntroduce");
-                assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo("01011112222");
-                assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo("01099998888");
-                assertThat(result.getEmailVO().getEmail()).isEqualTo("temp@test.com");
-                assertThat(result.getOriginAddressLine()).isEqualTo("서울");
-                assertThat(result.getOriginAddressDetail()).isEqualTo("123동");
-            }
+            // then
+            assertThat(result.isPresent()).isTrue();
         }
 
-        @Nested
-        @DisplayName("등록하기 위한 스토어 생성 및 조회에 실패한다.")
-        class Fail_CreateStoreTest {
+        @Test
+        @DisplayName("Store가 존재하지 않으면 Optional.empty를 반환한다.")
+        void empty() {
+            // when
+            Optional<Store> result = sellerStoreService.findStoreByStoreName(DEFAULT_STORE_NAME);
 
-            @Test
-            @DisplayName("존재하지 않는 storeId로 조회하면 예외를 던진다.")
-            void storeId_notFound() {
+            // then
+            assertThat(result.isEmpty()).isTrue();
+        }
 
-                // given
-                StoreRequest.StoreCreateRequest request = new StoreRequest.StoreCreateRequest(
-                    "store",
-                    "newProfile.png",
-                    "newIntroduce",
-                    "01011112222",
-                    "01099998888",
-                    "temp@test.com",
-                    "서울",
-                    "123동",
-                    999L
-                );
+        @Test
+        @DisplayName("Store가 삭제되었을 경우 Optional.empty를 반환한다.")
+        void empty_when_deleted() {
 
-                // when & then
-                assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
-                    )
-                    .isInstanceOf(BbangleException.class)
-                    .satisfies(e -> {
-                        BbangleException ex = (BbangleException) e;
-                        assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
-                    });
-            }
+            // given
+            Store store = StoreFixture.defaultStore();
+            store.delete();
+            storeRepository.saveAndFlush(store);
 
-            @Test
-            @DisplayName("등록하기 위한 신규 스토어 생성 시 프로필 이미지가 없으면 실패한다.")
-            void without_profile() {
+            // when
+            Optional<Store> result = sellerStoreService.findStoreByStoreName(DEFAULT_STORE_NAME);
 
-                // given
-                StoreRequest.StoreCreateRequest request = new StoreRequest.StoreCreateRequest(
-                    "store",
-                    null,
-                    "newIntroduce",
-                    "01011112222",
-                    "01099998888",
-                    "temp@test.com",
-                    "서울",
-                    "123동",
-                    null
-                );
-
-                // when & then
-                assertThatThrownBy(() -> sellerStoreService.createStore(request, null)
-                    )
-                    .isInstanceOf(BbangleException.class)
-                    .satisfies(e -> {
-                        BbangleException ex = (BbangleException) e;
-                        assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PROFILE);
-                    });
-            }
+            // then
+            assertThat(result.isEmpty()).isTrue();
         }
     }
 }

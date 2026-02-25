@@ -46,7 +46,7 @@ public class SellerStoreApplicationFacade {
         seller.isRegisterAvailable();
 
         // Request의 StoreId가 null인데 Store 테이블에 해당 이름이 존재할 경우
-        if (request.storeId() == null && sellerStoreService.checkStoreName(request.storeName()).isPresent()) {
+        if (request.storeId() == null && sellerStoreService.findStoreByStoreName(request.storeName()).isPresent()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
 
@@ -66,7 +66,7 @@ public class SellerStoreApplicationFacade {
             SELLER_IMAGE_FOLDER + "/" + seller.getId(), profileImage);
 
         try {
-            StoreApplication storeApplication = sellerStoreApplicationService.save(request, profileImagePath, seller, store);
+            StoreApplication storeApplication = sellerStoreApplicationService.createStoreApplication(request, profileImagePath, seller, store);
             sellerService.updateSellerStatus(seller, CertificationStatus.PENDING);
             return sellerStoreApplicationMapper.toStoreApplicationDetail(storeApplication);
         } catch (BbangleException e) {

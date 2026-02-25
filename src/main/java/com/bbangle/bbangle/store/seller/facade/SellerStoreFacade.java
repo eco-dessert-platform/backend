@@ -31,7 +31,7 @@ public class SellerStoreFacade {
 
     // TODO : 테스트
     public StoreNameCheck checkStoreName(String storeName) {
-        Optional<Store> optionalStore = sellerStoreService.checkStoreName(storeName);
+        Optional<Store> optionalStore = sellerStoreService.findStoreByStoreName(storeName);
         if (optionalStore.isEmpty()) {
             return StoreNameCheck.builder()
                 .available(true)
