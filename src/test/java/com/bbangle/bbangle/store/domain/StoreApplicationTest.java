@@ -4,9 +4,9 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_ADDR
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_DETAIL_ADDRESS;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_EMAIL;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_INTRODUCE;
-import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +28,7 @@ class StoreApplicationTest {
         Seller seller = SellerFixture.withId(SellerFixture.defaultSeller(), 1L);
         Store store = StoreFixture.defaultStore();
         StoreApplication storeApplication = StoreApplication.createStoreApplication(
-            DEFAULT_NAME, DEFAULT_PROFILE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE,
             DEFAULT_INTRODUCE,
             DEFAULT_PHONE, DEFAULT_SUBPHONE,
             DEFAULT_EMAIL,
@@ -38,7 +38,7 @@ class StoreApplicationTest {
 
         // then
         assertThat(storeApplication).isNotNull();
-        assertThat(storeApplication.getName()).isEqualTo(DEFAULT_NAME);
+        assertThat(storeApplication.getName()).isEqualTo(DEFAULT_STORE_NAME);
         assertThat(storeApplication.getProfile()).isEqualTo(DEFAULT_PROFILE);
         assertThat(storeApplication.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
         assertThat(storeApplication.getStatus()).isEqualTo(StoreApplicationStatus.PENDING);
