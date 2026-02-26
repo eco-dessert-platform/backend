@@ -29,6 +29,7 @@ import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest.OrderConfirmRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.service.SellerOrderService;
@@ -190,12 +191,9 @@ class SellerOrderControllerSliceTest {
             OrderDeliveryStatus.PREPARING, CompletedOrderSearchType.ORDER_NUMBER,
             searchCondition);
 
-        BbanglePageResponse<OrderSearchResponse> mockResponse = new BbanglePageResponse<>(
-            Collections.emptyList(),
-            0,
-            20,
-            0,
-            0L);
+        OrderResponse.OrderSearchPageResponse mockResponse = new OrderResponse.OrderSearchPageResponse(
+            new BbanglePageResponse<>(Collections.emptyList(), 0, 20, 0, 0L),
+            OrderResponse.OrderStatusCounts.of(0L, 0L, 0L, 0L, 0L, 0L, 0L));
 
         given(sellerOrderService.orderSearch(any(OrderSearchCommand.class)))
             .willReturn(mockResponse);
@@ -216,11 +214,11 @@ class SellerOrderControllerSliceTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
             .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
-            .andExpect(jsonPath("$.result.content").isArray())
-            .andExpect(jsonPath("$.result.page").value(0))
-            .andExpect(jsonPath("$.result.size").value(20))
-            .andExpect(jsonPath("$.result.totalPages").value(0))
-            .andExpect(jsonPath("$.result.totalElements").value(0));
+            .andExpect(jsonPath("$.result.orders.content").isArray())
+            .andExpect(jsonPath("$.result.orders.page").value(0))
+            .andExpect(jsonPath("$.result.orders.size").value(20))
+            .andExpect(jsonPath("$.result.orders.totalPages").value(0))
+            .andExpect(jsonPath("$.result.orders.totalElements").value(0));
 
         then(sellerOrderService).should(times(1)).orderSearch(any(OrderSearchCommand.class));
         then(responseService).should(times(1)).getSingleResult(mockResponse);
@@ -250,12 +248,9 @@ class SellerOrderControllerSliceTest {
             .totalOrderPrice("24400")
             .build();
 
-        BbanglePageResponse<OrderSearchResponse> mockResponse = new BbanglePageResponse<>(
-            List.of(orderSearchResponse),
-            0,
-            20,
-            1,
-            1L);
+        OrderResponse.OrderSearchPageResponse mockResponse = new OrderResponse.OrderSearchPageResponse(
+            new BbanglePageResponse<>(List.of(orderSearchResponse), 0, 20, 1, 1L),
+            OrderResponse.OrderStatusCounts.of(0L, 0L, 0L, 0L, 0L, 0L, 0L));
 
         given(sellerOrderService.orderSearch(any(OrderSearchCommand.class)))
             .willReturn(mockResponse);
@@ -274,12 +269,12 @@ class SellerOrderControllerSliceTest {
 
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.result.content").isArray())
-            .andExpect(jsonPath("$.result.content.length()").value(1))
-            .andExpect(jsonPath("$.result.content[0].orderNumber").value("2503020013"))
-            .andExpect(jsonPath("$.result.content[0].recipientName").value("홍길동"))
-            .andExpect(jsonPath("$.result.content[0].totalOrderPrice").value("24400"))
-            .andExpect(jsonPath("$.result.totalElements").value(1));
+            .andExpect(jsonPath("$.result.orders.content").isArray())
+            .andExpect(jsonPath("$.result.orders.content.length()").value(1))
+            .andExpect(jsonPath("$.result.orders.content[0].orderNumber").value("2503020013"))
+            .andExpect(jsonPath("$.result.orders.content[0].recipientName").value("홍길동"))
+            .andExpect(jsonPath("$.result.orders.content[0].totalOrderPrice").value("24400"))
+            .andExpect(jsonPath("$.result.orders.totalElements").value(1));
 
         then(sellerOrderService).should(times(1)).orderSearch(any(OrderSearchCommand.class));
     }

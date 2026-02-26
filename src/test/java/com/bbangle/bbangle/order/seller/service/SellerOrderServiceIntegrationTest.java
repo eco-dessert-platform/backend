@@ -139,14 +139,14 @@ public class SellerOrderServiceIntegrationTest {
             .build();
 
         // when
-        BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sellerOrderService.orderSearch(command);
+        OrderResponse.OrderSearchPageResponse result = sellerOrderService.orderSearch(command);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.totalElements()).isEqualTo(1L);
-        assertThat(result.content()).asList().hasSize(1);
+        assertThat(result.orders().totalElements()).isEqualTo(1L);
+        assertThat(result.orders().content()).asList().hasSize(1);
 
-        OrderResponse.OrderSearchResponse response = result.content().get(0);
+        OrderResponse.OrderSearchResponse response = result.orders().content().get(0);
 
         // 기본 정보 검증
         assertThat(response.orderNumber()).isEqualTo("ORDER-2025-01-01-00001");
