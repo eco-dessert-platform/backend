@@ -3,9 +3,11 @@ package com.bbangle.bbangle.store.seller.controller.dto;
 import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import lombok.Builder;
 
 public class StoreApplicationResponse {
 
+    @Builder
     @Schema(description = "판매자 스토어 등록 신청 정보 DTO")
     public record StoreApplicationDetail(
         @Schema(description = "스토어 신청서 ID", example = "1") Long storeApplicationId,

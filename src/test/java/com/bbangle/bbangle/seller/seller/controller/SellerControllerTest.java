@@ -18,7 +18,6 @@ import com.bbangle.bbangle.seller.seller.controller.dto.SellerResponse;
 import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
 import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +70,7 @@ class SellerControllerTest {
             // given
             Long sellerId = 1L;
             StoreResponse.SellerStoreDetail sellerStoreDetail =
-                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", StoreStatus.RESERVED, "01012345678", "01098765432", "123@test.com", "서울", "123동");
+                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
 
             SellerResponse.RegisteredStoreDetail response = SellerResponse.RegisteredStoreDetail.builder()
                 .sellerId(1L)
@@ -88,7 +87,6 @@ class SellerControllerTest {
                 .andExpect(jsonPath("$.result.store.name").value(sellerStoreDetail.name()))
                 .andExpect(jsonPath("$.result.store.introduce").value(sellerStoreDetail.introduce()))
                 .andExpect(jsonPath("$.result.store.profile").value(sellerStoreDetail.profile()))
-                .andExpect(jsonPath("$.result.store.status").value(sellerStoreDetail.status().name()))
                 .andExpect(jsonPath("$.result.store.phoneNumber").value(sellerStoreDetail.phoneNumber()))
                 .andExpect(jsonPath("$.result.store.subPhoneNumber").value(sellerStoreDetail.subPhoneNumber()))
                 .andExpect(jsonPath("$.result.store.email").value(sellerStoreDetail.email()))
