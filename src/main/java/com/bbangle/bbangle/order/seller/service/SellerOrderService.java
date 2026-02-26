@@ -294,6 +294,98 @@ public class SellerOrderService {
     // ========================================================================================
 
     @Transactional(readOnly = true)
+    public List<OrderItemDetailResponse> searchOrderItemDetails(List<Long> orderItemIds, Long sellerId) {
+        if (orderItemIds == null || orderItemIds.isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+        }
+
+        List<Long> uniqueOrderItemIds = orderItemIds.stream()
+            .distinct()
+            .toList();
+
+        Long storeId = getStoreIdOrThrow(sellerId);
+        assertOwnedOrderItemsByStoreId(uniqueOrderItemIds, storeId);
+
+        List<OrderItem> orderItems = orderItemRepository.findWithOrderAndProductByIdIn(uniqueOrderItemIds);
+
+        Map<Long, OrderDelivery> latestDeliveryByOrderItemId =
+            orderDeliveryRepository.findLatestByOrderItemIds(uniqueOrderItemIds).stream()
+                .collect(Collectors.toMap(
+                    od -> od.getOrderItem().getId(),
+                    Function.identity(),
+                    (existing, replacement) -> existing
+                ));
+
+        return orderItems.stream()
+            .map(oi -> {
+                Order order = oi.getOrder();
+                OrderDelivery delivery = latestDeliveryByOrderItemId.get(oi.getId());
+
+                String orderDate = order.getOrderDate() != null
+                    ? order.getOrderDate().toLocalDate().toString()
+                    : null;
+                String orderStatusLabel = oi.getOrderStatus() != null
+                    ? oi.getOrderStatus().getDescription()
+                    : null;
+                OrderInfo orderInfo = new OrderInfo(orderDate, orderStatusLabel);
+
+                String recipientName = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientName()
+                    : order.getBuyerName();
+                String phone1 = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientPhone1()
+                    : order.getBuyerPhone();
+                String phone2 = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientPhone2()
+                    : order.getBuyerSubPhone();
+                BuyerInfo buyerInfo = new BuyerInfo(recipientName, order.getBuyerName(), phone1, phone2);
+
+                String statusLabel = null;
+                String courierCompany = null;
+                String trackingNumber = null;
+                String address = null;
+                String memo = null;
+                Long shippingFee = order.getDeliveryFee() != null ? order.getDeliveryFee().longValue() : null;
+
+                if (delivery != null) {
+                    statusLabel = delivery.getStatus() != null
+                        ? delivery.getStatus().getDescription()
+                        : null;
+                    Shipping shipping = delivery.getShipping();
+                    if (shipping != null) {
+                        courierCompany = shipping.getCourierName();
+                        trackingNumber = shipping.getTrackingNumber();
+                        memo = shipping.getDeliveryMemo();
+                    }
+                    Receiver receiver = delivery.getReceiver();
+                    if (receiver != null) {
+                        String base = receiver.getRecipientAddress();
+                        String detail = receiver.getRecipientAddressDetail();
+                        if (base != null && detail != null) {
+                            address = base + " " + detail;
+                        } else if (base != null) {
+                            address = base;
+                        }
+                    }
+                }
+                ShippingInfo shippingInfo = new ShippingInfo(
+                    statusLabel, courierCompany, trackingNumber, shippingFee, address, memo);
+
+                OrderItemDetailResponse.OrderItem orderItemDto = new OrderItemDetailResponse.OrderItem(
+                    oi.getProduct().getBoard().getTitle(),
+                    oi.getProduct().getTitle(),
+                    oi.getQuantity(),
+                    oi.getUnitPrice() != null ? oi.getUnitPrice().longValue() : null,
+                    oi.getTotalPrice() != null ? oi.getTotalPrice().longValue() : null
+                );
+
+                return new OrderItemDetailResponse(
+                    order.getOrderNumber(), orderInfo, buyerInfo, shippingInfo, orderItemDto);
+            })
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderSearchPageResponse orderSearch(OrderSearchCommand command) {
         BbanglePageResponse<Order> orderPage = orderRepository.searchOrderList(command);
         Map<OrderStatus, Long> statusCountMap = orderRepository.countByOrderStatus(command);
@@ -344,6 +436,21 @@ public class SellerOrderService {
         OrderStatusCounts statusCounts = buildStatusCounts(statusCountMap);
 
         return new OrderSearchPageResponse(ordersPage, statusCounts);
+    }
+
+    private void assertOwnedOrderItemsByStoreId(List<Long> orderItemIds, Long storeId) {
+        long ownedCount = orderItemRepository.countOwnedOrderItemsByStoreId(orderItemIds, storeId);
+        if (ownedCount != orderItemIds.size()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
+        }
+    }
+
+    private Long getStoreIdOrThrow(Long sellerId) {
+        Long storeId = sellerRepository.findStoreIdBySellerId(sellerId);
+        if (storeId == null) {
+            throw new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND);
+        }
+        return storeId;
     }
 
     private OrderStatusCounts buildStatusCounts(Map<OrderStatus, Long> countMap) {

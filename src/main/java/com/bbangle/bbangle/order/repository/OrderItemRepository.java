@@ -30,4 +30,25 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         @Param("orderItemIds") List<Long> orderItemIds,
         @Param("storeId") Long storeId
     );
+
+    @Query(value = """
+        SELECT COUNT(*)
+        FROM order_item oi
+        JOIN product p ON p.id = oi.product_id
+        WHERE oi.id IN (:orderItemIds)
+          AND p.store_id = :storeId
+        """, nativeQuery = true)
+    long countOwnedOrderItemsByStoreId(
+        @Param("orderItemIds") List<Long> orderItemIds,
+        @Param("storeId") Long storeId
+    );
+
+    @Query("""
+        SELECT oi FROM OrderItem oi
+        JOIN FETCH oi.order
+        JOIN FETCH oi.product p
+        JOIN FETCH p.board
+        WHERE oi.id IN :ids
+        """)
+    List<OrderItem> findWithOrderAndProductByIdIn(@Param("ids") List<Long> ids);
 }

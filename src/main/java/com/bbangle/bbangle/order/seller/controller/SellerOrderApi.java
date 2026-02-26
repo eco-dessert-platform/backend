@@ -35,6 +35,7 @@ public interface SellerOrderApi {
 
     @Operation(summary = "주문 품목 상세 정보 조회")
     ListResult<OrderItemDetailResponse> searchDetailItems(
+        Long sellerId,
         List<Long> orderItemList);
 
 
