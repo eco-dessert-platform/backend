@@ -39,6 +39,4 @@ public final class StoreFixture {
     public static Store defaultStore(String name) {
         return baseBuilder(name);
     }
-
-    // TODO : 리팩토링 할 수 있는 거 추가하기
 }

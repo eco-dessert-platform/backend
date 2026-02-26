@@ -40,7 +40,7 @@ public class StoreUnitTest {
         // given & when
         Store store = Store.createForSeller(
             DEFAULT_STORE_NAME, DEFAULT_PROFILE,
-            DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE,
+            DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER,
             DEFAULT_PHONE, DEFAULT_SUBPHONE,
             DEFAULT_EMAIL,
             DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS

@@ -196,7 +196,7 @@ class SellerStoreApplicationFacadeIntegrationTest extends S3IntegrationTestSuppo
             void already_registered_store() {
 
                 // given
-                Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+                Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore("already_reserved"));
                 sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
 
                 Seller seller = saveNewSeller(CertificationStatus.NEW);
@@ -247,7 +247,6 @@ class SellerStoreApplicationFacadeIntegrationTest extends S3IntegrationTestSuppo
 
             // given
             Seller seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller());
-            storeApplicationRepository.saveAndFlush(StoreApplicationFixture.defaultStoreApplication(seller, null));
 
             // when
             StoreApplicationDetail result = facade.findStoreApplication(seller.getId());

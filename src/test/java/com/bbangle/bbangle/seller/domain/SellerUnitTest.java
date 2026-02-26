@@ -45,7 +45,7 @@ public class SellerUnitTest {
     @ParameterizedTest
     @EnumSource(
         value = CertificationStatus.class,
-        names = {"PENDING", "APPROVED"}
+        names = {"NEW", "REJECTED"}
     )
     @DisplayName("스토어 등록 신청 가능한 상태일 경우 통과한다.")
     void success_register_store(CertificationStatus status) {
@@ -61,7 +61,7 @@ public class SellerUnitTest {
     @EnumSource(
         value = CertificationStatus.class,
         mode = Mode.EXCLUDE,
-        names = {"PENDING", "APPROVED"}
+        names = {"NEW", "REJECTED"}
     )
     @DisplayName("스토어 등록 신청 불가능한 상태일 경우 예외가 발생한다.")
     void fail_register_store(CertificationStatus status) {
