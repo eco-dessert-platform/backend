@@ -96,7 +96,7 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
      * 해당 Seller 계정이 Store 등록 가능한지 체크하는 메서드
      */
     public void isRegisterAvailable() {
-        if (this.certificationStatus != CertificationStatus.PENDING && this.certificationStatus != CertificationStatus.APPROVED)
+        if (this.certificationStatus != CertificationStatus.NEW && this.certificationStatus != CertificationStatus.REJECTED)
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
     }
 }

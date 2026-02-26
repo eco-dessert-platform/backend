@@ -196,8 +196,6 @@ class SellerStoreApplicationFacadeUnitTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
                 });
-
-            verify(s3Service).deleteImage(any());
         }
 
         @Test

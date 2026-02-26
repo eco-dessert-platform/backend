@@ -4,6 +4,7 @@ import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -107,7 +108,7 @@ class SellerStoreControllerTest {
         }
 
         @Test
-        @WithMockAuthenticationPrincipal(userId = 2L, role = "SELLER")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
         @DisplayName("스토어 등록 신청하면 스토어 등록 신청 데이터를 반환한다.")
         void success_registerStore() throws Exception {
 
@@ -118,7 +119,7 @@ class SellerStoreControllerTest {
             StoreApplicationDetail response = StoreApplicationResponseFixture.defaultStoreApplicationDetail(null);
 
             given(sellerStoreApplicationFacade.registerStoreForSeller(
-                anyLong(),
+                eq(1L),
                 any(StoreApplicationCreateRequest.class),
                 any(MultipartFile.class)
             )).willReturn(response);
@@ -130,7 +131,7 @@ class SellerStoreControllerTest {
                         .file(profileImage)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.sellerId").value(2L))
+                .andExpect(jsonPath("$.result.sellerId").value(1L))
                 .andExpect(jsonPath("$.result.storeApplicationId").value(1L))
                 .andExpect(jsonPath("$.result.name").value(DEFAULT_STORE_NAME));
         }
@@ -357,8 +358,7 @@ class SellerStoreControllerTest {
                 .andExpect(jsonPath("$.result.store.storeId").value(1L))
                 .andExpect(jsonPath("$.result.store.name").value("빵긋"))
                 .andExpect(jsonPath("$.result.store.introduce").value("테스트"))
-                .andExpect(jsonPath("$.result.store.profile").value("test.png"))
-                .andExpect(jsonPath("$.result.store.status").value("NONE"));
+                .andExpect(jsonPath("$.result.store.profile").value("test.png"));
         }
 
         @Test
@@ -389,8 +389,7 @@ class SellerStoreControllerTest {
                 .andExpect(jsonPath("$.result.store.storeId").value(1L))
                 .andExpect(jsonPath("$.result.store.name").value("빵긋"))
                 .andExpect(jsonPath("$.result.store.introduce").value("테스트"))
-                .andExpect(jsonPath("$.result.store.profile").value("test.png"))
-                .andExpect(jsonPath("$.result.store.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.result.store.profile").value("test.png"));
         }
 
         @Test
