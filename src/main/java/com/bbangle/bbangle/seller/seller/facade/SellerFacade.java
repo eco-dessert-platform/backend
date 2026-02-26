@@ -79,6 +79,7 @@ public class SellerFacade {
         }
     }
 
+    // TODO : v3 - Store/Seller/SellerStoreFacade로 이동
     public SellerResponse.RegisteredStoreDetail getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
 

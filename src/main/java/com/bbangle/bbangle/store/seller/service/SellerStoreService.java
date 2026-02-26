@@ -31,7 +31,7 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName);
     }
 
-    // TODO : v2 - Admin으로 이동
+    // TODO : v3 - Admin으로 이동
     @Transactional
     public void registerStore(Seller seller, Store store) {
         seller.registerStore(store);
