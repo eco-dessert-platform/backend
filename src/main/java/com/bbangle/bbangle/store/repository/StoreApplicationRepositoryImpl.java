@@ -14,7 +14,6 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
 
     private final JPAQueryFactory queryFactory;
 
-    // TODO : 테스트
     @Override
     public Optional<StoreApplication> findLatestBySellerId(Long sellerId) {
         return Optional.ofNullable(

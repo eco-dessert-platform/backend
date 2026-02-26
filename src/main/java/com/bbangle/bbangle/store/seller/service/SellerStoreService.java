@@ -24,7 +24,6 @@ public class SellerStoreService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
     }
 
-    // TODO : 테스트 코드 수정
     @Transactional(readOnly = true)
     public Optional<Store> findStoreByStoreName(String storeName) {
         String normalizedStoreName = storeName.strip();

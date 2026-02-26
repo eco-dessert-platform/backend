@@ -19,7 +19,6 @@ public class SellerStoreFacade {
     private final SellerService sellerService;
     private final SellerStoreMapper sellerStoreMapper;
 
-    // TODO : 테스트
     public StoreNameCheck checkStoreName(String storeName) {
         Optional<Store> optionalStore = sellerStoreService.findStoreByStoreName(storeName);
         if (optionalStore.isEmpty()) {

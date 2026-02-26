@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO : 테스트
 @Service
 @RequiredArgsConstructor
 public class SellerStoreApplicationService {

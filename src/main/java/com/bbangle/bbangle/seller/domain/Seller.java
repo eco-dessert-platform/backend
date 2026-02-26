@@ -91,7 +91,6 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
         this.certificationStatus = status;
     }
 
-    // TODO : 테스트
     /**
      * 해당 Seller 계정이 Store 등록 가능한지 체크하는 메서드
      */
