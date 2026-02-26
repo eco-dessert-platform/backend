@@ -9,9 +9,8 @@ import com.bbangle.bbangle.order.seller.controller.dto.request.CompletedOrderFil
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.OrderSummary;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -53,17 +51,6 @@ public class SellerOrderController implements SellerOrderApi {
         PageImpl<OrderSummary> page = new PageImpl<>(orderSummaries, pageable, 10);
         BbanglePageResponse<OrderSummary> response = BbanglePageResponse.of(page);
         return responseService.getSingleResult(response);
-    }
-
-    @Override
-    @GetMapping
-    public ListResult<OrderDetail> getCompletedOrders(
-        @RequestParam List<Long> orderItemIds,
-        @AuthenticationPrincipal Long sellerId) {
-        // TODO: 구현 필요
-        OrderDetail orderDetail = OrderDetail.sample();
-        List<OrderDetail> orderDetails = List.of(orderDetail);
-        return responseService.getListResult(orderDetails);
     }
 
     @Override
@@ -114,12 +101,12 @@ public class SellerOrderController implements SellerOrderApi {
 
     @Override
     @PostMapping("/list")
-    public SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
+    public SingleResult<OrderSearchPageResponse> searchOrders(
         @AuthenticationPrincipal Long sellerId,
         @RequestBody OrderSearchRequest request,
         @PageableDefault(size = 100, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        BbanglePageResponse<OrderSearchResponse> response = sellerOrderService.orderSearch(
+        OrderSearchPageResponse response = sellerOrderService.orderSearch(
             request.toCommand(sellerId, pageable));
 
         return responseService.getSingleResult(response);

@@ -47,8 +47,8 @@ public class OrderItemListResponse {
                 new OrderItemInfo(
                     extractItemName(orderItem),
                     orderItem.getQuantity(),
-                    orderItem.getUnitPrice().longValue(),
-                    orderItem.getTotalPrice().longValue()
+                    orderItem.getUnitPrice() != null ? orderItem.getUnitPrice().longValue() : 0L,
+                    orderItem.getTotalPrice() != null ? orderItem.getTotalPrice().longValue() : 0L
                 ),
                 extractDeliveryStatus(latestDelivery),
                 extractCourierCompany(latestDelivery),

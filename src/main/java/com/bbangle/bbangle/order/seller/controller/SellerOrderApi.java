@@ -7,9 +7,8 @@ import com.bbangle.bbangle.order.seller.controller.dto.request.CompletedOrderFil
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.OrderSummary;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
@@ -34,26 +33,16 @@ public interface SellerOrderApi {
         Long sellerId
     );
 
-    @Operation(summary = "(판매자) 주문 상세 조회")
-    ListResult<OrderDetail> getCompletedOrders(
-        List<Long> orderItemIds,
-        Long sellerId
-    );
-
-    // TODO: v3
-    @Operation(
-        summary = "주문 품목 상세 정보 조회",
-        description = "List에 주문 품목의 Id값을 받아 이를 상세 조회합니다."
-    )
+    @Operation(summary = "주문 품목 상세 정보 조회")
     ListResult<OrderItemDetailResponse> searchDetailItems(
         List<Long> orderItemList);
 
 
     @Operation(
         summary = "(판매자) 주문 내역 확인",
-        description = "페이징 처리된 판매자의 전체 주문 품목을 조회합니다."
+        description = "페이징 처리된 판매자의 전체 주문 품목을 조회합니다. 응답에 상태별 카운트(statusCounts)가 포함됩니다."
     )
-    SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
+    SingleResult<OrderSearchPageResponse> searchOrders(
         @Parameter(description = "판매자 ID")
         Long sellerId,
         @Valid OrderRequest.OrderSearchRequest request,
