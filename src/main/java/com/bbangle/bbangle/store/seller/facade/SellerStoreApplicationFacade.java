@@ -37,6 +37,7 @@ public class SellerStoreApplicationFacade {
         StoreApplicationCreateRequest request,
         MultipartFile profileImage
     ) {
+        // Store Profile 검증
         if ((request.profile() == null ||  request.profile().isBlank()) && profileImage == null) {
             throw new BbangleException(BbangleErrorCode.INVALID_PROFILE);
         }
@@ -45,7 +46,7 @@ public class SellerStoreApplicationFacade {
         Seller seller = sellerService.getSellerById(sellerId);
         seller.isRegisterAvailable();
 
-        // Request의 StoreId가 null인데 Store 테이블에 해당 이름이 존재할 경우
+        // Request의 StoreId가 null인데 Store 테이블에 해당 이름이 존재할 경우 - Store Name 중복
         if (request.storeId() == null && sellerStoreService.findStoreByStoreName(request.storeName()).isPresent()) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
@@ -55,12 +56,13 @@ public class SellerStoreApplicationFacade {
             throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
         }
 
-        // request에 storeId가 있을 경우 조회
+        // request에 storeId가 있을 경우 조회 - StoreApplication과 Store 연관관계 설정
         Store store = null;
         if (request.storeId() != null) {
             store = sellerStoreService.findStore(request.storeId());
         }
 
+        // Store Profile 업로드
         String profileImagePath = null;
         if (profileImage != null) profileImagePath = s3Service.saveAndReturnWithCdn(
             SELLER_IMAGE_FOLDER + "/" + seller.getId(), profileImage);
@@ -70,6 +72,7 @@ public class SellerStoreApplicationFacade {
             sellerService.updateSellerStatus(seller, CertificationStatus.PENDING);
             return sellerStoreApplicationMapper.toStoreApplicationDetail(storeApplication);
         } catch (BbangleException e) {
+            sellerService.updateSellerStatus(seller, CertificationStatus.NEW);
             if (profileImagePath != null) {
                 log.warn("Seller 생성 실패로 인한 S3 이미지 롤백: {}", profileImagePath);
                 s3Service.deleteImage(profileImagePath);
@@ -77,6 +80,7 @@ public class SellerStoreApplicationFacade {
 
             throw e;
         } catch (Exception e) {
+            sellerService.updateSellerStatus(seller, CertificationStatus.NEW);
             log.error(e.getMessage(), e);
 
             if (profileImagePath != null) {

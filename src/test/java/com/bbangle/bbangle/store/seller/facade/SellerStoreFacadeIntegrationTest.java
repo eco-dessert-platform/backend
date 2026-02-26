@@ -1,34 +1,27 @@
 package com.bbangle.bbangle.store.seller.facade;
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
-import com.bbangle.bbangle.config.S3IntegrationTestSupport;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
-import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreRegisterResult;
-import jakarta.persistence.EntityManager;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @DisplayName("[통합테스트] SellerStoreFacade")
+@SpringBootTest
+@ActiveProfiles("test")
 @Transactional
-class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
+class SellerStoreFacadeIntegrationTest {
 
     @Autowired
     private SellerStoreFacade sellerStoreFacade;
@@ -39,176 +32,58 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
     @Autowired
     private StoreRepository storeRepository;
 
-    @Autowired
-    private EntityManager em;
-
     @Nested
-    @DisplayName("registerStoreForSeller() 테스트")
-    class RegisterStoreForSellerTest {
+    @DisplayName("checkStoreName() 테스트")
+    class checkStoreNameTest {
 
-        private MockMultipartFile mockProfileImage() {
-            return new MockMultipartFile(
-                "profileImage",             // 파라미터 이름 (컨트롤러에서 받는 이름)
-                "test-image.png",           // 파일명
-                "image/png",                // Content-Type
-                "fake image content".getBytes()  // 파일 내용
-            );
+        @Test
+        @DisplayName("Store가 존재하지 않으면 등록 가능하다.")
+        void notExist() {
+
+            // given
+            String storeName = "notExistStore";
+
+            // when
+            StoreNameCheck result = sellerStoreFacade.checkStoreName(storeName);
+
+            // then
+            assertThat(result.available()).isTrue();
+            assertThat(result.store()).isNull();
         }
 
-        @Nested
-        @DisplayName("유용한 정보가 주어지면 스토어 등록에 성공한다.")
-        class Success_registerStoreForSeller {
+        @Test
+        @DisplayName("Store가 존재하고 해당 Store를 등록한 Seller가 없으면 등록 가능하다.")
+        void exist_store_notExist_seller() {
 
-            private Seller saveNewSeller() {
-                Seller seller = SellerFixture.defaultSeller();
-                return sellerRepository.saveAndFlush(seller);
-            }
+            // given
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
 
-            @Test
-            @DisplayName("storeId가 없는 경우")
-            void without_storeId() {
+            // when
+            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
-                // given
-                Seller seller = saveNewSeller();
-                StoreRequest.StoreCreateRequest request =
-                    new StoreRequest.StoreCreateRequest(
-                        "빵그리의 오븐",
-                        null,
-                        "비건 베이커리",
-                        "01012345678",
-                        "01098765432",
-                        "test@gmail.com",
-                        "경기도 수원시",
-                        "상세주소",
-                        null
-                    );
-
-                MockMultipartFile mockFile = mockProfileImage();
-
-                em.flush();
-                em.clear();
-
-                // when
-                StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
-                em.flush();
-                em.clear();
-
-                // then
-                Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-                Store store = storeRepository.findById(result.store().storeId()).orElseThrow();
-
-                assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-                assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);
-                assertThat(result.sellerId()).isEqualTo(seller.getId());
-            }
-
-            @Test
-            @DisplayName("storeId가 존재하는 경우")
-            void with_storeId() {
-
-                // given
-                Seller seller = saveNewSeller();
-                Store store = StoreFixture.defaultStore();
-                Store newStore = storeRepository.save(store);
-
-                StoreRequest.StoreCreateRequest request =
-                    new StoreRequest.StoreCreateRequest(
-                        "빵그리의 오븐",
-                        newStore.getProfile(),
-                        "비건 베이커리",
-                        "01012345678",
-                        "01098765432",
-                        "test@gmail.com",
-                        "경기도 수원시",
-                        "상세주소",
-                        newStore.getId()
-                    );
-
-                MockMultipartFile mockFile = mockProfileImage();
-
-                em.flush();
-                em.clear();
-
-                // when
-                StoreRegisterResult result = sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile);
-                em.flush();
-                em.clear();
-
-                // then
-                Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
-                Store savedStore = storeRepository.findById(result.store().storeId()).orElseThrow();
-
-                assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-                assertThat(savedStore.getStatus()).isEqualTo(StoreStatus.RESERVED);
-                assertThat(result.sellerId()).isEqualTo(seller.getId());
-            }
+            // then
+            assertThat(result.available()).isTrue();
+            assertThat(result.store()).isNotNull();
+            assertThat(result.store().storeId()).isEqualTo(store.getId());
+            assertThat(result.store().name()).isEqualTo(DEFAULT_STORE_NAME);
         }
 
-        @Nested
-        @DisplayName("스토어 등록에 실패한다.")
-        class Fail_registerStoreForSeller {
+        @Test
+        @DisplayName("Store가 존재하고 해당 Store를 등록한 Seller가 존재하면 등록 불가능하다.")
+        void exist_store_exist_seller() {
 
-            private Seller saveNewSeller(CertificationStatus status) {
-                Seller seller = SellerFixture.defaultSeller(status);
-                return sellerRepository.saveAndFlush(seller);
-            }
+            // given
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
 
-            @Test
-            @DisplayName("이미 등록된 판매자 계정인 경우")
-            void already_registered_seller() {
+            // when
+            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
-                // given
-                Seller seller = saveNewSeller(CertificationStatus.PENDING);
-                StoreRequest.StoreCreateRequest request = mock(StoreRequest.StoreCreateRequest.class);
-
-                // when & then
-                assertThatThrownBy(() ->
-                    sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mock(MultipartFile.class))
-                )
-                    .isInstanceOf(BbangleException.class)
-                    .satisfies(e -> {
-                        BbangleException ex = (BbangleException) e;
-                        assertThat(ex.getBbangleErrorCode())
-                            .isEqualTo(BbangleErrorCode.ALREADY_REGISTER_STORE);
-                    });
-            }
-
-            @Test
-            @DisplayName("이미 등록된 스토어인 경우")
-            void already_registered_store() {
-
-                // given
-                Seller seller = saveNewSeller(CertificationStatus.NEW);
-
-                Store store = StoreFixture.defaultStore(StoreStatus.RESERVED);
-                Store newStore = storeRepository.saveAndFlush(store);
-
-                StoreRequest.StoreCreateRequest request =
-                    new StoreRequest.StoreCreateRequest(
-                        "빵그리의 오븐",
-                        newStore.getProfile(),
-                        "비건 베이커리",
-                        "01012345678",
-                        "01098765432",
-                        "test@gmail.com",
-                        "경기도 수원시",
-                        "상세주소",
-                        newStore.getId()
-                    );
-
-                MockMultipartFile mockFile = mockProfileImage();
-
-                // when & then
-                assertThatThrownBy(() ->
-                    sellerStoreFacade.registerStoreForSeller(seller.getId(), request, mockFile)
-                )
-                    .isInstanceOf(BbangleException.class)
-                    .satisfies(e -> {
-                        BbangleException ex = (BbangleException) e;
-                        assertThat(ex.getBbangleErrorCode())
-                            .isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
-                    });
-            }
+            // then
+            assertThat(result.available()).isFalse();
+            assertThat(result.store()).isNotNull();
+            assertThat(result.store().storeId()).isEqualTo(store.getId());
+            assertThat(result.store().name()).isEqualTo(DEFAULT_STORE_NAME);
         }
     }
 }

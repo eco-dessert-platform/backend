@@ -9,7 +9,6 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerResponse;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,7 +43,7 @@ class SellerFacadeIntegrationTest extends S3IntegrationTestSupport {
         void getRegisteredStoreDetail_exist_registeredStore() {
 
             // given
-            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore(StoreStatus.RESERVED));
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
             Seller seller = saveNewSeller(store);
 
             // when
