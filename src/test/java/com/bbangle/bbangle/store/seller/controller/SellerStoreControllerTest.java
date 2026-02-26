@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.store.seller.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -20,12 +21,14 @@ import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.store.domain.StoreStatus;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.StoreCreateRequest;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.StoreApplicationRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.StoreApplicationResponseFixture;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.StoreApplicationCreateRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
+import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
@@ -73,6 +76,9 @@ class SellerStoreControllerTest {
     @MockBean
     private SellerStoreFacade sellerStoreFacade;
 
+    @MockBean
+    private SellerStoreApplicationFacade sellerStoreApplicationFacade;
+
     @SpyBean
     private ResponseService responseService;
 
@@ -80,22 +86,8 @@ class SellerStoreControllerTest {
     @DisplayName("registerStore() 테스트")
     class RegisterStoreTest {
 
-        private StoreRequest.StoreCreateRequest createRequest(String storeName) {
-            return new StoreCreateRequest(
-                storeName,
-                null,
-                "testIntroduce",
-                "01012345678",
-                "01098765432",
-                "123@test.com",
-                "서울",
-                "123동",
-                null
-            );
-        }
-
         private MockMultipartFile createImageFile(
-            StoreRequest.StoreCreateRequest request
+            StoreApplicationCreateRequest request
         ) throws JsonProcessingException  {
             return new MockMultipartFile(
                 "request",
@@ -115,51 +107,47 @@ class SellerStoreControllerTest {
         }
 
         @Test
-        @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("스토어 등록 요청하면 스토어 데이터를 반환한다.")
+        @WithMockAuthenticationPrincipal(userId = 2L, role = "SELLER")
+        @DisplayName("스토어 등록 신청하면 스토어 등록 신청 데이터를 반환한다.")
         void success_registerStore() throws Exception {
 
             // given
-            Long sellerId = 1L;
-
-            StoreRequest.StoreCreateRequest request = createRequest("testStore");
+            StoreApplicationCreateRequest request = StoreApplicationRequestFixture.defaultStoreApplicationCreateRequest();
             MockMultipartFile requestPart = createImageFile(request);
             MockMultipartFile profileImage = createProfileFile();
+            StoreApplicationDetail response = StoreApplicationResponseFixture.defaultStoreApplicationDetail(null);
 
-            StoreResponse.StoreRegisterResult response = StoreResponse.StoreRegisterResult.builder()
-                .sellerId(sellerId)
-                .store(null)
-                .build();
-
-            given(sellerStoreFacade.registerStoreForSeller(
+            given(sellerStoreApplicationFacade.registerStoreForSeller(
                 anyLong(),
-                any(StoreRequest.StoreCreateRequest.class),
+                any(StoreApplicationCreateRequest.class),
                 any(MultipartFile.class)
             )).willReturn(response);
 
             // when & then
             mockMvc.perform(
-                    multipart(SellerApiPath.PREFIX + "/stores")
+                    multipart(SellerApiPath.PREFIX + "/stores/applications")
                         .file(requestPart)
                         .file(profileImage)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.sellerId").value(sellerId));
+                .andExpect(jsonPath("$.result.sellerId").value(2L))
+                .andExpect(jsonPath("$.result.storeApplicationId").value(1L))
+                .andExpect(jsonPath("$.result.name").value(DEFAULT_STORE_NAME));
         }
 
         @Test
         @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("스토어명이 비어있는 경우 스토어 등록 요청에 실패한다.")
+        @DisplayName("스토어명이 비어있는 경우 스토어 등록 신청에 실패한다.")
         void fail_RegisterStoreTest_invalid_request() throws Exception {
 
             // given
-            StoreRequest.StoreCreateRequest request = createRequest("");
+            StoreApplicationCreateRequest request = StoreApplicationRequestFixture.defaultStoreApplicationCreateRequest("");
             MockMultipartFile requestPart = createImageFile(request);
             MockMultipartFile profileImage = createProfileFile();
 
             // when & then
             mockMvc.perform(
-                    multipart(SellerApiPath.PREFIX + "/stores")
+                    multipart(SellerApiPath.PREFIX + "/stores/applications")
                         .file(requestPart)
                         .file(profileImage)
                 )
@@ -168,26 +156,74 @@ class SellerStoreControllerTest {
 
         @Test
         @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("이미 스토어를 등록한 판매자인 경우 스토어 등록 요청에 실패한다.")
+        @DisplayName("이미 스토어를 등록했거나 승인 대기 중인 판매자인 경우 스토어 등록 신청에 실패한다.")
         void fail_RegisterStoreTest_already_registered() throws Exception {
 
             // given
-            StoreRequest.StoreCreateRequest request = createRequest("testStore");
+            StoreApplicationCreateRequest request = StoreApplicationRequestFixture.defaultStoreApplicationCreateRequest();
             MockMultipartFile requestPart = createImageFile(request);
             MockMultipartFile profileImage = createProfileFile();
 
-            given(sellerStoreFacade.registerStoreForSeller(anyLong(), any(), any()))
+            given(sellerStoreApplicationFacade.registerStoreForSeller(anyLong(), any(), any()))
                 .willThrow(new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE));
 
             // when & then
             mockMvc.perform(
-                    multipart(SellerApiPath.PREFIX + "/stores")
+                    multipart(SellerApiPath.PREFIX + "/stores/applications")
+                        .file(requestPart)
+                        .file(profileImage)
+                )
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("스토어 이름이 중복될 경우 스토어 등록 신청에 실패한다.")
+        void fail_RegisterStoreTest_duplicate_storeName() throws Exception {
+
+            // given
+            StoreApplicationCreateRequest request = StoreApplicationRequestFixture.defaultStoreApplicationCreateRequest();
+            MockMultipartFile requestPart = createImageFile(request);
+            MockMultipartFile profileImage = createProfileFile();
+
+            given(sellerStoreApplicationFacade.registerStoreForSeller(anyLong(), any(), any()))
+                .willThrow(new BbangleException(BbangleErrorCode.INVALID_STORE_NAME));
+
+            // when & then
+            mockMvc.perform(
+                    multipart(SellerApiPath.PREFIX + "/stores/applications")
+                        .file(requestPart)
+                        .file(profileImage)
+                )
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("이미 등록된 스토어일 경우 스토어 등록 신청에 실패한다.")
+        void fail_RegisterStoreTest_already_reserved() throws Exception {
+
+            // given
+            StoreApplicationCreateRequest request = StoreApplicationRequestFixture.defaultStoreApplicationCreateRequest(1L);
+            MockMultipartFile requestPart = createImageFile(request);
+            MockMultipartFile profileImage = createProfileFile();
+
+            given(sellerStoreApplicationFacade.registerStoreForSeller(anyLong(), any(), any()))
+                .willThrow(new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE));
+
+            // when & then
+            mockMvc.perform(
+                    multipart(SellerApiPath.PREFIX + "/stores/applications")
                         .file(requestPart)
                         .file(profileImage)
                 )
                 .andExpect(status().isBadRequest());
         }
     }
+
+    @Nested
+    @DisplayName("getStoreApplication() 테스트")
+    class GetStoreApplicationTest {}
 
     @Nested
     @DisplayName("search() 테스트")
@@ -209,7 +245,7 @@ class SellerStoreControllerTest {
             given(sellerStoreService.selectStoreNameForSeller(storeName, null)).willReturn(pagination);
 
             // when & then
-            mockMvc.perform(get(SellerApiPath.PREFIX  + "/stores" + "/search")
+            mockMvc.perform(get(SellerApiPath.PREFIX  + "/stores/store-names")
                     .param("storeName", storeName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -239,7 +275,7 @@ class SellerStoreControllerTest {
             given(sellerStoreService.selectStoreNameForSeller(storeName, cursorId)).willReturn(pagination);
 
             // when & then
-            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/search")
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/store-names")
                     .param("storeName", storeName)
                     .param("cursorId", "21"))
                 .andExpect(status().isOk())
@@ -257,7 +293,7 @@ class SellerStoreControllerTest {
         @DisplayName("storeName이 공백일 경우 400에러를 반환한다.")
         void failure_search_400() throws Exception {
 
-            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/search")
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/store-names")
                     .param("storeName", "  "))
                 .andExpect(status().isBadRequest());
         }
@@ -280,10 +316,10 @@ class SellerStoreControllerTest {
                 .build();
 
             // when
-            given(sellerStoreService.checkStoreName(storeName)).willReturn(response);
+            given(sellerStoreFacade.checkStoreName(storeName)).willReturn(response);
 
             // then
-            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/check-name")
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/check-name")
                     .param("storeName", storeName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -295,23 +331,23 @@ class SellerStoreControllerTest {
 
         @Test
         @WithMockUser(roles = "SELLER")
-        @DisplayName("조회한 스토어의 상태가 None일 경우 사용 가능하다.")
+        @DisplayName("조회한 스토어를 등록한 판매자가 없을 경우 사용 가능하다.")
         void success_checkStoreNameDuplicate_statusNone_available() throws Exception {
 
             // given
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
-                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", StoreStatus.NONE, "01012345678", "01098765432", "123@test.com", "서울", "123동");
+                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
             StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
                 .available(true)
                 .store(sellerStoreDetail)
                 .build();
 
             // when
-            given(sellerStoreService.checkStoreName(storeName)).willReturn(response);
+            given(sellerStoreFacade.checkStoreName(storeName)).willReturn(response);
 
             // then
-            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/check-name")
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/check-name")
                     .param("storeName", storeName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -333,14 +369,14 @@ class SellerStoreControllerTest {
             // given
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
-                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", StoreStatus.ACTIVE, "01012345678", "01098765432", "123@test.com", "서울", "123동");
+                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
             StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
                 .available(false)
                 .store(sellerStoreDetail)
                 .build();
 
             // when
-            given(sellerStoreService.checkStoreName(storeName)).willReturn(response);
+            given(sellerStoreFacade.checkStoreName(storeName)).willReturn(response);
 
             // then
             mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/check-name")

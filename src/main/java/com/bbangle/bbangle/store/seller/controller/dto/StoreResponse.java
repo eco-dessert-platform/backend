@@ -21,9 +21,9 @@ public class StoreResponse {
         @Schema(description = "스토어 상세 정보 (스토어가 존재할 경우)", nullable = true) SellerStoreDetail store
     ) {}
 
-    @Schema(description = "판매자 스토어 등록 결과 응답 DTO")
+    @Schema(description = "판매자 스토어 정보 DTO")
     @Builder
-    public record StoreRegisterResult(
+    public record SellerStoreDTO(
         @Schema(description = "판매자 ID", example = "1") Long sellerId,
         @Schema(description = "스토어 상세 정보") SellerStoreDetail store
     ) {}
