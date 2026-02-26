@@ -80,7 +80,7 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             .build();
     }
 
-    // TODO : v2 Admin이 승인하면 등록되도록 변경
+    // TODO : v3 Admin이 승인하면 등록되도록 변경
     // 판매자 스토어 등록
     public void registerStore(Store store) {
         this.store = store;
