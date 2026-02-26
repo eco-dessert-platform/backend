@@ -37,7 +37,6 @@ public class SellerStoreController implements SellerStoreApi {
     private final SellerStoreFacade sellerStoreFacade;
     private final SellerStoreApplicationFacade sellerStoreApplicationFacade;
 
-    // TODO : 테스트
     @Override
     @PostMapping(
         path = "/applications",
@@ -53,7 +52,6 @@ public class SellerStoreController implements SellerStoreApi {
         );
     }
 
-    // TODO : 테스트
     @Override
     @GetMapping("/applications")
     public SingleResult<StoreApplicationResponse.StoreApplicationDetail> getStoreApplication(
@@ -64,7 +62,6 @@ public class SellerStoreController implements SellerStoreApi {
         );
     }
 
-    // TODO : 테스트 수정
     @Override
     @GetMapping("/store-names")
     public SingleResult<CursorPagination<SellerStoreInfo.StoreInfo>> search(
@@ -76,7 +73,6 @@ public class SellerStoreController implements SellerStoreApi {
         );
     }
 
-    // TODO : 테스트 수정
     @Override
     @GetMapping("/check-name")
     public SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(

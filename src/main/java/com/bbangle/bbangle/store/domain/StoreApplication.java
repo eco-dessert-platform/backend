@@ -23,7 +23,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO : 테스트
 @Table(name = "store_application")
 @Entity
 @Getter

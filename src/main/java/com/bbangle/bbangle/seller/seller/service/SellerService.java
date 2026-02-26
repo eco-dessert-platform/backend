@@ -59,13 +59,11 @@ public class SellerService {
         );
     }
 
-    // TODO : 테스트
     @Transactional(readOnly = true)
     public boolean existsSellerByStoreId(Long storeId) {
         return sellerRepository.existsByStore_Id(storeId);
     }
 
-    // TODO : 테스트
     @Transactional
     public void updateSellerStatus(Seller seller, CertificationStatus status) {
         seller.updateStatus(status);
