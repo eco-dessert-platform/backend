@@ -41,7 +41,7 @@ class SellerStoreFacadeUnitTest {
 
     @Nested
     @DisplayName("checkStoreName() 테스트")
-    class checkStoreNameTest {
+    class CheckStoreNameTest {
 
         @Test
         @DisplayName("Store가 존재하지 않으면 등록 가능하다.")

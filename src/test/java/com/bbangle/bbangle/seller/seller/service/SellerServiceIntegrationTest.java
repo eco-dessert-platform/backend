@@ -202,7 +202,7 @@ class SellerServiceIntegrationTest {
         }
 
         @Test
-        @DisplayName("해당 Store를 등록한 판매자가 없을 경우 true를 반환한다.")
+        @DisplayName("해당 Store를 등록한 판매자가 없을 경우 false를 반환한다.")
         void not_registered() {
 
             // given

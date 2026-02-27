@@ -66,7 +66,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_phone(String invalidPhone) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER,
             invalidPhone,
             DEFAULT_SUBPHONE, DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )
@@ -80,7 +80,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_sub_phone(String invalidPhone) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER, DEFAULT_PHONE,
             invalidPhone,
             DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )
@@ -94,7 +94,7 @@ public class StoreUnitTest {
     void fail_create_store_with_invalid_email(String invalidEmail) {
         // act & assert
         assertThatThrownBy(() -> Store.createForSeller(
-            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_IDENTIFIER, DEFAULT_INTRODUCE, DEFAULT_PHONE, DEFAULT_SUBPHONE,
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER, DEFAULT_PHONE, DEFAULT_SUBPHONE,
             invalidEmail,
             DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
             )
