@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(SellerApiPath.PREFIX + "/oauth2")
+@RequestMapping(SellerApiPath.PREFIX + "/oauth")
 public class SellerOauthController implements SellerOauthApi {
 
     private final ResponseService responseService;
