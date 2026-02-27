@@ -1,11 +1,21 @@
 package com.bbangle.bbangle.store.domain;
 
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_DETAIL_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_EMAIL;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_IDENTIFIER;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PHONE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,15 +23,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("[단위 테스트] Store")
 public class StoreUnitTest {
-
-    private final String name = "test";
-    private final String profile = "test/s3/seller";
-    private final String introduce = "testIntroduce";
-    private final String phone = "01012346789";
-    private final String subPhone = "01098765432";
-    private final String email = "test1234@gmail.com";
-    private final String address = "경기도 수원시 팔달구";
-    private final String detailAddress = "화성행궁 12번지";
 
     private final String newName = "newName";
     private final String newProfile = "test/s3/newProfile";
@@ -32,29 +33,31 @@ public class StoreUnitTest {
     private final String newAddress = "서울";
     private final String newDetailAddress = "123동";
 
-    private Store createDefaultStore() {
-        return Store.createForSeller(name, profile, introduce, phone, subPhone, email, address, detailAddress);
-    }
-
     @Test
     @DisplayName("셀러 생성을 위한 스토어 객체 생성에 성공한다")
     void success_create_store_for_seller() {
 
         // given & when
-        Store store = createDefaultStore();
+        Store store = Store.createForSeller(
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE,
+            DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER,
+            DEFAULT_PHONE, DEFAULT_SUBPHONE,
+            DEFAULT_EMAIL,
+            DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
+        );
 
         // then
         assertThat(store).isNotNull();
-        assertThat(store.getName()).isEqualTo(name);
-        assertThat(store.getProfile()).isEqualTo(profile);
-        assertThat(store.getIntroduce()).isEqualTo(introduce);
-        assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(phone);
-        assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(subPhone);
-        assertThat(store.getEmailVO().getEmail()).isEqualTo(email);
-        assertThat(store.getOriginAddressLine()).isEqualTo(address);
-        assertThat(store.getOriginAddressDetail()).isEqualTo(detailAddress);
+        assertThat(store.getName()).isEqualTo(DEFAULT_STORE_NAME);
+        assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+        assertThat(store.getIdentifier()).isEqualTo(DEFAULT_IDENTIFIER);
+        assertThat(store.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
+        assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(DEFAULT_PHONE);
+        assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(DEFAULT_SUBPHONE);
+        assertThat(store.getEmailVO().getEmail()).isEqualTo(DEFAULT_EMAIL);
+        assertThat(store.getOriginAddressLine()).isEqualTo(DEFAULT_ADDRESS);
+        assertThat(store.getOriginAddressDetail()).isEqualTo(DEFAULT_DETAIL_ADDRESS);
         assertThat(store.isDeleted()).isFalse();
-        assertThat(store.getStatus()).isEqualTo(StoreStatus.NONE);
     }
 
     @ParameterizedTest
@@ -62,7 +65,11 @@ public class StoreUnitTest {
     @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
     void fail_create_store_with_invalid_phone(String invalidPhone) {
         // act & assert
-        assertThatThrownBy(() -> Store.createForSeller(name, profile, introduce, invalidPhone, subPhone, email, address, detailAddress)
+        assertThatThrownBy(() -> Store.createForSeller(
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER,
+            invalidPhone,
+            DEFAULT_SUBPHONE, DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
     }
@@ -72,7 +79,11 @@ public class StoreUnitTest {
     @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
     void fail_create_store_with_invalid_sub_phone(String invalidPhone) {
         // act & assert
-        assertThatThrownBy(() -> Store.createForSeller(name, profile, introduce, phone, invalidPhone, email, address, detailAddress)
+        assertThatThrownBy(() -> Store.createForSeller(
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER, DEFAULT_PHONE,
+            invalidPhone,
+            DEFAULT_EMAIL, DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
     }
@@ -82,7 +93,11 @@ public class StoreUnitTest {
     @ValueSource(strings = {"test1234", "@gmail", "test@gmail", "test@.com", "test@com", ""})
     void fail_create_store_with_invalid_email(String invalidEmail) {
         // act & assert
-        assertThatThrownBy(() -> Store.createForSeller(name, profile, introduce, phone, subPhone, invalidEmail, address, detailAddress)
+        assertThatThrownBy(() -> Store.createForSeller(
+            DEFAULT_STORE_NAME, DEFAULT_PROFILE, DEFAULT_INTRODUCE, DEFAULT_IDENTIFIER, DEFAULT_PHONE, DEFAULT_SUBPHONE,
+            invalidEmail,
+            DEFAULT_ADDRESS, DEFAULT_DETAIL_ADDRESS
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_EMAIL.getMessage());
     }
@@ -92,7 +107,7 @@ public class StoreUnitTest {
     void success_update_store() {
 
         // given
-        Store store = createDefaultStore();
+        Store store = StoreFixture.defaultStore();
 
         // when
         store.updateDetail(newProfile, newIntroduce, newPhone, newSubPhone, newEmail, newAddress, newDetailAddress);
@@ -113,13 +128,17 @@ public class StoreUnitTest {
     void fail_update_store_with_invalid_phone(String invalidPhone) {
 
         // given
-        Store store = createDefaultStore();
+        Store store = StoreFixture.defaultStore();
 
         // act & assert
-        assertThatThrownBy(() -> store.updateDetail(newProfile, newIntroduce, invalidPhone, newSubPhone, newEmail, newAddress, newDetailAddress)
+        assertThatThrownBy(() -> store.updateDetail(
+            newProfile, newIntroduce,
+            invalidPhone,
+            newSubPhone, newEmail, newAddress, newDetailAddress
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
-        assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(phone);
+        assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(DEFAULT_PHONE);
     }
 
     @ParameterizedTest
@@ -128,13 +147,17 @@ public class StoreUnitTest {
     void fail_update_store_with_invalid_sub_phone(String invalidPhone) {
 
         // given
-        Store store = createDefaultStore();
+        Store store = StoreFixture.defaultStore();
 
         // act & assert
-        assertThatThrownBy(() -> store.updateDetail(newProfile, newIntroduce, newPhone, invalidPhone, newEmail, newAddress, newDetailAddress)
+        assertThatThrownBy(() -> store.updateDetail(
+            newProfile, newIntroduce, newPhone,
+            invalidPhone,
+            newEmail, newAddress, newDetailAddress
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
-        assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(subPhone);
+        assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(DEFAULT_SUBPHONE);
     }
 
     @ParameterizedTest
@@ -143,26 +166,16 @@ public class StoreUnitTest {
     void fail_update_store_with_invalid_email(String invalidEmail) {
 
         // given
-        Store store = createDefaultStore();
+        Store store = StoreFixture.defaultStore();
 
         // act & assert
-        assertThatThrownBy(() -> store.updateDetail(newProfile, newIntroduce, newPhone, newSubPhone, invalidEmail, newAddress, newDetailAddress)
+        assertThatThrownBy(() -> store.updateDetail(
+            newProfile, newIntroduce, newPhone, newSubPhone,
+            invalidEmail,
+            newAddress, newDetailAddress
+            )
         ).isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_EMAIL.getMessage());
-        assertThat(store.getEmailVO().getEmail()).isEqualTo(email);
-    }
-
-    @Test
-    @DisplayName("스토어 상태 변경에 성공한다.")
-    void success_change_status() {
-
-        // given
-        Store store = createDefaultStore();
-
-        // when
-        store.changeStatus(StoreStatus.RESERVED);
-
-        // then
-        assertThat(store.getStatus()).isEqualTo(StoreStatus.RESERVED);
+        assertThat(store.getEmailVO().getEmail()).isEqualTo(DEFAULT_EMAIL);
     }
 }

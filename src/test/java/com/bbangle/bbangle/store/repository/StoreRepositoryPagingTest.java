@@ -8,7 +8,6 @@ import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -67,9 +66,7 @@ public class StoreRepositoryPagingTest {
 
             storeRepository.save(Store.builder()
                 .name("Store " + i)
-                .status(StoreStatus.NONE)
                 .build());
-
         });
         em.flush();
         em.clear();

@@ -4,6 +4,7 @@ import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
@@ -20,20 +21,18 @@ public class SellerService {
 
     private final SellerRepository sellerRepository;
 
+    // TODO : v3 - Store/Seller/SellerStoreService로 이동
     public void updateSeller(SellerUpdateRequest request, Long sellerId) {
         // TODO: 실제 비즈니스 로직 구현
     }
 
+    // TODO : v3 - Store/Seller/SellerStoreService로 이동
     public void updateStoreName(SellerStoreNameUpdateRequest request, Long sellerId) {
-
         // TODO: 실제 비즈니스 로직 구현
-
     }
 
     public void updateAccount(SellerAccountUpdateRequest request, Long sellerId) {
-
         // TODO: 실제 비즈니스 로직 구현
-
     }
 
     @Transactional(readOnly = true)
@@ -60,4 +59,13 @@ public class SellerService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsSellerByStoreId(Long storeId) {
+        return sellerRepository.existsByStore_Id(storeId);
+    }
+
+    @Transactional
+    public void updateSellerStatus(Seller seller, CertificationStatus status) {
+        seller.updateStatus(status);
+    }
 }

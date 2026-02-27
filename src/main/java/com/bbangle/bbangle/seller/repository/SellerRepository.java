@@ -16,4 +16,6 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     Optional<Seller> findByIdWithStore(@Param("sellerId") Long sellerId);
   
     Optional<Seller> findByProviderAndProviderId(OauthServerType provider, String providerId);
+
+    boolean existsByStore_Id(Long storeId);
 }

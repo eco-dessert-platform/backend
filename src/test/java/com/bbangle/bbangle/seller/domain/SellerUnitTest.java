@@ -1,13 +1,20 @@
 package com.bbangle.bbangle.seller.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 @DisplayName("[단위 테스트] Seller")
 public class SellerUnitTest {
@@ -35,33 +42,35 @@ public class SellerUnitTest {
         assertThat(seller.getStore()).isNull();
     }
 
-    @Test
-    @DisplayName("스토어 등록 시 스토어 연결 + 상태 변경 + 인증 상태 변경")
-    void success_registerStore() {
+    @ParameterizedTest
+    @EnumSource(
+        value = CertificationStatus.class,
+        names = {"NEW", "REJECTED"}
+    )
+    @DisplayName("스토어 등록 신청 가능한 상태일 경우 통과한다.")
+    void success_register_store(CertificationStatus status) {
 
         // given
-        String name = "seller";
-        OauthServerType provider = OauthServerType.KAKAO;
-        String providerId = "12345";
-        Seller seller = Seller.create(name, provider, providerId);
+        Seller seller = SellerFixture.defaultSeller(status);
 
-        Store store = Store.createForSeller(
-            "빵그리",
-            "test.com",
-            "introduce",
-            "01012345678",
-            "01098765432",
-            "123@test.com",
-            "서울",
-            "123동"
-        );
+        // when & then
+        assertDoesNotThrow(seller::validateRegisterAvailable);
+    }
 
-        // when
-        seller.registerStore(store);
+    @ParameterizedTest
+    @EnumSource(
+        value = CertificationStatus.class,
+        mode = Mode.EXCLUDE,
+        names = {"NEW", "REJECTED"}
+    )
+    @DisplayName("스토어 등록 신청 불가능한 상태일 경우 예외가 발생한다.")
+    void fail_register_store(CertificationStatus status) {
 
-        // then
-        assertThat(seller.getStore()).isEqualTo(store);
-        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-        assertThat(seller.getStore().getStatus()).isEqualTo(StoreStatus.RESERVED);
+        // given
+        Seller seller = SellerFixture.defaultSeller(status);
+
+        // when & then
+        BbangleException exception = assertThrows(BbangleException.class, seller::validateRegisterAvailable);
+        assertEquals(BbangleErrorCode.ALREADY_REGISTER_STORE, exception.getBbangleErrorCode());
     }
 }
