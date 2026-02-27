@@ -224,7 +224,39 @@ class SellerStoreControllerTest {
 
     @Nested
     @DisplayName("getStoreApplication() 테스트")
-    class GetStoreApplicationTest {}
+    class GetStoreApplicationTest {
+
+        @Test
+        @DisplayName("스토어 등록 신청 내역이 없을 경우 null을 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void notExist_storeApplication() throws Exception {
+
+            // given
+            given(sellerStoreApplicationFacade.findStoreApplication(anyLong())).willReturn(null);
+
+            // when & then
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/applications"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").isEmpty());
+        }
+
+        @Test
+        @DisplayName("스토어 등록 신청 내역이 존재할 경우 Response를 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void exist_storeApplication() throws Exception {
+
+            // given
+            StoreApplicationDetail response = StoreApplicationResponseFixture.defaultStoreApplicationDetail(null);
+            given(sellerStoreApplicationFacade.findStoreApplication(anyLong())).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores/applications"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.sellerId").value(1L))
+                .andExpect(jsonPath("$.result.storeApplicationId").value(1L))
+                .andExpect(jsonPath("$.result.name").value(DEFAULT_STORE_NAME));
+        }
+    }
 
     @Nested
     @DisplayName("search() 테스트")
