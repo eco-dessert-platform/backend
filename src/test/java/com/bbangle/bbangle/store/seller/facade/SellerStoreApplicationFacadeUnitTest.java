@@ -132,7 +132,7 @@ class SellerStoreApplicationFacadeUnitTest {
             Seller seller = mock(Seller.class);
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            doThrow(new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE)).when(seller).isRegisterAvailable();
+            doThrow(new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE)).when(seller).validateRegisterAvailable();
 
             // when & then
             assertThatThrownBy(() -> facade.registerStoreForSeller(

@@ -54,7 +54,7 @@ public class SellerUnitTest {
         Seller seller = SellerFixture.defaultSeller(status);
 
         // when & then
-        assertDoesNotThrow(seller::isRegisterAvailable);
+        assertDoesNotThrow(seller::validateRegisterAvailable);
     }
 
     @ParameterizedTest
@@ -70,7 +70,7 @@ public class SellerUnitTest {
         Seller seller = SellerFixture.defaultSeller(status);
 
         // when & then
-        BbangleException exception = assertThrows(BbangleException.class, seller::isRegisterAvailable);
+        BbangleException exception = assertThrows(BbangleException.class, seller::validateRegisterAvailable);
         assertEquals(BbangleErrorCode.ALREADY_REGISTER_STORE, exception.getBbangleErrorCode());
     }
 }
