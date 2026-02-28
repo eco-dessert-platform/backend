@@ -15,6 +15,8 @@ import com.bbangle.bbangle.push.domain.QPush;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.HashMap;
@@ -170,12 +172,13 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             return Collections.emptyMap();
         }
 
+        NumberPath<Long> boardIdExpr = product.board.id;
+        NumberExpression<Long> totalCountExpr = product.count();
+        NumberExpression<Long> soldoutSumExpr =
+            product.soldout.when(true).then(1L).otherwise(0L).sum();
+
         List<Tuple> result = queryFactory
-            .select(
-                product.board.id,
-                product.count(),
-                product.soldout.when(true).then(1L).otherwise(0L).sum()
-            )
+            .select(boardIdExpr, totalCountExpr, soldoutSumExpr)
             .from(product)
             .where(product.board.id.in(boardIds).and(product.isDeleted.isFalse()))
             .groupBy(product.board.id)
@@ -183,9 +186,9 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
 
         Map<Long, InventoryStatus> statusMap = new HashMap<>();
         result.forEach(tuple -> {
-            Long boardId = tuple.get(product.board.id);
-            long totalCount = tuple.get(product.count());
-            long soldoutCount = tuple.get(product.soldout.when(true).then(1L).otherwise(0L).sum());
+            Long boardId = tuple.get(boardIdExpr);
+            long totalCount = tuple.get(totalCountExpr);
+            long soldoutCount = tuple.get(soldoutSumExpr);
 
             InventoryStatus status;
             if (soldoutCount == 0) {

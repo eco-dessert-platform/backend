@@ -74,7 +74,7 @@ public class Board extends SoftDeleteBaseEntity {
     private Boolean status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "sale_status")
+    @Column(name = "sale_status", nullable = false)
     private SaleStatus saleStatus;
 
     @Column(name = "purchase_url")
