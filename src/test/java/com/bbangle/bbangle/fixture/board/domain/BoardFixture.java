@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixture.board.domain;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.DiscountType;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public final class BoardFixture {
             .discountRate(0)
             .deliveryFee(0)
             .store(store)
+            .saleStatus(SaleStatus.ON_SALE)
             .products(new ArrayList<>())
             .productImgs(new ArrayList<>());
     }
