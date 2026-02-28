@@ -6,11 +6,13 @@ import com.bbangle.bbangle.board.customer.dto.QTitleDto;
 import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.customer.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.InventoryStatus;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -160,5 +162,41 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             ).from(product)
             .orderBy(product.board.id.asc())
             .fetch();
+    }
+
+    @Override
+    public Map<Long, InventoryStatus> findInventoryStatusByBoardIds(List<Long> boardIds) {
+        if (boardIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Tuple> result = queryFactory
+            .select(
+                product.board.id,
+                product.count(),
+                product.soldout.when(true).then(1L).otherwise(0L).sum()
+            )
+            .from(product)
+            .where(product.board.id.in(boardIds).and(product.isDeleted.isFalse()))
+            .groupBy(product.board.id)
+            .fetch();
+
+        Map<Long, InventoryStatus> statusMap = new HashMap<>();
+        result.forEach(tuple -> {
+            Long boardId = tuple.get(product.board.id);
+            long totalCount = tuple.get(product.count());
+            long soldoutCount = tuple.get(product.soldout.when(true).then(1L).otherwise(0L).sum());
+
+            InventoryStatus status;
+            if (soldoutCount == 0) {
+                status = InventoryStatus.IN_STOCK;
+            } else if (soldoutCount == totalCount) {
+                status = InventoryStatus.SOLDOUT;
+            } else {
+                status = InventoryStatus.PARTIAL_SOLDOUT;
+            }
+            statusMap.put(boardId, status);
+        });
+        return statusMap;
     }
 }
