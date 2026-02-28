@@ -4,20 +4,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.InventoryStatus;
 import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.domain.SaleStatus;
+import com.bbangle.bbangle.board.domain.SortType;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductImgRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.seller.service.command.BoardDetailCommand;
 import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductInfoNoticeCommand;
+import com.bbangle.bbangle.board.seller.service.command.SearchSellerBoardCommand;
 import com.bbangle.bbangle.board.seller.service.command.UpdateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.UpdateProductCommand;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
+import com.bbangle.bbangle.board.seller.service.info.SellerBoardItemInfo;
+import com.bbangle.bbangle.board.seller.service.info.SellerBoardListInfo;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
@@ -26,6 +35,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -33,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 @DisplayName("[통합테스트] SellerBoardService")
@@ -46,6 +57,12 @@ class SellerBoardServiceIntegrationTest {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private ProductImgRepository productImgRepository;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -656,6 +673,233 @@ class SellerBoardServiceIntegrationTest {
                 .importFood("해당없음")
                 .build();
         }
+    }
+
+    @Nested
+    @DisplayName("searchBoards 메서드")
+    class SearchBoards {
+
+        private Seller seller;
+
+        @BeforeEach
+        void setUpSearchBoards() {
+            seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
+
+            // Board1: ON_SALE, 모든 상품 재고 있음 → IN_STOCK
+            createAndSaveBoardForSearch(store, "글루텐프리 식빵", SaleStatus.ON_SALE,
+                3000, 30000, "thumb1.jpg", List.of(false, false));
+
+            // Board2: OUT_OF_STOCK, 모든 상품 품절 → SOLDOUT
+            createAndSaveBoardForSearch(store, "비건 쿠키", SaleStatus.OUT_OF_STOCK,
+                0, null, "thumb2.jpg", List.of(true, true));
+
+            // Board3: PENDING, 일부 상품 품절 → PARTIAL_SOLDOUT
+            createAndSaveBoardForSearch(store, "건강 케이크", SaleStatus.PENDING,
+                3000, null, "thumb3.jpg", List.of(false, true));
+
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("필터 없이 조회하면 해당 스토어의 모든 게시글이 반환된다")
+        void searchBoards_withNoFilter_returnsAllBoards() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            assertThat(result.boards().getTotalElements()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("saleStatus 필터를 적용하면 해당 상태의 게시글만 반환된다")
+        void searchBoards_withSaleStatusFilter_returnsFilteredBoards() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), SaleStatus.ON_SALE, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            assertThat(result.boards().getTotalElements()).isEqualTo(1);
+            assertThat(result.boards().getContent().get(0).title()).isEqualTo("글루텐프리 식빵");
+        }
+
+        @Test
+        @DisplayName("keyword 필터를 적용하면 상품명에 keyword가 포함된 게시글만 반환된다")
+        void searchBoards_withKeywordFilter_returnsFilteredBoards() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, "쿠키", SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            assertThat(result.boards().getTotalElements()).isEqualTo(1);
+            assertThat(result.boards().getContent().get(0).title()).isEqualTo("비건 쿠키");
+        }
+
+        @Test
+        @DisplayName("tabCounts는 스토어 내 각 판매상태별 게시글 수를 반환한다")
+        void searchBoards_returnsCorrectTabCounts() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            Map<SaleStatus, Long> tabCounts = result.tabCounts();
+            assertThat(tabCounts.get(SaleStatus.ON_SALE)).isEqualTo(1L);
+            assertThat(tabCounts.get(SaleStatus.OUT_OF_STOCK)).isEqualTo(1L);
+            assertThat(tabCounts.get(SaleStatus.PENDING)).isEqualTo(1L);
+            assertThat(tabCounts.get(SaleStatus.STOPPED)).isEqualTo(0L);
+            assertThat(tabCounts.get(SaleStatus.BANNED)).isEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("모든 상품이 품절인 게시글의 재고상태는 SOLDOUT이다")
+        void searchBoards_inventoryStatus_soldoutWhenAllSoldout() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), SaleStatus.OUT_OF_STOCK, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            SellerBoardItemInfo item = result.boards().getContent().get(0);
+            assertThat(item.inventoryStatus()).isEqualTo(InventoryStatus.SOLDOUT);
+        }
+
+        @Test
+        @DisplayName("일부 상품만 품절인 게시글의 재고상태는 PARTIAL_SOLDOUT이다")
+        void searchBoards_inventoryStatus_partialSoldout() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), SaleStatus.PENDING, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            SellerBoardItemInfo item = result.boards().getContent().get(0);
+            assertThat(item.inventoryStatus()).isEqualTo(InventoryStatus.PARTIAL_SOLDOUT);
+        }
+
+        @Test
+        @DisplayName("모든 상품이 재고 있는 게시글의 재고상태는 IN_STOCK이다")
+        void searchBoards_inventoryStatus_inStockWhenNoneSoldout() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), SaleStatus.ON_SALE, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            SellerBoardItemInfo item = result.boards().getContent().get(0);
+            assertThat(item.inventoryStatus()).isEqualTo(InventoryStatus.IN_STOCK);
+        }
+
+        @Test
+        @DisplayName("다른 스토어의 게시글은 조회되지 않는다")
+        void searchBoards_doesNotReturnOtherStoresBoards() {
+            // given
+            Store otherStore = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            Seller otherSeller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(otherStore));
+            createAndSaveBoardForSearch(otherStore, "다른 스토어 상품", SaleStatus.ON_SALE,
+                0, null, "other_thumb.jpg", List.of(false));
+            em.flush();
+            em.clear();
+
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, null, SortType.LATEST, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            assertThat(result.boards().getTotalElements()).isEqualTo(3);
+            assertThat(result.boards().getContent())
+                .extracting(SellerBoardItemInfo::title)
+                .doesNotContain("다른 스토어 상품");
+        }
+
+        @Test
+        @DisplayName("NAME 정렬로 조회하면 상품명 오름차순으로 반환된다")
+        void searchBoards_sortByName_returnsAlphabetically() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, null, SortType.NAME, 0, 10);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            List<String> titles = result.boards().getContent().stream()
+                .map(SellerBoardItemInfo::title)
+                .toList();
+            assertThat(titles).isSortedAccordingTo(String::compareTo);
+        }
+
+        @Test
+        @DisplayName("페이지 크기보다 게시글이 많으면 totalElements와 totalPages가 올바르게 반환된다")
+        void searchBoards_pagination_worksCorrectly() {
+            // given
+            SearchSellerBoardCommand command = new SearchSellerBoardCommand(
+                seller.getId(), null, null, null, null, SortType.LATEST, 0, 2);
+
+            // when
+            SellerBoardListInfo result = sellerBoardService.searchBoards(command);
+
+            // then
+            assertThat(result.boards().getContent()).hasSize(2);
+            assertThat(result.boards().getTotalElements()).isEqualTo(3);
+            assertThat(result.boards().getTotalPages()).isEqualTo(2);
+        }
+    }
+
+    private Board createAndSaveBoardForSearch(
+        Store targetStore,
+        String title,
+        SaleStatus saleStatus,
+        Integer deliveryFee,
+        Integer freeShippingConditions,
+        String thumbnailUrl,
+        List<Boolean> soldoutStates
+    ) {
+        Board board = BoardFixture.defaultBoardWithStore(targetStore, title);
+        ReflectionTestUtils.setField(board, "saleStatus", saleStatus);
+        ReflectionTestUtils.setField(board, "deliveryFee", deliveryFee);
+        ReflectionTestUtils.setField(board, "freeShippingConditions", freeShippingConditions);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        boardRepository.save(board);
+
+        ProductImg thumbnail = ProductImg.builder()
+            .board(board)
+            .url(thumbnailUrl)
+            .imgOrder(0)
+            .build();
+        productImgRepository.save(thumbnail);
+
+        for (Boolean soldout : soldoutStates) {
+            Product product = Product.builder()
+                .board(board)
+                .title("옵션")
+                .soldout(soldout)
+                .build();
+            productRepository.save(product);
+        }
+
+        return board;
     }
 
     private CreateBoardServiceCommand createValidCommand(Store store) {

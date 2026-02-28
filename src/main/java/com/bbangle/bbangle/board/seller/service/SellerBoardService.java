@@ -1,23 +1,34 @@
 package com.bbangle.bbangle.board.seller.service;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.InventoryStatus;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.repository.dao.SellerBoardDao;
 import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
+import com.bbangle.bbangle.board.seller.service.command.SearchSellerBoardCommand;
 import com.bbangle.bbangle.board.seller.service.command.UpdateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.UpdateProductCommand;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
+import com.bbangle.bbangle.board.seller.service.info.SellerBoardItemInfo;
+import com.bbangle.bbangle.board.seller.service.info.SellerBoardListInfo;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +40,7 @@ public class SellerBoardService {
 
     private final BoardRepository boardRepository;
     private final ProductImgRepository productImgRepository;
+    private final ProductRepository productRepository;
     private final SellerRepository sellerRepository;
 
     @Transactional
@@ -119,6 +131,48 @@ public class SellerBoardService {
         productImgRepository.saveAll(newProductImgs);
 
         return BoardInfo.from(board);
+    }
+
+    public SellerBoardListInfo searchBoards(SearchSellerBoardCommand command) {
+        Seller seller = sellerRepository.findById(command.sellerId())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
+        if (seller.getStore() == null) {
+            throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
+        }
+        Long storeId = seller.getStore().getId();
+
+        PageRequest pageable = PageRequest.of(command.page(), command.size());
+
+        Page<SellerBoardDao> boardPage = boardRepository.findSellerBoards(
+            storeId,
+            command.saleStatus(),
+            command.mainCategory(),
+            command.category(),
+            command.keyword(),
+            command.sortBy(),
+            pageable
+        );
+
+        List<Long> boardIds = boardPage.getContent().stream()
+            .map(SellerBoardDao::boardId)
+            .toList();
+
+        Map<Long, InventoryStatus> inventoryStatusMap =
+            productRepository.findInventoryStatusByBoardIds(boardIds);
+
+        List<SellerBoardItemInfo> items = boardPage.getContent().stream()
+            .map(dao -> SellerBoardItemInfo.of(
+                dao,
+                inventoryStatusMap.getOrDefault(dao.boardId(), InventoryStatus.IN_STOCK)
+            ))
+            .toList();
+
+        Page<SellerBoardItemInfo> resultPage =
+            new PageImpl<>(items, pageable, boardPage.getTotalElements());
+
+        Map<SaleStatus, Long> tabCounts = boardRepository.countSellerBoardsBySaleStatus(storeId);
+
+        return new SellerBoardListInfo(resultPage, tabCounts);
     }
 
     private void validateOwnership(Long sellerId, Board board) {
