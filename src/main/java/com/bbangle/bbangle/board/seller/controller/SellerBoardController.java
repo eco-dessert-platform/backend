@@ -3,23 +3,22 @@ package com.bbangle.bbangle.board.seller.controller;
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
 import com.bbangle.bbangle.board.seller.facade.SellerBoardFacade;
+import com.bbangle.bbangle.board.seller.service.SellerBoardService;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
+import com.bbangle.bbangle.board.seller.service.info.SellerBoardListInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +39,7 @@ public class SellerBoardController implements SellerBoardApi {
 
     private final ResponseService responseService;
     private final SellerBoardFacade sellerBoardFacade;
+    private final SellerBoardService sellerBoardService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public SingleResult<BoardInfo> createBoard(
@@ -51,21 +51,29 @@ public class SellerBoardController implements SellerBoardApi {
         );
     }
 
-    @GetMapping("/{storeId}/boards")
-    public SingleResult<BbanglePageResponse<SellerBoardSearchResponse>> searchProductBoard(
-        @Valid
-        @PathVariable(name = "storeId")
-        Long storeId,
-        ProductBoardSearchRequest request) {
+    @GetMapping
+    public SingleResult<SellerBoardListResponse> searchProductBoard(
+        @AuthenticationPrincipal Long sellerId,
+        @ModelAttribute ProductBoardSearchRequest request
+    ) {
+        SellerBoardListInfo info = sellerBoardService.searchBoards(request.toCommand(sellerId));
 
-        // TODO : 비즈니스 로직 차후 구현 예정
+        List<SellerBoardSearchResponse> items = info.boards().getContent().stream()
+            .map(SellerBoardSearchResponse::from)
+            .toList();
 
-        PageRequest pageable = PageRequest.of(request.page(), request.size());
-        Page<SellerBoardSearchResponse> resultPage = new PageImpl<>(new ArrayList<>(), pageable,
-            0);
+        BbanglePageResponse<SellerBoardSearchResponse> pageResponse =
+            new BbanglePageResponse<>(
+                items,
+                info.boards().getNumber(),
+                info.boards().getSize(),
+                info.boards().getTotalPages(),
+                info.boards().getTotalElements()
+            );
 
-        BbanglePageResponse<SellerBoardSearchResponse> res = BbanglePageResponse.of(resultPage);
-        return responseService.getSingleResult(res);
+        return responseService.getSingleResult(
+            new SellerBoardListResponse(info.tabCounts(), pageResponse)
+        );
     }
 
     @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

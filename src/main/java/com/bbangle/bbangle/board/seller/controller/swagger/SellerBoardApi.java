@@ -3,11 +3,10 @@ package com.bbangle.bbangle.board.seller.controller.swagger;
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
-import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
-import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,9 +36,21 @@ public interface SellerBoardApi {
 
     @Operation(
         summary = "판매자 상품 게시글 조회",
-        description = "페이징 처리된 상품 게시글을 조회합니다. 페이징은 100개 단위로 구현되어집니다"
+        description = """
+            ### 판매자 본인 스토어의 상품 게시글 목록을 조회합니다.
+            - 필터 없이 요청 시 전체 게시글을 반환합니다.
+            - `saleStatus` 필터를 적용하면 해당 판매 상태의 게시글만 반환됩니다.
+            - `tabCounts`는 필터 여부와 무관하게 스토어 전체 판매상태별 게시글 수를 반환합니다.
+            - `inventoryStatus`는 하위 상품 옵션의 품절 여부를 집계하여 계산합니다.
+              - `IN_STOCK`: 모든 옵션 재고 있음
+              - `PARTIAL_SOLDOUT`: 일부 옵션 품절
+              - `SOLDOUT`: 모든 옵션 품절
+            - `deliveryType`은 배송비(`deliveryFee`)와 무료배송 조건(`freeShippingConditions`)으로 계산합니다.
+              - `FREE`: 배송비 없음
+              - `CONDITIONAL_FREE`: 배송비 있고 무료배송 조건 있음
+              - `PAID`: 배송비 있고 무료배송 조건 없음
+            """
     )
-
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
@@ -54,23 +65,36 @@ public interface SellerBoardApi {
                             "success": true,
                             "code": 0,
                             "message": "SUCCESS",
-                            "content": [
-                                {   
-                                    "productId": 1,
-                                    "imgUrl": "https://image.bbangle.com/...",
-                                    "productName": "맛있는 식빵",
-                                    "inventoryStatus": "재고 있음",
-                                    "price": 5000,
-                                    "discountPrice": 4500,
-                                    "fee": 3000,
-                                    "freeMinPrice": 30000,
-                                    "saleStatus": "ON_SALE"
+                            "content": {
+                                "tabCounts": {
+                                    "ON_SALE": 5,
+                                    "OUT_OF_STOCK": 2,
+                                    "STOPPED": 1,
+                                    "PENDING": 3,
+                                    "BANNED": 0
+                                },
+                                "boards": {
+                                    "content": [
+                                        {
+                                            "boardId": 1,
+                                            "thumbnailUrl": "https://cdn.bbangle.com/board-images/thumb.jpg",
+                                            "title": "글루텐프리 식빵 세트",
+                                            "inventoryStatus": "IN_STOCK",
+                                            "price": 15000,
+                                            "discountPrice": 13500,
+                                            "discountValue": 10,
+                                            "deliveryFee": 3000,
+                                            "freeShippingConditions": 30000,
+                                            "deliveryType": "CONDITIONAL_FREE",
+                                            "saleStatus": "ON_SALE"
+                                        }
+                                    ],
+                                    "pageNumber": 0,
+                                    "pageSize": 10,
+                                    "totalPages": 1,
+                                    "totalElements": 1
                                 }
-                            ],
-                            "pageNumber": 0,
-                            "pageSize": 100,
-                            "totalPages": 5,
-                            "totalElements": 480
+                            }
                         }
                         """
                 )
@@ -84,23 +108,22 @@ public interface SellerBoardApi {
             )
         )
     })
-    // Doc 전용 파라미터
     @Parameters({
-        @Parameter(name = "storeId", description = "스토어 ID", example = "1"),
-        @Parameter(name = "topName", description = "대분류명", example = "빵", required = true),
-        @Parameter(name = "subName", description = "중분류명", example = "식빵", required = true),
-        @Parameter(name = "fieldType", description = "키워드 타입",
-            schema = @Schema(allowableValues = {"PRODUCT_NAME", "ORDER_NO", "ALL"})),
-        @Parameter(name = "keyword", description = "키워드", example = "건강빵"),
-        @Parameter(name = "page", description = "페이지 번호", schema = @Schema(defaultValue = "0"), example = "0", required = true),
-        @Parameter(name = "size", description = "페이지 크기", schema = @Schema(defaultValue = "100"), example = "100", required = true),
-        @Parameter(name = "sortBy", description = "정렬 필드", example = "createdAt", required = true),
-        @Parameter(name = "direction", description = "정렬 방향", schema = @Schema(allowableValues = {
-            "ASC", "DESC"}), required = true)
+        @Parameter(name = "saleStatus", description = "판매상태 탭 필터 (null=전체)",
+            schema = @Schema(allowableValues = {"ON_SALE", "OUT_OF_STOCK", "STOPPED", "PENDING", "BANNED"})),
+        @Parameter(name = "mainCategory", description = "대분류 (null=전체)",
+            schema = @Schema(allowableValues = {"BREAD", "SNACK"})),
+        @Parameter(name = "category", description = "중분류 (null=전체)",
+            schema = @Schema(allowableValues = {"BREAD", "BAGEL", "CAKE", "COOKIE", "JAM", "GRANOLA", "TART", "SNACK", "ICE_CREAM", "YOGURT", "ETC"})),
+        @Parameter(name = "keyword", description = "상품명 검색어"),
+        @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", schema = @Schema(defaultValue = "0")),
+        @Parameter(name = "size", description = "페이지 크기", schema = @Schema(defaultValue = "10")),
+        @Parameter(name = "sortBy", description = "정렬 기준 (기본값: LATEST)",
+            schema = @Schema(allowableValues = {"LATEST", "OLDEST", "NAME"}))
     })
-    SingleResult<BbanglePageResponse<SellerBoardSearchResponse>> searchProductBoard(
-        Long storeId,
-        @Parameter(hidden = true) // 실제 바인딩 DTO는 숨김
+    SingleResult<SellerBoardListResponse> searchProductBoard(
+        @Parameter(hidden = true) Long sellerId,
+        @Parameter(hidden = true)
         @ParameterObject
         ProductBoardSearchRequest request);
 
