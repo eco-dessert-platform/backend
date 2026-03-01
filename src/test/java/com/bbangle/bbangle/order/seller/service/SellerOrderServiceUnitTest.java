@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
+import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Shipping;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -511,18 +512,19 @@ class SellerOrderServiceUnitTest {
                 .build();
 
             given(orderRepository.searchOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByOrderStatus(command)).willReturn(Collections.emptyMap());
             given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L)))
                 .willReturn(Collections.emptyList());
 
             // when
-            BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sut.orderSearch(command);
+            OrderResponse.OrderSearchPageResponse result = sut.orderSearch(command);
 
             log.info("=== OrderSearchResponse (JSON) ===");
-            if (!result.content().isEmpty()) {
+            if (!result.orders().content().isEmpty()) {
                 try {
                     ObjectMapper objectMapper = new ObjectMapper();
                     String json = objectMapper.writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(result.content().get(0));
+                        .writeValueAsString(result.orders().content().get(0));
                     log.info(json);
                 } catch (Exception e) {
                     log.error("Failed to serialize OrderSearchResponse to JSON", e);
@@ -531,14 +533,17 @@ class SellerOrderServiceUnitTest {
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.totalElements()).isEqualTo(1L);
-            assertThat(result.content()).asList().hasSize(1);
+            assertThat(result.orders().totalElements()).isEqualTo(1L);
+            assertThat(result.orders().content()).asList().hasSize(1);
 
-            OrderResponse.OrderSearchResponse response = result.content().get(0);
+            OrderResponse.OrderSearchResponse response = result.orders().content().get(0);
 
+            // 기본 정보 검증
             assertThat(response.orderNumber()).isEqualTo(orderNumber);
             assertThat(response.totalOrderPrice()).isEqualTo(totalAmount.toString());
             assertThat(response.recipientName()).isEqualTo(buyerName);
+
+            // 주문 상품 정보 검증
             assertThat(response.orderItems()).isNotNull().asList().hasSize(1);
 
             var orderItemList = response.orderItems().get(0);
@@ -549,17 +554,21 @@ class SellerOrderServiceUnitTest {
             assertThat(orderItemList.orderItemInfo().unitPrice()).isEqualTo(25000L);
             assertThat(orderItemList.orderItemInfo().totalPrice()).isEqualTo(50000L);
 
+            // 배송 정보 검증 (OrderItem에 OrderDelivery 없으므로 기본값 - 이제 품목 수준)
             assertThat(orderItemList.orderDeliveryStatus()).isEqualTo(OrderDeliveryStatus.PREPARING);
             assertThat(orderItemList.courierCompany()).isEqualTo(CourierCompany.NONE);
             assertThat(orderItemList.trackingNumber()).isEqualTo("-");
 
+            // 판매자 정보 검증
             assertThat(response.sellerId()).isEqualTo(1L);
+
+            // 결제 정보 검증
             assertThat(response.paymentInfo()).isNotNull();
         }
 
-        @DisplayName("OrderItem이 없는 주문은 빈 orderItems 목록으로 응답에 포함된다.")
+        @DisplayName("OrderItem이 없는 주문은 orderItems가 빈 목록으로 포함되어 조회된다")
         @Test
-        void givenOrdersWithMissingOrderItem_whenOrderSearch_thenIncludesOrderWithEmptyItemsList() {
+        void givenOrdersWithMissingOrderItem_whenOrderSearch_thenSkipsInvalidOrders() {
             // given
             Store boardStore = StoreFixture.defaultStore();
             ReflectionTestUtils.setField(boardStore, "id", 2L);
@@ -578,6 +587,7 @@ class SellerOrderServiceUnitTest {
             // 비정상 주문 (OrderItem 없음)
             Order invalidOrder = OrderFixture.createDefaultOrder();
             ReflectionTestUtils.setField(invalidOrder, "id", 2L);
+            // OrderItem을 추가하지 않음
             Payment invalidPayment = PaymentFixture.createDefaultPayment(invalidOrder);
             ReflectionTestUtils.setField(invalidOrder, "payment", invalidPayment);
 
@@ -593,24 +603,26 @@ class SellerOrderServiceUnitTest {
                 .page(PageRequest.of(0, 10))
                 .build();
 
-            // invalidOrder에 OrderItem이 없으므로 수집되는 ID는 validOrder의 10L만
             given(orderRepository.searchOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByOrderStatus(command)).willReturn(Collections.emptyMap());
             given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L)))
                 .willReturn(Collections.emptyList());
 
             // when
-            BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sut.orderSearch(command);
+            OrderResponse.OrderSearchPageResponse result = sut.orderSearch(command);
 
-            // then: 두 주문 모두 응답에 포함됨 (skip 없음)
-            assertThat(result.content()).asList().hasSize(2);
-            assertThat(result.content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
-            // invalidOrder는 orderItems가 빈 목록
-            assertThat(result.content().get(1).orderItems()).isEmpty();
+            // then
+            // OrderItem이 없는 주문도 응답에 포함되지만 orderItems가 비어있음
+            assertThat(result.orders().content()).asList().hasSize(2);
+            assertThat(result.orders().content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
+            assertThat(result.orders().content().get(0).orderItems()).isNotEmpty();
+            assertThat(result.orders().content().get(1).orderNumber()).isEqualTo(invalidOrder.getOrderNumber());
+            assertThat(result.orders().content().get(1).orderItems()).isEmpty();
         }
 
-        @DisplayName("Payment가 없는 주문은 paymentInfo가 null인 상태로 응답에 포함된다.")
+        @DisplayName("Payment가 없는 주문은 paymentInfo가 null로 포함되어 조회된다")
         @Test
-        void givenOrdersWithMissingPayment_whenOrderSearch_thenIncludesOrderWithNullPaymentInfo() {
+        void givenOrdersWithMissingPayment_whenOrderSearch_thenSkipsInvalidOrders() {
             // given
             Store boardStore = StoreFixture.defaultStore();
             ReflectionTestUtils.setField(boardStore, "id", 2L);
@@ -626,13 +638,13 @@ class SellerOrderServiceUnitTest {
             Payment validPayment = PaymentFixture.createDefaultPayment(validOrder);
             ReflectionTestUtils.setField(validOrder, "payment", validPayment);
 
-            // 비정상 주문 (Payment 없음 - null 상태)
+            // 비정상 주문 (Payment 없음)
             Order invalidOrder = OrderFixture.createDefaultOrder();
             ReflectionTestUtils.setField(invalidOrder, "id", 2L);
             OrderItem invalidOrderItem = OrderItemFixture.createOrderItemWithProduct(product);
             ReflectionTestUtils.setField(invalidOrderItem, "id", 11L);
             invalidOrder.addOrderItem(invalidOrderItem);
-            // payment 설정하지 않음 (null)
+            // Payment를 설정하지 않음 (null)
 
             BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(
                 List.of(validOrder, invalidOrder),
@@ -645,18 +657,138 @@ class SellerOrderServiceUnitTest {
                 .build();
 
             given(orderRepository.searchOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByOrderStatus(command)).willReturn(Collections.emptyMap());
             given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L, 11L)))
                 .willReturn(Collections.emptyList());
 
             // when
-            BbanglePageResponse<OrderResponse.OrderSearchResponse> result = sut.orderSearch(command);
+            OrderResponse.OrderSearchPageResponse result = sut.orderSearch(command);
 
-            // then: 두 주문 모두 응답에 포함됨 (skip 없음)
-            assertThat(result.content()).asList().hasSize(2);
-            // validOrder: paymentInfo 있음
-            assertThat(result.content().get(0).paymentInfo()).isNotNull();
-            // invalidOrder: paymentInfo null (payment 없음)
-            assertThat(result.content().get(1).paymentInfo()).isNull();
+            // then
+            // Payment가 없는 주문도 응답에 포함되지만 paymentInfo가 null
+            assertThat(result.orders().content()).asList().hasSize(2);
+            assertThat(result.orders().content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
+            assertThat(result.orders().content().get(0).paymentInfo()).isNotNull();
+            assertThat(result.orders().content().get(1).orderNumber()).isEqualTo(invalidOrder.getOrderNumber());
+            assertThat(result.orders().content().get(1).paymentInfo()).isNull();
+        }
+
+        @Nested
+        @DisplayName("주문 품목 상세 조회 테스트")
+        class SearchOrderItemDetailsTest {
+
+            @DisplayName("orderItemIds가 null이면 ORDER_ITEM_NOT_FOUND 예외가 발생한다.")
+            @Test
+            void givenNullOrderItemIds_whenSearchOrderItemDetails_thenThrowsException() {
+                // given
+                List<Long> orderItemIds = null;
+                Long sellerId = 1L;
+
+                // when
+                BbangleException result = assertThrows(BbangleException.class,
+                    () -> sut.searchOrderItemDetails(orderItemIds, sellerId));
+
+                // then
+                assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+            }
+
+            @DisplayName("판매자 소유가 아닌 주문 품목 접근 시 ORDER_ACCESS_DENIED 예외가 발생한다.")
+            @Test
+            void givenNonOwnedOrderItems_whenSearchOrderItemDetails_thenThrowsAccessDeniedException() {
+                // given
+                Long sellerId = 1L;
+                Long storeId = 100L;
+                List<Long> orderItemIds = List.of(1L);
+
+                given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
+                given(orderItemRepository.countOwnedOrderItemsByStoreId(orderItemIds, storeId)).willReturn(0L);
+
+                // when
+                BbangleException result = assertThrows(BbangleException.class,
+                    () -> sut.searchOrderItemDetails(orderItemIds, sellerId));
+
+                // then
+                assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
+            }
+
+            @DisplayName("배송 정보가 없으면 Order의 기본값으로 BuyerInfo가 구성된다.")
+            @Test
+            void givenNoDelivery_whenSearchOrderItemDetails_thenBuyerInfoUsesOrderData() {
+                // given
+                Long sellerId = 1L;
+                Long storeId = 100L;
+                List<Long> orderItemIds = List.of(1L);
+
+                Order order = OrderFixture.createDefaultOrder(); // buyerName="홍길동", buyerPhone="01012345678"
+                Store boardStore = StoreFixture.defaultStore();
+                var board = BoardFixture.defaultBoardWithStore(boardStore, "테스트 게시글");
+                var product = ProductFixture.create(board, "테스트 상품");
+
+                OrderItem orderItem = OrderItemFixture.createOrderItemWithStatus(OrderStatus.SHIPPED);
+                ReflectionTestUtils.setField(orderItem, "id", 1L);
+                ReflectionTestUtils.setField(orderItem, "order", order);
+                ReflectionTestUtils.setField(orderItem, "product", product);
+
+                given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
+                given(orderItemRepository.countOwnedOrderItemsByStoreId(orderItemIds, storeId)).willReturn(1L);
+                given(orderItemRepository.findWithOrderAndProductByIdIn(orderItemIds)).willReturn(List.of(orderItem));
+                given(orderDeliveryRepository.findLatestByOrderItemIds(orderItemIds)).willReturn(
+                    Collections.emptyList());
+
+                // when
+                List<OrderResponse.OrderItemDetailResponse> result = sut.searchOrderItemDetails(orderItemIds, sellerId);
+
+                // then
+                assertThat(result).hasSize(1);
+                assertThat(result.get(0).buyer().recipientName()).isEqualTo("홍길동");
+                assertThat(result.get(0).buyer().buyerPhone1()).isEqualTo("01012345678");
+                assertThat(result.get(0).orderInfo().orderStatusLabel()).isEqualTo(
+                    OrderStatus.SHIPPED.getDescription());
+            }
+
+            @DisplayName("배송 정보가 있으면 택배사 정보가 응답에 포함되고 JSON으로 출력된다.")
+            @Test
+            void givenDeliveryWithShipping_whenSearchOrderItemDetails_thenPrintsJsonAndReturnsCorrectData()
+                throws Exception {
+                // given
+                Long sellerId = 1L;
+                Long storeId = 100L;
+                List<Long> orderItemIds = List.of(1L);
+
+                Order order = OrderFixture.createDefaultOrder();
+                Store boardStore = StoreFixture.defaultStore();
+                var board = BoardFixture.defaultBoardWithStore(boardStore, "테스트 게시글");
+                var product = ProductFixture.create(board, "테스트 상품");
+
+                OrderItem orderItem = OrderItemFixture.createOrderItemWithStatus(OrderStatus.SHIPPED);
+                ReflectionTestUtils.setField(orderItem, "id", 1L);
+                ReflectionTestUtils.setField(orderItem, "order", order);
+                ReflectionTestUtils.setField(orderItem, "product", product);
+
+                Receiver receiver = Receiver.of("수취인", "010-9999-8888", null,
+                    "서울시 강남구 예제로 123", "101호", "12345");
+                Shipping shipping = Shipping.of("CJ대한통운", "1234-5678-910");
+                OrderDelivery delivery = OrderDelivery.create(
+                    null, receiver, shipping, OrderDeliveryStatus.DELIVERING, orderItem);
+
+                given(sellerRepository.findStoreIdBySellerId(sellerId)).willReturn(storeId);
+                given(orderItemRepository.countOwnedOrderItemsByStoreId(orderItemIds, storeId)).willReturn(1L);
+                given(orderItemRepository.findWithOrderAndProductByIdIn(orderItemIds)).willReturn(List.of(orderItem));
+                given(orderDeliveryRepository.findLatestByOrderItemIds(orderItemIds)).willReturn(List.of(delivery));
+
+                // when
+                List<OrderResponse.OrderItemDetailResponse> result = sut.searchOrderItemDetails(orderItemIds, sellerId);
+
+                // then
+                assertThat(result).hasSize(1);
+                assertThat(result.get(0).shipping().courierCompany()).isEqualTo("CJ대한통운");
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String json = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(result.get(0));
+                log.info("=== OrderItemDetailResponse (JSON) ===");
+                log.info(json);
+            }
         }
     }
 }

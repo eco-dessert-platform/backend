@@ -8,13 +8,16 @@ import com.bbangle.bbangle.order.domain.QOrderDelivery;
 import com.bbangle.bbangle.order.domain.QOrderItem;
 import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.seller.domain.QSeller;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +53,44 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         return BbanglePageResponse.of(new PageImpl<>(orders, pageable, total));
     }
 
+    @Override
+    public Map<OrderStatus, Long> countByOrderStatus(OrderSearchCommand command) {
+        CompletedOrderSearchType searchType = command.searchType();
+        String keyword = command.searchCondition() != null
+            ? command.searchCondition().getKeyword()
+            : null;
+
+        JPAQuery<Tuple> countQuery = queryFactory
+            .select(orderItem.orderStatus, orderItem.count())
+            .from(order)
+            .leftJoin(order.seller, seller)
+            .leftJoin(order.orderItems, orderItem);
+
+        addKeywordJoins(countQuery, searchType, keyword);
+
+        // 상태별 카운트는 orderDeliveryStatus 필터 없이 전체 집계합니다.
+        // 목록 쿼리(searchOrderList)와 달리 탭별 전체 건수를 보여줘야 하므로 의도적으로 다릅니다.
+        List<Tuple> results = countQuery
+            .where(
+                seller.id.eq(command.sellerId()),
+                dateRangePredicate(
+                    extractStartDate(command),
+                    extractEndDate(command)),
+                keywordPredicate(searchType, keyword))
+            .groupBy(orderItem.orderStatus)
+            .fetch();
+
+        Map<OrderStatus, Long> countMap = new EnumMap<>(OrderStatus.class);
+        for (Tuple tuple : results) {
+            OrderStatus status = tuple.get(orderItem.orderStatus);
+            Long count = tuple.get(orderItem.count());
+            if (status != null && count != null) {
+                countMap.put(status, count);
+            }
+        }
+        return countMap;
+    }
+
     private List<Long> fetchOrderIds(OrderSearchCommand command, Pageable pageable) {
         CompletedOrderSearchType searchType = command.searchType();
         String keyword = command.searchCondition() != null
@@ -68,8 +109,8 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             .where(
                 seller.id.eq(command.sellerId()),
                 dateRangePredicate(
-                    command.searchCondition().getStartDate().atStartOfDay(),
-                    command.searchCondition().getEndDate().atTime(23, 59, 59)),
+                    extractStartDate(command),
+                    extractEndDate(command)),
                 orderStatusPredicate(command.orderDeliveryStatus()),
                 keywordPredicate(searchType, keyword))
             .orderBy(order.orderDate.desc(), order.id.desc())
@@ -123,8 +164,8 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             .where(
                 seller.id.eq(command.sellerId()),
                 dateRangePredicate(
-                    command.searchCondition().getStartDate().atStartOfDay(),
-                    command.searchCondition().getEndDate().atTime(23, 59, 59)),
+                    extractStartDate(command),
+                    extractEndDate(command)),
                 orderStatusPredicate(command.orderDeliveryStatus()),
                 keywordPredicate(searchType, keyword))
             .fetchOne();
@@ -169,6 +210,18 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             case PRODUCT_NAME -> product.title.containsIgnoreCase(keyword);
             case TRACKING_NUMBER -> orderDelivery.shipping.trackingNumber.containsIgnoreCase(keyword);
         };
+    }
+
+    private LocalDateTime extractStartDate(OrderSearchCommand command) {
+        return command.searchCondition() != null
+            ? command.searchCondition().getStartDate().atStartOfDay()
+            : null;
+    }
+
+    private LocalDateTime extractEndDate(OrderSearchCommand command) {
+        return command.searchCondition() != null
+            ? command.searchCondition().getEndDate().atTime(23, 59, 59)
+            : null;
     }
 
 }

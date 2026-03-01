@@ -45,4 +45,5 @@ public class SellerOrderCommand {
         Pageable page
     ) {
     }
+
 }

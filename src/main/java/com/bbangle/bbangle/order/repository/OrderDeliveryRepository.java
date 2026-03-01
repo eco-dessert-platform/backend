@@ -9,15 +9,16 @@ import org.springframework.data.repository.query.Param;
 
 public interface OrderDeliveryRepository extends JpaRepository<OrderDelivery, Long> {
 
-    @Query("""
-        SELECT od FROM OrderDelivery od
-        WHERE od.orderItem.id IN :orderItemIds
-        AND od.createdAt = (
-            SELECT MAX(od2.createdAt)
-            FROM OrderDelivery od2
-            WHERE od2.orderItem.id = od.orderItem.id
-        )
-        """)
+    @Query(value = """
+        SELECT od.* FROM order_delivery od
+        INNER JOIN (
+            SELECT order_item_id, MAX(created_at) AS max_created_at
+            FROM order_delivery
+            WHERE order_item_id IN (:orderItemIds)
+            GROUP BY order_item_id
+        ) latest ON od.order_item_id = latest.order_item_id
+               AND od.created_at = latest.max_created_at
+        """, nativeQuery = true)
     List<OrderDelivery> findLatestByOrderItemIds(@Param("orderItemIds") List<Long> orderItemIds);
 
     @Query("SELECT od FROM OrderDelivery od WHERE od.orderItem.id = :orderItemId")

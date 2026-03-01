@@ -10,11 +10,18 @@ import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderDelivery;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderItemListResponse.OrderItemList;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse.BuyerInfo;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse.OrderInfo;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse.ShippingInfo;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderStatusCounts;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentContent;
@@ -32,12 +39,11 @@ import com.bbangle.bbangle.store.domain.Store;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
-import java.util.Set;
 import java.util.Objects;
-
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +60,10 @@ public class SellerOrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderDeliveryRepository orderDeliveryRepository;
     private final SellerRepository sellerRepository;
+
+    // ========================================================================================
+    // [예주] 발주 확인 / 운송장 관리
+    // ========================================================================================
 
     @Transactional
     public OrderConfirmResponse confirmOrder(OrderConfirmCommand command) {
@@ -279,62 +289,186 @@ public class SellerOrderService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public BbanglePageResponse<OrderSearchResponse> orderSearch(OrderSearchCommand command) {
-        BbanglePageResponse<Order> orderPage = orderRepository.searchOrderList(command);
+    // ========================================================================================
+    // [Joon Gyu] 주문 조회
+    // ========================================================================================
 
+    @Transactional(readOnly = true)
+    public List<OrderItemDetailResponse> searchOrderItemDetails(List<Long> orderItemIds, Long sellerId) {
+        if (orderItemIds == null || orderItemIds.isEmpty()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
+        }
+
+        List<Long> uniqueOrderItemIds = orderItemIds.stream()
+            .distinct()
+            .toList();
+
+        Long storeId = getStoreIdOrThrow(sellerId);
+        assertOwnedOrderItemsByStoreId(uniqueOrderItemIds, storeId);
+
+        List<OrderItem> orderItems = orderItemRepository.findWithOrderAndProductByIdIn(uniqueOrderItemIds);
+
+        Map<Long, OrderDelivery> latestDeliveryByOrderItemId =
+            orderDeliveryRepository.findLatestByOrderItemIds(uniqueOrderItemIds).stream()
+                .collect(Collectors.toMap(
+                    od -> od.getOrderItem().getId(),
+                    Function.identity(),
+                    (existing, replacement) -> existing
+                ));
+
+        return orderItems.stream()
+            .map(oi -> {
+                Order order = oi.getOrder();
+                OrderDelivery delivery = latestDeliveryByOrderItemId.get(oi.getId());
+
+                String orderDate = order.getOrderDate() != null
+                    ? order.getOrderDate().toLocalDate().toString()
+                    : null;
+                String orderStatusLabel = oi.getOrderStatus() != null
+                    ? oi.getOrderStatus().getDescription()
+                    : null;
+                OrderInfo orderInfo = new OrderInfo(orderDate, orderStatusLabel);
+
+                String recipientName = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientName()
+                    : order.getBuyerName();
+                String phone1 = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientPhone1()
+                    : order.getBuyerPhone();
+                String phone2 = (delivery != null && delivery.getReceiver() != null)
+                    ? delivery.getReceiver().getRecipientPhone2()
+                    : order.getBuyerSubPhone();
+                BuyerInfo buyerInfo = new BuyerInfo(recipientName, order.getBuyerName(), phone1, phone2);
+
+                String statusLabel = null;
+                String courierCompany = null;
+                String trackingNumber = null;
+                String address = null;
+                String memo = null;
+                Long shippingFee = order.getDeliveryFee() != null ? order.getDeliveryFee().longValue() : null;
+
+                if (delivery != null) {
+                    statusLabel = delivery.getStatus() != null
+                        ? delivery.getStatus().getDescription()
+                        : null;
+                    Shipping shipping = delivery.getShipping();
+                    if (shipping != null) {
+                        courierCompany = shipping.getCourierName();
+                        trackingNumber = shipping.getTrackingNumber();
+                        memo = shipping.getDeliveryMemo();
+                    }
+                    Receiver receiver = delivery.getReceiver();
+                    if (receiver != null) {
+                        String base = receiver.getRecipientAddress();
+                        String detail = receiver.getRecipientAddressDetail();
+                        if (base != null && detail != null) {
+                            address = base + " " + detail;
+                        } else if (base != null) {
+                            address = base;
+                        }
+                    }
+                }
+                ShippingInfo shippingInfo = new ShippingInfo(
+                    statusLabel, courierCompany, trackingNumber, shippingFee, address, memo);
+
+                OrderItemDetailResponse.OrderItem orderItemDto = new OrderItemDetailResponse.OrderItem(
+                    oi.getProduct().getBoard().getTitle(),
+                    oi.getProduct().getTitle(),
+                    oi.getQuantity(),
+                    oi.getUnitPrice() != null ? oi.getUnitPrice().longValue() : null,
+                    oi.getTotalPrice() != null ? oi.getTotalPrice().longValue() : null
+                );
+
+                return new OrderItemDetailResponse(
+                    order.getOrderNumber(), orderInfo, buyerInfo, shippingInfo, orderItemDto);
+            })
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderSearchPageResponse orderSearch(OrderSearchCommand command) {
+        BbanglePageResponse<Order> orderPage = orderRepository.searchOrderList(command);
+        Map<OrderStatus, Long> statusCountMap = orderRepository.countByOrderStatus(command);
+
+        // orderItems가 fetchJoin으로 초기화되어 있어야 합니다.
         Map<Long, OrderDelivery> latestDeliveryMap = fetchLatestDeliveries(orderPage.content());
 
         List<OrderSearchResponse> responses = new ArrayList<>();
-        int skippedCount = 0;
 
         for (Order order : orderPage.content()) {
-            try {
-                List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
+            List<OrderItemList> orderItemList = getOrderItemLists(order, latestDeliveryMap);
 
-                if (orderItemList.isEmpty()) {
-                    log.info("주문에 OrderItem 없음 (상품 정보 누락 상태): orderId={}, orderNumber={}",
-                        order.getId(), order.getOrderNumber());
-                }
-
-                Payment payment = order.getPayment();
-                PaymentInfo paymentInfo = null;
-                if (payment != null) {
-                    paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
-                        payment.getPaymentMethod().getDescription());
-                } else {
-                    log.info("결제 정보 없음 (결제 대기 상태): orderId={}, orderNumber={}",
-                        order.getId(), order.getOrderNumber());
-                }
-
-                OrderDelivery firstDelivery = order.getOrderItems().stream()
-                    .map(item -> latestDeliveryMap.get(item.getId()))
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-
-                OrderSearchResponse response = OrderSearchResponse.from(
-                    order, orderItemList, paymentInfo, firstDelivery);
-                responses.add(response);
-
-            } catch (Exception e) {
-                log.error("주문 조회 중 예외 발생 - orderId={}, orderNumber={}",
-                    order.getId(), order.getOrderNumber(), e);
-                skippedCount++;
+            if (orderItemList.isEmpty()) {
+                log.info("주문에 OrderItem 없음 (상품 정보 누락 상태): orderId={}, orderNumber={}",
+                    order.getId(), order.getOrderNumber());
             }
+
+            Payment payment = order.getPayment();
+            PaymentInfo paymentInfo = null;
+            if (payment != null) {
+                paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
+                    payment.getPaymentMethod().getDescription());
+            } else {
+                log.debug("결제 정보 없음 (결제 대기 상태): orderId={}, orderNumber={}",
+                    order.getId(), order.getOrderNumber());
+            }
+
+            // ID 기준 정렬로 결정적(deterministic) 선택 보장
+            OrderDelivery firstDelivery = order.getOrderItems().stream()
+                .sorted(Comparator.comparingLong(OrderItem::getId))
+                .map(item -> latestDeliveryMap.get(item.getId()))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+            OrderSearchResponse response = OrderSearchResponse.from(
+                order, orderItemList, paymentInfo, firstDelivery);
+            responses.add(response);
         }
 
-        if (skippedCount > 0) {
-            log.warn("주문 조회에서 {}건의 주문을 스킵했습니다. sellerId={}",
-                skippedCount, command.sellerId());
-        }
-
-        return new BbanglePageResponse<>(
+        BbanglePageResponse<OrderSearchResponse> ordersPage = new BbanglePageResponse<>(
             responses,
             orderPage.page(),
             orderPage.size(),
             orderPage.totalPages(),
             orderPage.totalElements());
+
+        OrderStatusCounts statusCounts = buildStatusCounts(statusCountMap);
+
+        return new OrderSearchPageResponse(ordersPage, statusCounts);
+    }
+
+    private void assertOwnedOrderItemsByStoreId(List<Long> orderItemIds, Long storeId) {
+        long ownedCount = orderItemRepository.countOwnedOrderItemsByStoreId(orderItemIds, storeId);
+        if (ownedCount != orderItemIds.size()) {
+            throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
+        }
+    }
+
+    private Long getStoreIdOrThrow(Long sellerId) {
+        Long storeId = sellerRepository.findStoreIdBySellerId(sellerId);
+        if (storeId == null) {
+            throw new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND);
+        }
+        return storeId;
+    }
+
+    private OrderStatusCounts buildStatusCounts(Map<OrderStatus, Long> countMap) {
+        return OrderStatusCounts.of(
+            sumCounts(countMap, OrderStatus.PAYMENT_COMPLETED_GROUP),
+            sumCounts(countMap, OrderStatus.ORDER_CONFIRMED_GROUP),
+            sumCounts(countMap, OrderStatus.SHIPPED_GROUP),
+            sumCounts(countMap, OrderStatus.DELIVERY_COMPLETED_GROUP),
+            sumCounts(countMap, OrderStatus.CANCELLED_GROUP),
+            sumCounts(countMap, OrderStatus.RETURNED_GROUP),
+            sumCounts(countMap, OrderStatus.EXCHANGED_GROUP)
+        );
+    }
+
+    private long sumCounts(Map<OrderStatus, Long> countMap, Set<OrderStatus> statuses) {
+        return statuses.stream()
+            .mapToLong(status -> countMap.getOrDefault(status, 0L))
+            .sum();
     }
 
     private Map<Long, OrderDelivery> fetchLatestDeliveries(List<Order> orders) {

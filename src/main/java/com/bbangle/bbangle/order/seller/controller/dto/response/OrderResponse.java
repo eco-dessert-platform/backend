@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.order.seller.controller.dto.response;
 
 
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderDelivery;
 import com.bbangle.bbangle.order.seller.controller.model.PaymentInfo;
@@ -17,6 +18,68 @@ import java.util.List;
 import lombok.Builder;
 
 public class OrderResponse {
+
+    @Schema(description = "주문 내역 조회 응답 (페이지 + 상태별 카운트)")
+    public record OrderSearchPageResponse(
+        @Schema(description = "주문 목록 페이지")
+        BbanglePageResponse<OrderSearchResponse> orders,
+
+        @Schema(description = "주문 상태별 카운트")
+        OrderStatusCounts statusCounts
+    ) {
+
+    }
+
+    @Schema(description = "주문 상태별 카운트")
+    public record OrderStatusCounts(
+        @Schema(description = "전체 (모든 상태 합산)", example = "10")
+        long total,
+
+        @Schema(description = "결제완료 (PAYMENT_COMPLETED)", example = "5")
+        long paymentCompleted,
+
+        @Schema(description = "발주확인 (ORDER_CONFIRMED, IN_PRODUCTION)", example = "2")
+        long orderConfirmed,
+
+        @Schema(description = "상품발송 (SHIPPED)", example = "1")
+        long shipped,
+
+        @Schema(description = "배송완료 (PURCHASE_CONFIRMED)", example = "1")
+        long deliveryCompleted,
+
+        @Schema(description = "취소 (CANCEL_REQUESTED, CANCEL_APPROVED, CANCEL_REJECTED)", example = "1")
+        long cancelled,
+
+        @Schema(description = "반품 (RETURN_* 전체)", example = "0")
+        long returned,
+
+        @Schema(description = "교환 (EXCHANGE_* 전체)", example = "0")
+        long exchanged
+    ) {
+
+        public static OrderStatusCounts of(
+            long paymentCompleted,
+            long orderConfirmed,
+            long shipped,
+            long deliveryCompleted,
+            long cancelled,
+            long returned,
+            long exchanged
+        ) {
+            long total = paymentCompleted + orderConfirmed + shipped + deliveryCompleted
+                + cancelled + returned + exchanged;
+            return new OrderStatusCounts(
+                total,
+                paymentCompleted,
+                orderConfirmed,
+                shipped,
+                deliveryCompleted,
+                cancelled,
+                returned,
+                exchanged
+            );
+        }
+    }
 
     @Builder
     public record OrderSearchResponse(

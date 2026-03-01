@@ -9,9 +9,8 @@ import com.bbangle.bbangle.order.seller.controller.dto.request.CompletedOrderFil
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.OrderSummary;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderDetailResponse.OrderDetail;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
-import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeCreateResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -64,70 +62,22 @@ public class SellerOrderController implements SellerOrderApi {
     }
 
     @Override
-    @GetMapping
-    public ListResult<OrderDetail> getCompletedOrders(
-        @RequestParam List<Long> orderItemIds,
-        @AuthenticationPrincipal Long sellerId) {
-        // TODO: 구현 필요
-        OrderDetail orderDetail = OrderDetail.sample();
-        List<OrderDetail> orderDetails = List.of(orderDetail);
-        return responseService.getListResult(orderDetails);
-    }
-
-    @Override
-    @PostMapping("/orders/items")
+    @PostMapping("/items")
     public ListResult<OrderItemDetailResponse> searchDetailItems(
+        @AuthenticationPrincipal Long sellerId,
         @RequestBody List<Long> orderItemList) {
-
-        List<OrderItemDetailResponse> responses = orderItemList.stream()
-            .map(id -> new OrderItemDetailResponse(
-                // 주문번호
-                "ORDER-2025-04-05-test",
-
-                // 주문 정보
-                new OrderItemDetailResponse.OrderInfo(
-                    "2025-04-05", // orderDate (String, yyyy-MM-dd)
-                    "반품-상품발송" // orderStatusLabel
-                ),
-
-                // 주문자 정보
-                new OrderItemDetailResponse.BuyerInfo(
-                    "홍길동", // recipientName
-                    "홍길동", // buyerName
-                    "010-1234-5678", // buyerPhone1
-                    "010-9876-5432" // buyerPhone2
-                ),
-
-                // 배송 정보
-                new OrderItemDetailResponse.ShippingInfo(
-                    "수거중", // statusLabel
-                    "CJ대한통운", // courierCompany
-                    "1234-5678-910", // trackingNumber
-                    3000L, // shippingFee
-                    "서울시 강남구 예제로 123", // address
-                    "문 앞에 두세요." // memo
-                ),
-
-                // 주문 상품
-                new OrderItemDetailResponse.OrderItem(
-                    "예제 상품", // boardTitle
-                    "예제 상품", // itemName
-                    2, // quantity
-                    50_000L, // unitPrice
-                    100_000L // totalPrice
-                )))
-            .toList();
+        List<OrderItemDetailResponse> responses = sellerOrderService.searchOrderItemDetails(orderItemList, sellerId);
         return responseService.getListResult(responses);
     }
 
     @Override
     @PostMapping("/list")
-    public SingleResult<BbanglePageResponse<OrderSearchResponse>> searchOrders(
+    public SingleResult<OrderSearchPageResponse> searchOrders(
         @AuthenticationPrincipal Long sellerId,
         @RequestBody OrderSearchRequest request,
         @PageableDefault(size = 100, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        BbanglePageResponse<OrderSearchResponse> response = sellerOrderService.orderSearch(
+        OrderSearchPageResponse response = sellerOrderService.orderSearch(
             request.toCommand(sellerId, pageable));
 
         return responseService.getSingleResult(response);
