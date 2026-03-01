@@ -128,6 +128,21 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.SHIPPED;
     }
 
+    public boolean requestReturn() {
+        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+            return false;
+        }
+        this.orderStatus = RETURN_REQUESTED;
+        return true;
+    }
+
+    public boolean requestExchange() {
+        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+            return false;
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_REQUEST;
+        return true;
+    }
 
     public void returnApprove() {
         if (orderStatus != RETURN_REQUESTED) {

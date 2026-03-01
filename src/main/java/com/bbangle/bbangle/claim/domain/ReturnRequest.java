@@ -38,10 +38,12 @@ public class ReturnRequest extends Claim {
         OrderItem orderItem,
         String detailReason,
         LocalDateTime decidedAt,
-        ReturnRequestRequestStatus status
+        ReturnRequestRequestStatus status,
+        String sellerComment
     ) {
         super(orderItem, detailReason, decidedAt);
         this.status = status;
+        this.sellerComment = sellerComment;
     }
 
     public void approve(String reason) {

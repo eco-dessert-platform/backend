@@ -1,10 +1,9 @@
 package com.bbangle.bbangle.claim.seller.service;
 
-import com.bbangle.bbangle.claim.domain.ReturnRequest;
-import com.bbangle.bbangle.claim.domain.constant.DecisionType;
-import com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus;
-import com.bbangle.bbangle.claim.repository.ReturnRequestRepository;
-import com.bbangle.bbangle.claim.seller.service.model.ReturnCreateCommand;
+import com.bbangle.bbangle.claim.domain.ExchangeRequest;
+import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
+import com.bbangle.bbangle.claim.repository.ExchangeRequestRepository;
+import com.bbangle.bbangle.claim.seller.service.model.ExchangeCreateCommand;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
@@ -14,8 +13,8 @@ import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse;
-import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnContent;
-import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ReturnCreateResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeContent;
+import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeCreateResponse;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +26,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-public class SellerReturnService {
+public class SellerExchangeService {
 
-    private final ReturnRequestRepository returnRequestRepository;
+    private final ExchangeRequestRepository exchangeRequestRepository;
     private final OrderItemHistoryRepository orderItemHistoryRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final SellerRepository sellerRepository;
 
     @Transactional
-    public ReturnCreateResponse createReturn(ReturnCreateCommand command) {
+    public ExchangeCreateResponse createExchange(ExchangeCreateCommand command) {
         if (command.orderItemIds() == null || command.orderItemIds().isEmpty()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
         }
@@ -71,18 +70,18 @@ public class SellerReturnService {
 
         List<Long> successOrderItemIds = new ArrayList<>();
         List<Long> failedOrderItemIds = new ArrayList<>(notFoundIds);
-        List<ReturnRequest> returnRequestsToSave = new ArrayList<>();
+        List<ExchangeRequest> exchangeRequestsToSave = new ArrayList<>();
         List<OrderItemHistory> historiesToSave = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems) {
-            if (orderItem.requestReturn()) {
-                ReturnRequest returnRequest = ReturnRequest.builder()
+            if (orderItem.requestExchange()) {
+                ExchangeRequest exchangeRequest = ExchangeRequest.builder()
                     .orderItem(orderItem)
                     .detailReason(command.reason())
                     .sellerComment(command.sellerComment())
-                    .status(ReturnRequestRequestStatus.REQUESTED)
+                    .status(ExchangeRequestStatus.REQUESTED)
                     .build();
-                returnRequestsToSave.add(returnRequest);
+                exchangeRequestsToSave.add(exchangeRequest);
                 historiesToSave.add(OrderItemHistory.create(orderItem));
                 successOrderItemIds.add(orderItem.getId());
             } else {
@@ -90,7 +89,7 @@ public class SellerReturnService {
             }
         }
 
-        returnRequestRepository.saveAll(returnRequestsToSave);
+        exchangeRequestRepository.saveAll(exchangeRequestsToSave);
         orderItemHistoryRepository.saveAll(historiesToSave);
 
         int successCount = successOrderItemIds.size();
@@ -99,14 +98,14 @@ public class SellerReturnService {
         SellerOrderResponse.Summary summary =
             SellerOrderResponse.Summary.of(requestedCount, successCount, failCount);
 
-        ReturnContent content = ReturnContent.of(
+        ExchangeContent content = ExchangeContent.of(
             order.getId(),
             summary,
             successOrderItemIds,
             failedOrderItemIds
         );
 
-        return ReturnCreateResponse.of(content);
+        return ExchangeCreateResponse.of(content);
     }
 
     private Long getStoreIdOrThrow(Long sellerId) {
@@ -122,37 +121,5 @@ public class SellerReturnService {
         if (ownedCount != orderItemIds.size()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
         }
-    }
-
-    @Transactional
-    public void decision(List<Long> returnIds, Long sellerId, DecisionType decisionType, String reason) {
-        Long validatedCount = returnRequestRepository.countReturnsBySeller(returnIds, sellerId);
-        if (validatedCount == null || validatedCount != returnIds.size()) {
-            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
-        }
-
-        List<ReturnRequest> returnRequests = returnRequestRepository.findAllById(returnIds);
-        List<OrderItemHistory> historiesToSave = new ArrayList<>();
-
-        for (ReturnRequest returnRequest : returnRequests) {
-            OrderItemHistory history = processDecision(returnRequest, decisionType, reason);
-            historiesToSave.add(history);
-        }
-        orderItemHistoryRepository.saveAll(historiesToSave);
-    }
-
-    private OrderItemHistory processDecision(ReturnRequest returnRequest, DecisionType decisionType, String reason) {
-        OrderItem orderItem = returnRequest.getOrderItem();
-        switch (decisionType) {
-            case APPROVE -> {
-                returnRequest.approve(reason);
-                orderItem.returnApprove();
-            }
-            case REJECT -> {
-                returnRequest.reject(reason);
-                orderItem.returnReject();
-            }
-        }
-        return OrderItemHistory.create(orderItem);
     }
 }

@@ -68,7 +68,7 @@ class SellerReturnServiceUnitTest {
             // then
             then(returnRequestRepository).should(times(1)).countReturnsBySeller(returnIds, sellerId);
             then(returnRequestRepository).should(times(1)).findAllById(returnIds);
-            then(orderItemHistoryRepository).should(times(3)).save(any(OrderItemHistory.class));
+            then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
         }
 
         @Test
@@ -93,7 +93,7 @@ class SellerReturnServiceUnitTest {
             // then
             then(returnRequestRepository).should(times(1)).countReturnsBySeller(returnIds, sellerId);
             then(returnRequestRepository).should(times(1)).findAllById(returnIds);
-            then(orderItemHistoryRepository).should(times(2)).save(any(OrderItemHistory.class));
+            then(orderItemHistoryRepository).should(times(1)).saveAll(anyList());
         }
 
         @Test
