@@ -83,6 +83,102 @@ public class SellerOrderResponse {
     }
 
     @Builder
+    @Schema(description = "판매자 반품 요청 생성 응답 DTO")
+    public record ReturnCreateResponse(
+
+        @Schema(description = "반품 요청 결과 컨텐츠")
+        ReturnContent content
+
+    ) {
+
+        public static ReturnCreateResponse of(ReturnContent content) {
+            return ReturnCreateResponse.builder()
+                .content(content)
+                .build();
+        }
+    }
+
+    @Builder
+    @Schema(description = "반품 요청 응답 컨텐츠")
+    public record ReturnContent(
+
+        @Schema(description = "주문 ID")
+        Long orderId,
+
+        @Schema(description = "반품 요청 요약 정보")
+        Summary summary,
+
+        @Schema(description = "반품 요청 성공한 주문상품 ID 목록")
+        List<Long> successOrderItemIds,
+
+        @Schema(description = "반품 요청 실패한 주문상품 ID 목록")
+        List<Long> failedOrderItemIds
+
+    ) {
+        public static ReturnContent of(
+            Long orderId,
+            Summary summary,
+            List<Long> successOrderItemIds,
+            List<Long> failedOrderItemIds
+        ) {
+            return ReturnContent.builder()
+                .orderId(orderId)
+                .summary(summary)
+                .successOrderItemIds(successOrderItemIds)
+                .failedOrderItemIds(failedOrderItemIds)
+                .build();
+        }
+    }
+
+    @Builder
+    @Schema(description = "판매자 교환 요청 생성 응답 DTO")
+    public record ExchangeCreateResponse(
+
+        @Schema(description = "교환 요청 결과 컨텐츠")
+        ExchangeContent content
+
+    ) {
+
+        public static ExchangeCreateResponse of(ExchangeContent content) {
+            return ExchangeCreateResponse.builder()
+                .content(content)
+                .build();
+        }
+    }
+
+    @Builder
+    @Schema(description = "교환 요청 응답 컨텐츠")
+    public record ExchangeContent(
+
+        @Schema(description = "주문 ID")
+        Long orderId,
+
+        @Schema(description = "교환 요청 요약 정보")
+        Summary summary,
+
+        @Schema(description = "교환 요청 성공한 주문상품 ID 목록")
+        List<Long> successOrderItemIds,
+
+        @Schema(description = "교환 요청 실패한 주문상품 ID 목록")
+        List<Long> failedOrderItemIds
+
+    ) {
+        public static ExchangeContent of(
+            Long orderId,
+            Summary summary,
+            List<Long> successOrderItemIds,
+            List<Long> failedOrderItemIds
+        ) {
+            return ExchangeContent.builder()
+                .orderId(orderId)
+                .summary(summary)
+                .successOrderItemIds(successOrderItemIds)
+                .failedOrderItemIds(failedOrderItemIds)
+                .build();
+        }
+    }
+
+    @Builder
     @Schema(description = "판매자 운송장 정보 등록 응답 DTO")
     public record ShipmentRegisterResponse(
 

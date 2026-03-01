@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("[단위 테스트] Board 도메인")
 class BoardTest {
@@ -56,6 +57,7 @@ class BoardTest {
             assertThat(board.getDeliveryCondition()).isEqualTo("NORMAL");
             assertThat(board.getCourier()).isEqualTo("CJ대한통운");
             assertThat(board.getStatus()).isFalse();
+            assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
             assertThat(board.getProductImgs()).hasSize(1);
             assertThat(board.getBoardDetail()).isNotNull();
             assertThat(board.getProductInfoNotice()).isNotNull();
@@ -376,6 +378,98 @@ class BoardTest {
             // then
             assertThat(board.getDiscountPrice()).isZero();
             assertThat(board.getDiscountRate()).isZero();
+        }
+    }
+
+    @Nested
+    @DisplayName("재고 상태 계산")
+    class InventoryStatusCalculation {
+
+        private Product soldoutProduct() {
+            Product p = Product.builder().title("품절 상품").build();
+            ReflectionTestUtils.setField(p, "soldout", true);
+            return p;
+        }
+
+        private Product inStockProduct() {
+            Product p = Product.builder().title("재고 있음 상품").build();
+            ReflectionTestUtils.setField(p, "soldout", false);
+            return p;
+        }
+
+        @Test
+        @DisplayName("모든 상품이 품절이면 isSoldOut()은 true를 반환한다")
+        void isSoldOutWhenAllProductsSoldout() {
+            // given
+            Board board = Board.sellerCreate(
+                store, "테스트 게시글", 10000, "RATE", 0,
+                3000, null, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            board.addProducts(List.of(soldoutProduct(), soldoutProduct()));
+
+            // when & then
+            assertThat(board.isSoldOut()).isTrue();
+        }
+
+        @Test
+        @DisplayName("재고 있는 상품이 하나라도 있으면 isSoldOut()은 false를 반환한다")
+        void isNotSoldOutWhenAnyProductInStock() {
+            // given
+            Board board = Board.sellerCreate(
+                store, "테스트 게시글", 10000, "RATE", 0,
+                3000, null, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            board.addProducts(List.of(soldoutProduct(), inStockProduct()));
+
+            // when & then
+            assertThat(board.isSoldOut()).isFalse();
+        }
+
+        @Test
+        @DisplayName("일부 상품만 품절이면 isPartialSoldOut()은 true를 반환한다")
+        void isPartialSoldOutWhenSomeProductsSoldout() {
+            // given
+            Board board = Board.sellerCreate(
+                store, "테스트 게시글", 10000, "RATE", 0,
+                3000, null, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            board.addProducts(List.of(soldoutProduct(), inStockProduct()));
+
+            // when & then
+            assertThat(board.isPartialSoldOut()).isTrue();
+        }
+
+        @Test
+        @DisplayName("모든 상품이 품절이면 isPartialSoldOut()은 false를 반환한다")
+        void isNotPartialSoldOutWhenAllSoldout() {
+            // given
+            Board board = Board.sellerCreate(
+                store, "테스트 게시글", 10000, "RATE", 0,
+                3000, null, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            board.addProducts(List.of(soldoutProduct(), soldoutProduct()));
+
+            // when & then
+            assertThat(board.isPartialSoldOut()).isFalse();
+        }
+
+        @Test
+        @DisplayName("품절 상품이 없으면 isPartialSoldOut()은 false를 반환한다")
+        void isNotPartialSoldOutWhenNoSoldout() {
+            // given
+            Board board = Board.sellerCreate(
+                store, "테스트 게시글", 10000, "RATE", 0,
+                3000, null, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            board.addProducts(List.of(inStockProduct(), inStockProduct()));
+
+            // when & then
+            assertThat(board.isPartialSoldOut()).isFalse();
         }
     }
 }

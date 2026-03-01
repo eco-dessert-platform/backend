@@ -86,7 +86,7 @@ class SellerOauthControllerTest {
         given(oAuth2SellerFacade.generateToken(code)).willReturn(dto);
 
         // when & then
-        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth/tokens")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(new GenerateTokenRequest(code)))
             )
@@ -105,7 +105,7 @@ class SellerOauthControllerTest {
     @Test
     @DisplayName("임시 코드가 없으면 400 에러를 반환한다.")
     void failure_sellerToken_400() throws Exception {
-        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth/tokens")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(new GenerateTokenRequest("")))
             )
@@ -123,7 +123,7 @@ class SellerOauthControllerTest {
             .willThrow(new BbangleException(BbangleErrorCode._UNAUTHORIZED));
 
         // when & then
-        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth2/tokens")
+        mockMvc.perform(post(SellerApiPath.PREFIX + "/oauth/tokens")
                     .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(new GenerateTokenRequest(code)))
             )

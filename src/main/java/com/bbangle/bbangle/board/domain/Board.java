@@ -73,6 +73,10 @@ public class Board extends SoftDeleteBaseEntity {
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private Boolean status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sale_status", nullable = false)
+    private SaleStatus saleStatus;
+
     @Column(name = "purchase_url")
     private String purchaseUrl;
 
@@ -167,6 +171,7 @@ public class Board extends SoftDeleteBaseEntity {
         board.isCrawling = false;
         board.view = 0;
         board.status = false;
+        board.saleStatus = SaleStatus.PENDING;
         board.addBoardDetails(boardDetail);
         return board;
     }
@@ -246,6 +251,10 @@ public class Board extends SoftDeleteBaseEntity {
 
     public boolean isSoldOut() {
         return products.stream().allMatch(Product::isSoldout);
+    }
+
+    public boolean isPartialSoldOut() {
+        return products.stream().anyMatch(Product::isSoldout) && !isSoldOut();
     }
 
     public boolean isBbangketing() {

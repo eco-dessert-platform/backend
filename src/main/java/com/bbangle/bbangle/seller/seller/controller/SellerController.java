@@ -39,6 +39,7 @@ public class SellerController implements SellerApi {
     private final SellerFacade sellerFacade;
     private final AccountVerificationService accountVerificationService;
 
+    // TODO : v3 - Seller가 등록한 Store 정보 조회 (Store/Seller/Controller로 이동할 것)
     @Override
     @GetMapping()
     public SingleResult<RegisteredStoreDetail> getRegisteredStoreDetail(

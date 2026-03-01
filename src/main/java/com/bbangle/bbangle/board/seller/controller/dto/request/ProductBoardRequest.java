@@ -1,27 +1,34 @@
 package com.bbangle.bbangle.board.seller.controller.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.MainCategory;
+import com.bbangle.bbangle.board.domain.SaleStatus;
+import com.bbangle.bbangle.board.domain.SortType;
+import com.bbangle.bbangle.board.seller.service.command.SearchSellerBoardCommand;
 
 public class ProductBoardRequest {
 
     public record ProductBoardSearchRequest(
-        @NotBlank
-        String topName,
-        @NotBlank
-        String subName,
-        String fieldType,
+        SaleStatus saleStatus,
+        MainCategory mainCategory,
+        Category category,
         String keyword,
-        @NotNull
         int page,
-        @NotNull
         int size,
-        @NotBlank
-        String sortBy,
-        @NotBlank
-        String direction
+        SortType sortBy
     ) {
 
+        public SearchSellerBoardCommand toCommand(Long sellerId) {
+            return new SearchSellerBoardCommand(
+                sellerId,
+                saleStatus,
+                mainCategory,
+                category,
+                keyword,
+                sortBy != null ? sortBy : SortType.LATEST,
+                page,
+                size > 0 ? size : 10
+            );
+        }
     }
-
 }

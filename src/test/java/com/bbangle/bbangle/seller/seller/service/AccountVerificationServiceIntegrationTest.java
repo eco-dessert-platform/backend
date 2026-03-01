@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
@@ -50,23 +51,10 @@ class AccountVerificationServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // arrange: 테스트용 스토어와 판매자 생성
-        Store store = Store.createForSeller(
-            "테스트 스토어",
-            "https://example.com/profile.jpg",
-            null,
-            "01087654321",
-            "01087654321",
-            "test@example.com",
-            "서울특별시 강남구 테헤란로 123",
-            "456호"
-        );
+        Store store = StoreFixture.defaultStore();
         storeRepository.save(store);
 
-        testSeller = Seller.create(
-            "test",
-            OauthServerType.GOOGLE,
-            "12345"
-        );
+        testSeller = SellerFixture.defaultSeller();
         testSeller.registerStore(store);
         sellerRepository.save(testSeller);
 

@@ -13,15 +13,28 @@ import com.bbangle.bbangle.board.customer.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.customer.dto.QTitleDto;
 import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.MainCategory;
+import com.bbangle.bbangle.board.domain.SaleStatus;
+import com.bbangle.bbangle.board.domain.SortType;
 import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.board.repository.dao.BoardWithTagDao;
 import com.bbangle.bbangle.board.repository.dao.QBoardThumbnailDao;
 import com.bbangle.bbangle.board.repository.dao.QBoardWithTagDao;
+import com.bbangle.bbangle.board.repository.dao.SellerBoardDao;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -209,6 +222,115 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 randomBoard.id.goe(randomBoardId).and(randomBoard.setNumber.eq(setNumber)))
             .orderBy(randomBoard.id.asc())
             .fetch();
+    }
+
+    @Override
+    public Page<SellerBoardDao> findSellerBoards(
+        Long storeId,
+        SaleStatus saleStatus,
+        MainCategory mainCategory,
+        Category category,
+        String keyword,
+        SortType sortBy,
+        Pageable pageable
+    ) {
+        BooleanBuilder where = buildSellerBoardConditions(storeId, saleStatus, mainCategory, category, keyword);
+
+        List<SellerBoardDao> content = queryFactory
+            .select(Projections.constructor(SellerBoardDao.class,
+                board.id,
+                productImg.url,
+                board.title,
+                board.price,
+                board.discountPrice,
+                board.discountValue,
+                board.deliveryFee,
+                board.freeShippingConditions,
+                board.saleStatus
+            ))
+            .from(board)
+            .leftJoin(productImg).on(productImg.board.id.eq(board.id).and(productImg.imgOrder.eq(0)))
+            .where(where)
+            .orderBy(buildOrderSpecifier(sortBy))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Long total = queryFactory
+            .select(board.count())
+            .from(board)
+            .where(where)
+            .fetchOne();
+
+        return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    @Override
+    public Map<SaleStatus, Long> countSellerBoardsBySaleStatus(Long storeId) {
+        List<Tuple> result = queryFactory
+            .select(board.saleStatus, board.count())
+            .from(board)
+            .where(board.store.id.eq(storeId).and(board.isDeleted.isFalse()))
+            .groupBy(board.saleStatus)
+            .fetch();
+
+        Map<SaleStatus, Long> counts = new EnumMap<>(SaleStatus.class);
+        for (SaleStatus status : SaleStatus.values()) {
+            counts.put(status, 0L);
+        }
+        result.forEach(tuple -> counts.put(
+            tuple.get(board.saleStatus),
+            tuple.get(board.count())
+        ));
+        return counts;
+    }
+
+    private BooleanBuilder buildSellerBoardConditions(
+        Long storeId,
+        SaleStatus saleStatus,
+        MainCategory mainCategory,
+        Category category,
+        String keyword
+    ) {
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(board.store.id.eq(storeId));
+        builder.and(board.isDeleted.isFalse());
+
+        if (saleStatus != null) {
+            builder.and(board.saleStatus.eq(saleStatus));
+        }
+        if (mainCategory != null) {
+            List<Category> categories = Category.findByMainCategory(mainCategory);
+            builder.and(JPAExpressions.selectOne()
+                .from(product)
+                .where(product.board.id.eq(board.id)
+                    .and(product.category.in(categories))
+                    .and(product.isDeleted.isFalse()))
+                .exists());
+        }
+        if (category != null) {
+            builder.and(JPAExpressions.selectOne()
+                .from(product)
+                .where(product.board.id.eq(board.id)
+                    .and(product.category.eq(category))
+                    .and(product.isDeleted.isFalse()))
+                .exists());
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            builder.and(board.title.containsIgnoreCase(keyword));
+        }
+        return builder;
+    }
+
+    private OrderSpecifier<?> buildOrderSpecifier(SortType sortBy) {
+        if (sortBy == null) {
+            return board.createdAt.desc();
+        }
+        return switch (sortBy) {
+            case OLDEST -> board.createdAt.asc();
+            case NAME -> board.title.asc();
+            default -> board.createdAt.desc();
+        };
     }
 
 }

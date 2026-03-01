@@ -17,7 +17,6 @@ import com.bbangle.bbangle.seller.seller.service.AccountVerificationService;
 import com.bbangle.bbangle.seller.seller.service.SellerDocumentService;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.domain.StoreStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +60,7 @@ class SellerFacadeUnitTest {
             // given
             Long sellerId = 1L;
 
-            Store store = StoreFixture.defaultStore(StoreStatus.RESERVED);
+            Store store = StoreFixture.defaultStore();
             Seller seller = SellerFixture.withId(
                 SellerFixture.defaultSeller(store),
                 sellerId

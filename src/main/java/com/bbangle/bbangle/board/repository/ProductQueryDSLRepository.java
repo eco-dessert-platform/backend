@@ -9,6 +9,7 @@ import com.bbangle.bbangle.push.domain.Push;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.bbangle.bbangle.board.domain.InventoryStatus;
 
 public interface ProductQueryDSLRepository {
 
@@ -23,4 +24,6 @@ public interface ProductQueryDSLRepository {
     List<ProductDtoAtBoardDetail> findProductDtoById(Long memberId, Long boardId);
 
     List<AiLearningProductDto> findAiLearningData();
+
+    Map<Long, InventoryStatus> findInventoryStatusByBoardIds(List<Long> boardIds);
 }
