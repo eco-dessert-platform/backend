@@ -63,4 +63,9 @@ public class ReturnRequest extends Claim {
         this.sellerComment = reason;
         super.decide();
     }
+
+    public void startReturnPickup() {
+        this.status.validateTransition(ReturnRequestRequestStatus.PICKUP_SCHEDULED);
+        this.status = ReturnRequestRequestStatus.PICKUP_SCHEDULED;
+    }
 }
