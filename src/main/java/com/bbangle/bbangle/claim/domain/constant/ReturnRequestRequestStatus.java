@@ -20,7 +20,6 @@ public enum ReturnRequestRequestStatus {
 
     private boolean canTransitionTo(ReturnRequestRequestStatus next) {
         return switch (this) {
-            case REQUESTED -> next == PICKUP_SCHEDULED;
             case APPROVED -> next == PICKUP_SCHEDULED;
             case PICKUP_SCHEDULED -> next == PICKED_UP;
             case PICKED_UP -> next == INSPECTING;
