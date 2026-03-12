@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.board.admin.service;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
@@ -50,5 +52,10 @@ public class AdminBoardService {
         } else {
             productRepository.softDeleteByProductIds(command.productIds());
         }
+    }
+
+    public Page<UploadApprovalResponse> getUploadApprovals(Pageable pageable) {
+        Page<Board> boards = boardRepository.findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable);
+        return boards.map(UploadApprovalResponse::fromEntity);
     }
 }
