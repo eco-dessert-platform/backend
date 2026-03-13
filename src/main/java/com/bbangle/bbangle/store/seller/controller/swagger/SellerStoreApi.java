@@ -95,4 +95,11 @@ public interface SellerStoreApi {
         String storeName
     );
 
+    @Operation(
+        summary = "판매자의 스토어 정보 조회",
+        description = "판매자가 등록한 스토어의 상세 정보를 조회합니다."
+    )
+    SingleResult<StoreResponse.SellerStoreDTO> getRegisteredStoreDetail(
+        @AuthenticationPrincipal Long sellerId
+    );
 }

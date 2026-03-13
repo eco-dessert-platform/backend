@@ -80,4 +80,14 @@ public class SellerStoreController implements SellerStoreApi {
     ) {
         return responseService.getSingleResult(sellerStoreFacade.checkStoreName(storeName));
     }
+
+    @Override
+    @GetMapping()
+    public SingleResult<StoreResponse.SellerStoreDTO> getRegisteredStoreDetail(
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        return responseService.getSingleResult(
+            sellerStoreFacade.getRegisteredStoreDetail(sellerId)
+        );
+    }
 }
