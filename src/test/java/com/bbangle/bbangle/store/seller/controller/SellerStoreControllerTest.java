@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -432,6 +433,59 @@ class SellerStoreControllerTest {
             mockMvc.perform(get(SellerApiPath.PREFIX + "/stores" + "/check-name")
                     .param("storeName", "  "))
                 .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredStoreDetail() 테스트")
+    class GetRegisteredStoreDetailTest {
+
+        @Test
+        @DisplayName("등록 신청한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void getRegisteredStoreDetail_exist_registeredStore() throws Exception {
+
+            // given
+            Long sellerId = 1L;
+            StoreResponse.SellerStoreDetail sellerStoreDetail =
+                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
+
+            StoreResponse.SellerStoreDTO response = StoreResponse.SellerStoreDTO.builder()
+                .sellerId(1L)
+                .store(sellerStoreDetail)
+                .build();
+
+            given(sellerStoreFacade.getRegisteredStoreDetail(sellerId)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.sellerId").value(sellerId))
+                .andExpect(jsonPath("$.result.store.storeId").value(sellerStoreDetail.storeId()))
+                .andExpect(jsonPath("$.result.store.name").value(sellerStoreDetail.name()))
+                .andExpect(jsonPath("$.result.store.introduce").value(sellerStoreDetail.introduce()))
+                .andExpect(jsonPath("$.result.store.profile").value(sellerStoreDetail.profile()))
+                .andExpect(jsonPath("$.result.store.phoneNumber").value(sellerStoreDetail.phoneNumber()))
+                .andExpect(jsonPath("$.result.store.subPhoneNumber").value(sellerStoreDetail.subPhoneNumber()))
+                .andExpect(jsonPath("$.result.store.email").value(sellerStoreDetail.email()))
+                .andExpect(jsonPath("$.result.store.originAddress").value(sellerStoreDetail.originAddress()))
+                .andExpect(jsonPath("$.result.store.originAddressDetail").value(sellerStoreDetail.originAddressDetail()));
+
+            verify(sellerStoreFacade).getRegisteredStoreDetail(sellerId);
+        }
+
+        @Test
+        @DisplayName("등록된 스토어가 없을 경우 404 에러를 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void getRegisteredStoreDetail_noExist_registeredStore() throws Exception {
+
+            // given
+            given(sellerStoreFacade.getRegisteredStoreDetail(1L))
+                .willThrow(new BbangleException(BbangleErrorCode.NOT_REGISTERED_STORE));
+
+            // when & then
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores"))
+                .andExpect(status().isNotFound());
         }
     }
 }
