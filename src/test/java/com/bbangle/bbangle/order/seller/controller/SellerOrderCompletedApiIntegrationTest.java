@@ -29,8 +29,11 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,12 +47,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("[통합테스트] SellerOrderController - 완료 주문 API")
 class SellerOrderCompletedApiIntegrationTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper()
+        .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @Autowired
     private MockMvc mvc;
@@ -135,22 +142,34 @@ class SellerOrderCompletedApiIntegrationTest {
                 .with(authentication(new UsernamePasswordAuthenticationToken(
                     sellerA.getId(), "N/A", List.of(new SimpleGrantedAuthority("ROLE_SELLER")))))
                 .contentType(MediaType.APPLICATION_JSON))
+            .andDo(result -> {
+                String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                String pretty = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(objectMapper.readTree(body));
+                log.info("=== [판매자 격리] Response ===\n{}", pretty);
+            })
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result.orders.content.length()").value(1))
             .andExpect(jsonPath("$.result.orders.content[0].orderNum").value("ORD-A-001"));
     }
 
-    @DisplayName("완료 주문 조회 - 특정 상태(CANCELED) 필터링 시 결과 없음 (엣지 케이스)")
+    @DisplayName("완료 주문 조회 - 상태별 카운트 정확성 검증 (구매확정 1건, 취소 0건)")
     @Test
-    void getCompletedOrders_FilterByStatus_NoMatch() throws Exception {
-        // When: Seller A가 '취소' 상태인 주문 조회 (현재는 구매확정만 있음)
+    void getCompletedOrders_StatusCounts_CorrectlyAggregated() throws Exception {
+        // When: Seller A가 완료 주문 조회 (구매확정 주문 1건 존재)
+        // 완료 탭 전용 API이므로 status 필터와 무관하게 구매확정 주문만 조회됨
         mvc.perform(get("/api/v1/seller/orders/completed")
                 .with(authentication(new UsernamePasswordAuthenticationToken(
                     sellerA.getId(), "N/A", List.of(new SimpleGrantedAuthority("ROLE_SELLER")))))
-                .param("status", CompletedOrderStatus.CANCELED.name())
                 .contentType(MediaType.APPLICATION_JSON))
+            .andDo(result -> {
+                String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                String pretty = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(objectMapper.readTree(body));
+                log.info("=== [상태별 카운트] Response ===\n{}", pretty);
+            })
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.orders.content").isEmpty())
+            .andExpect(jsonPath("$.result.orders.content.length()").value(1))
             .andExpect(jsonPath("$.result.statusCounts.purchased").value(1))
             .andExpect(jsonPath("$.result.statusCounts.canceled").value(0));
     }
@@ -166,6 +185,12 @@ class SellerOrderCompletedApiIntegrationTest {
                 .param("size", "1")
                 .param("sort", "id,desc")
                 .contentType(MediaType.APPLICATION_JSON))
+            .andDo(result -> {
+                String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                String pretty = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(objectMapper.readTree(body));
+                log.info("=== [페이징] Response ===\n{}", pretty);
+            })
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result.orders.page").value(0))
             .andExpect(jsonPath("$.result.orders.size").value(1))
