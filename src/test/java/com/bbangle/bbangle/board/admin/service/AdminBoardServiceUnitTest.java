@@ -5,8 +5,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
@@ -146,6 +148,54 @@ class AdminBoardServiceUnitTest {
         // then
         then(productRepository).should().softDeleteByProductIds(productIds);
         then(productRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("업로드 대기 상품을 페이징 형태로 조회한다")
+    void getUploadApprovals_success() {
+        // given
+        Pageable pageable = PageRequest.of(0, 20);
+        Board board = BoardFixture.defaultBoard();
+        Page<Board> boardPage = new PageImpl<>(List.of(board), pageable, 1);
+
+        given(boardRepository.findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable))
+            .willReturn(boardPage);
+
+        // when
+        Page<UploadApprovalResponse> result = sut.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+
+        UploadApprovalResponse response = result.getContent().get(0);
+        assertThat(response.boardId()).isEqualTo(board.getId());
+        assertThat(response.boardTitle()).isEqualTo(board.getTitle());
+        assertThat(response.storeName()).isEqualTo(board.getStore().getName());
+
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.getSize()).isEqualTo(20);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        then(boardRepository).should().findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable);
+    }
+
+    @Test
+    @DisplayName("업로드 대기 상품 조회 결과가 없으면 빈 Page를 반환한다")
+    void getUploadApprovals_emptyResult() {
+        // given
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Board> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+        given(boardRepository.findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable))
+            .willReturn(emptyPage);
+
+        // when
+        Page<UploadApprovalResponse> result = sut.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+        then(boardRepository).should().findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable);
     }
 
 }
