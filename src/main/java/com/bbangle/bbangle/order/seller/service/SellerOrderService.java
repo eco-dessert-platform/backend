@@ -596,6 +596,17 @@ public class SellerOrderService {
             ? order.getPayment().getPaidAt()
             : order.getOrderDate();
 
+        // 결제수단 추출 (결제 정보 없으면 null)
+        String paymentMethod = null;
+        if (order.getPayment() != null && order.getPayment().getPaymentMethod() != null) {
+            paymentMethod = order.getPayment().getPaymentMethod().getDescription();
+        }
+
+        // 총 주문금액 (없으면 null)
+        Long totalAmount = order.getTotalAmount() != null
+            ? order.getTotalAmount().longValue()
+            : null;
+
         List<CompletedOrderResponse.OrderSummary.OrderItem> summaryItems = order.getOrderItems().stream()
             .map(item -> buildOrderItemSummary(item, deliveryMap))
             .filter(item -> item.status() != null)
@@ -607,27 +618,42 @@ public class SellerOrderService {
             paidAt,
             resolvePaidDayOfWeek(paidAt),
             recipient,
+            totalAmount,
+            paymentMethod,
             summaryItems
         );
     }
 
-    // 주문 항목 하나에 대한 배송사/운송장 정보를 포함한 요약 DTO 생성
+    // 주문 항목 하나에 대한 배송사/운송장/배송상태/단가 정보를 포함한 요약 DTO 생성
     private CompletedOrderResponse.OrderSummary.OrderItem buildOrderItemSummary(
         OrderItem item, Map<Long, OrderDelivery> deliveryMap) {
         OrderDelivery itemDelivery = deliveryMap.get(item.getId());
         String deliveryCompany = null;
         String trackingNumber = null;
-        if (itemDelivery != null && itemDelivery.getShipping() != null) {
-            deliveryCompany = itemDelivery.getShipping().getCourierName();
-            trackingNumber = itemDelivery.getShipping().getTrackingNumber();
+        String deliveryStatus = null;
+        if (itemDelivery != null) {
+            // 배송상태 추출 (없으면 null)
+            if (itemDelivery.getStatus() != null) {
+                deliveryStatus = itemDelivery.getStatus().getDescription();
+            }
+            // 배송사/운송장 추출
+            if (itemDelivery.getShipping() != null) {
+                deliveryCompany = itemDelivery.getShipping().getCourierName();
+                trackingNumber = itemDelivery.getShipping().getTrackingNumber();
+            }
         }
+        // 단가 추출 (없으면 null)
+        Long unitPrice = item.getUnitPrice() != null ? item.getUnitPrice().longValue() : null;
+
         return CompletedOrderResponse.OrderSummary.OrderItem.of(
             item.getId(),
             mapToCompletedOrderStatus(item.getOrderStatus()),
+            deliveryStatus,
             deliveryCompany,
             trackingNumber,
             item.getProduct() != null ? item.getProduct().getTitle() : null,
-            item.getQuantity()
+            item.getQuantity(),
+            unitPrice
         );
     }
 

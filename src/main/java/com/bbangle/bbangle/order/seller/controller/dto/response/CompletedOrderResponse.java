@@ -65,6 +65,8 @@ public class CompletedOrderResponse {
         LocalDateTime paidAt,
         @Schema(description = "결제 요일") DayOfWeek paidDayOfWeek,
         @Schema(description = "수취인명") String recipient,
+        @Schema(description = "총 주문금액") Long totalAmount,
+        @Schema(description = "결제수단") String paymentMethod,
         List<OrderItem> orderItems
     ) {
 
@@ -74,14 +76,16 @@ public class CompletedOrderResponse {
          * 메서드 형태로 제공합니다. SellerOrderApi 인터페이스의 @Operation에서 참조됩니다.
          */
         public static OrderSummary sample() {
-            OrderItem item1 = OrderItem.of(1L, PURCHASED, "CJ대한통운", "123-123", "저칼로리 베이글", 5);
-            OrderItem item2 = OrderItem.of(2L, CANCELED, "롯데택배", "123-456", "저당 초콜릿", 10);
+            OrderItem item1 = OrderItem.of(1L, PURCHASED, "배송완료", "CJ대한통운", "123-123", "저칼로리 베이글", 5, 4700L);
+            OrderItem item2 = OrderItem.of(2L, CANCELED, null, "롯데택배", "123-456", "저당 초콜릿", 10, 3200L);
             return OrderSummary.of(
                 1L,
                 "000-123",
                 LocalDateTime.of(2024, 1, 1, 12, 0),
                 DayOfWeek.MONDAY,
                 "홍길동",
+                24400L,
+                "신용/체크카드",
                 List.of(item1, item2)
             );
         }
@@ -92,31 +96,37 @@ public class CompletedOrderResponse {
             LocalDateTime paidAt,
             DayOfWeek paidDayOfWeek,
             String recipient,
+            Long totalAmount,
+            String paymentMethod,
             List<OrderItem> orderItems
         ) {
             return new OrderSummary(orderId, orderNum, paidAt, paidDayOfWeek, recipient,
-                orderItems);
+                totalAmount, paymentMethod, orderItems);
         }
 
         public record OrderItem(
             @Schema(description = "주문상품ID") Long orderItemId,
             @Schema(description = "상태") CompletedOrderStatus status,
+            @Schema(description = "배송상태") String deliveryStatus,
             @Schema(description = "택배사") String deliveryCompany,
             @Schema(description = "운송장 번호") String trackingNumber,
             @Schema(description = "상품명") String productName,
-            @Schema(description = "판매 수량") Integer quantity
+            @Schema(description = "판매 수량") Integer quantity,
+            @Schema(description = "단가") Long unitPrice
         ) {
 
             public static OrderItem of(
                 Long orderItemId,
                 CompletedOrderStatus status,
+                String deliveryStatus,
                 String deliveryCompany,
                 String trackingNumber,
                 String productName,
-                Integer quantity
+                Integer quantity,
+                Long unitPrice
             ) {
-                return new OrderItem(orderItemId, status, deliveryCompany, trackingNumber,
-                    productName, quantity);
+                return new OrderItem(orderItemId, status, deliveryStatus, deliveryCompany,
+                    trackingNumber, productName, quantity, unitPrice);
             }
         }
     }

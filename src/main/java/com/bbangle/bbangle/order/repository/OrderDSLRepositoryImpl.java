@@ -138,7 +138,8 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                 dateRangePredicate(
                     toStartDateTime(command.startDate()),
                     toEndDateTime(command.endDate())),
-                completedOrderStatusPredicate(null),
+                // 탭 배지용 카운트이므로 취소/반품/교환을 포함한 전체 완료 상태를 집계
+                orderItem.orderStatus.in(ALL_COMPLETED_STATUSES),
                 keywordPredicate(searchType, keyword))
             .groupBy(orderItem.orderStatus)
             .fetch();
@@ -206,17 +207,9 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     }
 
     private BooleanExpression completedOrderStatusPredicate(CompletedOrderStatus status) {
-        // status가 null이면 완료 상태 전체(구매확정/취소/반품/교환)를 조회
-        if (status == null) {
-            return orderItem.orderStatus.in(ALL_COMPLETED_STATUSES);
-        }
-
-        return switch (status) {
-            case PURCHASED -> orderItem.orderStatus.eq(OrderStatus.PURCHASE_CONFIRMED);
-            case CANCELED -> orderItem.orderStatus.in(OrderStatus.CANCELLED_GROUP);
-            case RETURNED -> orderItem.orderStatus.in(OrderStatus.RETURNED_GROUP);
-            case EXCHANGED -> orderItem.orderStatus.in(OrderStatus.EXCHANGED_GROUP);
-        };
+        // 완료 탭 전용 API: 취소/반품/교환은 별도 API로 조회하므로 항상 구매확정만 필터링
+        // status 파라미터는 향후 확장을 위해 유지하지만 현재는 무시
+        return orderItem.orderStatus.eq(OrderStatus.PURCHASE_CONFIRMED);
     }
 
     /**
