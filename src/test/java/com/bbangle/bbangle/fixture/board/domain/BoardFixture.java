@@ -102,4 +102,48 @@ public final class BoardFixture {
         ReflectionTestUtils.setField(board, "isDeleted", true);
         return board;
     }
+
+    /* =====================
+       SaleStatus 관련 메서드
+     ===================== */
+
+    /**
+     * 판매대기(PENDING) 상태 Board saleStatus = PENDING, isDeleted = false
+     */
+    public static Board pendingBoardWithStore(Store store, String title) {
+        Board board = baseBuilder(store, title).build();
+        ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.PENDING);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        return board;
+    }
+
+    /**
+     * 품절(OUT_OF_STOCK) 상태 Board saleStatus = OUT_OF_STOCK, isDeleted = false
+     */
+    public static Board outOfStockBoardWithStore(Store store, String title) {
+        Board board = baseBuilder(store, title).build();
+        ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.OUT_OF_STOCK);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        return board;
+    }
+
+    /**
+     * 판매중지(STOPPED) 상태 Board saleStatus = STOPPED, isDeleted = false
+     */
+    public static Board stoppedBoardWithStore(Store store, String title) {
+        Board board = baseBuilder(store, title).build();
+        ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.STOPPED);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        return board;
+    }
+
+    /**
+     * 판매금지(BANNED) 상태 Board saleStatus = BANNED, isDeleted = false
+     */
+    public static Board bannedBoardWithStore(Store store, String title) {
+        Board board = baseBuilder(store, title).build();
+        ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.BANNED);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        return board;
+    }
 }
