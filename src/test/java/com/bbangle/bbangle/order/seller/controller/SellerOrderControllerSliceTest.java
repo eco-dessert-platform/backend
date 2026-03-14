@@ -33,6 +33,8 @@ import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.service.SellerOrderService;
+import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
+import com.bbangle.bbangle.claim.seller.service.SellerExchangeService;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
@@ -79,6 +81,18 @@ class SellerOrderControllerSliceTest {
     @MockBean
     private SellerOrderService sellerOrderService;
 
+    @MockBean
+    private SellerReturnService sellerReturnService;
+
+    @MockBean
+    private SellerExchangeService sellerExchangeService;
+
+    /**
+     * [시나리오] 판매자가 발주 확인 요청 시 일부 항목만 처리 가능한 경우를 검증합니다.
+     * - 요청: orderItemIds [100, 101, 102] 3건
+     * - 서비스 응답(Mock): 100·102 성공, 101 실패 (부분 성공 정책)
+     * - 검증: HTTP 200, 응답 JSON 내 summary와 confirmedIds/failedIds 값 일치 여부
+     */
     @DisplayName("발주 확인 API - 성공")
     @Test
     void givenValidRequest_whenConfirmOrder_thenReturnsSuccess() throws Exception {
@@ -126,6 +140,12 @@ class SellerOrderControllerSliceTest {
         then(responseService).should(times(1)).getSingleResult(serviceResponse);
     }
 
+    /**
+     * [시나리오] 존재하지 않는 orderId로 발주 확인 요청 시 4xx 오류를 반환하는지 검증합니다.
+     * - 요청: orderId = -1 (존재하지 않는 ID)
+     * - 서비스 응답(Mock): ORDER_NOT_FOUND 예외 발생
+     * - 검증: HTTP 4xx, 응답 JSON 내 success=false 및 에러 코드·메시지 일치 여부
+     */
     @DisplayName("발주 확인 API - 실패(주문 없음)")
     @Test
     void givenNonExistingOrder_whenConfirmOrder_thenReturns4xx() throws Exception {
@@ -157,6 +177,12 @@ class SellerOrderControllerSliceTest {
         then(responseService).should(times(1)).getFailResult(anyString(), anyInt());
     }
 
+    /**
+     * [시나리오] orderItemIds가 빈 리스트인 경우 @Valid 검증에서 막혀 Service가 호출되지 않음을 검증합니다.
+     * - 요청: orderItemIds = [] (빈 배열)
+     * - 기대 동작: @NotEmpty 검증 실패로 400 응답 반환, Service 미호출
+     * - 검증: HTTP 400, sellerOrderService 미호출 여부
+     */
     @DisplayName("발주 확인 API - 실패(orderItemIds 비어있음 -> validation 400)")
     @Test
     void givenEmptyOrderItemIds_whenConfirmOrder_thenReturns400() throws Exception {
@@ -175,6 +201,12 @@ class SellerOrderControllerSliceTest {
         then(sellerOrderService).shouldHaveNoInteractions();
     }
 
+    /**
+     * [시나리오] 유효한 검색 조건으로 주문 목록을 요청할 때 빈 결과를 정상 반환하는지 검증합니다.
+     * - 요청: 날짜 범위·검색 조건 포함, page=0, size=20
+     * - 서비스 응답(Mock): 빈 주문 목록 (content=[])
+     * - 검증: HTTP 200, 페이지 메타 정보(page=0, size=20, totalPages=0, totalElements=0) 일치 여부
+     */
     @DisplayName("주문 검색 API - 성공")
     @Test
     void givenValidSearchRequest_whenSearchOrders_thenReturnsOrderList() throws Exception {
@@ -224,6 +256,12 @@ class SellerOrderControllerSliceTest {
         then(responseService).should(times(1)).getSingleResult(mockResponse);
     }
 
+    /**
+     * [시나리오] 주문 번호 "2503020013"으로 검색 시 일치하는 결과 1건이 반환되는지 검증합니다.
+     * - 요청: ORDER_NUMBER 검색 타입, 키워드 "2503020013"
+     * - 서비스 응답(Mock): 해당 주문번호의 주문 1건 (수취인 홍길동, 총액 24400)
+     * - 검증: HTTP 200, 첫 번째 항목의 orderNumber·recipientName·totalOrderPrice 값 일치 여부
+     */
     @DisplayName("주문 검색 API - 성공(검색 결과 있음)")
     @Test
     void givenValidSearchRequest_whenSearchOrders_thenReturnsOrderListWithData() throws Exception {
