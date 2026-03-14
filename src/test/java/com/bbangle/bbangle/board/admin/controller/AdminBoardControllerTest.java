@@ -11,7 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.board.admin.service.AdminBoardService;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -21,6 +23,7 @@ import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.fixture.board.admin.controller.dto.AdminProductResponseFixture;
+import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import com.bbangle.bbangle.common.dto.SingleResult;
 
 @DisplayName("[컨트롤러 테스트] AdminBoardController")
 @Import({
@@ -163,6 +167,91 @@ class AdminBoardControllerTest {
 
         then(adminBoardService).should().deleteBoards(productIds);
         then(responseService).should().getSuccessResult();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("[업로드 승인 대기] 관리자는 업로드 대기 상품을 페이징 형태로 조회할 수 있다")
+    void getUploadApprovals_success() throws Exception {
+        // given
+        int page = 0;
+        int size = 20;
+
+        Board board = BoardFixture.defaultBoard();
+        UploadApprovalResponse response = new UploadApprovalResponse(
+            board.getId(),
+            board.getStore().getName(),
+            board.getTitle()
+        );
+        Page<UploadApprovalResponse> pageResult =
+            new PageImpl<>(List.of(response), PageRequest.of(page, size), 1);
+
+        given(adminBoardService.getUploadApprovals(any(Pageable.class)))
+            .willReturn(pageResult);
+
+        // when & then
+        mvc.perform(get(AdminApiPath.PREFIX + "/products/upload-approvals")
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size))
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(0))
+            .andExpect(jsonPath("$.result.content.length()").value(1))
+            .andExpect(jsonPath("$.result.content[0].boardId").value(board.getId()))
+            .andExpect(jsonPath("$.result.content[0].storeName").value(board.getStore().getName()))
+            .andExpect(jsonPath("$.result.content[0].boardTitle").value(board.getTitle()))
+            .andExpect(jsonPath("$.result.page").value(page))
+            .andExpect(jsonPath("$.result.size").value(size))
+            .andExpect(jsonPath("$.result.totalPages").value(1))
+            .andExpect(jsonPath("$.result.totalElements").value(1));
+
+        then(adminBoardService).should().getUploadApprovals(any(Pageable.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("[업로드 승인 대기] 조회 결과가 없으면 빈 목록을 반환한다")
+    void getUploadApprovals_emptyResult() throws Exception {
+        // given
+        int page = 0;
+        int size = 20;
+
+        Page<UploadApprovalResponse> emptyPage =
+            new PageImpl<>(List.of(), PageRequest.of(page, size), 0);
+
+        given(adminBoardService.getUploadApprovals(any(Pageable.class)))
+            .willReturn(emptyPage);
+
+        // when & then
+        mvc.perform(get(AdminApiPath.PREFIX + "/products/upload-approvals")
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size))
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(0))
+            .andExpect(jsonPath("$.result.content.length()").value(0))
+            .andExpect(jsonPath("$.result.page").value(page))
+            .andExpect(jsonPath("$.result.size").value(size))
+            .andExpect(jsonPath("$.result.totalPages").value(0))
+            .andExpect(jsonPath("$.result.totalElements").value(0));
+
+        then(adminBoardService).should().getUploadApprovals(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("[업로드 승인 대기] ADMIN 권한이 없으면 접근에 실패한다")
+    void getUploadApprovals_fail_whenNoAdminRole() throws Exception {
+        // when & then
+        mvc.perform(get(AdminApiPath.PREFIX + "/products/upload-approvals")
+                .param("page", "0")
+                .param("size", "20")
+            )
+            .andExpect(status().isUnauthorized());
+
+        then(adminBoardService).shouldHaveNoInteractions();
+        then(responseService).shouldHaveNoInteractions();
     }
 
 }
