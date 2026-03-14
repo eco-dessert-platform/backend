@@ -7,17 +7,22 @@ import com.bbangle.bbangle.order.domain.QOrder;
 import com.bbangle.bbangle.order.domain.QOrderDelivery;
 import com.bbangle.bbangle.order.domain.QOrderItem;
 import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderStatus;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.CompletedOrderSearchCommand;
 import com.bbangle.bbangle.seller.domain.QSeller;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +34,18 @@ import org.springframework.data.domain.Pageable;
 
 @RequiredArgsConstructor
 public class OrderDSLRepositoryImpl implements OrderDSLRepository {
+
+    // 완료 주문에 해당하는 전체 OrderStatus 집합 (구매확정, 취소, 반품, 교환)
+    private static final Set<OrderStatus> ALL_COMPLETED_STATUSES;
+
+    static {
+        Set<OrderStatus> statuses = new HashSet<>();
+        statuses.add(OrderStatus.PURCHASE_CONFIRMED);
+        statuses.addAll(OrderStatus.CANCELLED_GROUP);
+        statuses.addAll(OrderStatus.RETURNED_GROUP);
+        statuses.addAll(OrderStatus.EXCHANGED_GROUP);
+        ALL_COMPLETED_STATUSES = Collections.unmodifiableSet(statuses);
+    }
 
     private final JPAQueryFactory queryFactory;
     private final QOrder order = QOrder.order;
@@ -91,6 +108,124 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         return countMap;
     }
 
+    @Override
+    public BbanglePageResponse<Order> searchCompletedOrderList(CompletedOrderSearchCommand command) {
+        Pageable pageable = command.pageable();
+
+        List<Long> orderIds = fetchCompletedOrderIds(command, pageable);
+        List<Order> orders = fetchOrdersWithDetails(orderIds);
+        Long total = fetchCompletedTotalCount(command);
+
+        return BbanglePageResponse.of(new PageImpl<>(orders, pageable, total));
+    }
+
+    @Override
+    public Map<OrderStatus, Long> countByCompletedOrderStatus(CompletedOrderSearchCommand command) {
+        CompletedOrderSearchType searchType = command.searchType();
+        String keyword = command.searchValue();
+
+        JPAQuery<Tuple> countQuery = queryFactory
+            .select(orderItem.orderStatus, orderItem.count())
+            .from(order)
+            .leftJoin(order.seller, seller)
+            .leftJoin(order.orderItems, orderItem);
+
+        addKeywordJoins(countQuery, searchType, keyword);
+
+        List<Tuple> results = countQuery
+            .where(
+                seller.id.eq(command.sellerId()),
+                dateRangePredicate(
+                    toStartDateTime(command.startDate()),
+                    toEndDateTime(command.endDate())),
+                completedOrderStatusPredicate(null),
+                keywordPredicate(searchType, keyword))
+            .groupBy(orderItem.orderStatus)
+            .fetch();
+
+        Map<OrderStatus, Long> countMap = new EnumMap<>(OrderStatus.class);
+        for (Tuple tuple : results) {
+            OrderStatus status = tuple.get(orderItem.orderStatus);
+            Long count = tuple.get(orderItem.count());
+            if (status != null && count != null) {
+                countMap.put(status, count);
+            }
+        }
+        return countMap;
+    }
+
+    private List<Long> fetchCompletedOrderIds(CompletedOrderSearchCommand command, Pageable pageable) {
+        CompletedOrderSearchType searchType = command.searchType();
+        String keyword = command.searchValue();
+
+        JPAQuery<Long> idQuery = queryFactory
+            .select(order.id)
+            .from(order)
+            .leftJoin(order.seller, seller)
+            .leftJoin(order.orderItems, orderItem);
+
+        addKeywordJoins(idQuery, searchType, keyword);
+
+        return idQuery
+            .where(
+                seller.id.eq(command.sellerId()),
+                dateRangePredicate(
+                    toStartDateTime(command.startDate()),
+                    toEndDateTime(command.endDate())),
+                completedOrderStatusPredicate(command.status()),
+                keywordPredicate(searchType, keyword))
+            .orderBy(order.orderDate.desc(), order.id.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+    }
+
+    private Long fetchCompletedTotalCount(CompletedOrderSearchCommand command) {
+        CompletedOrderSearchType searchType = command.searchType();
+        String keyword = command.searchValue();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(order.countDistinct())
+            .from(order)
+            .leftJoin(order.seller, seller)
+            .leftJoin(order.orderItems, orderItem);
+
+        addKeywordJoins(countQuery, searchType, keyword);
+
+        Long total = countQuery
+            .where(
+                seller.id.eq(command.sellerId()),
+                dateRangePredicate(
+                    toStartDateTime(command.startDate()),
+                    toEndDateTime(command.endDate())),
+                completedOrderStatusPredicate(command.status()),
+                keywordPredicate(searchType, keyword))
+            .fetchOne();
+
+        return total != null ? total : 0L;
+    }
+
+    private BooleanExpression completedOrderStatusPredicate(CompletedOrderStatus status) {
+        // status가 null이면 완료 상태 전체(구매확정/취소/반품/교환)를 조회
+        if (status == null) {
+            return orderItem.orderStatus.in(ALL_COMPLETED_STATUSES);
+        }
+
+        return switch (status) {
+            case PURCHASED -> orderItem.orderStatus.eq(OrderStatus.PURCHASE_CONFIRMED);
+            case CANCELED -> orderItem.orderStatus.in(OrderStatus.CANCELLED_GROUP);
+            case RETURNED -> orderItem.orderStatus.in(OrderStatus.RETURNED_GROUP);
+            case EXCHANGED -> orderItem.orderStatus.in(OrderStatus.EXCHANGED_GROUP);
+        };
+    }
+
+    /**
+     * [2단계 페이징 전략 - 1단계] fetchJoin과 페이징을 동시에 사용하면 카테시안 곱 문제가 발생합니다.
+     * 예) Order 1개에 OrderItem이 3개이면 fetchJoin 결과는 3행인데, LIMIT 10을 적용하면
+     * Order 10개가 아닌 OrderItem 10개(≈ Order 3~4개)만 가져오게 됩니다.
+     * 이를 방지하기 위해 1단계에서는 fetchJoin 없이 ID만 조회하여 올바른 LIMIT을 적용하고,
+     * 2단계(fetchOrdersWithDetails)에서 해당 ID 목록으로 fetchJoin 조회를 수행합니다.
+     */
     private List<Long> fetchOrderIds(OrderSearchCommand command, Pageable pageable) {
         CompletedOrderSearchType searchType = command.searchType();
         String keyword = command.searchCondition() != null
@@ -119,6 +254,12 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             .fetch();
     }
 
+    /**
+     * [2단계 페이징 전략 - 2단계] 1단계에서 구한 orderIds로 Order 엔티티를 fetchJoin 조회합니다.
+     * distinct()를 사용하는 이유: leftJoin(order.orderItems).fetchJoin() 시 DB에서 Order 1개당
+     * OrderItem N개가 조인되어 N개의 중복 Order 행이 반환됩니다. distinct()로 JPA 레벨 중복을 제거합니다.
+     * (페이지네이션은 1단계에서 이미 처리했으므로 distinct()가 페이지 크기에 영향을 주지 않습니다)
+     */
     private List<Order> fetchOrdersWithDetails(List<Long> orderIds) {
         if (orderIds == null || orderIds.isEmpty()) {
             return Collections.emptyList();
@@ -136,6 +277,11 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         return restoreOriginalOrder(orders, orderIds);
     }
 
+    /**
+     * [정렬 순서 복원] fetchJoin 이후 DB가 반환하는 Order 결과 순서는 OrderItem 수에 따라 달라질 수 있습니다.
+     * 1단계에서 orderDate DESC → id DESC 기준으로 정렬된 orderIds 순서가 실제 페이지 정렬 기준이므로,
+     * fetchJoin 결과를 Map으로 변환한 뒤 orderIds 순서대로 재조립하여 원래 정렬 순서를 복원합니다.
+     */
     private List<Order> restoreOriginalOrder(List<Order> orders, List<Long> orderIds) {
         Map<Long, Order> orderMap = orders.stream()
             .collect(Collectors.toMap(Order::getId, Function.identity()));
@@ -173,6 +319,14 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         return total != null ? total : 0L;
     }
 
+    /**
+     * [동적 조인 추가] QueryDSL WHERE 절에서 특정 테이블 컬럼을 참조하려면
+     * 해당 테이블이 FROM/JOIN 절에 반드시 포함되어 있어야 합니다.
+     * 기본 쿼리에는 product·orderDelivery가 없으므로, 검색 타입에 따라 필요할 때만 동적으로 추가합니다.
+     * 불필요한 조인을 피해 쿼리 성능을 유지합니다.
+     * - PRODUCT_NAME 검색 시: orderItem → product 조인 추가
+     * - TRACKING_NUMBER 검색 시: orderItem → orderDeliveries → orderDelivery 조인 추가
+     */
     private void addKeywordJoins(JPAQuery<?> query, CompletedOrderSearchType searchType,
         String keyword) {
         if (keyword == null || keyword.isBlank()) {
@@ -204,10 +358,15 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             return null;
         }
 
+        // 검색 타입별로 서로 다른 컬럼에 LIKE 검색 적용 (대소문자 무관)
         return switch (searchType) {
+            // 주문 번호로 검색 (Order.orderNumber)
             case ORDER_NUMBER -> order.orderNumber.containsIgnoreCase(keyword);
+            // 구매자명으로 검색 (Order.buyerName)
             case BUYER_NAME -> order.buyerName.containsIgnoreCase(keyword);
+            // 상품명으로 검색 (Product.title) — addKeywordJoins에서 product 조인이 선행 필요
             case PRODUCT_NAME -> product.title.containsIgnoreCase(keyword);
+            // 운송장 번호로 검색 (Shipping.trackingNumber) — addKeywordJoins에서 orderDelivery 조인이 선행 필요
             case TRACKING_NUMBER -> orderDelivery.shipping.trackingNumber.containsIgnoreCase(keyword);
         };
     }
@@ -222,6 +381,16 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         return command.searchCondition() != null
             ? command.searchCondition().getEndDate().atTime(23, 59, 59)
             : null;
+    }
+
+    // LocalDate → 해당 날짜 00:00:00 LocalDateTime 변환 (null-safe)
+    private LocalDateTime toStartDateTime(LocalDate date) {
+        return date != null ? date.atStartOfDay() : null;
+    }
+
+    // LocalDate → 해당 날짜 23:59:59 LocalDateTime 변환 (null-safe)
+    private LocalDateTime toEndDateTime(LocalDate date) {
+        return date != null ? date.atTime(23, 59, 59) : null;
     }
 
 }
