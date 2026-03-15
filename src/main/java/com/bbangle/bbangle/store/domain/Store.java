@@ -122,4 +122,8 @@ public class Store extends SoftDeleteBaseEntity {
         this.originAddressLine = originAddressLine;
         this.originAddressDetail = originAddressDetail;
     }
+
+    void updateName(String newName) {
+        this.name = newName;
+    }
 }
