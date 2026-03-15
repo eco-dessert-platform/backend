@@ -5,8 +5,11 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
 import java.util.Optional;
@@ -48,5 +51,25 @@ public class SellerStoreFacade {
             .sellerId(seller.getId())
             .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
             .build();
+    }
+
+    public UpdateStoreNameResponse updateStoreName(Long sellerId, UpdateStoreNameRequest request) {
+        Seller seller = sellerService.getSellerById(sellerId);
+
+        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+        }
+
+        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_PENDING);
+        }
+
+        if (sellerStoreService.findStoreByStoreName(request.newName()).isPresent()) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+        }
+
+        return sellerStoreMapper.toUpdateStoreNameResponse(
+            sellerStoreService.updateStoreName(request, seller)
+        );
     }
 }

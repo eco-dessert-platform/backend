@@ -135,6 +135,8 @@ public enum BbangleErrorCode {
     INVALID_DETAIL_ADDRESS(-729, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
     INVALID_SHORT_DESCRIPTION(-730, "유효하지 않은 한 줄 소개입니다.", BAD_REQUEST),
     ALREADY_RESERVED_STORE(-731, "이미 등록된 스토어입니다.", BAD_REQUEST),
+    ALREADY_UPDATE_STORE_NAME(-732, "이미 변경된 스토어명입니다.", BAD_REQUEST),
+    REQUEST_IS_PENDING(-733, "승인 대기중인 요청입니다.", BAD_REQUEST),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),

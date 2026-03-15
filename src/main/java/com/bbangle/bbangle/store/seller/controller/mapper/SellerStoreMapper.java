@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.store.seller.controller.mapper;
 
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -21,4 +22,9 @@ public interface SellerStoreMapper {
     @Mapping(source = "originAddressLine", target = "originAddress")
     @Mapping(source = "originAddressDetail", target = "originAddressDetail")
     StoreResponse.SellerStoreDetail toSellerStoreDetail(Store store);
+
+    @Mapping(source = "seller.id", target = "sellerId")
+    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "id", target = "storeNameRequestId")
+    StoreResponse.UpdateStoreNameResponse toUpdateStoreNameResponse(StoreNameRequest storeNameRequest);
 }
