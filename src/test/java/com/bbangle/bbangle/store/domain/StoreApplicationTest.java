@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +41,7 @@ class StoreApplicationTest {
         assertThat(storeApplication.getName()).isEqualTo(DEFAULT_STORE_NAME);
         assertThat(storeApplication.getProfile()).isEqualTo(DEFAULT_PROFILE);
         assertThat(storeApplication.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
-        assertThat(storeApplication.getStatus()).isEqualTo(StoreApplicationStatus.PENDING);
+        assertThat(storeApplication.getStatus()).isEqualTo(StoreApprovalStatus.PENDING);
         assertThat(storeApplication.getPhoneNumberVO().getPhoneNumber()).isEqualTo(DEFAULT_PHONE);
         assertThat(storeApplication.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(DEFAULT_SUBPHONE);
         assertThat(storeApplication.getEmailVO().getEmail()).isEqualTo(DEFAULT_EMAIL);
