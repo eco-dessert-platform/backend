@@ -16,7 +16,7 @@ import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
-import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.StoreApplicationCreateRequest;
@@ -88,7 +88,7 @@ class SellerStoreApplicationFacadeIntegrationTest extends S3IntegrationTestSuppo
                 // then
                 Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
 
-                assertThat(result.status()).isEqualTo(StoreApplicationStatus.PENDING);
+                assertThat(result.status()).isEqualTo(StoreApprovalStatus.PENDING);
                 assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
                 assertThat(result.sellerId()).isEqualTo(seller.getId());
                 assertThat(result.storeId()).isNull();
@@ -115,7 +115,7 @@ class SellerStoreApplicationFacadeIntegrationTest extends S3IntegrationTestSuppo
                 Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
                 Store savedStore = storeRepository.findById(result.storeId()).orElseThrow();
 
-                assertThat(result.status()).isEqualTo(StoreApplicationStatus.PENDING);
+                assertThat(result.status()).isEqualTo(StoreApprovalStatus.PENDING);
                 assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
                 assertThat(result.sellerId()).isEqualTo(updatedSeller.getId());
                 assertThat(result.storeId()).isEqualTo(savedStore.getId());
@@ -238,7 +238,7 @@ class SellerStoreApplicationFacadeIntegrationTest extends S3IntegrationTestSuppo
             assertThat(result).isNotNull();
             assertThat(result.sellerId()).isEqualTo(seller.getId());
             assertThat(result.storeApplicationId()).isEqualTo(application.getId());
-            assertThat(result.status()).isEqualTo(StoreApplicationStatus.PENDING);
+            assertThat(result.status()).isEqualTo(StoreApprovalStatus.PENDING);
         }
 
         @Test
