@@ -92,6 +92,9 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    REQUEST_IS_REJECTED(-991, "이미 거절된 요청입니다.", BAD_REQUEST),
+    REQUEST_IS_APPROVED(-991, "이미 승인된 요청입니다.", BAD_REQUEST),
+    REQUEST_IS_PENDING(-992, "승인 대기중인 요청입니다.", BAD_REQUEST),
     _NOT_SUPPORTED_YET(-993, "아직 지원하지 않는 기능입니다.", HttpStatus.NOT_IMPLEMENTED),
     _BAD_REQUEST(-994, "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
@@ -134,7 +137,6 @@ public enum BbangleErrorCode {
     INVALID_SHORT_DESCRIPTION(-730, "유효하지 않은 한 줄 소개입니다.", BAD_REQUEST),
     ALREADY_RESERVED_STORE(-731, "이미 등록된 스토어입니다.", BAD_REQUEST),
     ALREADY_UPDATE_STORE_NAME(-732, "이미 변경된 스토어명입니다.", BAD_REQUEST),
-    REQUEST_IS_PENDING(-733, "승인 대기중인 요청입니다.", BAD_REQUEST),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),

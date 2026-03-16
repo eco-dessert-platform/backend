@@ -23,7 +23,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO : Test
 @Table(name = "store_name_request")
 @Entity
 @Getter
@@ -90,18 +89,19 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
     }
 
     public void approve() {
-        validateUpdateStoreName();
-        this.store.updateName(this.newName);
+        if (this.status.equals(StoreApprovalStatus.REJECT)) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
+        }
+
+        this.store.updateName(this.currentName, this.newName);
         this.status = StoreApprovalStatus.APPROVE;
     }
 
-    private void validateUpdateStoreName() {
-        if (!this.store.getName().equals(this.currentName)) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
-        }
-    }
-
     public void reject(StoreNameRejectReason rejectReason, String rejectDetail) {
+        if (this.status.equals(StoreApprovalStatus.APPROVE)) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+        }
+
         this.rejectReason = rejectReason;
         this.rejectDetail = rejectDetail;
         this.status = StoreApprovalStatus.REJECT;
