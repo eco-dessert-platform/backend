@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.admin.controller.swagger;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminRemoveProductRequest;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
@@ -42,4 +43,13 @@ public interface AdminBoardApi {
         Long productId,
         @Valid AdminRemoveProductRequest request
     );
+
+    @Operation(
+        summary = "업로드 상품 승인 대기 목록 조회",
+        description = "판매자가 업로드한 승인 대기(PENDING) 상태의 상품 목록을 페이지네이션으로 조회합니다."
+    )
+    SingleResult<BbanglePageResponse<UploadApprovalResponse>> getUploadApprovals(
+        @ParameterObject Pageable pageable
+    );
+    
 }

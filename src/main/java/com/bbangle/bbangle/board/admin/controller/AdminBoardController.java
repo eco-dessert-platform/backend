@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.admin.controller;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminRemoveProductRequest;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.board.admin.controller.swagger.AdminBoardApi;
 import com.bbangle.bbangle.board.admin.service.AdminBoardService;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
@@ -13,6 +14,7 @@ import com.bbangle.bbangle.config.security.AdminApiPath;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -61,4 +63,16 @@ public class AdminBoardController implements AdminBoardApi {
         adminBoardService.deleteProducts(command);
         return responseService.getSuccessResult();
     }
+
+    @Override
+    @GetMapping("/upload-approvals")
+    public SingleResult<BbanglePageResponse<UploadApprovalResponse>> getUploadApprovals(
+        @ParameterObject
+        @PageableDefault(size = 20, page = 0, sort = "createdAt", direction = Sort.Direction.DESC)
+        Pageable pageable
+    ) {
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+        return responseService.getSingleResult(BbanglePageResponse.of(result));
+    }
+
 }

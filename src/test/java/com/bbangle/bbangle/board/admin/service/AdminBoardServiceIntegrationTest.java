@@ -3,13 +3,14 @@ package com.bbangle.bbangle.board.admin.service;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -221,6 +222,132 @@ class AdminBoardServiceIntegrationTest {
         assertThat(deletedProduct1.isDeleted()).isTrue();
         assertThat(deletedProduct2.isDeleted()).isTrue();
         assertThat(keptProduct.isDeleted()).isFalse();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 조회는 PENDING 상태만 필터링된다")
+    void getUploadApprovals_filtersByPendingStatus() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        Board pending1 = BoardFixture.pendingBoardWithStore(store, "승인대기상품1");
+        Board pending2 = BoardFixture.pendingBoardWithStore(store, "승인대기상품2");
+        Board outOfStock = BoardFixture.outOfStockBoardWithStore(store, "품절상품");
+        Board stopped = BoardFixture.stoppedBoardWithStore(store, "판매중지상품");
+        Board banned = BoardFixture.bannedBoardWithStore(store, "판매금지상품");
+
+        boardRepository.saveAll(List.of(pending1, pending2, outOfStock, stopped, banned));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent())
+            .hasSize(2)
+            .extracting(UploadApprovalResponse::boardTitle)
+            .containsExactlyInAnyOrder("승인대기상품1", "승인대기상품2");
+
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("업로드 상품 조회는 삭제된 상품을 제외한다")
+    void getUploadApprovals_excludesDeleted() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        Board pending = BoardFixture.pendingBoardWithStore(store, "정상_승인대기");
+        boardRepository.save(pending);
+
+        // 삭제된 PENDING 상품 생성
+        Board pendingDeleted = BoardFixture.pendingBoardWithStore(store, "삭제된_승인대기");
+        boardRepository.save(pendingDeleted);
+        org.springframework.test.util.ReflectionTestUtils.setField(pendingDeleted, "isDeleted", true);
+        boardRepository.saveAndFlush(pendingDeleted);
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent())
+            .hasSize(1)
+            .extracting(UploadApprovalResponse::boardTitle)
+            .contains("정상_승인대기");
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("업로드 상품 조회는 페이지네이션을 지원한다")
+    void getUploadApprovals_respectsPagination() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        for (int i = 0; i < 15; i++) {
+            boardRepository.save(BoardFixture.pendingBoardWithStore(store, "상품" + i));
+        }
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent()).hasSize(10);
+        assertThat(result.getTotalElements()).isEqualTo(15);
+        assertThat(result.getTotalPages()).isEqualTo(2);
+        assertThat(result.hasNext()).isTrue();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 조회는 생성일자 역순으로 정렬된다")
+    void getUploadApprovals_sortsByCreatedAtDesc() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        Board older = boardRepository.save(BoardFixture.pendingBoardWithStore(store, "오래된상품"));
+        Board newer = boardRepository.save(BoardFixture.pendingBoardWithStore(store, "최신상품"));
+
+        Pageable pageable = PageRequest.of(0, 10, org.springframework.data.domain.Sort.by("createdAt").descending());
+
+        // when
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent())
+            .hasSize(2)
+            .extracting(UploadApprovalResponse::boardTitle)
+            .containsExactly("최신상품", "오래된상품");
+    }
+
+    @Test
+    @DisplayName("조회 대상이 되는 상품이 없으면 빈 페이지를 반환한다")
+    void getUploadApprovals_emptyWhenNoValidBoards() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+
+        boardRepository.saveAll(
+            List.of(
+                BoardFixture.outOfStockBoardWithStore(store, "품절상품"),
+                BoardFixture.stoppedBoardWithStore(store, "판매중지상품"),
+                BoardFixture.bannedBoardWithStore(store, "판매금지상품")
+            )
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
+
+        // then
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+        assertThat(result.getTotalPages()).isZero();
     }
 
 }
