@@ -68,7 +68,7 @@ public class ClaimDelivery extends BaseEntity {
         return new ClaimDelivery(
             claim,
             ClaimDeliveryType.RETURN_PICKUP,
-            Shipping.of(courierCode.getDisplayName(), trackingNumber),
+            Shipping.scheduled(courierCode.getDisplayName(), trackingNumber),
             ClaimShippingStatus.IN_TRANSIT
         );
     }

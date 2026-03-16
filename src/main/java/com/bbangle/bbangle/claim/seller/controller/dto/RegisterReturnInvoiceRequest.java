@@ -2,6 +2,7 @@ package com.bbangle.bbangle.claim.seller.controller.dto;
 
 import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -19,4 +20,10 @@ public record RegisterReturnInvoiceRequest(
     String trackingNumber
 
 ) {
+
+    @Schema(hidden = true)
+    @AssertTrue(message = "유효한 택배사 코드를 입력해야 합니다. NONE은 허용되지 않습니다.")
+    public boolean isCourierCodeValid() {
+        return courierCode != null && courierCode != CourierCompany.NONE;
+    }
 }
