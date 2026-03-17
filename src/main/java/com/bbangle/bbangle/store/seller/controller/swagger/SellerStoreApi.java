@@ -98,7 +98,8 @@ public interface SellerStoreApi {
     );
 
     @Operation(
-        summary = "스토어명 변경 신청"
+        summary = "스토어명 변경 신청",
+        description = "승인된 후에는 변경 신청 불가"
     )
     SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
         @AuthenticationPrincipal Long sellerId,
