@@ -7,7 +7,7 @@ import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
@@ -78,7 +78,7 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @GetMapping("/check-name")
-    public SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+    public SingleResult<SellerStoreAvailable> checkStoreNameDuplicate(
         @RequestParam @NotBlank(message = "스토어 이름은 필수입니다.") String storeName
     ) {
         return responseService.getSingleResult(sellerStoreFacade.checkStoreName(storeName));
@@ -86,7 +86,7 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @GetMapping()
-    public SingleResult<StoreResponse.StoreNameCheck> getRegisteredStoreDetail(
+    public SingleResult<SellerStoreAvailable> getRegisteredStoreDetail(
         @AuthenticationPrincipal Long sellerId
     ) {
         return responseService.getSingleResult(

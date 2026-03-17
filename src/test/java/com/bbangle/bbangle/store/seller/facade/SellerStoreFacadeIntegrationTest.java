@@ -18,7 +18,7 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
@@ -64,7 +64,7 @@ class SellerStoreFacadeIntegrationTest {
             String storeName = "notExistStore";
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(storeName);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(storeName);
 
             // then
             assertThat(result.available()).isTrue();
@@ -79,7 +79,7 @@ class SellerStoreFacadeIntegrationTest {
             Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isTrue();
@@ -97,7 +97,7 @@ class SellerStoreFacadeIntegrationTest {
             sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isFalse();
@@ -125,7 +125,7 @@ class SellerStoreFacadeIntegrationTest {
             Seller seller = saveNewSeller(store);
 
             // when
-            StoreNameCheck result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
 
             // then
             assertThat(result.available()).isTrue();
@@ -149,7 +149,7 @@ class SellerStoreFacadeIntegrationTest {
             );
 
             // when
-            StoreNameCheck result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
 
             // then
             assertThat(result.available()).isFalse();

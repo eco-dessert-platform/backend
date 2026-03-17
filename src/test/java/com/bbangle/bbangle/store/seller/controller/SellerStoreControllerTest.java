@@ -34,8 +34,8 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.S
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
@@ -354,7 +354,7 @@ class SellerStoreControllerTest {
 
             // given
             String storeName = "빵";
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(true)
                 .store(null)
                 .build();
@@ -382,7 +382,7 @@ class SellerStoreControllerTest {
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(true)
                 .store(sellerStoreDetail)
                 .build();
@@ -413,7 +413,7 @@ class SellerStoreControllerTest {
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(false)
                 .store(sellerStoreDetail)
                 .build();
@@ -460,7 +460,7 @@ class SellerStoreControllerTest {
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
 
-            StoreResponse.StoreNameCheck response = StoreResponse.StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(true)
                 .store(sellerStoreDetail)
                 .build();
@@ -494,7 +494,7 @@ class SellerStoreControllerTest {
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
 
-            StoreResponse.StoreNameCheck response = StoreResponse.StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(false)
                 .store(sellerStoreDetail)
                 .build();
