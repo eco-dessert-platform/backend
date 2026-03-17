@@ -2,12 +2,17 @@ package com.bbangle.bbangle.store.seller.facade;
 
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -84,6 +89,49 @@ class SellerStoreFacadeIntegrationTest {
             assertThat(result.store()).isNotNull();
             assertThat(result.store().storeId()).isEqualTo(store.getId());
             assertThat(result.store().name()).isEqualTo(DEFAULT_STORE_NAME);
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredStoreDetail() 테스트")
+    class GetRegisteredStoreDetailTest {
+
+        private Seller saveNewSeller(Store store) {
+            Seller seller = SellerFixture.defaultSeller(store);
+            return sellerRepository.saveAndFlush(seller);
+        }
+
+        @Test
+        @DisplayName("등록한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
+        void success_getRegisteredStoreDetail() {
+
+            // given
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            Seller seller = saveNewSeller(store);
+
+            // when
+            SellerStoreDTO result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+
+            // then
+            assertThat(result.sellerId()).isEqualTo(seller.getId());
+            assertThat(result.store().storeId()).isEqualTo(store.getId());
+            assertThat(result.store().name()).isEqualTo(store.getName());
+        }
+
+        @Test
+        @DisplayName("등록한 스토어가 없을 경우 조회에 실패한다.")
+        void fail_getRegisteredStoreDetail() {
+
+            // given
+            Seller seller = saveNewSeller(null);
+
+            // when & then
+            assertThatThrownBy(() -> sellerStoreFacade.getRegisteredStoreDetail(seller.getId()))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_REGISTERED_STORE);
+                });
         }
     }
 }

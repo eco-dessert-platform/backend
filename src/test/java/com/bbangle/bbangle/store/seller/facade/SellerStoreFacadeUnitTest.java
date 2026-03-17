@@ -2,14 +2,23 @@ package com.bbangle.bbangle.store.seller.facade;
 
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.seller.service.SellerService;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
@@ -102,6 +111,61 @@ class SellerStoreFacadeUnitTest {
             // then
             assertThat(result.available()).isFalse();
             assertThat(result.store()).isEqualTo(sellerStoreDetail);
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredStoreDetail() 테스트")
+    class GetRegisteredStoreDetailTest {
+
+        @Test
+        @DisplayName("등록 신청한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
+        void getRegisteredStoreDetail_exist_registeredStore() {
+
+            // given
+            Long sellerId = 1L;
+
+            Store store = StoreFixture.defaultStore();
+            Seller seller = SellerFixture.withId(
+                SellerFixture.defaultSeller(store),
+                sellerId
+            );
+            StoreResponse.SellerStoreDetail storeDetail = mock(StoreResponse.SellerStoreDetail.class);
+
+            given(sellerService.getSellerById(sellerId)).willReturn(seller);
+            given(sellerStoreMapper.toSellerStoreDetail(store)).willReturn(storeDetail);
+
+            // when
+            SellerStoreDTO result = sellerStoreFacade.getRegisteredStoreDetail(sellerId);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.sellerId()).isEqualTo(sellerId);
+            assertThat(result.store()).isEqualTo(storeDetail);
+        }
+
+        @Test
+        @DisplayName("등록한 스토어가 없을 경우 조회에 실패한다.")
+        void fail_getRegisteredStoreDetail() {
+
+            // given
+            Long sellerId = 1L;
+            Seller seller = SellerFixture.withId(
+                SellerFixture.defaultSeller(CertificationStatus.NEW),
+                sellerId
+            );
+
+            given(sellerService.getSellerById(sellerId)).willReturn(seller);
+
+            // when & then
+            assertThatThrownBy(() -> sellerStoreFacade.getRegisteredStoreDetail(sellerId))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_REGISTERED_STORE);
+                });
+
+            verify(sellerStoreMapper, never()).toSellerStoreDetail(any());
         }
     }
 }
