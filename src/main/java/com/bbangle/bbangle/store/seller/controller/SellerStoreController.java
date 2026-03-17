@@ -84,7 +84,6 @@ public class SellerStoreController implements SellerStoreApi {
         return responseService.getSingleResult(sellerStoreFacade.checkStoreName(storeName));
     }
 
-    // TODO : Test
     @Override
     @PostMapping("/store-names")
     public SingleResult<UpdateStoreNameResponse> updateStoreName(
