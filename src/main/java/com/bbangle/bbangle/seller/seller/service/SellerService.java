@@ -7,7 +7,6 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import java.util.Optional;
@@ -23,11 +22,6 @@ public class SellerService {
 
     // TODO : v3 - Store/Seller/SellerStoreService로 이동
     public void updateSeller(SellerUpdateRequest request, Long sellerId) {
-        // TODO: 실제 비즈니스 로직 구현
-    }
-
-    // TODO : v3 - Store/Seller/SellerStoreService로 이동
-    public void updateStoreName(SellerStoreNameUpdateRequest request, Long sellerId) {
         // TODO: 실제 비즈니스 로직 구현
     }
 

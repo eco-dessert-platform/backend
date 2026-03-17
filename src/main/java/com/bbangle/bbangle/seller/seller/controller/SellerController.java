@@ -6,7 +6,6 @@ import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.swagger.SellerApi;
 import com.bbangle.bbangle.seller.seller.facade.SellerFacade;
@@ -52,17 +51,6 @@ public class SellerController implements SellerApi {
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerService.updateSeller(request, sellerId);
-        return responseService.getSuccessResult();
-    }
-
-    // TODO : v3 - Store 이름 변경 API (Store/Seller/Controller로 이동할 것)
-    @PatchMapping("/store-name")
-    @Override
-    public CommonResult updateStoreName(
-        @RequestBody @Validated SellerStoreNameUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
-    ) {
-        sellerService.updateStoreName(request, sellerId);
         return responseService.getSuccessResult();
     }
 

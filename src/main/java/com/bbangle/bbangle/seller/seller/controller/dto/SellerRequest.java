@@ -85,19 +85,6 @@ public class SellerRequest {
 
     }
 
-    @Schema(description = "스토어명 변경 요청 DTO")
-    public record SellerStoreNameUpdateRequest(
-        @Schema(description = "상점 ID", example = "1")
-        @NotNull(message = "상점 ID는 필수입니다.")
-        Long storeId,
-
-        @Schema(description = "변경할 스토어명", example = "빵그리의 새로운 오븐")
-        @NotBlank(message = "스토어명은 필수입니다.")
-        String storeName
-    ) {
-
-    }
-
     @Schema(description = "판매자 정보 수정 요청 DTO")
     public record SellerUpdateRequest(
         @Schema(description = "상점 ID", example = "1")
