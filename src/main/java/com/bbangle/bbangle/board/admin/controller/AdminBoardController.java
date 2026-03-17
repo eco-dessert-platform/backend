@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.admin.controller;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminRemoveProductRequest;
 import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.request.UploadApprovalDecisionRequest;
 import com.bbangle.bbangle.board.admin.controller.swagger.AdminBoardApi;
 import com.bbangle.bbangle.board.admin.service.AdminBoardService;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
@@ -22,6 +23,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,6 +75,16 @@ public class AdminBoardController implements AdminBoardApi {
     ) {
         Page<UploadApprovalResponse> result = adminBoardService.getUploadApprovals(pageable);
         return responseService.getSingleResult(BbanglePageResponse.of(result));
+    }
+
+    @Override
+    @PostMapping("/{boardId}/decision")
+    public CommonResult decideUploadApproval(
+        @PathVariable Long boardId,
+        @RequestBody @Valid UploadApprovalDecisionRequest request
+    ) {
+        adminBoardService.decideUploadApproval(boardId, request);
+        return responseService.getSuccessResult();
     }
 
 }

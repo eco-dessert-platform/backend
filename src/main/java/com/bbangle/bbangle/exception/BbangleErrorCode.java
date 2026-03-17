@@ -25,6 +25,7 @@ public enum BbangleErrorCode {
     PRICE_NOT_OVER_ZERO(-8, "0원 이상의 가격을 입력해주세요", BAD_REQUEST),
     INVALID_CATEGORY(-9, "존재하지 않는 카테고리입니다.", BAD_REQUEST),
     BOARD_NOT_FOUND(-10, "존재하지 않는 게시글입니다.", BAD_REQUEST),
+    INVALID_BOARD_STATUS(-10_1, "유효하지 않은 게시글 상태입니다.", BAD_REQUEST),
     RANKING_NOT_FOUND(-11, "해당 게시글의 랭킹이 존재하지 않습니다.", BAD_REQUEST),
     INVALID_CURSOR_ID(-12, "유효하지 않은 cursorId 입니다.", BAD_REQUEST),
     NOTIFICATION_NOT_FOUND(-13, "존재하지 않는 공지사항입니다.", BAD_REQUEST),
