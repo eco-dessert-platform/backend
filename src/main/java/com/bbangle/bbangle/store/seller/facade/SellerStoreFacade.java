@@ -9,9 +9,8 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
@@ -33,30 +32,30 @@ public class SellerStoreFacade {
     private final S3Service s3Service;
     private final SellerStoreMapper sellerStoreMapper;
 
-    public StoreNameCheck checkStoreName(String storeName) {
+    public SellerStoreAvailable checkStoreName(String storeName) {
         Optional<Store> optionalStore = sellerStoreService.findStoreByStoreName(storeName);
         if (optionalStore.isEmpty()) {
-            return StoreNameCheck.builder()
+            return SellerStoreAvailable.builder()
                 .available(true)
                 .store(null)
                 .build();
         }
 
         Store store = optionalStore.get();
-        return StoreNameCheck.builder()
+        return SellerStoreAvailable.builder()
             .available(!sellerService.existsSellerByStoreId(store.getId()))
             .store(sellerStoreMapper.toSellerStoreDetail(store))
             .build();
     }
 
     // TODO : Test
-    public StoreResponse.StoreNameCheck getRegisteredStoreDetail(Long sellerId) {
+    public SellerStoreAvailable getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
         if (seller.getStore() == null) throw new BbangleException(BbangleErrorCode.NOT_REGISTERED_STORE);
 
         Optional<StoreApprovalStatus> status = sellerStoreService.findActiveRequestsBySellerId(seller);
 
-        return StoreResponse.StoreNameCheck.builder()
+        return SellerStoreAvailable.builder()
             .available(status.isEmpty())
             .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
             .build();
