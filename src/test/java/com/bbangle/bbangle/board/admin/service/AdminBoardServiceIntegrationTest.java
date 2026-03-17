@@ -4,17 +4,23 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.request.UploadApprovalDecisionRequest;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.RejectionCategory;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.claim.domain.constant.DecisionType;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -348,6 +354,98 @@ class AdminBoardServiceIntegrationTest {
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
         assertThat(result.getTotalPages()).isZero();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인 - PENDING 상태를 ON_SALE로 변경한다")
+    void decideUploadApproval_approve_changesStatusToOnSale() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board pendingBoard = boardRepository.save(BoardFixture.pendingBoardWithStore(store, "승인대기상품"));
+
+        assertThat(pendingBoard.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
+
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        // when
+        adminBoardService.decideUploadApproval(pendingBoard.getId(), request);
+
+        // then
+        Board approvedBoard = boardRepository.findById(pendingBoard.getId()).orElseThrow();
+        assertThat(approvedBoard.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+        assertThat(approvedBoard.getRejectionCategory()).isNull();
+        assertThat(approvedBoard.getRejectionReason()).isNull();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 거절 - PENDING 상태를 BANNED로 변경하고 거절 정보를 저장한다")
+    void decideUploadApproval_reject_changesStatusToBannedWithRejectionInfo() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board pendingBoard = boardRepository.save(BoardFixture.pendingBoardWithStore(store, "거절대상상품"));
+
+        assertThat(pendingBoard.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
+
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.REJECT,
+            RejectionCategory.INAPPROPRIATE_BRAND_NAME,
+            "브랜드명을 무단으로 사용하여 고객에게 혼동을 줄 수 있습니다."
+        );
+
+        // when
+        adminBoardService.decideUploadApproval(pendingBoard.getId(), request);
+
+        // then
+        Board rejectedBoard = boardRepository.findById(pendingBoard.getId()).orElseThrow();
+        assertThat(rejectedBoard.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+        assertThat(rejectedBoard.getRejectionCategory()).isEqualTo(RejectionCategory.INAPPROPRIATE_BRAND_NAME);
+        assertThat(rejectedBoard.getRejectionReason()).isEqualTo("브랜드명을 무단으로 사용하여 고객에게 혼동을 줄 수 있습니다.");
+        assertThat(rejectedBoard.getRejectionAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인/거절 - 존재하지 않는 상품이면 예외가 발생한다")
+    void decideUploadApproval_nonExistentBoard_throwsException() {
+        // given
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        // when & then
+        assertThat(
+            Assertions.catchThrowableOfType(
+                () -> adminBoardService.decideUploadApproval(999L, request),
+                BbangleException.class
+            )
+        ).isNotNull();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인 - PENDING이 아닌 상태에서는 승인이 불가능하다")
+    void decideUploadApproval_approve_onNonPendingStatus_throwsException() {
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board onSaleBoard = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "판매중상품"));
+
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        // when & then
+        assertThat(
+            Assertions.catchThrowableOfType(
+                () -> adminBoardService.decideUploadApproval(onSaleBoard.getId(), request),
+                BbangleException.class
+            )
+        ).isNotNull();
     }
 
 }
