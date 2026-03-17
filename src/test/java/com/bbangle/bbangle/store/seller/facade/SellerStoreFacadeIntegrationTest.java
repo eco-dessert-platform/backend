@@ -8,16 +8,15 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
-import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
 import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreRequestFixture;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
@@ -25,6 +24,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -124,10 +125,34 @@ class SellerStoreFacadeIntegrationTest {
             Seller seller = saveNewSeller(store);
 
             // when
-            SellerStoreDTO result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+            StoreNameCheck result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
 
             // then
-            assertThat(result.sellerId()).isEqualTo(seller.getId());
+            assertThat(result.available()).isTrue();
+            assertThat(result.store().storeId()).isEqualTo(store.getId());
+            assertThat(result.store().name()).isEqualTo(store.getName());
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("스토어명 변경 요청이 APPROVE 또는 PENDING이면 스토어명 변경 불가능하다.")
+        void getRegisteredStoreDetail_updateStoreName(StoreApprovalStatus status) {
+
+            // given
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            Seller seller = saveNewSeller(store);
+            storeNameRequestRepository.saveAndFlush(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, status)
+            );
+
+            // when
+            StoreNameCheck result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+
+            // then
+            assertThat(result.available()).isFalse();
             assertThat(result.store().storeId()).isEqualTo(store.getId());
             assertThat(result.store().name()).isEqualTo(store.getName());
         }
