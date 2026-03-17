@@ -48,13 +48,11 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
-    // TODO : Test
     @Transactional(readOnly = true)
     public boolean existsByStatusAndSellerId(Seller seller, StoreApprovalStatus status) {
         return storeNameRequestRepository.existsByStatusAndSeller_Id(status, seller.getId());
     }
 
-    // TODO : Test
     @Transactional
     public StoreNameRequest updateStoreName(StoreRequest.UpdateStoreNameRequest request, Seller seller) {
         return storeNameRequestRepository.save(
