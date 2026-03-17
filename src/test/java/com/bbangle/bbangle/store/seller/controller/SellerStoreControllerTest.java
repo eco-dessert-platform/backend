@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.seller.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -9,6 +10,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,13 +25,18 @@ import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreResponseFixture;
 import com.bbangle.bbangle.fixture.store.seller.controller.dto.StoreApplicationRequestFixture;
 import com.bbangle.bbangle.fixture.store.seller.controller.dto.StoreApplicationResponseFixture;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.StoreApplicationCreateRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
@@ -71,6 +78,9 @@ class SellerStoreControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JsonDataEncoder jsonDataEncoder;
 
     @MockBean
     private SellerStoreService sellerStoreService;
@@ -486,6 +496,64 @@ class SellerStoreControllerTest {
             // when & then
             mockMvc.perform(get(SellerApiPath.PREFIX + "/stores"))
                 .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreName() 테스트")
+    class UpdateStoreNameTest {
+
+        @Test
+        @DisplayName("스토어명 변경 신청에 성공한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void success_updateStoreName() throws Exception {
+
+            // given
+            Long sellerId = 1L;
+            UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
+            UpdateStoreNameResponse response = SellerStoreResponseFixture.defaultUpdateStoreNameResponse();
+
+            given(sellerStoreFacade.updateStoreName(eq(sellerId), any(UpdateStoreNameRequest.class))).willReturn(response);
+
+            // when & then
+            mockMvc.perform(post(SellerApiPath.PREFIX + "/stores/store-names")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+                .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.result.sellerId").value(1L))
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.storeNameRequestId").value(1L))
+                .andExpect(jsonPath("$.result.currentName").value(DEFAULT_STORE_NAME))
+                .andExpect(jsonPath("$.result.newName").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.PENDING.name()))
+                .andExpect(jsonPath("$.result.rejectCategory").isEmpty())
+                .andExpect(jsonPath("$.result.rejectDetail").isEmpty());
+        }
+
+        @Test
+        @DisplayName("스토어명 중복 시 스토어명 변경 신청에 실패한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void fail_updateStoreName() throws Exception {
+
+            // given
+            given(sellerStoreFacade.updateStoreName(anyLong(), any()))
+                .willThrow(new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE));
+
+            // when & then
+            mockMvc.perform(post(SellerApiPath.PREFIX + "/stores/store-names")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(
+                        SellerStoreRequestFixture.defaultUpdateStoreNameRequest()
+                    ))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getMessage()));
         }
     }
 }

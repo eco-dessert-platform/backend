@@ -5,7 +5,6 @@ import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -85,15 +84,6 @@ public interface SellerApi {
     )
     CommonResult updateSeller(
         @RequestBody SellerUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
-    );
-
-    @Operation(
-        summary = "스토어명 변경",
-        description = "스토어명을 변경합니다. (최초 1회만 가능)"
-    )
-    CommonResult updateStoreName(
-        @RequestBody SellerStoreNameUpdateRequest request,
         @AuthenticationPrincipal Long sellerId
     );
 

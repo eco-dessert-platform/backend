@@ -6,7 +6,9 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
@@ -20,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -89,5 +92,14 @@ public class SellerStoreController implements SellerStoreApi {
         return responseService.getSingleResult(
             sellerStoreFacade.getRegisteredStoreDetail(sellerId)
         );
+    }
+
+    @Override
+    @PostMapping("/store-names")
+    public SingleResult<UpdateStoreNameResponse> updateStoreName(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestBody UpdateStoreNameRequest request
+    ) {
+        return responseService.getSingleResult(sellerStoreFacade.updateStoreName(sellerId, request));
     }
 }

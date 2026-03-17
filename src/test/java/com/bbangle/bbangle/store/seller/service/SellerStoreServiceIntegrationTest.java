@@ -7,11 +7,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreRequestFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreNameRequest;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -42,6 +48,9 @@ public class SellerStoreServiceIntegrationTest {
     private SellerRepository sellerRepository;
 
     @Autowired
+    private StoreNameRequestRepository storeNameRequestRepository;
+
+    @Autowired
     private EntityManager em;
 
     @Test
@@ -58,6 +67,30 @@ public class SellerStoreServiceIntegrationTest {
         // then
         assertThat(seller.getStore()).isEqualTo(store);
         assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("스토어명 변경 신청에 성공한다.")
+    void success_update_store_name() {
+
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+        UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
+
+        // when
+        StoreNameRequest result = sellerStoreService.updateStoreName(request, seller);
+
+        // then
+        StoreNameRequest saved = storeNameRequestRepository.findById(result.getId()).orElseThrow();
+
+        assertThat(saved.getCurrentName()).isEqualTo(store.getName());
+        assertThat(saved.getNewName()).isEqualTo(request.newName());
+        assertThat(saved.getStatus()).isEqualTo(StoreApprovalStatus.PENDING);
+        assertThat(saved.getRejectCategory()).isNull();
+        assertThat(saved.getRejectDetail()).isNull();
+        assertThat(saved.getStore().getId()).isEqualTo(store.getId());
+        assertThat(saved.getSeller().getId()).isEqualTo(seller.getId());
     }
 
     @Nested
@@ -261,6 +294,47 @@ public class SellerStoreServiceIntegrationTest {
 
             // then
             assertThat(result.isEmpty()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("existsByStatusAndSellerId() 테스트")
+    class ExistsByStatusAndSellerIdTest {
+
+        @Test
+        @DisplayName("판매자가 신청한 요청 중 이미 대기중인 요청이 존재한다.")
+        void storeNameRequest_exists_pending() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, StoreApprovalStatus.PENDING)
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            boolean result = sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+
+            // then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("판매자가 신청한 요청 중 대기중인 요청이 존재하지 않는다.")
+        void storeNameRequest_notExists_pending() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+
+            // when
+            boolean result = sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+
+            // then
+            assertThat(result).isFalse();
         }
     }
 }

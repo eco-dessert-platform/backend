@@ -5,6 +5,7 @@ import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -101,5 +103,14 @@ public interface SellerStoreApi {
     )
     SingleResult<StoreResponse.SellerStoreDTO> getRegisteredStoreDetail(
         @AuthenticationPrincipal Long sellerId
+    );
+
+    @Operation(
+        summary = "스토어명 변경 신청",
+        description = "승인된 후에는 변경 신청 불가"
+    )
+    SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestBody StoreRequest.UpdateStoreNameRequest request
     );
 }

@@ -4,7 +4,7 @@ import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.model.EmailVO;
 import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
-import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -45,7 +45,7 @@ public class StoreApplication extends BaseEntity {
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private StoreApplicationStatus status;
+    private StoreApprovalStatus status;
 
     @Embedded
     private PhoneNumberVO phoneNumberVO;
@@ -72,7 +72,7 @@ public class StoreApplication extends BaseEntity {
         String name,
         String introduce,
         String profile,
-        StoreApplicationStatus status,
+        StoreApprovalStatus status,
         PhoneNumberVO phoneNumberVO,
         EmailVO emailVO,
         String originAddressLine,
@@ -108,7 +108,7 @@ public class StoreApplication extends BaseEntity {
             .name(name)
             .introduce(introduce)
             .profile(profile)
-            .status(StoreApplicationStatus.PENDING)
+            .status(StoreApprovalStatus.PENDING)
             .phoneNumberVO(PhoneNumberVO.of(phone, subPhone))
             .emailVO(EmailVO.of(email))
             .originAddressLine(originAddressLine)
@@ -118,7 +118,13 @@ public class StoreApplication extends BaseEntity {
             .build();
     }
 
-    public void updateStatus(StoreApplicationStatus status) {
-        this.status = status;
+    // TODO : (관리자) 스토어 등록 승인 구현
+    public void approve() {
+        this.status = StoreApprovalStatus.APPROVE;
+    }
+
+    // TODO : (관리자) 스토어 등록 거절 구현
+    public void reject() {
+        this.status = StoreApprovalStatus.REJECT;
     }
 }

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.store.seller.controller.dto;
 
-import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -16,7 +16,7 @@ public class StoreApplicationResponse {
         @Schema(description = "스토어명", example = "빵그리의 오븐") String name,
         @Schema(description = "스토어 소개", example = "건강한 디저트를 만드는 베이커리") String introduce,
         @Schema(description = "스토어 프로필 이미지 URL", example = "https://d37g3q9mfan3cw.cloudfront.net/store/000000/logo.png") String profile,
-        @Schema(description = "스토어 신청 상태", example = "PENDING") StoreApplicationStatus status,
+        @Schema(description = "스토어 신청 상태", example = "PENDING") StoreApprovalStatus status,
         @Schema(description = "스토어 연락처", example = "01012345678") String phoneNumber,
         @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhoneNumber,
         @Schema(description = "스토어 이메일", example = "user@example.com") String email,
