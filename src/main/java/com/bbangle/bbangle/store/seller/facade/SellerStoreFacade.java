@@ -41,7 +41,6 @@ public class SellerStoreFacade {
             .build();
     }
 
-    // TODO : Test
     public UpdateStoreNameResponse updateStoreName(Long sellerId, UpdateStoreNameRequest request) {
         Seller seller = sellerService.getSellerById(sellerId);
 
