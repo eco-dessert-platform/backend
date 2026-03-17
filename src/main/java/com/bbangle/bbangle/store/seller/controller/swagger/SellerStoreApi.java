@@ -103,6 +103,6 @@ public interface SellerStoreApi {
     )
     SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
         @AuthenticationPrincipal Long sellerId,
-        @RequestBody StoreRequest.UpdateStoreNameRequest request
+        @Valid @RequestBody StoreRequest.UpdateStoreNameRequest request
     );
 }

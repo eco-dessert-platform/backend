@@ -27,7 +27,7 @@ class StoreNameRequestTest {
         @DisplayName("스토어명 변경 신청에 성공한다.")
         void createStoreNameRequest() {
 
-            // give
+            // given
             Seller seller = SellerFixture.defaultSeller();
             Store store = StoreFixture.defaultStore();
 
