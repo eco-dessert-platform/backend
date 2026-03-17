@@ -5,7 +5,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
-import com.bbangle.bbangle.store.domain.model.StoreNameRejectReason;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,9 +44,9 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
     @Enumerated(EnumType.STRING)
     private StoreApprovalStatus status;
 
-    @Column(name = "reject_reason")
+    @Column(name = "reject_category")
     @Enumerated(EnumType.STRING)
-    private StoreNameRejectReason rejectReason;
+    private StoreNameRejectCategory rejectCategory;
 
     @Column(name = "reject_detail")
     private String rejectDetail;
@@ -64,7 +64,7 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
         String currentName,
         String newName,
         StoreApprovalStatus status,
-        StoreNameRejectReason rejectReason,
+        StoreNameRejectCategory rejectCategory,
         String rejectDetail,
         Seller seller,
         Store store
@@ -72,7 +72,7 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
         this.currentName = currentName;
         this.newName = newName;
         this.status = status;
-        this.rejectReason = rejectReason;
+        this.rejectCategory = rejectCategory;
         this.rejectDetail = rejectDetail;
         this.seller = seller;
         this.store = store;
@@ -97,12 +97,12 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
         this.status = StoreApprovalStatus.APPROVE;
     }
 
-    public void reject(StoreNameRejectReason rejectReason, String rejectDetail) {
+    public void reject(StoreNameRejectCategory rejectReason, String rejectDetail) {
         if (this.status.equals(StoreApprovalStatus.APPROVE)) {
             throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
         }
 
-        this.rejectReason = rejectReason;
+        this.rejectCategory = rejectReason;
         this.rejectDetail = rejectDetail;
         this.status = StoreApprovalStatus.REJECT;
     }

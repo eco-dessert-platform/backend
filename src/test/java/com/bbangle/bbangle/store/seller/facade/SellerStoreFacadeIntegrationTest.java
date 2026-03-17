@@ -177,7 +177,7 @@ class SellerStoreFacadeIntegrationTest {
             assertThat(saved.getCurrentName()).isEqualTo(store.getName());
             assertThat(saved.getNewName()).isEqualTo(request.newName());
             assertThat(saved.getStatus()).isEqualTo(StoreApprovalStatus.PENDING);
-            assertThat(saved.getRejectReason()).isNull();
+            assertThat(saved.getRejectCategory()).isNull();
             assertThat(saved.getRejectDetail()).isNull();
         }
 

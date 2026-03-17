@@ -530,7 +530,7 @@ class SellerStoreControllerTest {
                 .andExpect(jsonPath("$.result.currentName").value(DEFAULT_STORE_NAME))
                 .andExpect(jsonPath("$.result.newName").value(NEW_STORE_NAME))
                 .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.PENDING.name()))
-                .andExpect(jsonPath("$.result.rejectReason").isEmpty())
+                .andExpect(jsonPath("$.result.rejectCategory").isEmpty())
                 .andExpect(jsonPath("$.result.rejectDetail").isEmpty());
         }
 

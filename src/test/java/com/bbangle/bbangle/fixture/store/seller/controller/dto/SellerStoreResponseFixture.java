@@ -4,7 +4,7 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STOR
 import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
-import com.bbangle.bbangle.store.domain.model.StoreNameRejectReason;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 
@@ -20,7 +20,7 @@ public class SellerStoreResponseFixture {
             .currentName(DEFAULT_STORE_NAME)
             .newName(NEW_STORE_NAME)
             .status(StoreApprovalStatus.PENDING)
-            .rejectReason(null)
+            .rejectCategory(null)
             .rejectDetail(null)
             .build();
     }
@@ -33,13 +33,13 @@ public class SellerStoreResponseFixture {
             .currentName(DEFAULT_STORE_NAME)
             .newName(NEW_STORE_NAME)
             .status(status)
-            .rejectReason(null)
+            .rejectCategory(null)
             .rejectDetail(null)
             .build();
     }
 
     public static StoreResponse.UpdateStoreNameResponse defaultUpdateStoreNameResponse(
-        StoreNameRejectReason rejectReason,
+        StoreNameRejectCategory rejectReason,
         String rejectDetail
     ) {
         return UpdateStoreNameResponse.builder()
@@ -49,7 +49,7 @@ public class SellerStoreResponseFixture {
             .currentName(DEFAULT_STORE_NAME)
             .newName(NEW_STORE_NAME)
             .status(StoreApprovalStatus.REJECT)
-            .rejectReason(rejectReason)
+            .rejectCategory(rejectReason)
             .rejectDetail(rejectDetail)
             .build();
     }

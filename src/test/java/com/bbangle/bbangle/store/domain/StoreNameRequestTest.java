@@ -11,7 +11,7 @@ import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
-import com.bbangle.bbangle.store.domain.model.StoreNameRejectReason;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class StoreNameRequestTest {
             assertThat(storeNameRequest.getCurrentName()).isEqualTo(store.getName());
             assertThat(storeNameRequest.getNewName()).isEqualTo(NEW_STORE_NAME);
             assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.PENDING);
-            assertThat(storeNameRequest.getRejectReason()).isNull();
+            assertThat(storeNameRequest.getRejectCategory()).isNull();
             assertThat(storeNameRequest.getRejectDetail()).isNull();
             assertThat(storeNameRequest.getSeller()).isEqualTo(seller);
             assertThat(storeNameRequest.getStore()).isEqualTo(store);
@@ -98,11 +98,11 @@ class StoreNameRequestTest {
             StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(SellerFixture.defaultSeller(), store);
 
             // when
-            storeNameRequest.reject(StoreNameRejectReason.ETC, "test");
+            storeNameRequest.reject(StoreNameRejectCategory.ETC, "test");
 
             // then
             assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
-            assertThat(storeNameRequest.getRejectReason()).isEqualTo(StoreNameRejectReason.ETC);
+            assertThat(storeNameRequest.getRejectCategory()).isEqualTo(StoreNameRejectCategory.ETC);
             assertThat(storeNameRequest.getRejectDetail()).isEqualTo("test");
         }
 
@@ -118,7 +118,7 @@ class StoreNameRequestTest {
 
             // when & then
             assertThatThrownBy(() -> storeNameRequest.reject(
-                StoreNameRejectReason.ETC, "test"))
+                StoreNameRejectCategory.ETC, "test"))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
