@@ -49,27 +49,30 @@ public class SellerStoreFacade {
             .build();
     }
 
-    public StoreResponse.SellerStoreDTO getRegisteredStoreDetail(Long sellerId) {
+    // TODO : Test
+    public StoreResponse.StoreNameCheck getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
-
         if (seller.getStore() == null) throw new BbangleException(BbangleErrorCode.NOT_REGISTERED_STORE);
 
-        return StoreResponse.SellerStoreDTO.builder()
-            .sellerId(seller.getId())
+        Optional<StoreApprovalStatus> status = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+        return StoreResponse.StoreNameCheck.builder()
+            .available(status.isEmpty())
             .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
             .build();
     }
 
+    // TODO : Test
     public UpdateStoreNameResponse updateStoreName(Long sellerId, UpdateStoreNameRequest request) {
         Seller seller = sellerService.getSellerById(sellerId);
 
-        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
-        }
-
-        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)) {
-            throw new BbangleException(BbangleErrorCode.REQUEST_IS_PENDING);
-        }
+        Optional<StoreApprovalStatus> status = sellerStoreService.findActiveRequestsBySellerId(seller);
+        status.ifPresent(s -> {
+            switch (s) {
+                case APPROVE -> throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+                case PENDING -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_PENDING);
+            }
+        });
 
         if (sellerStoreService.findStoreByStoreName(request.newName()).isPresent()) {
             throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);

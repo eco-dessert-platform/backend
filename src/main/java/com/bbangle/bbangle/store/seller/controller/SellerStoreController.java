@@ -89,7 +89,7 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @GetMapping()
-    public SingleResult<StoreResponse.SellerStoreDTO> getRegisteredStoreDetail(
+    public SingleResult<StoreResponse.StoreNameCheck> getRegisteredStoreDetail(
         @AuthenticationPrincipal Long sellerId
     ) {
         return responseService.getSingleResult(
