@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum StoreNameRejectReason {
+public enum StoreNameRejectCategory {
 
     ADMIN_INAPPROPRIATE("운영정책 또는 서비스 품질 유지를 위해 부적합"),
     BRAND_NAME_MISUSE("등록된 상표 또는 타 브랜드 명칭 무단 사용"),

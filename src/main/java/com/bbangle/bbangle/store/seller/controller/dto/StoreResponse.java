@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.store.seller.controller.dto;
 
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
-import com.bbangle.bbangle.store.domain.model.StoreNameRejectReason;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -52,7 +52,7 @@ public class StoreResponse {
         @Schema(description = "현재 스토어명", example = "빵그리의 오븐") String currentName,
         @Schema(description = "변경할 스토어명", example = "빵그리의 오븐 1호점") String newName,
         @Schema(description = "스토어명 변경 신청 상태", example = "PENDING") StoreApprovalStatus status,
-        @Schema(description = "스토어명 변경 거절 사유", example = "ETC", nullable = true) StoreNameRejectReason rejectReason,
+        @Schema(description = "스토어명 변경 거절 사유", example = "ETC", nullable = true) StoreNameRejectCategory rejectCategory,
         @Schema(description = "스토어명 변경 거절 상세 사유", example = "부적절한 이름", nullable = true) String rejectDetail
     ) {}
 }

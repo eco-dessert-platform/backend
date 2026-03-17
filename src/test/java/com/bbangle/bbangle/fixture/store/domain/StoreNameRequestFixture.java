@@ -4,7 +4,7 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
-import com.bbangle.bbangle.store.domain.model.StoreNameRejectReason;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 
 public class StoreNameRequestFixture {
 
@@ -16,7 +16,7 @@ public class StoreNameRequestFixture {
         String currentName,
         String newName,
         StoreApprovalStatus status,
-        StoreNameRejectReason rejectReason,
+        StoreNameRejectCategory rejectCategory,
         String rejectDetail,
         Seller seller,
         Store store
@@ -25,7 +25,7 @@ public class StoreNameRequestFixture {
             .currentName(currentName)
             .newName(newName)
             .status(status)
-            .rejectReason(rejectReason)
+            .rejectCategory(rejectCategory)
             .rejectDetail(rejectDetail)
             .seller(seller)
             .store(store)

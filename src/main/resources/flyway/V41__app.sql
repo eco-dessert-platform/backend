@@ -3,7 +3,7 @@ create table if not exists store_name_request (
     current_name          varchar(255)                             not null,
     new_name              varchar(255)                             not null,
     status                varchar(20) default 'PENDING'            not null,
-    reject_reason         varchar(30)                              null,
+    reject_category       varchar(30)                              null,
     reject_detail         varchar(255)                             null,
     created_at            datetime(6) default current_timestamp(6),
     seller_id             bigint                                   not null,
