@@ -513,7 +513,7 @@ class SellerStoreControllerTest {
             UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
             UpdateStoreNameResponse response = SellerStoreResponseFixture.defaultUpdateStoreNameResponse();
 
-            given(sellerStoreFacade.updateStoreName(sellerId, request)).willReturn(response);
+            given(sellerStoreFacade.updateStoreName(eq(sellerId), any(UpdateStoreNameRequest.class))).willReturn(response);
 
             // when & then
             mockMvc.perform(post(SellerApiPath.PREFIX + "/stores/store-names")

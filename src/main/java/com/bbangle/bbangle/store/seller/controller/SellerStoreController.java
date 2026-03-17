@@ -98,7 +98,7 @@ public class SellerStoreController implements SellerStoreApi {
     @PostMapping("/store-names")
     public SingleResult<UpdateStoreNameResponse> updateStoreName(
         @AuthenticationPrincipal Long sellerId,
-        @RequestBody UpdateStoreNameRequest request
+        @Valid @RequestBody UpdateStoreNameRequest request
     ) {
         return responseService.getSingleResult(sellerStoreFacade.updateStoreName(sellerId, request));
     }
