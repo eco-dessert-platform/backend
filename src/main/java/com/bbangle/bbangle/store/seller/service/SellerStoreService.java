@@ -11,10 +11,8 @@ import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,15 +50,7 @@ public class SellerStoreService {
 
     @Transactional(readOnly = true)
     public Optional<StoreApprovalStatus> findActiveRequestsBySellerId(Seller seller) {
-        return storeNameRequestRepository
-            .findActiveRequestsBySellerId(
-                seller.getId(),
-                List.of(StoreApprovalStatus.APPROVE, StoreApprovalStatus.PENDING),
-                PageRequest.of(0, 1)
-            )
-            .stream()
-            .findFirst()
-            .map(StoreNameRequest::getStatus);
+        return storeNameRequestRepository.findActiveRequestsBySellerId(seller.getId());
     }
 
     @Transactional
