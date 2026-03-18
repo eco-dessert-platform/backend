@@ -44,6 +44,16 @@ public final class SellerFixture {
             .build();
     }
 
+    public static Seller defaultSeller(String name, Store store) {
+        return Seller.builder()
+            .name(name)
+            .provider(OauthServerType.KAKAO)
+            .providerId(UUID.randomUUID().toString())
+            .certificationStatus(CertificationStatus.APPROVED)
+            .store(store)
+            .build();
+    }
+
     public static Seller withId(Seller seller, Long id) {
         ReflectionTestUtils.setField(seller, "id", id);
         return seller;
