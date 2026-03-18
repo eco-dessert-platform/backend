@@ -16,7 +16,6 @@ public class StoreResponse {
         @Schema(description = "현재 로그인한 사용자가 위시리스트에 추가했는지 여부", example = "true") Boolean isWished
     ) {}
 
-    // TODO : DTO 이름 변경하기 - StoreAvailable
     @Schema(description = "판매자 스토어 중복 검사 응답 DTO")
     @Builder
     public record SellerStoreAvailable(

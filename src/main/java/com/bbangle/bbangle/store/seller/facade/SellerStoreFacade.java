@@ -48,7 +48,6 @@ public class SellerStoreFacade {
             .build();
     }
 
-    // TODO : Test
     public SellerStoreAvailable getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
         if (seller.getStore() == null) throw new BbangleException(BbangleErrorCode.NOT_REGISTERED_STORE);
@@ -61,7 +60,6 @@ public class SellerStoreFacade {
             .build();
     }
 
-    // TODO : Test
     public UpdateStoreNameResponse updateStoreName(Long sellerId, UpdateStoreNameRequest request) {
         Seller seller = sellerService.getSellerById(sellerId);
 

@@ -51,7 +51,6 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
     }
 
-    // TODO : Test
     @Transactional(readOnly = true)
     public Optional<StoreApprovalStatus> findActiveRequestsBySellerId(Seller seller) {
         return storeNameRequestRepository
