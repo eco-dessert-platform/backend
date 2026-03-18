@@ -35,6 +35,10 @@ public class Shipping {
     public static Shipping of(String courierName, String trackingNumber) {
         return new Shipping(courierName, trackingNumber, LocalDateTime.now());
     }
+    
+    public static Shipping scheduled(String courierName, String trackingNumber) {
+        return new Shipping(courierName, trackingNumber, null);
+    }
 
     public static Shipping empty() {
         return new Shipping(null, null, null);

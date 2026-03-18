@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.claim.seller.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -8,16 +9,23 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
+import com.bbangle.bbangle.claim.domain.ClaimDelivery;
 import com.bbangle.bbangle.claim.domain.ReturnRequest;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
+import com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus;
+import com.bbangle.bbangle.claim.repository.ClaimDeliveryRepository;
+import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.repository.ReturnRequestRepository;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.claim.ReturnRequestFixture;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
 import com.bbangle.bbangle.order.domain.OrderItem;
-import com.bbangle.bbangle.order.domain.OrderItemHistory;
+import com.bbangle.bbangle.order.domain.model.CourierCompany;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,7 +45,110 @@ class SellerReturnServiceUnitTest {
     private ReturnRequestRepository returnRequestRepository;
 
     @Mock
+    private ClaimDeliveryRepository claimDeliveryRepository;
+
+    @Mock
+    private ClaimRepository claimRepository;
+
+    @Mock
     private OrderItemHistoryRepository orderItemHistoryRepository;
+
+    @Nested
+    @DisplayName("registerReturnInvoice()")
+    class RegisterReturnInvoiceTests {
+
+        private static final Long RETURN_ID = 1L;
+        private static final Long SELLER_ID = 10L;
+        private static final CourierCompany COURIER = CourierCompany.CJ_LOGISTICS;
+        private static final String TRACKING_NUMBER = "1234567890";
+
+        @Test
+        @DisplayName("APPROVED 상태의 클레임에 운송장을 입력하면 PICKUP_SCHEDULED로 변경되고 ClaimDelivery가 저장된다")
+        void registerReturnInvoice_success() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_APPROVED);
+            ReturnRequest returnRequest = ReturnRequestFixture.approved(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(claimDeliveryRepository.save(any(ClaimDelivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+            // when
+            sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER);
+
+            // then
+            assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.PICKUP_SCHEDULED);
+            then(claimDeliveryRepository).should(times(1)).save(any(ClaimDelivery.class));
+        }
+
+        @Test
+        @DisplayName("셀러 소유권 검증 실패 시 SELLER_CLAIM_MISMATCH 예외가 발생하고 이후 로직은 실행되지 않는다")
+        void registerReturnInvoice_fails_when_seller_mismatch() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+
+            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(claimDeliveryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 claimId로 요청하면 CLAIM_NOT_FOUND 예외가 발생한다")
+        void registerReturnInvoice_fails_when_claim_not_found() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_NOT_FOUND);
+
+            then(claimDeliveryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("APPROVED가 아닌 상태의 클레임에 운송장을 입력하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void registerReturnInvoice_fails_when_invalid_status() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_REQUESTED);
+            ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);  // REQUESTED 상태
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+
+            then(claimDeliveryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("이미 PICKUP_SCHEDULED 상태면 운송장 중복 입력이 차단된다")
+        void registerReturnInvoice_fails_when_already_pickup_scheduled() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_REQUESTED);
+            ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+    }
 
     @Nested
     @DisplayName("decision()")
