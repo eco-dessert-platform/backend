@@ -1,0 +1,1 @@
+CREATE INDEX idx_store_name_request_seller_status on store_name_request(seller_id, status);
