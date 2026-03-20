@@ -124,7 +124,7 @@ public interface SellerStoreApi {
             - 이미지 파일을 업로드하지 않았을 경우 기존 스토어 프로필을 유지합니다.
             """
     )
-    SingleResult<SellerStoreDetail> updateSeller(
+    SingleResult<SellerStoreDetail> updateStoreDetail(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") UpdateStoreDetailRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage

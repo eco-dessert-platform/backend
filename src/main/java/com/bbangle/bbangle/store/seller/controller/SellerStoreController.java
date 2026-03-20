@@ -109,7 +109,7 @@ public class SellerStoreController implements SellerStoreApi {
     // TODO : Test
     @Override
     @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public SingleResult<SellerStoreDetail> updateSeller(
+    public SingleResult<SellerStoreDetail> updateStoreDetail(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestPart("request") UpdateStoreDetailRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
