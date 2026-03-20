@@ -31,13 +31,7 @@ public final class SellerFixture {
     }
 
     public static Seller defaultSeller(Store store) {
-        return Seller.builder()
-            .name("test")
-            .provider(OauthServerType.KAKAO)
-            .providerId(UUID.randomUUID().toString())
-            .certificationStatus(CertificationStatus.APPROVED)
-            .store(store)
-            .build();
+        return defaultSeller("test", store);
     }
 
     public static Seller defaultSeller(String name, Store store) {
