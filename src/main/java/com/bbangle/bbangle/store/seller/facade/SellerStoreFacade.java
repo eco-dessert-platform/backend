@@ -80,7 +80,6 @@ public class SellerStoreFacade {
         );
     }
 
-    // TODO : Test
     public SellerStoreDetail updateStoreDetail(
         Long sellerId,
         UpdateStoreDetailRequest request,
