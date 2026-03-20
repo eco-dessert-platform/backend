@@ -61,7 +61,6 @@ public class SellerStoreService {
         );
     }
 
-    // TODO : Test
     @Transactional
     public Store updateStoreDetail(
         UpdateStoreDetailRequest request,

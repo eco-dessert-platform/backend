@@ -2,6 +2,9 @@ package com.bbangle.bbangle.store.seller.service;
 
 
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
@@ -17,6 +20,7 @@ import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
@@ -27,6 +31,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -335,6 +342,70 @@ public class SellerStoreServiceIntegrationTest {
 
             // then
             assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreDetail() 테스트")
+    class UpdateStoreDetailTest {
+
+        static Stream<Arguments> updateParams() {
+            return Stream.of(
+                Arguments.of(NEW_SUBPHONE, NEW_INTRODUCE),
+                Arguments.of(NEW_SUBPHONE, null),
+                Arguments.of(null, NEW_INTRODUCE),
+                Arguments.of(null, null)
+            );
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 업데이트에 성공한다.")
+        @MethodSource("updateParams")
+        void success_update_store_detail(String newSubPhone, String newIntroduce) {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest(newIntroduce, newSubPhone);
+
+            // when
+            sellerStoreService.updateStoreDetail(request, NEW_PROFILE, store);
+            em.flush();
+            em.clear();
+
+            // then
+            Store result = storeRepository.findById(store.getId()).orElseThrow();
+            assertThat(result.getProfile()).isEqualTo(NEW_PROFILE);
+            assertThat(result.getIntroduce()).isEqualTo(request.introduce());
+            assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
+            assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
+            assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
+            assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
+            assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
+        }
+
+        @Test
+        @DisplayName("업로드한 프로필이 없을 경우 기존 프로필을 유지한다.")
+        void success_update_store_detail_notExists_profilePath() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest();
+            String profile = store.getProfile();
+
+            // when
+            sellerStoreService.updateStoreDetail(request, null, store);
+            em.flush();
+            em.clear();
+
+            // then
+            Store result = storeRepository.findById(store.getId()).orElseThrow();
+            assertThat(result.getProfile()).isEqualTo(profile);
+            assertThat(result.getIntroduce()).isEqualTo(request.introduce());
+            assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
+            assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
+            assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
+            assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
+            assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
         }
     }
 }
