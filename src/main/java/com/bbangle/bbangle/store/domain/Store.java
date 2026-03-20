@@ -105,7 +105,6 @@ public class Store extends SoftDeleteBaseEntity {
             .build();
     }
 
-    // TODO : Test
     public void updateDetail(
         String profile,
         String introduce,
