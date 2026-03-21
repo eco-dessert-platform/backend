@@ -10,7 +10,7 @@ public class StoreApplicationRequest {
 
     public record StoreApplicationCreateRequest(
         @Schema(description = "스토어명", example = "빵그리의 오븐 1호점")
-        @Size(min = 3, max = 50, message = "스토어명은 1자 이상 50자 이하로 입력해주세요.") // 주석 반영
+        @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
         @NotBlank(message = "스토어명은 필수입니다.")
         String storeName,
 

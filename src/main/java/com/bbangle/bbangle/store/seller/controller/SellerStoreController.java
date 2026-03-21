@@ -106,7 +106,6 @@ public class SellerStoreController implements SellerStoreApi {
         return responseService.getSingleResult(sellerStoreFacade.updateStoreName(sellerId, request));
     }
 
-    // TODO : Test
     @Override
     @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public SingleResult<SellerStoreDetail> updateStoreDetail(

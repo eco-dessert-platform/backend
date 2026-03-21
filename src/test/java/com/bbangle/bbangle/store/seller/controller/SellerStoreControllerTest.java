@@ -569,8 +569,8 @@ class SellerStoreControllerTest {
     }
 
     @Nested
-    @DisplayName("updateSeller() 테스트")
-    class UpdateSellerTest {
+    @DisplayName("updateStoreDetail() 테스트")
+    class UpdateStoreDetailTest {
 
         private MockPart createRequest(
             UpdateStoreDetailRequest request
