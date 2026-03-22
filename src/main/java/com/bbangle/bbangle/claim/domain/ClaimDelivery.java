@@ -72,5 +72,9 @@ public class ClaimDelivery extends BaseEntity {
             ClaimShippingStatus.IN_TRANSIT
         );
     }
+    
+    public void updateInvoice(CourierCompany courierCode, String trackingNumber) {
+        this.shipping.modifyShippingInfo(courierCode.getDisplayName(), trackingNumber);
+    }
 
 }
