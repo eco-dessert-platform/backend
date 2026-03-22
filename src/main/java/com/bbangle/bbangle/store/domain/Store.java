@@ -117,7 +117,10 @@ public class Store extends SoftDeleteBaseEntity {
         PhoneNumberVO newPhoneNumberVO = PhoneNumberVO.of(phone, subPhone);
         EmailVO newEmailVO = EmailVO.of(email);
 
-        this.profile = profile;
+        if (profile != null) {
+            this.profile = profile;
+        }
+
         this.introduce = introduce;
         this.phoneNumberVO = newPhoneNumberVO;
         this.emailVO = newEmailVO;

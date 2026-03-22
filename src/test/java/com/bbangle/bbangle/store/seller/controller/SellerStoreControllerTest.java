@@ -1,11 +1,20 @@
 package com.bbangle.bbangle.store.seller.controller;
 
 import static com.bbangle.bbangle.common.service.ResponseService.CommonResponse.SUCCESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_DETAIL_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_EMAIL;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PHONE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_SUBPHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,6 +41,7 @@ import com.bbangle.bbangle.fixture.store.seller.controller.dto.StoreApplicationR
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest.StoreApplicationCreateRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
@@ -55,6 +65,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -554,6 +565,130 @@ class SellerStoreControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getCode()))
                 .andExpect(jsonPath("$.message").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getMessage()));
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreDetail() 테스트")
+    class UpdateStoreDetailTest {
+
+        private MockPart createRequest(
+            UpdateStoreDetailRequest request
+        ) throws JsonProcessingException  {
+            MockPart requestPart = new MockPart(
+                "request",
+                objectMapper.writeValueAsBytes(request)
+            );
+            requestPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+            return requestPart;
+        }
+
+        private MockMultipartFile createProfileFile() {
+            return new MockMultipartFile(
+                "profileImage",
+                "profile.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "profile image content".getBytes()
+            );
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("스토어 상세 정보를 업데이트하면 변경된 데이터를 반환한다.")
+        void success_updateStoreDetail() throws Exception {
+
+            // given
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest();
+            MockPart requestPart = createRequest(request);
+            MockMultipartFile profileImage = createProfileFile();
+
+            given(sellerStoreFacade.updateStoreDetail(
+                eq(1L),
+                any(UpdateStoreDetailRequest.class),
+                any(MultipartFile.class)
+            )).willReturn(SellerStoreResponseFixture.defaultSellerStoreDetailResponse(NEW_PROFILE));
+
+            // when & then
+            mockMvc.perform(
+                    multipart(SellerApiPath.PREFIX + "/stores")
+                        .part(requestPart)
+                        .file(profileImage)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        })
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.name").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.introduce").value(NEW_INTRODUCE))
+                .andExpect(jsonPath("$.result.profile").value(NEW_PROFILE))
+                .andExpect(jsonPath("$.result.phoneNumber").value(NEW_PHONE))
+                .andExpect(jsonPath("$.result.subPhoneNumber").value(NEW_SUBPHONE))
+                .andExpect(jsonPath("$.result.email").value(NEW_EMAIL))
+                .andExpect(jsonPath("$.result.originAddress").value(NEW_ADDRESS))
+                .andExpect(jsonPath("$.result.originAddressDetail").value(NEW_DETAIL_ADDRESS));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("이미지 파일을 업로드 하지 않은 경우 기존 프로필을 유지한다.")
+        void success_updateStoreDetail_without_profile() throws Exception {
+
+            // given
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest();
+            MockPart requestPart = createRequest(request);
+
+            given(sellerStoreFacade.updateStoreDetail(
+                eq(1L),
+                any(UpdateStoreDetailRequest.class),
+                isNull()
+            )).willReturn(SellerStoreResponseFixture.defaultSellerStoreDetailResponse(DEFAULT_PROFILE));
+
+            // when & then
+            mockMvc.perform(
+                    multipart(SellerApiPath.PREFIX + "/stores")
+                        .part(requestPart)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        })
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.name").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.introduce").value(NEW_INTRODUCE))
+                .andExpect(jsonPath("$.result.profile").value(DEFAULT_PROFILE))
+                .andExpect(jsonPath("$.result.phoneNumber").value(NEW_PHONE))
+                .andExpect(jsonPath("$.result.subPhoneNumber").value(NEW_SUBPHONE))
+                .andExpect(jsonPath("$.result.email").value(NEW_EMAIL))
+                .andExpect(jsonPath("$.result.originAddress").value(NEW_ADDRESS))
+                .andExpect(jsonPath("$.result.originAddressDetail").value(NEW_DETAIL_ADDRESS));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("스토어를 등록하지 않은 계정인 경우 상세 정보 수정에 실패한다.")
+        void fail_updateStoreDetail_noExists_store() throws Exception {
+
+            // given
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest();
+            MockPart requestPart = createRequest(request);
+
+            given(sellerStoreFacade.updateStoreDetail(anyLong(), any(), any()))
+                .willThrow(new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
+
+            // when & then
+            mockMvc.perform(
+                    multipart(SellerApiPath.PREFIX + "/stores")
+                        .part(requestPart)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        })
+                )
+                .andExpect(status().isBadRequest());
         }
     }
 }

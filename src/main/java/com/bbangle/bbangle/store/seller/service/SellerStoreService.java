@@ -10,6 +10,7 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -58,5 +59,24 @@ public class SellerStoreService {
         return storeNameRequestRepository.save(
             StoreNameRequest.createStoreNameRequest(seller.getStore(), seller, request.newName())
         );
+    }
+
+    @Transactional
+    public Store updateStoreDetail(
+        UpdateStoreDetailRequest request,
+        String profileImagePath,
+        Store store
+    ) {
+        store.updateDetail(
+            profileImagePath,
+            request.introduce(),
+            request.phoneNumber(),
+            request.subPhoneNumber(),
+            request.email(),
+            request.originAddress(),
+            request.originAddressDetail()
+        );
+
+        return store;
     }
 }

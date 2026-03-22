@@ -5,7 +5,6 @@ import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -75,16 +74,6 @@ public interface SellerApi {
     CommonResult registerDocuments(
         SellerDocumentsRegisterRequest request,
         Long sellerId
-    );
-
-    // TODO: v2
-    @Operation(
-        summary = "판매자 정보 수정",
-        description = "기존 판매자 정보를 전체 수정합니다."
-    )
-    CommonResult updateSeller(
-        @RequestBody SellerUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
     );
 
     @Operation(

@@ -10,7 +10,7 @@ public class StoreApplicationRequest {
 
     public record StoreApplicationCreateRequest(
         @Schema(description = "스토어명", example = "빵그리의 오븐 1호점")
-        @Size(min = 1, max = 50, message = "스토어명은 1자 이상 50자 이하로 입력해주세요.") // 주석 반영
+        @Size(min = 3, max = 50, message = "스토어명은 3자 이상 50자 이하로 입력해주세요.") // 주석 반영
         @NotBlank(message = "스토어명은 필수입니다.")
         String storeName,
 
@@ -27,7 +27,6 @@ public class StoreApplicationRequest {
 
         @Schema(description = "서브 연락처", example = "01012345678")
         @Pattern(regexp = "^[0-9]{9,11}$", message = "서브 연락처는 11자리 이하의 숫자만 입력 가능합니다.") // 주석 반영
-        @NotBlank(message = "추가 연락처는 필수입니다.")
         String subPhoneNumber,
 
         @Schema(description = "이메일", example = "user@example.com", format = "email")

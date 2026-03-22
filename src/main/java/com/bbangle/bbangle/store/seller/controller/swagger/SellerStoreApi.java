@@ -6,7 +6,9 @@ import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -112,5 +114,19 @@ public interface SellerStoreApi {
     SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
         @AuthenticationPrincipal Long sellerId,
         @Valid @RequestBody StoreRequest.UpdateStoreNameRequest request
+    );
+
+    @Operation(
+        summary = "판매자의 스토어 상세 정보 수정",
+        description = """
+            ## 판매자의 스토어 상세 정보를 수정합니다.
+            ### 스토어 정보(JSON)와 프로필 이미지 파일을 업로드합니다.
+            - 이미지 파일을 업로드하지 않았을 경우 기존 스토어 프로필을 유지합니다.
+            """
+    )
+    SingleResult<SellerStoreDetail> updateStoreDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") UpdateStoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     );
 }

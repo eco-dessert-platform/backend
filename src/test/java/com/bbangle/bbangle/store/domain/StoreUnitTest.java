@@ -23,10 +23,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("[단위 테스트] Store")
@@ -110,21 +113,32 @@ public class StoreUnitTest {
     @DisplayName("updateDetail() 테스트")
     class UpdateDetailTest {
 
-        @Test
+        static Stream<Arguments> updateParams() {
+            return Stream.of(
+                Arguments.of(null, null),
+                Arguments.of(NEW_PROFILE, null),
+                Arguments.of(NEW_PROFILE, NEW_SUBPHONE),
+                Arguments.of(null, NEW_SUBPHONE)
+            );
+        }
+
+        @ParameterizedTest
         @DisplayName("스토어 상세 정보 수정에 성공한다")
-        void success_update_store() {
+        @MethodSource("updateParams")
+        void success_update_store(String newProfile, String newSubPhone) {
 
             // given
             Store store = StoreFixture.defaultStore();
+            String profile = newProfile == null ? store.getProfile() : newProfile;
 
             // when
-            store.updateDetail(NEW_PROFILE, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS);
+            store.updateDetail(newProfile, NEW_INTRODUCE, NEW_PHONE, newSubPhone, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS);
 
             // then
-            assertThat(store.getProfile()).isEqualTo(NEW_PROFILE);
+            assertThat(store.getProfile()).isEqualTo(profile);
             assertThat(store.getIntroduce()).isEqualTo(NEW_INTRODUCE);
             assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(NEW_PHONE);
-            assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(NEW_SUBPHONE);
+            assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(newSubPhone);
             assertThat(store.getEmailVO().getEmail()).isEqualTo(NEW_EMAIL);
             assertThat(store.getOriginAddressLine()).isEqualTo(NEW_ADDRESS);
             assertThat(store.getOriginAddressDetail()).isEqualTo(NEW_DETAIL_ADDRESS);
@@ -146,6 +160,9 @@ public class StoreUnitTest {
                 )
             ).isInstanceOf(BbangleException.class)
                 .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
+
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+            assertThat(store.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
             assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(DEFAULT_PHONE);
         }
 
@@ -165,6 +182,9 @@ public class StoreUnitTest {
                 )
             ).isInstanceOf(BbangleException.class)
                 .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
+
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+            assertThat(store.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
             assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(DEFAULT_SUBPHONE);
         }
 
@@ -184,7 +204,29 @@ public class StoreUnitTest {
                 )
             ).isInstanceOf(BbangleException.class)
                 .hasMessageContaining(BbangleErrorCode.INVALID_EMAIL.getMessage());
+
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+            assertThat(store.getIntroduce()).isEqualTo(DEFAULT_INTRODUCE);
             assertThat(store.getEmailVO().getEmail()).isEqualTo(DEFAULT_EMAIL);
+        }
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정 중 하나라도 유효하지 않으면 수정이 실패하고 상태는 유지된다.")
+        void fail_update_store_any_invalid() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            String originalProfile = store.getProfile();
+
+            // when & then
+            assertThatThrownBy(() -> store.updateDetail(
+                    NEW_PROFILE, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE,
+                    null,
+                    NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            );
+
+            assertThat(store.getProfile()).isEqualTo(originalProfile);
         }
     }
 

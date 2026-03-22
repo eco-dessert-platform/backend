@@ -6,8 +6,10 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
@@ -22,6 +24,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -101,5 +104,15 @@ public class SellerStoreController implements SellerStoreApi {
         @Valid @RequestBody UpdateStoreNameRequest request
     ) {
         return responseService.getSingleResult(sellerStoreFacade.updateStoreName(sellerId, request));
+    }
+
+    @Override
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SingleResult<SellerStoreDetail> updateStoreDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") UpdateStoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        return responseService.getSingleResult(sellerStoreFacade.updateStoreDetail(sellerId, request, profileImage));
     }
 }
