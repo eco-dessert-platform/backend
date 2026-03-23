@@ -6,8 +6,10 @@ import static org.mockito.BDDMockito.then;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.request.UploadApprovalDecisionRequest;
 import com.bbangle.bbangle.board.admin.service.dto.RemoveProductsCommand;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.RejectionCategory;
 import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -15,8 +17,13 @@ import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductInfoNoticeRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.claim.domain.constant.DecisionType;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import java.util.List;
+import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -196,6 +203,132 @@ class AdminBoardServiceUnitTest {
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
         then(boardRepository).should().findBySaleStatusAndIsDeletedFalse(SaleStatus.PENDING, pageable);
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인 - 존재하는 Board를 조회하고 approve()를 호출한다")
+    void decideUploadApproval_approve_success() {
+        // given
+        Long boardId = 1L;
+        Board board = BoardFixture.pendingBoard();
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        given(boardRepository.findById(boardId)).willReturn(Optional.of(board));
+
+        // when
+        sut.decideUploadApproval(boardId, request);
+
+        // then
+        assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+        then(boardRepository).should().findById(boardId);
+        then(boardRepository).should().save(board);
+    }
+
+    @Test
+    @DisplayName("업로드 상품 거절 - 존재하는 Board를 조회하고 reject()를 호출한다")
+    void decideUploadApproval_reject_success() {
+        // given
+        Long boardId = 2L;
+        Board board = BoardFixture.pendingBoard();
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.REJECT,
+            RejectionCategory.INAPPROPRIATE_BRAND_NAME,
+            "브랜드명을 무단으로 사용하여 고객에게 혼동을 줄 수 있습니다."
+        );
+
+        given(boardRepository.findById(boardId)).willReturn(Optional.of(board));
+
+        // when
+        sut.decideUploadApproval(boardId, request);
+
+        // then
+        assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+        assertThat(board.getRejectionCategory()).isEqualTo(RejectionCategory.INAPPROPRIATE_BRAND_NAME);
+        assertThat(board.getRejectionReason()).isEqualTo("브랜드명을 무단으로 사용하여 고객에게 혼동을 줄 수 있습니다.");
+        assertThat(board.getRejectionAt()).isNotNull();
+        then(boardRepository).should().findById(boardId);
+        then(boardRepository).should().save(board);
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인/거절 - 존재하지 않는 Board일 경우 BOARD_NOT_FOUND 예외가 발생한다")
+    void decideUploadApproval_notFound_throwsException() {
+        // given
+        Long boardId = 999L;
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        given(boardRepository.findById(boardId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThat(
+            Assertions.catchThrowableOfType(
+                () -> sut.decideUploadApproval(boardId, request),
+                BbangleException.class
+            )
+        ).isNotNull();
+
+        then(boardRepository).should().findById(boardId);
+        then(boardRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 승인 - PENDING이 아닌 상태에서는 INVALID_BOARD_STATUS 예외가 발생한다")
+    void decideUploadApproval_approve_nonPendingStatus_throwsException() {
+        // given
+        Long boardId = 3L;
+        Board board = BoardFixture.defaultBoardWithStore(StoreFixture.defaultStore(), "판매중상품");
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.APPROVE,
+            null,
+            null
+        );
+
+        given(boardRepository.findById(boardId)).willReturn(Optional.of(board));
+
+        // when & then
+        assertThat(
+            org.assertj.core.api.Assertions.catchThrowableOfType(
+                () -> sut.decideUploadApproval(boardId, request),
+                BbangleException.class
+            )
+        ).isNotNull();
+
+        then(boardRepository).should().findById(boardId);
+        then(boardRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("업로드 상품 거절 - PENDING이 아닌 상태에서는 INVALID_BOARD_STATUS 예외가 발생한다")
+    void decideUploadApproval_reject_nonPendingStatus_throwsException() {
+        // given
+        Long boardId = 4L;
+        Board board = BoardFixture.bannedBoardWithStore(StoreFixture.defaultStore(), "판매금지상품");
+        UploadApprovalDecisionRequest request = new UploadApprovalDecisionRequest(
+            DecisionType.REJECT,
+            RejectionCategory.INAPPROPRIATE_BRAND_NAME,
+            "이미 거절된 상품입니다."
+        );
+
+        given(boardRepository.findById(boardId)).willReturn(Optional.of(board));
+
+        // when & then
+        assertThat(
+            Assertions.catchThrowableOfType(
+                () -> sut.decideUploadApproval(boardId, request),
+                BbangleException.class
+            )
+        ).isNotNull();
+
+        then(boardRepository).should().findById(boardId);
+        then(boardRepository).shouldHaveNoMoreInteractions();
     }
 
 }

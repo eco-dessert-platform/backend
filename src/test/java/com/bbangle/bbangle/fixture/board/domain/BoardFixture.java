@@ -55,6 +55,20 @@ public final class BoardFixture {
             .build();
     }
 
+    /**
+     * 판매대기(PENDING) 상태 Board (기본 Store 포함)
+     */
+    public static Board pendingBoard() {
+        return pendingBoardWithStore(StoreFixture.defaultStore(), "상품명");
+    }
+
+    /**
+     * 판매대기(PENDING) 상태 Board (제목 지정)
+     */
+    public static Board pendingBoard(String title) {
+        return pendingBoardWithStore(StoreFixture.defaultStore(), title);
+    }
+
     /* =====================
        crawling + store 조합
      ===================== */

@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.admin.controller.swagger;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminRemoveProductRequest;
 import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.request.UploadApprovalDecisionRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
@@ -51,5 +52,15 @@ public interface AdminBoardApi {
     SingleResult<BbanglePageResponse<UploadApprovalResponse>> getUploadApprovals(
         @ParameterObject Pageable pageable
     );
-    
+
+    @Operation(
+        summary = "업로드 상품 승인/거절",
+        description = "관리자가 업로드된 상품을 승인하거나 거절합니다. "
+            + "승인 시 상태는 PENDING → ON_SALE로, 거절 시 PENDING → BANNED로 변경됩니다."
+    )
+    CommonResult decideUploadApproval(
+        @Parameter(description = "상품(게시글) ID")
+        Long boardId,
+        @Valid UploadApprovalDecisionRequest request
+    );
 }

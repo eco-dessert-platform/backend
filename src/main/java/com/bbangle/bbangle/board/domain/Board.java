@@ -21,6 +21,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -76,6 +77,16 @@ public class Board extends SoftDeleteBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "sale_status", nullable = false)
     private SaleStatus saleStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rejection_category")
+    private RejectionCategory rejectionCategory;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
+    @Column(name = "rejection_at")
+    private LocalDateTime rejectionAt;
 
     @Column(name = "purchase_url")
     private String purchaseUrl;
@@ -280,5 +291,22 @@ public class Board extends SoftDeleteBaseEntity {
             .filter(img -> !img.isThumbnail())
             .map(ProductImg::getUrl)
             .toList();
+    }
+
+    public void approve() {
+        if (saleStatus != SaleStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_STATUS);
+        }
+        this.saleStatus = SaleStatus.ON_SALE;
+    }
+
+    public void reject(RejectionCategory category, String reason) {
+        if (saleStatus != SaleStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_STATUS);
+        }
+        this.saleStatus = SaleStatus.BANNED;
+        this.rejectionCategory = category;
+        this.rejectionReason = reason;
+        this.rejectionAt = LocalDateTime.now();
     }
 }
