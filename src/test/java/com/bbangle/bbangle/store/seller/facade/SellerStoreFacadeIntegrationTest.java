@@ -21,7 +21,6 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;

@@ -28,7 +28,7 @@ public class StoreNameRequestQueryDSLRepositoryImpl implements StoreNameRequestQ
                 new CaseBuilder()
                     .when(storeNameRequest.status.eq(StoreApprovalStatus.APPROVE)).then(1)
                     .when(storeNameRequest.status.eq(StoreApprovalStatus.PENDING)).then(2)
-                    .otherwise(3)
+                    .otherwise(3)   // QueryDSL의 CASE 표현식은 otherwise()가 반드시 필요함
                     .asc()
             )
             .fetchFirst();
