@@ -50,8 +50,8 @@ public class SellerStoreService {
     }
 
     @Transactional(readOnly = true)
-    public boolean existsByStatusAndSellerId(Seller seller, StoreApprovalStatus status) {
-        return storeNameRequestRepository.existsByStatusAndSeller_Id(status, seller.getId());
+    public Optional<StoreApprovalStatus> findActiveRequestsBySellerId(Seller seller) {
+        return storeNameRequestRepository.findActiveRequestsBySellerId(seller.getId());
     }
 
     @Transactional

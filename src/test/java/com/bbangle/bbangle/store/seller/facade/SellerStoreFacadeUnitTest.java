@@ -29,9 +29,8 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
@@ -40,6 +39,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -82,7 +83,7 @@ class SellerStoreFacadeUnitTest {
             given(sellerStoreService.findStoreByStoreName(storeName)).willReturn(Optional.empty());
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(storeName);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(storeName);
 
             // then
             assertThat(result.available()).isTrue();
@@ -105,7 +106,7 @@ class SellerStoreFacadeUnitTest {
             given(sellerStoreMapper.toSellerStoreDetail(store)).willReturn(sellerStoreDetail);
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isTrue();
@@ -126,7 +127,7 @@ class SellerStoreFacadeUnitTest {
             given(sellerStoreMapper.toSellerStoreDetail(store)).willReturn(sellerStoreDetail);
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isFalse();
@@ -139,7 +140,7 @@ class SellerStoreFacadeUnitTest {
     class GetRegisteredStoreDetailTest {
 
         @Test
-        @DisplayName("등록 신청한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
+        @DisplayName("등록한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
         void getRegisteredStoreDetail_exist_registeredStore() {
 
             // given
@@ -154,14 +155,49 @@ class SellerStoreFacadeUnitTest {
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
             given(sellerStoreMapper.toSellerStoreDetail(store)).willReturn(storeDetail);
+            given(sellerStoreService.findActiveRequestsBySellerId(seller)).willReturn(Optional.empty());
 
             // when
-            SellerStoreDTO result = sellerStoreFacade.getRegisteredStoreDetail(sellerId);
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(sellerId);
 
             // then
-            assertThat(result).isNotNull();
-            assertThat(result.sellerId()).isEqualTo(sellerId);
+            assertThat(result.available()).isTrue();
             assertThat(result.store()).isEqualTo(storeDetail);
+
+            verify(sellerService).getSellerById(sellerId);
+            verify(sellerStoreService).findActiveRequestsBySellerId(seller);
+            verify(sellerStoreMapper).toSellerStoreDetail(store);
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("스토어명 변경 요청이 APPROVE 또는 PENDING이면 스토어명 변경 불가능하다.")
+        void getRegisteredStoreDetail_updateStoreName(StoreApprovalStatus status) {
+
+            // given
+            Long sellerId = 1L;
+
+            Store store = StoreFixture.defaultStore();
+            Seller seller = SellerFixture.withId(SellerFixture.defaultSeller(store), sellerId);
+            StoreResponse.SellerStoreDetail storeDetail = mock(StoreResponse.SellerStoreDetail.class);
+
+            given(sellerService.getSellerById(sellerId)).willReturn(seller);
+            given(sellerStoreMapper.toSellerStoreDetail(store)).willReturn(storeDetail);
+            given(sellerStoreService.findActiveRequestsBySellerId(seller)).willReturn(Optional.of(status));
+
+            // when
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(sellerId);
+
+            // then
+            assertThat(result.available()).isFalse();
+            assertThat(result.store()).isEqualTo(storeDetail);
+
+            verify(sellerService).getSellerById(sellerId);
+            verify(sellerStoreService).findActiveRequestsBySellerId(seller);
+            verify(sellerStoreMapper).toSellerStoreDetail(store);
         }
 
         @Test
@@ -185,6 +221,7 @@ class SellerStoreFacadeUnitTest {
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_REGISTERED_STORE);
                 });
 
+            verify(sellerStoreService, never()).findActiveRequestsBySellerId(any());
             verify(sellerStoreMapper, never()).toSellerStoreDetail(any());
         }
     }
@@ -206,8 +243,7 @@ class SellerStoreFacadeUnitTest {
             UpdateStoreNameResponse response = mock(UpdateStoreNameResponse.class);
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)).willReturn(false);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)).willReturn(false);
+            given(sellerStoreService.findActiveRequestsBySellerId(seller)).willReturn(Optional.empty());
             given(sellerStoreService.findStoreByStoreName(request.newName())).willReturn(Optional.empty());
             given(sellerStoreMapper.toUpdateStoreNameResponse(storeNameRequest)).willReturn(response);
             given(sellerStoreService.updateStoreName(request, seller)).willReturn(storeNameRequest);
@@ -222,16 +258,19 @@ class SellerStoreFacadeUnitTest {
             verify(sellerStoreMapper).toUpdateStoreNameResponse(storeNameRequest);
 
             InOrder inOrder = inOrder(sellerStoreService);
-            inOrder.verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE);
-            inOrder.verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+            inOrder.verify(sellerStoreService).findActiveRequestsBySellerId(seller);
             inOrder.verify(sellerStoreService).findStoreByStoreName(request.newName());
             inOrder.verify(sellerStoreService).updateStoreName(request, seller);
             inOrder.verifyNoMoreInteractions();
         }
 
-        @Test
-        @DisplayName("이미 승인된 신청이 존재하면 신청에 실패한다.")
-        void fail_updateStoreName_already_approved() {
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("APPROVE 또는 PENDING 상태인 신청이 존재하면 신청에 실패한다.")
+        void fail_updateStoreName_already_approved(StoreApprovalStatus status) {
 
             // given
             Long sellerId = 1L;
@@ -240,46 +279,21 @@ class SellerStoreFacadeUnitTest {
             UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)).willReturn(true);
+            given(sellerStoreService.findActiveRequestsBySellerId(seller)).willReturn(Optional.of(status));
+
+            BbangleErrorCode expected = status == StoreApprovalStatus.APPROVE
+                ? BbangleErrorCode.ALREADY_UPDATE_STORE_NAME
+                : BbangleErrorCode.REQUEST_IS_PENDING;
 
             // when & then
             assertThatThrownBy(() -> sellerStoreFacade.updateStoreName(sellerId, request))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(expected);
                 });
 
-            verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE);
-            verify(sellerStoreService, never()).existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
-            verify(sellerStoreService, never()).findStoreByStoreName(any());
-            verify(sellerStoreMapper, never()).toUpdateStoreNameResponse(any());
-        }
-
-        @Test
-        @DisplayName("이미 대기 중인 신청이 존재하면 신청에 실패한다.")
-        void fail_updateStoreName_exists_pending() {
-
-            // given
-            Long sellerId = 1L;
-            Store store = StoreFixture.defaultStore();
-            Seller seller = SellerFixture.defaultSeller(store);
-            UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
-
-            given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)).willReturn(false);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)).willReturn(true);
-
-            // when & then
-            assertThatThrownBy(() -> sellerStoreFacade.updateStoreName(sellerId, request))
-                .isInstanceOf(BbangleException.class)
-                .satisfies(e -> {
-                    BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_PENDING);
-                });
-
-            verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE);
-            verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+            verify(sellerStoreService).findActiveRequestsBySellerId(seller);
             verify(sellerStoreService, never()).findStoreByStoreName(any());
             verify(sellerStoreMapper, never()).toUpdateStoreNameResponse(any());
         }
@@ -295,8 +309,7 @@ class SellerStoreFacadeUnitTest {
             UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
 
             given(sellerService.getSellerById(sellerId)).willReturn(seller);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)).willReturn(false);
-            given(sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)).willReturn(false);
+            given(sellerStoreService.findActiveRequestsBySellerId(seller)).willReturn(Optional.empty());
             given(sellerStoreService.findStoreByStoreName(request.newName())).willReturn(Optional.of(mock(Store.class)));
 
             // when & then
@@ -307,8 +320,7 @@ class SellerStoreFacadeUnitTest {
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
                 });
 
-            verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE);
-            verify(sellerStoreService).existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+            verify(sellerStoreService).findActiveRequestsBySellerId(seller);
             verify(sellerStoreService).findStoreByStoreName(request.newName());
             verify(sellerStoreMapper, never()).toUpdateStoreNameResponse(any());
         }

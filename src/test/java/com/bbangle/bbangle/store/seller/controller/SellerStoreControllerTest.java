@@ -44,8 +44,8 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
@@ -365,7 +365,7 @@ class SellerStoreControllerTest {
 
             // given
             String storeName = "빵";
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(true)
                 .store(null)
                 .build();
@@ -393,7 +393,7 @@ class SellerStoreControllerTest {
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(true)
                 .store(sellerStoreDetail)
                 .build();
@@ -424,7 +424,7 @@ class SellerStoreControllerTest {
             String storeName = "빵";
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
-            StoreResponse.StoreNameCheck response = StoreNameCheck.builder()
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
                 .available(false)
                 .store(sellerStoreDetail)
                 .build();
@@ -462,7 +462,7 @@ class SellerStoreControllerTest {
     class GetRegisteredStoreDetailTest {
 
         @Test
-        @DisplayName("등록 신청한 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
+        @DisplayName("등록된 스토어가 존재할 경우 해당 스토어 정보를 조회한다.")
         @WithMockAuthenticationPrincipal(role = "SELLER")
         void getRegisteredStoreDetail_exist_registeredStore() throws Exception {
 
@@ -471,8 +471,8 @@ class SellerStoreControllerTest {
             StoreResponse.SellerStoreDetail sellerStoreDetail =
                 new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
 
-            StoreResponse.SellerStoreDTO response = StoreResponse.SellerStoreDTO.builder()
-                .sellerId(1L)
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
+                .available(true)
                 .store(sellerStoreDetail)
                 .build();
 
@@ -481,7 +481,41 @@ class SellerStoreControllerTest {
             // when & then
             mockMvc.perform(get(SellerApiPath.PREFIX + "/stores"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.sellerId").value(sellerId))
+                .andExpect(jsonPath("$.result.available").value(true))
+                .andExpect(jsonPath("$.result.store.storeId").value(sellerStoreDetail.storeId()))
+                .andExpect(jsonPath("$.result.store.name").value(sellerStoreDetail.name()))
+                .andExpect(jsonPath("$.result.store.introduce").value(sellerStoreDetail.introduce()))
+                .andExpect(jsonPath("$.result.store.profile").value(sellerStoreDetail.profile()))
+                .andExpect(jsonPath("$.result.store.phoneNumber").value(sellerStoreDetail.phoneNumber()))
+                .andExpect(jsonPath("$.result.store.subPhoneNumber").value(sellerStoreDetail.subPhoneNumber()))
+                .andExpect(jsonPath("$.result.store.email").value(sellerStoreDetail.email()))
+                .andExpect(jsonPath("$.result.store.originAddress").value(sellerStoreDetail.originAddress()))
+                .andExpect(jsonPath("$.result.store.originAddressDetail").value(sellerStoreDetail.originAddressDetail()));
+
+            verify(sellerStoreFacade).getRegisteredStoreDetail(sellerId);
+        }
+
+        @Test
+        @DisplayName("스토어명을 변경한 이력이 있을 경우 스토어명 변경 신청을 할 수 없다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void getRegisteredStoreDetail_updateStoreName_approved() throws Exception {
+
+            // given
+            Long sellerId = 1L;
+            StoreResponse.SellerStoreDetail sellerStoreDetail =
+                new SellerStoreDetail(1L, "빵긋", "테스트", "test.png", "01012345678", "01098765432", "123@test.com", "서울", "123동");
+
+            SellerStoreAvailable response = SellerStoreAvailable.builder()
+                .available(false)
+                .store(sellerStoreDetail)
+                .build();
+
+            given(sellerStoreFacade.getRegisteredStoreDetail(sellerId)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(SellerApiPath.PREFIX + "/stores"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.available").value(false))
                 .andExpect(jsonPath("$.result.store.storeId").value(sellerStoreDetail.storeId()))
                 .andExpect(jsonPath("$.result.store.name").value(sellerStoreDetail.name()))
                 .andExpect(jsonPath("$.result.store.introduce").value(sellerStoreDetail.introduce()))

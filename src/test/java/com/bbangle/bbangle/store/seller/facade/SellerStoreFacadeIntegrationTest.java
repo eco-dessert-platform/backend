@@ -20,13 +20,14 @@ import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDTO;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
             String storeName = "notExistStore";
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(storeName);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(storeName);
 
             // then
             assertThat(result.available()).isTrue();
@@ -77,7 +78,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
             Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isTrue();
@@ -95,7 +96,7 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
             sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
 
             // when
-            StoreNameCheck result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
+            SellerStoreAvailable result = sellerStoreFacade.checkStoreName(DEFAULT_STORE_NAME);
 
             // then
             assertThat(result.available()).isFalse();
@@ -123,10 +124,34 @@ class SellerStoreFacadeIntegrationTest extends S3IntegrationTestSupport {
             Seller seller = saveNewSeller(store);
 
             // when
-            SellerStoreDTO result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
 
             // then
-            assertThat(result.sellerId()).isEqualTo(seller.getId());
+            assertThat(result.available()).isTrue();
+            assertThat(result.store().storeId()).isEqualTo(store.getId());
+            assertThat(result.store().name()).isEqualTo(store.getName());
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("스토어명 변경 요청이 APPROVE 또는 PENDING이면 스토어명 변경 불가능하다.")
+        void getRegisteredStoreDetail_updateStoreName(StoreApprovalStatus status) {
+
+            // given
+            Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+            Seller seller = saveNewSeller(store);
+            storeNameRequestRepository.saveAndFlush(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, status)
+            );
+
+            // when
+            SellerStoreAvailable result = sellerStoreFacade.getRegisteredStoreDetail(seller.getId());
+
+            // then
+            assertThat(result.available()).isFalse();
             assertThat(result.store().storeId()).isEqualTo(store.getId());
             assertThat(result.store().name()).isEqualTo(store.getName());
         }

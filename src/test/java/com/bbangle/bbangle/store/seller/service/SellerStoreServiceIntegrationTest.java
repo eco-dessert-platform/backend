@@ -32,6 +32,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -305,12 +306,53 @@ public class SellerStoreServiceIntegrationTest {
     }
 
     @Nested
-    @DisplayName("existsByStatusAndSellerId() 테스트")
-    class ExistsByStatusAndSellerIdTest {
+    @DisplayName("findActiveRequestsBySellerId() 테스트")
+    class FindActiveRequestsBySellerIdTest {
+
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("APPROVE 또는 PENDING 상태인 요청이 존재한다.")
+        void findActiveRequestsBySellerId_exists_active(StoreApprovalStatus status) {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, status)
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result).contains(status);
+        }
 
         @Test
-        @DisplayName("판매자가 신청한 요청 중 이미 대기중인 요청이 존재한다.")
-        void storeNameRequest_exists_pending() {
+        @DisplayName("APPROVE 또는 PENDING 상태인 요청이 존재하지 않는다.")
+        void findActiveRequestsBySellerId_notExists_active() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+
+            // when
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("여러 상태의 신청 데이터가 존재할 경우 APPROVE 상태를 우선적으로 조회한다.")
+        void findActiveRequestsBySellerId_approve_first() {
 
             // given
             Store store = storeRepository.save(StoreFixture.defaultStore());
@@ -318,30 +360,19 @@ public class SellerStoreServiceIntegrationTest {
             storeNameRequestRepository.save(
                 StoreNameRequestFixture.defaultStoreNameRequest(seller, store, StoreApprovalStatus.PENDING)
             );
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, StoreApprovalStatus.APPROVE)
+            );
 
             em.flush();
             em.clear();
 
             // when
-            boolean result = sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
 
             // then
-            assertThat(result).isTrue();
-        }
-
-        @Test
-        @DisplayName("판매자가 신청한 요청 중 대기중인 요청이 존재하지 않는다.")
-        void storeNameRequest_notExists_pending() {
-
-            // given
-            Store store = storeRepository.save(StoreFixture.defaultStore());
-            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
-
-            // when
-            boolean result = sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING);
-
-            // then
-            assertThat(result).isFalse();
+            assertThat(result).isPresent();
+            assertThat(result).contains(StoreApprovalStatus.APPROVE);
         }
     }
 

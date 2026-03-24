@@ -9,9 +9,8 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
-import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.StoreNameCheck;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.mapper.SellerStoreMapper;
 import com.bbangle.bbangle.store.seller.service.SellerStoreService;
@@ -33,29 +32,30 @@ public class SellerStoreFacade {
     private final S3Service s3Service;
     private final SellerStoreMapper sellerStoreMapper;
 
-    public StoreNameCheck checkStoreName(String storeName) {
+    public SellerStoreAvailable checkStoreName(String storeName) {
         Optional<Store> optionalStore = sellerStoreService.findStoreByStoreName(storeName);
         if (optionalStore.isEmpty()) {
-            return StoreNameCheck.builder()
+            return SellerStoreAvailable.builder()
                 .available(true)
                 .store(null)
                 .build();
         }
 
         Store store = optionalStore.get();
-        return StoreNameCheck.builder()
+        return SellerStoreAvailable.builder()
             .available(!sellerService.existsSellerByStoreId(store.getId()))
             .store(sellerStoreMapper.toSellerStoreDetail(store))
             .build();
     }
 
-    public StoreResponse.SellerStoreDTO getRegisteredStoreDetail(Long sellerId) {
+    public SellerStoreAvailable getRegisteredStoreDetail(Long sellerId) {
         Seller seller = sellerService.getSellerById(sellerId);
-
         if (seller.getStore() == null) throw new BbangleException(BbangleErrorCode.NOT_REGISTERED_STORE);
 
-        return StoreResponse.SellerStoreDTO.builder()
-            .sellerId(seller.getId())
+        Optional<StoreApprovalStatus> status = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+        return SellerStoreAvailable.builder()
+            .available(status.isEmpty())
             .store(sellerStoreMapper.toSellerStoreDetail(seller.getStore()))
             .build();
     }
@@ -63,13 +63,13 @@ public class SellerStoreFacade {
     public UpdateStoreNameResponse updateStoreName(Long sellerId, UpdateStoreNameRequest request) {
         Seller seller = sellerService.getSellerById(sellerId);
 
-        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.APPROVE)) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
-        }
-
-        if (sellerStoreService.existsByStatusAndSellerId(seller, StoreApprovalStatus.PENDING)) {
-            throw new BbangleException(BbangleErrorCode.REQUEST_IS_PENDING);
-        }
+        Optional<StoreApprovalStatus> status = sellerStoreService.findActiveRequestsBySellerId(seller);
+        status.ifPresent(s -> {
+            switch (s) {
+                case APPROVE -> throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+                case PENDING -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_PENDING);
+            }
+        });
 
         if (sellerStoreService.findStoreByStoreName(request.newName()).isPresent()) {
             throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);

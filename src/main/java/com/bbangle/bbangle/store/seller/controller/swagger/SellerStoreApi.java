@@ -8,6 +8,7 @@ import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -93,7 +94,7 @@ public interface SellerStoreApi {
             )
         )
     })
-    SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+    SingleResult<SellerStoreAvailable> checkStoreNameDuplicate(
         @Parameter(description = "스토어명", example = "빵그리의 오븐")
         @NotBlank(message = "스토어 이름은 필수입니다.")
         String storeName
@@ -101,15 +102,15 @@ public interface SellerStoreApi {
 
     @Operation(
         summary = "판매자의 스토어 정보 조회",
-        description = "판매자가 등록한 스토어의 상세 정보를 조회합니다."
+        description = "판매자가 등록한 스토어의 상세 정보와 스토어명 변경 가능 여부를 조회합니다."
     )
-    SingleResult<StoreResponse.SellerStoreDTO> getRegisteredStoreDetail(
+    SingleResult<SellerStoreAvailable> getRegisteredStoreDetail(
         @AuthenticationPrincipal Long sellerId
     );
 
     @Operation(
         summary = "스토어명 변경 신청",
-        description = "승인된 후에는 변경 신청 불가"
+        description = "스토어명이 변경 되었거나 승인 대기중 일 때는 스토어명 변경 신청 불가합니다."
     )
     SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
         @AuthenticationPrincipal Long sellerId,
