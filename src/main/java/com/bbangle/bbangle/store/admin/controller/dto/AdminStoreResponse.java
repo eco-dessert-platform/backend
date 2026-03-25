@@ -9,7 +9,7 @@ public class AdminStoreResponse {
     @Builder
     public record UpdateStoreNameRequest(
         List<UpdateStoreNames> updateStoreNames,
-        long total,
+        long totalElements,
         int totalPages,
         boolean hasPrevious,
         boolean hasNext

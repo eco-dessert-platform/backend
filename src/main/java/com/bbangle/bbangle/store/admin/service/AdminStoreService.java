@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class AdminStoreService {
 
     private final StoreNameRequestRepository storeNameRequestRepository;
 
+    @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page, int size) {
         page = normalizePage(page);
         size = normalizeSize(size);
@@ -40,7 +42,7 @@ public class AdminStoreService {
                     .map(UpdateStoreNames::from)
                     .toList()
             )
-            .total(results.getTotalElements())
+            .totalElements(results.getTotalElements())
             .totalPages(results.getTotalPages())
             .hasPrevious(results.hasPrevious())
             .hasNext(results.hasNext())
