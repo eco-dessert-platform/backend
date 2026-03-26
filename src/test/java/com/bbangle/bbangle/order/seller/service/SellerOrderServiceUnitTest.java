@@ -22,27 +22,35 @@ import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderDelivery;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.CompletedOrderSearchType;
+import com.bbangle.bbangle.order.domain.model.CompletedOrderStatus;
 import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
+import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.OrderConfirmResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentModifyResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ShipmentRegisterResponse;
+import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.CompletedOrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderConfirmCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentModifyCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.ShipmentRegisterCommand;
 import com.bbangle.bbangle.payment.domain.Payment;
+import com.bbangle.bbangle.payment.domain.PaymentMethod;
+import com.bbangle.bbangle.payment.domain.PaymentStatus;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -789,6 +797,193 @@ class SellerOrderServiceUnitTest {
                 log.info("=== OrderItemDetailResponse (JSON) ===");
                 log.info(json);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("완료 주문 목록 조회 (getCompletedOrders)")
+    class GetCompletedOrdersTest {
+
+        private CompletedOrderSearchCommand defaultCommand() {
+            return CompletedOrderSearchCommand.builder()
+                .sellerId(1L)
+                .pageable(PageRequest.of(0, 10))
+                .build();
+        }
+
+        @DisplayName("결제·배송 정보가 모두 있으면 모든 필드가 올바르게 매핑된다")
+        @Test
+        void givenFullPaymentAndDelivery_whenGetCompletedOrders_thenAllFieldsMapped() {
+            // given
+            Long orderItemId = 10L;
+            LocalDateTime paidAt = LocalDateTime.of(2025, 3, 1, 12, 0, 0);
+
+            Order order = OrderFixture.createDefaultOrder(); // totalAmount=50000, buyerName="홍길동"
+            ReflectionTestUtils.setField(order, "id", 1L);
+
+            OrderItem orderItem = OrderItemFixture.createOrderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
+            ReflectionTestUtils.setField(orderItem, "id", orderItemId);
+            order.addOrderItem(orderItem);
+
+            // 결제 정보: CARD, 고정 paidAt
+            Payment payment = Payment.create(order, PaymentStatus.COMPLETED, PaymentMethod.CARD, paidAt);
+            ReflectionTestUtils.setField(order, "payment", payment);
+
+            // 수취인이 buyerName("홍길동")과 다른 배송 정보 → 배송 수취인 우선 사용 검증
+            Receiver receiver = Receiver.of("김철수", "010-0000-0000", null, null, null, null);
+            Shipping shipping = Shipping.of("CJ대한통운", "1234");
+            OrderDelivery delivery = OrderDelivery.create(null, receiver, shipping, OrderDeliveryStatus.DELIVERED, orderItem);
+
+            BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(List.of(order), 0, 10, 1, 1L);
+            CompletedOrderSearchCommand command = defaultCommand();
+
+            given(orderRepository.searchCompletedOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByCompletedOrderStatus(command)).willReturn(Collections.emptyMap());
+            given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(orderItemId))).willReturn(List.of(delivery));
+
+            // when
+            CompletedOrderResponse.CompletedOrderPageResponse result = sut.getCompletedOrders(command);
+
+            // then
+            assertThat(result.orders().content()).hasSize(1);
+            CompletedOrderResponse.OrderSummary summary = result.orders().content().get(0);
+
+            assertThat(summary.totalAmount()).isEqualTo(50000L);
+            assertThat(summary.paymentMethod()).isEqualTo("신용/체크카드"); // PaymentMethod.CARD
+            assertThat(summary.recipient()).isEqualTo("김철수"); // buyerName("홍길동") 대신 배송 수취인 우선
+            assertThat(summary.paidAt()).isEqualTo(paidAt); // order.orderDate 대신 payment.paidAt 우선
+            assertThat(summary.orderItems()).hasSize(1);
+
+            CompletedOrderResponse.OrderSummary.OrderItem item = summary.orderItems().get(0);
+            assertThat(item.unitPrice()).isEqualTo(25000L); // OrderItemFixture 기본 unitPrice
+            assertThat(item.deliveryStatus()).isEqualTo("배송완료"); // OrderDeliveryStatus.DELIVERED
+            assertThat(item.deliveryCompany()).isEqualTo("CJ대한통운");
+            assertThat(item.status()).isEqualTo(CompletedOrderStatus.PURCHASED); // PURCHASE_CONFIRMED → PURCHASED
+
+            log.info("=== CompletedOrderResponse (JSON) ===");
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary);
+                log.info(json);
+            } catch (Exception e) {
+                log.error("JSON 직렬화 실패", e);
+            }
+        }
+
+        @DisplayName("결제 정보가 없으면 paidAt은 주문일로 대체되고 paymentMethod는 null이다")
+        @Test
+        void givenNoPayment_whenGetCompletedOrders_thenFallsBackToOrderDate() {
+            // given
+            Order order = OrderFixture.createDefaultOrder(); // orderDate=2025-01-01T10:00, buyerName="홍길동"
+            ReflectionTestUtils.setField(order, "id", 1L);
+
+            OrderItem orderItem = OrderItemFixture.createOrderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
+            ReflectionTestUtils.setField(orderItem, "id", 10L);
+            order.addOrderItem(orderItem);
+            // payment 미설정 → order.getPayment() == null
+
+            BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(List.of(order), 0, 10, 1, 1L);
+            CompletedOrderSearchCommand command = defaultCommand();
+
+            given(orderRepository.searchCompletedOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByCompletedOrderStatus(command)).willReturn(Collections.emptyMap());
+            given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L))).willReturn(Collections.emptyList());
+
+            // when
+            CompletedOrderResponse.CompletedOrderPageResponse result = sut.getCompletedOrders(command);
+
+            // then
+            CompletedOrderResponse.OrderSummary summary = result.orders().content().get(0);
+            assertThat(summary.paymentMethod()).isNull(); // 결제 정보 없음 → null
+            assertThat(summary.paidAt()).isEqualTo(order.getOrderDate()); // payment 없음 → 주문일로 fallback
+            assertThat(summary.recipient()).isEqualTo("홍길동"); // 배송 없음 → buyerName fallback
+        }
+
+        @DisplayName("배송 정보가 없으면 recipient는 buyerName, 배송 관련 필드는 null이다")
+        @Test
+        void givenNoDelivery_whenGetCompletedOrders_thenDeliveryFieldsAreNull() {
+            // given
+            Order order = OrderFixture.createDefaultOrder(); // buyerName="홍길동"
+            ReflectionTestUtils.setField(order, "id", 1L);
+
+            OrderItem orderItem = OrderItemFixture.createOrderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
+            ReflectionTestUtils.setField(orderItem, "id", 10L);
+            order.addOrderItem(orderItem);
+
+            Payment payment = Payment.create(order, PaymentStatus.COMPLETED, PaymentMethod.CARD, LocalDateTime.now());
+            ReflectionTestUtils.setField(order, "payment", payment);
+
+            BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(List.of(order), 0, 10, 1, 1L);
+            CompletedOrderSearchCommand command = defaultCommand();
+
+            given(orderRepository.searchCompletedOrderList(command)).willReturn(orderPage);
+            given(orderRepository.countByCompletedOrderStatus(command)).willReturn(Collections.emptyMap());
+            // deliveryMap 비어있음 → firstDelivery=null, itemDelivery=null
+            given(orderDeliveryRepository.findLatestByOrderItemIds(List.of(10L))).willReturn(Collections.emptyList());
+
+            // when
+            CompletedOrderResponse.CompletedOrderPageResponse result = sut.getCompletedOrders(command);
+
+            // then
+            CompletedOrderResponse.OrderSummary summary = result.orders().content().get(0);
+            assertThat(summary.recipient()).isEqualTo("홍길동"); // 배송 수취인 없음 → buyerName 사용
+
+            CompletedOrderResponse.OrderSummary.OrderItem item = summary.orderItems().get(0);
+            assertThat(item.deliveryStatus()).isNull(); // OrderDelivery 없음
+            assertThat(item.deliveryCompany()).isNull();
+            assertThat(item.trackingNumber()).isNull();
+        }
+
+        @DisplayName("statusCounts는 OrderStatus 그룹별로 카운트를 올바르게 집계한다")
+        @Test
+        void givenStatusCountMap_whenGetCompletedOrders_thenAggregatesCountsByGroup() {
+            // given
+            CompletedOrderSearchCommand command = defaultCommand();
+            BbanglePageResponse<Order> emptyPage = new BbanglePageResponse<>(Collections.emptyList(), 0, 10, 0, 0L);
+
+            // PURCHASE_CONFIRMED=3, CANCEL_APPROVED=2 (CANCELLED_GROUP), RETURN_APPROVED=1 (RETURNED_GROUP)
+            Map<OrderStatus, Long> statusCountMap = new EnumMap<>(OrderStatus.class);
+            statusCountMap.put(OrderStatus.PURCHASE_CONFIRMED, 3L);
+            statusCountMap.put(OrderStatus.CANCEL_APPROVED, 2L);
+            statusCountMap.put(OrderStatus.RETURN_APPROVED, 1L);
+
+            given(orderRepository.searchCompletedOrderList(command)).willReturn(emptyPage);
+            given(orderRepository.countByCompletedOrderStatus(command)).willReturn(statusCountMap);
+
+            // when
+            CompletedOrderResponse.CompletedOrderPageResponse result = sut.getCompletedOrders(command);
+
+            // then
+            CompletedOrderResponse.CompletedOrderStatusCounts counts = result.statusCounts();
+            assertThat(counts.purchased()).isEqualTo(3L); // PURCHASE_CONFIRMED=3
+            assertThat(counts.canceled()).isEqualTo(2L);  // CANCELLED_GROUP 합산 (CANCEL_APPROVED=2)
+            assertThat(counts.returned()).isEqualTo(1L);  // RETURNED_GROUP 합산 (RETURN_APPROVED=1)
+            assertThat(counts.exchanged()).isEqualTo(0L); // EXCHANGED_GROUP 없음 → 0
+            assertThat(counts.total()).isEqualTo(6L);     // 3+2+1+0
+        }
+
+        @DisplayName("조회 결과가 없으면 빈 content와 모든 count가 0인 응답이 반환된다")
+        @Test
+        void givenEmptyResult_whenGetCompletedOrders_thenReturnsEmptyWithZeroCounts() {
+            // given
+            CompletedOrderSearchCommand command = defaultCommand();
+            BbanglePageResponse<Order> emptyPage = new BbanglePageResponse<>(Collections.emptyList(), 0, 10, 0, 0L);
+
+            given(orderRepository.searchCompletedOrderList(command)).willReturn(emptyPage);
+            given(orderRepository.countByCompletedOrderStatus(command)).willReturn(Collections.emptyMap());
+
+            // when
+            CompletedOrderResponse.CompletedOrderPageResponse result = sut.getCompletedOrders(command);
+
+            // then
+            assertThat(result.orders().content()).isEmpty();
+            CompletedOrderResponse.CompletedOrderStatusCounts counts = result.statusCounts();
+            assertThat(counts.total()).isEqualTo(0L);
+            assertThat(counts.purchased()).isEqualTo(0L);
+            assertThat(counts.canceled()).isEqualTo(0L);
+            assertThat(counts.returned()).isEqualTo(0L);
+            assertThat(counts.exchanged()).isEqualTo(0L);
         }
     }
 }
