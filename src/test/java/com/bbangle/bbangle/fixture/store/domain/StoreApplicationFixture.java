@@ -12,6 +12,9 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBP
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
+import com.bbangle.bbangle.store.domain.model.EmailVO;
+import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 
 public class StoreApplicationFixture {
 
@@ -36,7 +39,16 @@ public class StoreApplicationFixture {
         return baseBuilder(DEFAULT_STORE_NAME, seller, store);
     }
 
-    public static StoreApplication defaultStoreApplication(String name, Seller seller, Store store) {
-        return baseBuilder(name, seller, store);
+    public static StoreApplication defaultStoreApplication(String name, Seller seller, StoreApprovalStatus status) {
+        return StoreApplication.builder()
+            .name(name)
+            .profile(DEFAULT_PROFILE)
+            .status(status)
+            .phoneNumberVO(PhoneNumberVO.of(DEFAULT_PHONE, DEFAULT_SUBPHONE))
+            .emailVO(EmailVO.of(DEFAULT_EMAIL))
+            .originAddressLine(DEFAULT_ADDRESS)
+            .originAddressDetail(DEFAULT_DETAIL_ADDRESS)
+            .seller(seller)
+            .build();
     }
 }
