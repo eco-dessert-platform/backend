@@ -26,7 +26,7 @@ public class AdminSellerController implements AdminSellerApi {
     @Override
     @GetMapping()
     public SingleResult<AdminSellerApplicationList> getSellerApplicationList(
-        @RequestParam @Min(1) int page
+        @RequestParam(defaultValue = "1") @Min(1) int page
     ) {
         return responseService.getSingleResult(
             adminSellerService.getAdminSellerApplicationList(page)
