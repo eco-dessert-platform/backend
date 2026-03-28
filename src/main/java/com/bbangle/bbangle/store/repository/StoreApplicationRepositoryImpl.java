@@ -75,7 +75,7 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
             .join(storeApplication.seller, seller)
 
             // ✅ verified = true 중 최신 1건
-            .join(accountVerification)
+            .leftJoin(accountVerification)
             .on(
                 accountVerification.id.eq(
                     JPAExpressions

@@ -11,6 +11,7 @@ import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerInfo;
 import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -186,7 +187,7 @@ class StoreApplicationRepositoryTest {
         }
 
         @Test
-        @DisplayName("판매자의 계좌가 인증되지 않았으면 조회되지 않는다.")
+        @DisplayName("판매자의 계좌가 인증되지 않았으면 계좌 정보는 null로 조회된다.")
         void findSellerApplications_verified_false() {
 
             // given
@@ -201,7 +202,13 @@ class StoreApplicationRepositoryTest {
             List<AdminSellerApplication> result = repository.findSellerApplications(0, 10);
 
             // then
-            assertThat(result).isEmpty(); // inner join 영향
+            assertThat(result).hasSize(1);
+
+            AdminSellerApplication application = result.get(0);
+            SellerInfo sellerInfo = application.sellerInfo();
+            assertThat(sellerInfo.bankCode()).isNull();
+            assertThat(sellerInfo.accountHolder()).isNull();
+            assertThat(sellerInfo.accountNumber()).isNull();
         }
     }
 }
