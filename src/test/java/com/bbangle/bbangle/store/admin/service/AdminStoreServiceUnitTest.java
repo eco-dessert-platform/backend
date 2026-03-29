@@ -98,7 +98,7 @@ class AdminStoreServiceUnitTest {
 
         @Test
         @DisplayName("잘못된 Page 값이 들어오면 보정한다.")
-        void success_getPendingRequests_pageSize() {
+        void success_getPendingRequests_invalidPage() {
 
             // given
             int page = 0;     // 잘못된 값

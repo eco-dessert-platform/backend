@@ -26,7 +26,7 @@ public class AdminStoreController implements AdminStoreApi {
     @Override
     @GetMapping()
     public SingleResult<UpdateStoreNameRequest> getUpdateStoreNames(
-        @RequestParam(defaultValue = "1")
+        @RequestParam(name = "page", defaultValue = "1")
         @Min(1)
         int page
     ) {

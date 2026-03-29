@@ -17,7 +17,7 @@ public interface AdminStoreApi {
     )
     SingleResult<AdminStoreResponse.UpdateStoreNameRequest> getUpdateStoreNames(
         @Parameter(description = "조회할 페이지 번호", example = "1")
-        @RequestParam(defaultValue = "1")
+        @RequestParam(name = "page", defaultValue = "1")
         @Min(1)
         int page
     );
