@@ -5,6 +5,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Admin Store", description = "(관리자) 스토어 관리 API")
@@ -17,9 +18,7 @@ public interface AdminStoreApi {
     SingleResult<AdminStoreResponse.UpdateStoreNameRequest> getUpdateStoreNames(
         @Parameter(description = "조회할 페이지 번호", example = "1")
         @RequestParam(defaultValue = "1")
-        int page,
-        @Parameter(description = "페이지당 조회할 데이터 갯수", example = "100")
-        @RequestParam(defaultValue = "100")
-        int size
+        @Min(1)
+        int page
     );
 }

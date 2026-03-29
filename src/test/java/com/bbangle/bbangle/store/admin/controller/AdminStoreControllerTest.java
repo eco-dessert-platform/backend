@@ -59,7 +59,6 @@ class AdminStoreControllerTest {
 
         // given
         int page = 1;
-        int size = 100;
 
         List<UpdateStoreNames> content = List.of(
             UpdateStoreNames.builder()
@@ -84,12 +83,11 @@ class AdminStoreControllerTest {
             .hasNext(false)
             .build();
 
-        given(adminStoreService.getPendingRequests(page, size)).willReturn(responseDto);
+        given(adminStoreService.getPendingRequests(page)).willReturn(responseDto);
 
         // when & then
         mockMvc.perform(get(AdminApiPath.PREFIX + "/stores")
                 .param("page", String.valueOf(page))
-                .param("size", String.valueOf(size))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             // 공통 응답 구조

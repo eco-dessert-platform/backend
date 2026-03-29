@@ -18,15 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminStoreService {
 
+    private static final int DEFAULT_PAGE_SIZE = 100;
     private final StoreNameRequestRepository storeNameRequestRepository;
 
     @Transactional(readOnly = true)
-    public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page, int size) {
-        page = normalizePage(page);
-        size = normalizeSize(size);
+    public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
+        page = Math.max(page, 1);
         Pageable pageable = PageRequest.of(
             page - 1,
-            size,
+            DEFAULT_PAGE_SIZE,
             Sort.by(
                 Sort.Order.asc("createdAt"),
                 Sort.Order.asc("id")
@@ -47,13 +47,5 @@ public class AdminStoreService {
             .hasPrevious(results.hasPrevious())
             .hasNext(results.hasNext())
             .build();
-    }
-
-    private int normalizePage(int page) {
-        return Math.max(page, 1);
-    }
-
-    private int normalizeSize(int size) {
-        return Math.min(Math.max(size, 1), 100);
     }
 }

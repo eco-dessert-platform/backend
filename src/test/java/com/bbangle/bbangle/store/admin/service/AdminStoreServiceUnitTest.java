@@ -46,6 +46,8 @@ class AdminStoreServiceUnitTest {
     @DisplayName("getPendingRequests() 테스트")
     class GetPendingRequestsTest {
 
+        private static final int DEFAULT_PAGE_SIZE = 100;
+
         private StoreNameRequest createEntity(Long id) {
             Store store = StoreFixture.defaultStore();
             ReflectionTestUtils.setField(store, "id", id);
@@ -62,7 +64,6 @@ class AdminStoreServiceUnitTest {
         void success_getPendingRequests() {
             // given
             int page = 1;
-            int size = 10;
 
             StoreNameRequest entity1 = createEntity(1L);
             StoreNameRequest entity2 = createEntity(2L);
@@ -70,8 +71,8 @@ class AdminStoreServiceUnitTest {
 
             Page<StoreNameRequest> mockPage = new PageImpl<>(
                 content,
-                PageRequest.of(0, size),
-                20 // total elements
+                PageRequest.of(0, DEFAULT_PAGE_SIZE),
+                content.size()
             );
 
             given(storeNameRequestRepository.findByStatus(
@@ -79,7 +80,7 @@ class AdminStoreServiceUnitTest {
             )).willReturn(mockPage);
 
             // when
-            AdminStoreResponse.UpdateStoreNameRequest result = adminStoreService.getPendingRequests(page, size);
+            AdminStoreResponse.UpdateStoreNameRequest result = adminStoreService.getPendingRequests(page);
 
             // then
             List<UpdateStoreNames> dtos = result.updateStoreNames();
@@ -89,23 +90,22 @@ class AdminStoreServiceUnitTest {
             assertThat(dtos.get(1).storeId()).isEqualTo(2L);
             assertThat(dtos.get(0).createdAt()).isNotNull();
 
-            assertThat(result.totalElements()).isEqualTo(20);
-            assertThat(result.totalPages()).isEqualTo(2);
-            assertThat(result.hasNext()).isTrue();
+            assertThat(result.totalElements()).isEqualTo(2);
+            assertThat(result.totalPages()).isEqualTo(1);
+            assertThat(result.hasNext()).isFalse();
             assertThat(result.hasPrevious()).isFalse();
         }
 
         @Test
-        @DisplayName("잘못된 Page와 Size 값이 들어오면 보정한다.")
+        @DisplayName("잘못된 Page 값이 들어오면 보정한다.")
         void success_getPendingRequests_pageSize() {
 
             // given
             int page = 0;     // 잘못된 값
-            int size = 200;   // 초과 값
 
             Page<StoreNameRequest> mockPage = new PageImpl<>(
                 List.of(),
-                PageRequest.of(0, 100),
+                PageRequest.of(0, DEFAULT_PAGE_SIZE),
                 0
             );
 
@@ -115,7 +115,7 @@ class AdminStoreServiceUnitTest {
             )).willReturn(mockPage);
 
             // when
-            adminStoreService.getPendingRequests(page, size);
+            adminStoreService.getPendingRequests(page);
 
             // then
             ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
@@ -125,7 +125,7 @@ class AdminStoreServiceUnitTest {
             Pageable usedPageable = captor.getValue();
 
             assertThat(usedPageable.getPageNumber()).isEqualTo(0); // page=1로 보정 후 -1
-            assertThat(usedPageable.getPageSize()).isEqualTo(100); // max 100
+            assertThat(usedPageable.getPageSize()).isEqualTo(DEFAULT_PAGE_SIZE); // max 100
         }
     }
 }
