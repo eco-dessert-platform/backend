@@ -172,7 +172,13 @@ public enum BbangleErrorCode {
     RETURN_NOT_ALLOWED(-782, "반품 요청이 불가능한 상태입니다.", BAD_REQUEST),
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
-    DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST);
+    DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
+
+    // Settlement Error(801 ~ 820)
+    SETTLEMENT_NOT_FOUND(-801, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
+    SETTLEMENT_ACCESS_DENIED(-802, "해당 정산에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    INVALID_SETTLEMENT_DATE_RANGE(-803, "조회 시작일은 종료일보다 이전이어야 합니다.", BAD_REQUEST),
+    SETTLEMENT_DATE_RANGE_EXCEEDED(-804, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;
