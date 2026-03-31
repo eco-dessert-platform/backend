@@ -17,6 +17,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private static final String[] ALLOWED_ORIGINS = new String[]{
         "http://localhost:3000",
+        "http://localhost:6078",
         "https://www.bbanggree.com",
         "https://api.bbanggree.com",
         "https://develop.bbanggree.com"
