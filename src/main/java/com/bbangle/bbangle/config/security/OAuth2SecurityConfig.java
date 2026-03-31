@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -41,7 +40,6 @@ public class OAuth2SecurityConfig {
                 "/api/v1/oauth/authorization/**",
                 "/login/oauth2/**"
             )
-            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint
