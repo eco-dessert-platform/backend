@@ -116,6 +116,23 @@ public class SellerReturnService {
     }
 
     @Transactional
+    public void processReturn(Long returnId, Long sellerId) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+
+        returnRequest.processReturn();
+
+        OrderItem orderItem = returnRequest.getOrderItem();
+        orderItem.returnComplete();
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
     public void registerReturnInvoice(Long returnId, Long sellerId, CourierCompany courierCode, String trackingNumber) {
         if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);

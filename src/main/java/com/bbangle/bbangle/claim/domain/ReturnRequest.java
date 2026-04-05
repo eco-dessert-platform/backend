@@ -68,4 +68,9 @@ public class ReturnRequest extends Claim {
         this.status.validateTransition(ReturnRequestRequestStatus.PICKUP_SCHEDULED);
         this.status = ReturnRequestRequestStatus.PICKUP_SCHEDULED;
     }
+
+    public void processReturn() {
+        this.status.validateTransition(ReturnRequestRequestStatus.COMPLETED);
+        this.status = ReturnRequestRequestStatus.COMPLETED;
+    }
 }
