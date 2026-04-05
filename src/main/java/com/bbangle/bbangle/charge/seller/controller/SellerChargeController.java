@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.charge.seller.controller;
 
 import com.bbangle.bbangle.charge.seller.controller.dto.response.ChargeBalanceResponse;
-import com.bbangle.bbangle.charge.seller.controller.swagger.ChargeSellerApi;
-import com.bbangle.bbangle.charge.seller.service.ChargeService;
+import com.bbangle.bbangle.charge.seller.controller.swagger.SellerChargeApi;
+import com.bbangle.bbangle.charge.seller.service.SellerChargeService;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(SellerApiPath.PREFIX)
 @RequiredArgsConstructor
-public class ChargeSellerController implements ChargeSellerApi {
+public class SellerChargeController implements SellerChargeApi {
 
-    private final ChargeService chargeService;
+    private final SellerChargeService chargeService;
     private final ResponseService responseService;
 
     @Override

@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ChargeService {
+public class SellerChargeService {
 
     private final ChargeBalanceRepository chargeBalanceRepository;
     private final ChargeHistoryRepository chargeHistoryRepository;

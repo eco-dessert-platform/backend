@@ -10,7 +10,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 
 @Tag(name = "Seller Charge", description = "(판매자) 충전금 API")
-public interface ChargeSellerApi {
+public interface SellerChargeApi {
 
     @Operation(
         summary = "(판매자) 충전금 현황 조회",
@@ -23,15 +23,13 @@ public interface ChargeSellerApi {
 
         @Parameter(
             description = "조회 시작일 (기본값: 오늘 - 7일)",
-            example = "2025-03-01",
-            schema = @io.swagger.v3.oas.annotations.media.Schema(pattern = "yyyy-MM-dd")
+            example = "2025-03-01"
         )
         LocalDate startDate,
 
         @Parameter(
             description = "조회 종료일 (기본값: 오늘)",
-            example = "2025-03-07",
-            schema = @io.swagger.v3.oas.annotations.media.Schema(pattern = "yyyy-MM-dd")
+            example = "2025-03-07"
         )
         LocalDate endDate,
 
