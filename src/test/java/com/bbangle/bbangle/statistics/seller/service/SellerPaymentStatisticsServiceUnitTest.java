@@ -8,11 +8,12 @@ import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.statistics.domain.SellerStatisticsDaily;
+import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.repository.SellerStatisticsRepository;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
-import com.bbangle.bbangle.statistics.seller.dto.StatisticsPeriod;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,13 +40,12 @@ class SellerPaymentStatisticsServiceUnitTest {
     private SellerStatisticsRepository sellerStatisticsRepository;
 
     @Test
-    @DisplayName("DAY 조회는 기준일 포함 최근 7일 데이터를 0으로 채워 반환한다")
+    @DisplayName("DAY 조회는 기준일 포함 최근 7일을 0으로 채워 반환한다")
     void getDailyPaymentAmount_fillMissingDatesWithZero() {
-        // given
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
 
-        given(sellerRepository.existsById(sellerId)).willReturn(true);
+        givenExistingSeller(sellerId);
 
         SellerStatisticsDaily day1 = org.mockito.Mockito.mock(SellerStatisticsDaily.class);
         given(day1.getStatDate()).willReturn(LocalDateTime.of(2026, 3, 1, 10, 0));
@@ -59,34 +59,31 @@ class SellerPaymentStatisticsServiceUnitTest {
             eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
         )).willReturn(List.of(day1, day3));
 
-        // when
         DailyPaymentAmountResponse result = sut.getDailyPaymentAmount(
             sellerId, Optional.of(targetDate), Optional.of(StatisticsPeriod.DAY));
 
-        // then
-        assertThat(result.getStartDate()).isEqualTo(LocalDate.of(2026, 3, 1));
-        assertThat(result.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 7));
-        assertThat(result.getPeriod()).isEqualTo(StatisticsPeriod.DAY);
-        assertThat(result.getAverageAmount()).isNull();
-        assertThat(result.getDailyAmounts()).hasSize(7);
-        assertThat(result.getDailyAmounts().get(0).getDate()).isEqualTo(LocalDate.of(2026, 3, 1));
-        assertThat(result.getDailyAmounts().get(0).getAmount()).isEqualTo(12000L);
-        assertThat(result.getDailyAmounts().get(1).getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
-        assertThat(result.getDailyAmounts().get(1).getAmount()).isEqualTo(0L);
-        assertThat(result.getDailyAmounts().get(2).getDate()).isEqualTo(LocalDate.of(2026, 3, 3));
-        assertThat(result.getDailyAmounts().get(2).getAmount()).isEqualTo(3000L);
-        assertThat(result.getDailyAmounts().get(6).getDate()).isEqualTo(LocalDate.of(2026, 3, 7));
-        assertThat(result.getDailyAmounts().get(6).getAmount()).isEqualTo(0L);
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 3, 1));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 7));
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.DAY);
+        assertThat(result.averageAmount()).isNull();
+        assertThat(result.dailyAmounts()).hasSize(7);
+        assertThat(result.dailyAmounts().get(0).date()).isEqualTo(LocalDate.of(2026, 3, 1));
+        assertThat(result.dailyAmounts().get(0).amount()).isEqualTo(12000L);
+        assertThat(result.dailyAmounts().get(1).date()).isEqualTo(LocalDate.of(2026, 3, 2));
+        assertThat(result.dailyAmounts().get(1).amount()).isEqualTo(0L);
+        assertThat(result.dailyAmounts().get(2).date()).isEqualTo(LocalDate.of(2026, 3, 3));
+        assertThat(result.dailyAmounts().get(2).amount()).isEqualTo(3000L);
+        assertThat(result.dailyAmounts().get(6).date()).isEqualTo(LocalDate.of(2026, 3, 7));
+        assertThat(result.dailyAmounts().get(6).amount()).isEqualTo(0L);
     }
 
     @Test
-    @DisplayName("WEEK 조회는 기준일 포함 최근 7주 합계를 반환한다")
+    @DisplayName("WEEK 조회는 기준일 포함 최근 7주 통계를 반환한다")
     void getDailyPaymentAmount_weeklyBuckets() {
-        // given
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 16);
 
-        given(sellerRepository.existsById(sellerId)).willReturn(true);
+        givenExistingSeller(sellerId);
 
         SellerStatisticsDaily week1Day1 = org.mockito.Mockito.mock(SellerStatisticsDaily.class);
         given(week1Day1.getStatDate()).willReturn(LocalDateTime.of(2026, 2, 2, 10, 0));
@@ -104,30 +101,27 @@ class SellerPaymentStatisticsServiceUnitTest {
             eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
         )).willReturn(List.of(week1Day1, week1Day2, week7Day));
 
-        // when
         DailyPaymentAmountResponse result = sut.getDailyPaymentAmount(
             sellerId, Optional.of(targetDate), Optional.of(StatisticsPeriod.WEEK));
 
-        // then
-        assertThat(result.getStartDate()).isEqualTo(LocalDate.of(2026, 2, 2));
-        assertThat(result.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 22));
-        assertThat(result.getPeriod()).isEqualTo(StatisticsPeriod.WEEK);
-        assertThat(result.getAverageAmount()).isEqualTo(1429L);
-        assertThat(result.getDailyAmounts()).hasSize(7);
-        assertThat(result.getDailyAmounts().get(0).getDate()).isEqualTo(LocalDate.of(2026, 2, 2));
-        assertThat(result.getDailyAmounts().get(0).getAmount()).isEqualTo(3000L);
-        assertThat(result.getDailyAmounts().get(6).getDate()).isEqualTo(LocalDate.of(2026, 3, 16));
-        assertThat(result.getDailyAmounts().get(6).getAmount()).isEqualTo(7000L);
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 2, 2));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 22));
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.WEEK);
+        assertThat(result.averageAmount()).isEqualTo(1429L);
+        assertThat(result.dailyAmounts()).hasSize(7);
+        assertThat(result.dailyAmounts().get(0).date()).isEqualTo(LocalDate.of(2026, 2, 2));
+        assertThat(result.dailyAmounts().get(0).amount()).isEqualTo(3000L);
+        assertThat(result.dailyAmounts().get(6).date()).isEqualTo(LocalDate.of(2026, 3, 16));
+        assertThat(result.dailyAmounts().get(6).amount()).isEqualTo(7000L);
     }
 
     @Test
-    @DisplayName("MONTH 조회는 기준월 포함 최근 7개월 합계를 반환한다")
+    @DisplayName("MONTH 조회는 기준일 포함 최근 7개월 통계를 반환한다")
     void getDailyPaymentAmount_monthlyBuckets() {
-        // given
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 10);
 
-        given(sellerRepository.existsById(sellerId)).willReturn(true);
+        givenExistingSeller(sellerId);
 
         SellerStatisticsDaily month1Day = org.mockito.Mockito.mock(SellerStatisticsDaily.class);
         given(month1Day.getStatDate()).willReturn(LocalDateTime.of(2025, 9, 2, 10, 0));
@@ -145,58 +139,56 @@ class SellerPaymentStatisticsServiceUnitTest {
             eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
         )).willReturn(List.of(month1Day, month7Day1, month7Day2));
 
-        // when
         DailyPaymentAmountResponse result = sut.getDailyPaymentAmount(
             sellerId, Optional.of(targetDate), Optional.of(StatisticsPeriod.MONTH));
 
-        // then
-        assertThat(result.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
-        assertThat(result.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 31));
-        assertThat(result.getPeriod()).isEqualTo(StatisticsPeriod.MONTH);
-        assertThat(result.getAverageAmount()).isEqualTo(500L);
-        assertThat(result.getDailyAmounts()).hasSize(7);
-        assertThat(result.getDailyAmounts().get(0).getDate()).isEqualTo(LocalDate.of(2025, 9, 1));
-        assertThat(result.getDailyAmounts().get(0).getAmount()).isEqualTo(500L);
-        assertThat(result.getDailyAmounts().get(6).getDate()).isEqualTo(LocalDate.of(2026, 3, 1));
-        assertThat(result.getDailyAmounts().get(6).getAmount()).isEqualTo(3000L);
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2025, 9, 1));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 31));
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.MONTH);
+        assertThat(result.averageAmount()).isEqualTo(500L);
+        assertThat(result.dailyAmounts()).hasSize(7);
+        assertThat(result.dailyAmounts().get(0).date()).isEqualTo(LocalDate.of(2025, 9, 1));
+        assertThat(result.dailyAmounts().get(0).amount()).isEqualTo(500L);
+        assertThat(result.dailyAmounts().get(6).date()).isEqualTo(LocalDate.of(2026, 3, 1));
+        assertThat(result.dailyAmounts().get(6).amount()).isEqualTo(3000L);
     }
 
     @Test
     @DisplayName("기본 period는 DAY다")
     void getDailyPaymentAmount_defaultPeriodIsDay() {
-        // given
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
 
-        given(sellerRepository.existsById(sellerId)).willReturn(true);
+        givenExistingSeller(sellerId);
         given(sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
             eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
         )).willReturn(List.of());
 
-        // when
         DailyPaymentAmountResponse result = sut.getDailyPaymentAmount(
             sellerId, Optional.of(targetDate), Optional.empty());
 
-        // then
-        assertThat(result.getPeriod()).isEqualTo(StatisticsPeriod.DAY);
-        assertThat(result.getStartDate()).isEqualTo(LocalDate.of(2026, 3, 1));
-        assertThat(result.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 7));
-        assertThat(result.getAverageAmount()).isNull();
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.DAY);
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 3, 1));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 7));
+        assertThat(result.averageAmount()).isNull();
     }
 
     @Test
     @DisplayName("존재하지 않는 판매자는 SELLER_NOT_FOUND 예외가 발생한다")
     void getDailyPaymentAmount_sellerNotFound() {
-        // given
         Long sellerId = 999L;
-        given(sellerRepository.existsById(sellerId)).willReturn(false);
+        given(sellerRepository.findById(sellerId)).willReturn(Optional.empty());
 
-        // when
         BbangleException result = assertThrows(
             BbangleException.class,
             () -> sut.getDailyPaymentAmount(sellerId, Optional.empty(), Optional.empty()));
 
-        // then
         assertThat(result.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.SELLER_NOT_FOUND);
+    }
+
+    private void givenExistingSeller(Long sellerId) {
+        Seller seller = org.mockito.Mockito.mock(Seller.class);
+        given(seller.getId()).willReturn(sellerId);
+        given(sellerRepository.findById(sellerId)).willReturn(Optional.of(seller));
     }
 }

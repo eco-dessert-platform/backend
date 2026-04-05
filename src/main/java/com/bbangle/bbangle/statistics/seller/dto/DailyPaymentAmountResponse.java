@@ -1,27 +1,22 @@
 package com.bbangle.bbangle.statistics.seller.dto;
 
+import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDate;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class DailyPaymentAmountResponse {
-
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private StatisticsPeriod period;
+public record DailyPaymentAmountResponse(
+    LocalDate startDate,
+    LocalDate endDate,
+    StatisticsPeriod period,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long averageAmount;
-    private List<DailyPaymentAmountItem> dailyAmounts;
+    Long averageAmount,
+    List<DailyPaymentAmountItem> dailyAmounts
+) {
 
-    @Getter
-    @AllArgsConstructor
-    public static class DailyPaymentAmountItem {
-
-        private LocalDate date;
-        private Long amount;
+    public record DailyPaymentAmountItem(
+        LocalDate date,
+        Long amount
+    ) {
     }
 }

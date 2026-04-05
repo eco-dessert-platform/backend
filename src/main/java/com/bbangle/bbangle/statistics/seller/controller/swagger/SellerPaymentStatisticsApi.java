@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.statistics.seller.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
-import com.bbangle.bbangle.statistics.seller.dto.StatisticsPeriod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

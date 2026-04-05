@@ -2,9 +2,9 @@ package com.bbangle.bbangle.statistics.seller.controller;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.controller.swagger.SellerPaymentStatisticsApi;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
-import com.bbangle.bbangle.statistics.seller.dto.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.service.SellerPaymentStatisticsService;
 import java.time.LocalDate;
 import java.util.Optional;
