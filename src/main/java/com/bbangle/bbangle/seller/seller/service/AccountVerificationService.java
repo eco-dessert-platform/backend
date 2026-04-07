@@ -11,6 +11,7 @@ import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.client.AccountVerificationClient;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import com.bbangle.bbangle.util.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,13 @@ public class AccountVerificationService {
     private final SellerRepository sellerRepository;
     private final AccountVerificationClient accountVerificationClient;
     private final AesEncryptionUtil aesEncryptionUtil;
+
+    public AccountVerificationDetailInfo getAccountVerification(Long sellerId) {
+        AccountVerification accountVerification = accountVerificationRepository.findBySellerId(sellerId)
+            .orElseThrow(() -> new BbangleException(ACCOUNT_VERIFICATION_NOT_FOUND));
+        String decryptedAccountNumber = aesEncryptionUtil.decrypt(accountVerification.getAccountNumber());
+        return AccountVerificationDetailInfo.of(accountVerification, decryptedAccountNumber);
+    }
 
     public void confirmAccount(Long sellerId) {
         AccountVerification accountVerification = accountVerificationRepository.findBySellerId(sellerId)

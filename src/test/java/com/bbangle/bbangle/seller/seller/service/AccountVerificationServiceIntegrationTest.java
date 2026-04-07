@@ -13,6 +13,7 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -137,6 +138,41 @@ class AccountVerificationServiceIntegrationTest {
         assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.SELLER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("계좌 인증 조회에 성공한다")
+    void success_get_account_verification() {
+        // arrange
+        VerifyAccountCommand command = new VerifyAccountCommand(
+            testSeller.getId(),
+            "92",
+            "123412341234"
+        );
+        accountVerificationService.verifyAccount(command);
+        em.flush();
+        em.clear();
+
+        // act
+        AccountVerificationDetailInfo result = accountVerificationService.getAccountVerification(testSeller.getId());
+
+        // assert
+        assertThat(result).isNotNull();
+        assertThat(result.sellerId()).isEqualTo(testSeller.getId());
+        assertThat(result.bankCode()).isEqualTo("92");
+        assertThat(result.accountNumber()).isEqualTo("123412341234");
+        assertThat(result.accountHolder()).isNotNull();
+        assertThat(result.verified()).isTrue();
+        assertThat(result.createdAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("계좌 인증 이력이 없는 판매자 조회 시 예외가 발생한다")
+    void fail_get_account_verification_not_found() {
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.getAccountVerification(testSeller.getId()))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
     }
 
     /**

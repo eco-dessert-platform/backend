@@ -14,6 +14,7 @@ import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.client.AccountVerificationClient;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import com.bbangle.bbangle.util.AesEncryptionUtil;
 import java.util.Optional;
@@ -48,6 +49,56 @@ class AccountVerificationServiceUnitTest {
 
     @Mock
     private AccountVerification accountVerification;
+
+    @Test
+    @DisplayName("계좌 인증 조회에 성공한다")
+    void success_get_account_verification() {
+        // arrange
+        Long sellerId = 1L;
+        String encryptedAccountNumber = "encryptedValue";
+        String decryptedAccountNumber = "123412341234";
+
+        given(accountVerificationRepository.findBySellerId(sellerId))
+            .willReturn(Optional.of(accountVerification));
+        given(accountVerification.getAccountNumber()).willReturn(encryptedAccountNumber);
+        given(aesEncryptionUtil.decrypt(encryptedAccountNumber)).willReturn(decryptedAccountNumber);
+        given(accountVerification.getId()).willReturn(1L);
+        given(accountVerification.getSeller()).willReturn(seller);
+        given(seller.getId()).willReturn(sellerId);
+        given(accountVerification.getBankCode()).willReturn("92");
+        given(accountVerification.getAccountHolder()).willReturn("홍길동");
+        given(accountVerification.isVerified()).willReturn(true);
+        given(accountVerification.getCreatedAt()).willReturn(null);
+
+        // act
+        AccountVerificationDetailInfo result = accountVerificationService.getAccountVerification(sellerId);
+
+        // assert
+        assertThat(result).isNotNull();
+        assertThat(result.sellerId()).isEqualTo(sellerId);
+        assertThat(result.accountNumber()).isEqualTo(decryptedAccountNumber);
+        assertThat(result.bankCode()).isEqualTo("92");
+        assertThat(result.accountHolder()).isEqualTo("홍길동");
+        assertThat(result.verified()).isTrue();
+
+        verify(accountVerificationRepository).findBySellerId(sellerId);
+        verify(aesEncryptionUtil).decrypt(encryptedAccountNumber);
+    }
+
+    @Test
+    @DisplayName("계좌 인증 이력이 없는 경우 조회 시 예외가 발생한다")
+    void fail_get_account_verification_not_found() {
+        // arrange
+        Long sellerId = 999L;
+
+        given(accountVerificationRepository.findBySellerId(sellerId))
+            .willReturn(Optional.empty());
+
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.getAccountVerification(sellerId))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
+    }
 
     @Test
     @DisplayName("계좌 인증 요청이 성공한다")
