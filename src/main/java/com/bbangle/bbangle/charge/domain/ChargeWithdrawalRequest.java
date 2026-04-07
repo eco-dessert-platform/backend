@@ -51,18 +51,24 @@ public class ChargeWithdrawalRequest extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(20)", nullable = false)
     private String accountNumber;
 
+    @Comment("출금 처리 성공 여부")
+    @Column(columnDefinition = "tinyint", nullable = false)
+    private Boolean success;
+
     @Builder
     private ChargeWithdrawalRequest(
         Seller seller,
         BigDecimal withdrawalAmount,
         String bankName,
         String accountHolder,
-        String accountNumber) {
+        String accountNumber,
+        Boolean success) {
         this.seller = seller;
         this.withdrawalAmount = withdrawalAmount;
         this.bankName = bankName;
         this.accountHolder = accountHolder;
         this.accountNumber = accountNumber;
+        this.success = success;
     }
 
     /**
@@ -80,6 +86,14 @@ public class ChargeWithdrawalRequest extends BaseEntity {
             .bankName(bankName)
             .accountHolder(accountHolder)
             .accountNumber(accountNumber)
+            .success(false)
             .build();
+    }
+
+    /**
+     * 출금 처리 결과 설정
+     */
+    public void setWithdrawalResult(boolean success) {
+        this.success = success;
     }
 }

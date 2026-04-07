@@ -31,6 +31,7 @@ CREATE TABLE charge_withdrawal_request (
     bank_name VARCHAR(30) NOT NULL COMMENT '은행명',
     account_holder VARCHAR(30) NOT NULL COMMENT '예금주명',
     account_number VARCHAR(20) NOT NULL COMMENT '계좌번호',
+    success TINYINT(1) NOT NULL DEFAULT 0 COMMENT '출금 처리 성공 여부',
     created_at DATETIME(6) NOT NULL COMMENT '생성일시',
     modified_at DATETIME(6) NOT NULL COMMENT '수정일시'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='충전금 출금 신청';
