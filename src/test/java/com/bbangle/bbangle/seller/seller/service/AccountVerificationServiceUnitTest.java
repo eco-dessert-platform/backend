@@ -106,45 +106,45 @@ class AccountVerificationServiceUnitTest {
     @DisplayName("인증된 계좌 확인에 성공한다")
     void success_confirm_verified_account() {
         // arrange
-        Long accountVerificationId = 1L;
+        Long sellerId = 1L;
 
-        given(accountVerificationRepository.findById(accountVerificationId))
+        given(accountVerificationRepository.findBySellerId(sellerId))
             .willReturn(Optional.of(accountVerification));
         given(accountVerification.isVerified()).willReturn(true);
 
         // act & assert
-        accountVerificationService.confirmAccount(accountVerificationId);
+        accountVerificationService.confirmAccount(sellerId);
 
-        verify(accountVerificationRepository).findById(accountVerificationId);
+        verify(accountVerificationRepository).findBySellerId(sellerId);
     }
 
     @Test
     @DisplayName("인증되지 않은 계좌 확인 시 예외가 발생한다")
     void fail_confirm_unverified_account() {
         // arrange
-        Long accountVerificationId = 1L;
+        Long sellerId = 1L;
 
-        given(accountVerificationRepository.findById(accountVerificationId))
+        given(accountVerificationRepository.findBySellerId(sellerId))
             .willReturn(Optional.of(accountVerification));
         given(accountVerification.isVerified()).willReturn(false);
 
         // act & assert
-        assertThatThrownBy(() -> accountVerificationService.confirmAccount(accountVerificationId))
+        assertThatThrownBy(() -> accountVerificationService.confirmAccount(sellerId))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_NOT_VERIFIED.getMessage());
     }
 
     @Test
-    @DisplayName("존재하지 않는 계좌 인증 ID로 확인 시 예외가 발생한다")
-    void fail_confirm_with_non_existent_id() {
+    @DisplayName("존재하지 않는 판매자 ID로 계좌 확인 시 예외가 발생한다")
+    void fail_confirm_with_non_existent_seller_id() {
         // arrange
-        Long accountVerificationId = 999L;
+        Long sellerId = 999L;
 
-        given(accountVerificationRepository.findById(accountVerificationId))
+        given(accountVerificationRepository.findBySellerId(sellerId))
             .willReturn(Optional.empty());
 
         // act & assert
-        assertThatThrownBy(() -> accountVerificationService.confirmAccount(accountVerificationId))
+        assertThatThrownBy(() -> accountVerificationService.confirmAccount(sellerId))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
     }

@@ -30,7 +30,7 @@ public class SellerFacade {
 
         List<SellerDocumentInfo> sellerDocumentInfos = new ArrayList<>();
         // 1. 계좌 인증 확인
-        accountVerificationService.confirmAccount(command.accountVerificationId());
+        accountVerificationService.confirmAccount(command.sellerId());
 
         // 2. 문서 정보 매핑 (타입과 파일을 쌍으로 관리)
         List<DocumentUploadInfo> documents = List.of(

@@ -8,7 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,8 +36,8 @@ public class AccountVerification extends BaseEntity {
     @Column(name = "verified")
     private boolean verified;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", unique = true)
     private Seller seller;
 
     private AccountVerification(String bankCode, String encryptedAccountNumber, String accountHolder,

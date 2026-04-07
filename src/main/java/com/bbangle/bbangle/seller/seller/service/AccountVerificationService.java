@@ -27,8 +27,8 @@ public class AccountVerificationService {
     private final AccountVerificationClient accountVerificationClient;
     private final AesEncryptionUtil aesEncryptionUtil;
 
-    public void confirmAccount(Long accountVerificationId) {
-        AccountVerification accountVerification = accountVerificationRepository.findById(accountVerificationId)
+    public void confirmAccount(Long sellerId) {
+        AccountVerification accountVerification = accountVerificationRepository.findBySellerId(sellerId)
             .orElseThrow(() -> new BbangleException(ACCOUNT_VERIFICATION_NOT_FOUND));
 
         if (!accountVerification.isVerified()) {
