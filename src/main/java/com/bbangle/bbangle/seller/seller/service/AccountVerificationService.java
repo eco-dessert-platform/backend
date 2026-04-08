@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.seller.seller.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.ACCOUNT_NOT_VERIFIED;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.ACCOUNT_VERIFICATION_ALREADY_EXISTS;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.SELLER_NOT_FOUND;
 
@@ -48,6 +49,10 @@ public class AccountVerificationService {
     public AccountVerificationInfo verifyAccount(VerifyAccountCommand command) {
         Seller seller = sellerRepository.findById(command.sellerId())
             .orElseThrow(() -> new BbangleException(SELLER_NOT_FOUND));
+
+        if (accountVerificationRepository.findBySellerId(command.sellerId()).isPresent()) {
+            throw new BbangleException(ACCOUNT_VERIFICATION_ALREADY_EXISTS);
+        }
 
         String accountHolder = accountVerificationClient.verifyAccount(
             command.bankCode(),

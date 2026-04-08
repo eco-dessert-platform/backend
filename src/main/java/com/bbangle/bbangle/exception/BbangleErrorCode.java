@@ -141,6 +141,7 @@ public enum BbangleErrorCode {
     ALREADY_RESERVED_STORE(-731, "이미 등록된 스토어입니다.", BAD_REQUEST),
     ALREADY_UPDATE_STORE_NAME(-732, "이미 변경된 스토어명입니다.", BAD_REQUEST),
     STORE_UPDATE_FAILED(-733, "스토어 상세 정보 변경에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    ACCOUNT_VERIFICATION_ALREADY_EXISTS(-734, "이미 계좌 인증 정보가 존재합니다.", BAD_REQUEST),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),

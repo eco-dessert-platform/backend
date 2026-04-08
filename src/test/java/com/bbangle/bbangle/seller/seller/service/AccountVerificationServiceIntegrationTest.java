@@ -125,6 +125,21 @@ class AccountVerificationServiceIntegrationTest {
     }
 
     @Test
+    @DisplayName("이미 계좌 인증 정보가 존재하면 계좌 인증이 실패한다")
+    void fail_verify_account_already_exists() {
+        // arrange: 계좌 인증 먼저 등록
+        VerifyAccountCommand command = new VerifyAccountCommand(testSeller.getId(), "92", "123412341234");
+        accountVerificationService.verifyAccount(command);
+        em.flush();
+        em.clear();
+
+        // act & assert: 동일 판매자로 재시도
+        assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_ALREADY_EXISTS.getMessage());
+    }
+
+    @Test
     @DisplayName("존재하지 않는 판매자로 계좌 인증 요청 시 예외가 발생한다")
     void fail_verify_account_with_non_existent_seller() {
         // arrange

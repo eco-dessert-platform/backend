@@ -139,6 +139,23 @@ class AccountVerificationServiceUnitTest {
     }
 
     @Test
+    @DisplayName("이미 계좌 인증 정보가 존재하면 계좌 인증이 실패한다")
+    void fail_verify_account_already_exists() {
+        // arrange
+        Long sellerId = 1L;
+        VerifyAccountCommand command = new VerifyAccountCommand(sellerId, "92", "123412341234");
+
+        given(sellerRepository.findById(sellerId)).willReturn(Optional.of(seller));
+        given(accountVerificationRepository.findBySellerId(sellerId))
+            .willReturn(Optional.of(accountVerification));
+
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_ALREADY_EXISTS.getMessage());
+    }
+
+    @Test
     @DisplayName("존재하지 않는 판매자로 인해 계좌 인증이 실패한다")
     void fail_verify_account_with_non_existent_seller() {
         // arrange
