@@ -110,7 +110,7 @@ public interface SellerApi {
             )
         ),
         @ApiResponse(
-            responseCode = "400",
+            responseCode = "404",
             description = "계좌 인증 이력 없음",
             content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
         )
