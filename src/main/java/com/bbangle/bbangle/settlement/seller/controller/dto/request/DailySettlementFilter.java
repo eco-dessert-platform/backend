@@ -30,6 +30,21 @@ public record DailySettlementFilter(
             .build();
     }
 
+    /**
+     * 엑셀 다운로드용 검증.
+     * 시작일·종료일이 모두 필수이며, 조회 기간은 최대 1개월을 초과할 수 없다.
+     */
+    public void validateForExcel() {
+        if (startDate == null || endDate == null) {
+            throw new BbangleException(BbangleErrorCode.SETTLEMENT_DATE_REQUIRED);
+        }
+        validateDateRange();
+        // startDate 기준 1개월 초과 여부 검증 (e.g. 01-01 ~ 02-01 허용, 01-01 ~ 02-02 불가)
+        if (endDate.isAfter(startDate.plusMonths(1))) {
+            throw new BbangleException(BbangleErrorCode.SETTLEMENT_DATE_RANGE_EXCEEDED);
+        }
+    }
+
     private void validateDateRange() {
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new BbangleException(BbangleErrorCode.INVALID_SETTLEMENT_DATE_RANGE);

@@ -58,7 +58,7 @@ class SellerSettlementExcelControllerTest {
 
         // void 메서드이므로 Mockito 기본 동작(아무것도 안 함)과 동일하지만,
         // 테스트 의도를 명시적으로 드러내기 위해 setup을 공통화한다.
-        // lenient(): 401/403 테스트처럼 컨트롤러 진입 전에 차단되는 경우 stub이 사용되지
+        // lenient(): 401/403/400 테스트처럼 컨트롤러 진입 전에 차단되는 경우 stub이 사용되지
         // 않아 strict 모드에서 UnnecessaryStubbingException이 발생하므로 lenient로 설정
         @BeforeEach
         void setUp() throws Exception {
@@ -67,37 +67,64 @@ class SellerSettlementExcelControllerTest {
 
         @Test
         @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("날짜 조건 없이 요청하면 200 응답과 Content-Type이 xlsx로 설정된다")
-        void 날짜_없이_요청하면_200과_xlsx_ContentType() throws Exception {
+        @DisplayName("날짜 조건 없이 요청하면 400 에러를 반환한다 (엑셀은 날짜 범위 필수)")
+        void 날짜_없이_요청하면_400() throws Exception {
             mockMvc.perform(get(DOWNLOAD_URL))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("startDate만 지정하면 400 에러를 반환한다 (endDate 미입력)")
+        void startDate만_지정하면_400() throws Exception {
+            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-03-01"))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("endDate만 지정하면 400 에러를 반환한다 (startDate 미입력)")
+        void endDate만_지정하면_400() throws Exception {
+            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("endDate", "2025-03-31"))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("1개월을 초과하는 날짜 범위로 요청하면 400 에러를 반환한다")
+        void 날짜_범위_1개월_초과시_400() throws Exception {
+            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-01-01")
+                    .param("endDate", "2025-02-02"))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("startDate가 endDate보다 이후이면 400 에러를 반환한다")
+        void startDate가_endDate보다_이후이면_400() throws Exception {
+            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-04-01")
+                    .param("endDate", "2025-03-01"))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        @DisplayName("정확히 1개월 범위(startDate ~ startDate+1개월)로 요청하면 200 응답을 반환한다")
+        void 정확히_1개월_범위는_200() throws Exception {
+            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-01-01")
+                    .param("endDate", "2025-02-01"))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, XLSX_CONTENT_TYPE));
         }
 
         @Test
         @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("날짜 조건 없이 요청하면 Content-Disposition이 all_all 파일명으로 설정된다")
-        void 날짜_없이_요청하면_파일명이_all_all() throws Exception {
-            mockMvc.perform(get(DOWNLOAD_URL))
-                .andExpect(status().isOk())
-                .andExpect(header().string(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"daily-settlements_all_all.xlsx\""
-                ));
-        }
-
-        @Test
-        @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("날짜 조건 없이 요청하면 Cache-Control 헤더가 no-cache로 설정된다")
-        void 날짜_없이_요청하면_Cache_Control_설정() throws Exception {
-            mockMvc.perform(get(DOWNLOAD_URL))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate"));
-        }
-
-        @Test
-        @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("startDate와 endDate를 지정하면 Content-Disposition 파일명에 날짜가 포함된다")
+        @DisplayName("날짜 조건을 지정하면 Content-Disposition 파일명에 날짜가 포함된다")
         void 날짜_지정시_파일명에_날짜가_포함된다() throws Exception {
             mockMvc.perform(get(DOWNLOAD_URL)
                     .param("startDate", "2025-03-01")
@@ -111,38 +138,13 @@ class SellerSettlementExcelControllerTest {
 
         @Test
         @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("startDate만 지정하면 endDate 자리가 all로 설정된다")
-        void startDate만_지정하면_endDate가_all() throws Exception {
+        @DisplayName("정상 요청에 Cache-Control 헤더가 no-cache로 설정된다")
+        void 정상_요청시_Cache_Control_설정() throws Exception {
             mockMvc.perform(get(DOWNLOAD_URL)
-                    .param("startDate", "2025-03-01"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"daily-settlements_2025-03-01_all.xlsx\""
-                ));
-        }
-
-        @Test
-        @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("endDate만 지정하면 startDate 자리가 all로 설정된다")
-        void endDate만_지정하면_startDate가_all() throws Exception {
-            mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-03-01")
                     .param("endDate", "2025-03-31"))
                 .andExpect(status().isOk())
-                .andExpect(header().string(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"daily-settlements_all_2025-03-31.xlsx\""
-                ));
-        }
-
-        @Test
-        @WithMockAuthenticationPrincipal(role = "SELLER")
-        @DisplayName("startDate가 endDate보다 이후이면 400 에러를 반환한다")
-        void startDate가_endDate보다_이후이면_400() throws Exception {
-            mockMvc.perform(get(DOWNLOAD_URL)
-                    .param("startDate", "2025-04-01")
-                    .param("endDate", "2025-03-01"))
-                .andExpect(status().isBadRequest());
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate"));
         }
 
         @Test
@@ -178,7 +180,9 @@ class SellerSettlementExcelControllerTest {
             }).given(excelService).writeDailySettlementExcel(any(), any());
 
             // when
-            byte[] responseBytes = mockMvc.perform(get(DOWNLOAD_URL))
+            byte[] responseBytes = mockMvc.perform(get(DOWNLOAD_URL)
+                    .param("startDate", "2025-03-01")
+                    .param("endDate", "2025-03-31"))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()

@@ -178,7 +178,8 @@ public enum BbangleErrorCode {
     SETTLEMENT_NOT_FOUND(-801, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
     SETTLEMENT_ACCESS_DENIED(-802, "해당 정산에 대한 접근 권한이 없습니다.", FORBIDDEN),
     INVALID_SETTLEMENT_DATE_RANGE(-803, "조회 시작일은 종료일보다 이전이어야 합니다.", BAD_REQUEST),
-    SETTLEMENT_DATE_RANGE_EXCEEDED(-804, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST);
+    SETTLEMENT_DATE_RANGE_EXCEEDED(-804, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST),
+    SETTLEMENT_DATE_REQUIRED(-805, "엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;
