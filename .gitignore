@@ -237,3 +237,4 @@ src/main/resources/docker/
 
 ### claude ###
 .claude/
+CLAUDE.md
