@@ -9,7 +9,7 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROF
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 
-import com.bbangle.bbangle.store.domain.model.StoreApplicationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse.StoreApplicationDetail;
 import java.time.LocalDateTime;
 
@@ -25,7 +25,7 @@ public class StoreApplicationResponseFixture {
             .name(DEFAULT_STORE_NAME)
             .introduce(DEFAULT_INTRODUCE)
             .profile(DEFAULT_PROFILE)
-            .status(StoreApplicationStatus.PENDING)
+            .status(StoreApprovalStatus.PENDING)
             .phoneNumber(DEFAULT_PHONE)
             .subPhoneNumber(DEFAULT_SUBPHONE)
             .email(DEFAULT_EMAIL)
@@ -38,7 +38,7 @@ public class StoreApplicationResponseFixture {
 
     public static StoreApplicationDetail defaultStoreApplicationDetail(
         Long storeId,
-        StoreApplicationStatus status
+        StoreApprovalStatus status
     ) {
         return StoreApplicationDetail.builder()
             .storeApplicationId(1L)

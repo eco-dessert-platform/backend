@@ -6,13 +6,16 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
+import com.bbangle.bbangle.claim.seller.controller.dto.RegisterReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
+import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import com.bbangle.bbangle.claim.seller.service.SellerReturnService;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -59,6 +62,176 @@ class SellerReturnControllerTest {
 
     @MockBean
     private SellerReturnService sellerReturnService;
+
+    @Nested
+    @DisplayName("PATCH /api/v1/seller/returns/{returnId}/invoice")
+    class RegisterReturnInvoice {
+
+        private static final String INVOICE_URL = BASE_URL + "/{returnId}/invoice";
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("유효한 운송장 정보로 요청하면 200 OK와 success=true를 반환한다")
+        void given_validRequest_when_registerReturnInvoice_then_success() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "1234567890");
+
+            willDoNothing().given(sellerReturnService)
+                .registerReturnInvoice(any(), any(), any(CourierCompany.class), any());
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0));
+
+            then(sellerReturnService).should()
+                .registerReturnInvoice(eq(1L), isNull(), eq(CourierCompany.CJ_LOGISTICS), eq("1234567890"));
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("운송장 번호가 9자리(미달)면 400 Bad Request를 반환한다")
+        void given_tooShortTrackingNumber_when_register_then_badRequest() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "123456789");
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("운송장 번호가 15자리(초과)면 400 Bad Request를 반환한다")
+        void given_tooLongTrackingNumber_when_register_then_badRequest() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "123456789012345");
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("운송장 번호에 문자가 포함되면 400 Bad Request를 반환한다")
+        void given_alphanumericTrackingNumber_when_register_then_badRequest() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "12345ABCDE");
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("courierCode가 null이면 400 Bad Request를 반환한다")
+        void given_nullCourierCode_when_register_then_badRequest() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(null, "1234567890");
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("셀러-클레임 불일치 시 401 Unauthorized와 에러코드 -772를 반환한다")
+        void given_mismatchedSeller_when_register_then_unauthorized() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "1234567890");
+
+            willThrow(new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH))
+                .given(sellerReturnService)
+                .registerReturnInvoice(any(), any(), any(CourierCompany.class), any());
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(-772))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.SELLER_CLAIM_MISMATCH.getMessage()));
+        }
+
+        @Test
+        @WithMockUser(roles = "SELLER")
+        @DisplayName("이미 처리된 상태의 클레임이면 400 Bad Request와 에러코드 -773을 반환한다")
+        void given_invalidStatusClaim_when_register_then_claimInvalidStatus() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "1234567890");
+
+            willThrow(new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS))
+                .given(sellerReturnService)
+                .registerReturnInvoice(any(), any(), any(CourierCompany.class), any());
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(-773))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.CLAIM_INVALID_STATUS.getMessage()));
+        }
+
+        @Test
+        @DisplayName("인증되지 않은 사용자가 요청하면 401 Unauthorized를 반환한다")
+        void given_unauthenticatedUser_when_register_then_unauthorized() throws Exception {
+            // given
+            RegisterReturnInvoiceRequest request =
+                new RegisterReturnInvoiceRequest(CourierCompany.CJ_LOGISTICS, "1234567890");
+
+            // when & then
+            mvc.perform(
+                    patch(INVOICE_URL, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDataEncoder.encode(request))
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+        }
+    }
 
     @Nested
     @DisplayName("POST /api/v1/seller/returns/decision")

@@ -1,14 +1,10 @@
 package com.bbangle.bbangle.seller.seller.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerStoreNameUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerUpdateRequest;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -21,14 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Seller", description = "(판매자) 판매자 API")
 public interface SellerApi {
-
-    @Operation(
-        summary = "판매자 스토어 정보 조회",
-        description = "판매자가 등록한 스토어의 상세 정보를 조회합니다."
-    )
-    SingleResult<SellerResponse.RegisteredStoreDetail> getRegisteredStoreDetail(
-        @AuthenticationPrincipal Long sellerId
-    );
 
     @Operation(
         summary = "(판매자) 판매자 서류 등록",
@@ -86,25 +74,6 @@ public interface SellerApi {
     CommonResult registerDocuments(
         SellerDocumentsRegisterRequest request,
         Long sellerId
-    );
-
-    // TODO: v2
-    @Operation(
-        summary = "판매자 정보 수정",
-        description = "기존 판매자 정보를 전체 수정합니다."
-    )
-    CommonResult updateSeller(
-        @RequestBody SellerUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
-    );
-
-    @Operation(
-        summary = "스토어명 변경",
-        description = "스토어명을 변경합니다. (최초 1회만 가능)"
-    )
-    CommonResult updateStoreName(
-        @RequestBody SellerStoreNameUpdateRequest request,
-        @AuthenticationPrincipal Long sellerId
     );
 
     @Operation(

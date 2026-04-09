@@ -2,6 +2,8 @@ package com.bbangle.bbangle.board.admin.controller.swagger;
 
 import com.bbangle.bbangle.board.admin.controller.dto.AdminProductResponse;
 import com.bbangle.bbangle.board.admin.controller.dto.AdminRemoveProductRequest;
+import com.bbangle.bbangle.board.admin.controller.dto.UploadApprovalResponse;
+import com.bbangle.bbangle.board.admin.controller.dto.request.UploadApprovalDecisionRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
@@ -41,5 +43,24 @@ public interface AdminBoardApi {
         @Parameter(description = "옵션을 삭제할 상품ID", example = "1")
         Long productId,
         @Valid AdminRemoveProductRequest request
+    );
+
+    @Operation(
+        summary = "업로드 상품 승인 대기 목록 조회",
+        description = "판매자가 업로드한 승인 대기(PENDING) 상태의 상품 목록을 페이지네이션으로 조회합니다."
+    )
+    SingleResult<BbanglePageResponse<UploadApprovalResponse>> getUploadApprovals(
+        @ParameterObject Pageable pageable
+    );
+
+    @Operation(
+        summary = "업로드 상품 승인/거절",
+        description = "관리자가 업로드된 상품을 승인하거나 거절합니다. "
+            + "승인 시 상태는 PENDING → ON_SALE로, 거절 시 PENDING → BANNED로 변경됩니다."
+    )
+    CommonResult decideUploadApproval(
+        @Parameter(description = "상품(게시글) ID")
+        Long boardId,
+        @Valid UploadApprovalDecisionRequest request
     );
 }

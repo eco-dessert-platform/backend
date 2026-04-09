@@ -13,7 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
     private static final int ONE_HOUR = 60 * 60 * 1000;
 
     @Bean
-    @Profile({"dev", "local"})
+    @Profile({"dev", "local" })
     public WebMvcConfigurer devCorsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -22,6 +22,7 @@ public class CorsConfig implements WebMvcConfigurer {
                     .allowedOriginPatterns(
                         "http://localhost:5000",
                         "http://localhost:3000",
+                        "http://localhost:6078",
                         "http://localhost:63342",
                         "http://localhost:8001",
                         "http://localhost:8000",

@@ -5,8 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.domain.Store;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -470,6 +472,163 @@ class BoardTest {
 
             // when & then
             assertThat(board.isPartialSoldOut()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("승인/거절 메서드 (approve, reject)")
+    class ApprovalAndRejection {
+
+        @Nested
+        @DisplayName("approve 메서드")
+        class ApproveMethod {
+
+            @Test
+            @DisplayName("PENDING 상태에서 approve()를 호출하면 ON_SALE로 변경된다")
+            void approveSuccess() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
+
+                // when
+                board.approve();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+            }
+
+            @Test
+            @DisplayName("ON_SALE 상태에서 approve()를 호출하면 예외가 발생한다")
+            void approveFailWhenOnSale() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                board.approve();  // 먼저 승인
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+
+                // when & then
+                assertThatThrownBy(board::approve)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+
+            @Test
+            @DisplayName("BANNED 상태에서 approve()를 호출하면 예외가 발생한다")
+            void approveFailWhenBanned() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                board.reject(RejectionCategory.INAPPROPRIATE_BRAND_NAME, "부적절한 브랜드명입니다.");
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+
+                // when & then
+                assertThatThrownBy(board::approve)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+        }
+
+        @Nested
+        @DisplayName("reject 메서드")
+        class RejectMethod {
+
+            @Test
+            @DisplayName("PENDING 상태에서 reject()를 호출하면 BANNED로 변경되고 거절 정보가 저장된다")
+            void rejectSuccess() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                RejectionCategory category = RejectionCategory.INAPPROPRIATE_BRAND_NAME;
+                String reason = "브랜드명을 무단으로 사용하여 고객에게 혼동을 줄 수 있습니다.";
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
+
+                // when
+                board.reject(category, reason);
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+                assertThat(board.getRejectionCategory()).isEqualTo(category);
+                assertThat(board.getRejectionReason()).isEqualTo(reason);
+                assertThat(board.getRejectionAt()).isNotNull();
+            }
+
+            @Test
+            @DisplayName("PENDING 상태에서 다양한 거절 카테고리로 reject()를 호출할 수 있다")
+            void rejectWithDifferentCategories() {
+                // given
+                RejectionCategory[] categories = {
+                    RejectionCategory.ADMIN_JUDGMENT,
+                    RejectionCategory.INVALID_PRICE_CONDITION,
+                    RejectionCategory.INAPPROPRIATE_VEGAN_EXPRESSION,
+                    RejectionCategory.PROHIBITED_STORE_EXPRESSION,
+                    RejectionCategory.PROHIBITED_LOGO_TEXT,
+                    RejectionCategory.CONTAINS_CONTACT_INFO,
+                    RejectionCategory.CONTAINS_COMPETITOR_NAME,
+                    RejectionCategory.DIRECT_INPUT
+                };
+
+                for (RejectionCategory category : categories) {
+                    // when
+                    Board board = BoardFixture.pendingBoard();
+                    board.reject(category, "거절 사유");
+
+                    // then
+                    assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+                    assertThat(board.getRejectionCategory()).isEqualTo(category);
+                }
+            }
+
+            @Test
+            @DisplayName("ON_SALE 상태에서 reject()를 호출하면 예외가 발생한다")
+            void rejectFailWhenOnSale() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                board.approve();
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+
+                // when & then
+                assertThatThrownBy(() -> board.reject(
+                    RejectionCategory.INAPPROPRIATE_BRAND_NAME,
+                    "부적절한 브랜드명입니다."
+                ))
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+
+            @Test
+            @DisplayName("BANNED 상태에서 reject()를 호출하면 예외가 발생한다")
+            void rejectFailWhenAlreadyBanned() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                board.reject(RejectionCategory.INAPPROPRIATE_BRAND_NAME, "첫 번째 거절");
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.BANNED);
+
+                // when & then
+                assertThatThrownBy(() -> board.reject(
+                    RejectionCategory.INVALID_PRICE_CONDITION,
+                    "두 번째 거절 시도"
+                ))
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+
+            @Test
+            @DisplayName("reject() 호출 시 rejectionAt이 현재 시간으로 설정된다")
+            void rejectionAtIsSet() {
+                // given
+                Board board = BoardFixture.pendingBoard();
+                LocalDateTime beforeReject = LocalDateTime.now();
+
+                // when
+                board.reject(RejectionCategory.INAPPROPRIATE_BRAND_NAME, "거절 사유");
+                LocalDateTime afterReject = LocalDateTime.now();
+
+                // then
+                assertThat(board.getRejectionAt()).isNotNull();
+                assertThat(board.getRejectionAt()).isAfterOrEqualTo(beforeReject);
+                assertThat(board.getRejectionAt()).isBeforeOrEqualTo(afterReject);
+            }
         }
     }
 }

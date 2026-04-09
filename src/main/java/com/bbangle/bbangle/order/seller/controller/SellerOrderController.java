@@ -8,6 +8,8 @@ import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.order.seller.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest.OrderSearchRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest;
+import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse;
+import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.CompletedOrderPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.OrderSummary;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderSearchPageResponse;
@@ -48,19 +50,27 @@ public class SellerOrderController implements SellerOrderApi {
 
     private final SellerExchangeService sellerExchangeService;
 
+    /**
+     * 완료 주문 목록 조회 (구매확정·취소·반품·교환 상태)
+     * 기본 페이지 크기 10: 완료 주문은 실시간 처리 대상이 아니므로 소량 조회합니다.
+     */
     @Override
     @GetMapping("/completed")
-    public SingleResult<BbanglePageResponse<OrderSummary>> getCompletedOrders(
+    public SingleResult<CompletedOrderPageResponse> getCompletedOrders(
         @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
         CompletedOrderFilter filter,
         @AuthenticationPrincipal Long sellerId) {
-        // TODO: 구현 필요
-        List<OrderSummary> orderSummaries = List.of(OrderSummary.sample());
-        PageImpl<OrderSummary> page = new PageImpl<>(orderSummaries, pageable, 10);
-        BbanglePageResponse<OrderSummary> response = BbanglePageResponse.of(page);
+
+        CompletedOrderPageResponse response = sellerOrderService.getCompletedOrders(
+            filter.toCommand(sellerId, pageable));
+
         return responseService.getSingleResult(response);
     }
 
+    /**
+     * 주문 항목 상세 조회
+     * 선택된 orderItemId 목록에 대한 구매자·배송·상품 정보를 반환합니다.
+     */
     @Override
     @PostMapping("/items")
     public ListResult<OrderItemDetailResponse> searchDetailItems(
@@ -70,6 +80,11 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getListResult(responses);
     }
 
+    /**
+     * 주문 목록 검색 (결제완료~배송완료 상태)
+     * @PageableDefault(size = 100): 판매자가 주문을 한 번에 내려받아 일괄 처리하는 워크플로우를
+     * 지원하기 위해 기본 페이지 크기를 100으로 설정합니다.
+     */
     @Override
     @PostMapping("/list")
     public SingleResult<OrderSearchPageResponse> searchOrders(
@@ -83,6 +98,10 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getSingleResult(response);
     }
 
+    /**
+     * 발주 확인 처리: 결제완료 상태 → 발주확인 상태로 전환
+     * 부분 성공 정책: 일부 항목이 실패해도 가능한 항목의 처리 결과를 반환합니다.
+     */
     @PostMapping("/{orderId}/confirm")
     @Override
     public SingleResult<OrderConfirmResponse> confirmOrder(
@@ -94,6 +113,10 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getSingleResult(result);
     }
 
+    /**
+     * 신규 운송장 등록: 발주확인 상태 → 배송중 상태로 전환
+     * OrderDelivery가 없으면 새로 생성하여 택배사·운송장 번호를 설정합니다.
+     */
     @PostMapping("/{orderId}/shipment")
     public SingleResult<ShipmentRegisterResponse> registerShipment(
         @AuthenticationPrincipal Long sellerId,
@@ -104,6 +127,9 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getSingleResult(result);
     }
 
+    /**
+     * 반품 접수 처리: 고객 반품 요청 항목에 대해 판매자가 반품 수거를 시작합니다.
+     */
     @PostMapping("/{orderId}/returns")
     @Override
     public SingleResult<ReturnCreateResponse> createReturn(
@@ -115,6 +141,9 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getSingleResult(result);
     }
 
+    /**
+     * 교환 접수 처리: 고객 교환 요청 항목에 대해 판매자가 교환 처리를 시작합니다.
+     */
     @PostMapping("/{orderId}/exchanges")
     @Override
     public SingleResult<ExchangeCreateResponse> createExchange(
@@ -126,6 +155,10 @@ public class SellerOrderController implements SellerOrderApi {
         return responseService.getSingleResult(result);
     }
 
+    /**
+     * 운송장 수정: 이미 등록된 운송장 정보(택배사·운송장 번호)를 변경합니다.
+     * 기존 OrderDelivery가 존재해야 수정 가능하며, 없으면 실패 응답을 반환합니다.
+     */
     @PatchMapping("/{orderId}/shipment")
     @Override
     public SingleResult<ShipmentModifyResponse> modifyShipment(

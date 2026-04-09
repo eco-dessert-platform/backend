@@ -25,6 +25,7 @@ public enum BbangleErrorCode {
     PRICE_NOT_OVER_ZERO(-8, "0원 이상의 가격을 입력해주세요", BAD_REQUEST),
     INVALID_CATEGORY(-9, "존재하지 않는 카테고리입니다.", BAD_REQUEST),
     BOARD_NOT_FOUND(-10, "존재하지 않는 게시글입니다.", BAD_REQUEST),
+    INVALID_BOARD_STATUS(-10_1, "유효하지 않은 게시글 상태입니다.", BAD_REQUEST),
     RANKING_NOT_FOUND(-11, "해당 게시글의 랭킹이 존재하지 않습니다.", BAD_REQUEST),
     INVALID_CURSOR_ID(-12, "유효하지 않은 cursorId 입니다.", BAD_REQUEST),
     NOTIFICATION_NOT_FOUND(-13, "존재하지 않는 공지사항입니다.", BAD_REQUEST),
@@ -84,6 +85,7 @@ public enum BbangleErrorCode {
     INVALID_STOCK_AMOUNT(-61, "재고 수량은 0이상이여야 합니다.", BAD_REQUEST),
     NOT_FOUND_OPTION(-62, "존재하지 않는 상품 옵션입니다", NOT_FOUND),
     INVALID_DECREASE_STOCK_AMOUNT(-63, "감소하려는 수보다 현재 재고가 더 작습니다.", BAD_REQUEST),
+
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     AWS_CLIENT_ERROR(-601, "AWS SDK 클라이언트 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -92,6 +94,9 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    REQUEST_IS_REJECTED(-990, "이미 거절된 요청입니다.", BAD_REQUEST),
+    REQUEST_IS_APPROVED(-991, "이미 승인된 요청입니다.", BAD_REQUEST),
+    REQUEST_IS_PENDING(-992, "승인 대기중인 요청입니다.", BAD_REQUEST),
     _NOT_SUPPORTED_YET(-993, "아직 지원하지 않는 기능입니다.", HttpStatus.NOT_IMPLEMENTED),
     _BAD_REQUEST(-994, "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTHENTICATION_ERROR(-995, "구글 인증 토큰 발행 중 에러가 발생했습니다.",
@@ -120,6 +125,7 @@ public enum BbangleErrorCode {
     FORBIDDEN_BOARD_ACCESS(-715, "해당 게시글에 대한 접근 권한이 없습니다.", FORBIDDEN),
     PRODUCT_NOT_FOUND(-716, "존재하지 않는 상품입니다.", NOT_FOUND),
     MISSING_BOARD_THUMBNAIL(-717, "썸네일 이미지는 필수입니다. 새 파일 또는 기존 URL을 제공해주세요.", BAD_REQUEST),
+    NOT_REGISTERED_STORE(-718, "스토어를 등록하지 않은 계정입니다.", NOT_FOUND),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
@@ -133,6 +139,8 @@ public enum BbangleErrorCode {
     INVALID_DETAIL_ADDRESS(-729, "유효하지 않은 상세 주소 입니다.", BAD_REQUEST),
     INVALID_SHORT_DESCRIPTION(-730, "유효하지 않은 한 줄 소개입니다.", BAD_REQUEST),
     ALREADY_RESERVED_STORE(-731, "이미 등록된 스토어입니다.", BAD_REQUEST),
+    ALREADY_UPDATE_STORE_NAME(-732, "이미 변경된 스토어명입니다.", BAD_REQUEST),
+    STORE_UPDATE_FAILED(-733, "스토어 상세 정보 변경에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
@@ -165,9 +173,13 @@ public enum BbangleErrorCode {
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
     DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
-
-    INVALID_STATISTICS_PERIOD(-801, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),
-    INVALID_DATE_RANGE(-802, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST);
+    
+    // Charge Error(801 ~ 810)
+    CHARGE_BALANCE_NOT_FOUND(-801, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND);
+    
+    // Statistics Error(811~820)
+    INVALID_STATISTICS_PERIOD(-811, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),
+    INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

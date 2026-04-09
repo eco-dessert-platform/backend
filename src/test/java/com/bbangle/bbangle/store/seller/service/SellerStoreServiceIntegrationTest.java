@@ -2,16 +2,26 @@ package com.bbangle.bbangle.store.seller.service;
 
 
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PROFILE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreRequestFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreNameRequest;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -21,6 +31,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -42,6 +56,9 @@ public class SellerStoreServiceIntegrationTest {
     private SellerRepository sellerRepository;
 
     @Autowired
+    private StoreNameRequestRepository storeNameRequestRepository;
+
+    @Autowired
     private EntityManager em;
 
     @Test
@@ -58,6 +75,30 @@ public class SellerStoreServiceIntegrationTest {
         // then
         assertThat(seller.getStore()).isEqualTo(store);
         assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("스토어명 변경 신청에 성공한다.")
+    void success_update_store_name() {
+
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+        UpdateStoreNameRequest request = SellerStoreRequestFixture.defaultUpdateStoreNameRequest();
+
+        // when
+        StoreNameRequest result = sellerStoreService.updateStoreName(request, seller);
+
+        // then
+        StoreNameRequest saved = storeNameRequestRepository.findById(result.getId()).orElseThrow();
+
+        assertThat(saved.getCurrentName()).isEqualTo(store.getName());
+        assertThat(saved.getNewName()).isEqualTo(request.newName());
+        assertThat(saved.getStatus()).isEqualTo(StoreApprovalStatus.PENDING);
+        assertThat(saved.getRejectCategory()).isNull();
+        assertThat(saved.getRejectDetail()).isNull();
+        assertThat(saved.getStore().getId()).isEqualTo(store.getId());
+        assertThat(saved.getSeller().getId()).isEqualTo(seller.getId());
     }
 
     @Nested
@@ -261,6 +302,141 @@ public class SellerStoreServiceIntegrationTest {
 
             // then
             assertThat(result.isEmpty()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("findActiveRequestsBySellerId() 테스트")
+    class FindActiveRequestsBySellerIdTest {
+
+        @ParameterizedTest
+        @EnumSource(
+            value = StoreApprovalStatus.class,
+            names = {"APPROVE", "PENDING"}
+        )
+        @DisplayName("APPROVE 또는 PENDING 상태인 요청이 존재한다.")
+        void findActiveRequestsBySellerId_exists_active(StoreApprovalStatus status) {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, status)
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result).contains(status);
+        }
+
+        @Test
+        @DisplayName("APPROVE 또는 PENDING 상태인 요청이 존재하지 않는다.")
+        void findActiveRequestsBySellerId_notExists_active() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+
+            // when
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("여러 상태의 신청 데이터가 존재할 경우 APPROVE 상태를 우선적으로 조회한다.")
+        void findActiveRequestsBySellerId_approve_first() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, StoreApprovalStatus.PENDING)
+            );
+            storeNameRequestRepository.save(
+                StoreNameRequestFixture.defaultStoreNameRequest(seller, store, StoreApprovalStatus.APPROVE)
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            Optional<StoreApprovalStatus> result = sellerStoreService.findActiveRequestsBySellerId(seller);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result).contains(StoreApprovalStatus.APPROVE);
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreDetail() 테스트")
+    class UpdateStoreDetailTest {
+
+        static Stream<Arguments> updateParams() {
+            return Stream.of(
+                Arguments.of(NEW_SUBPHONE, NEW_INTRODUCE),
+                Arguments.of(NEW_SUBPHONE, null),
+                Arguments.of(null, NEW_INTRODUCE),
+                Arguments.of(null, null)
+            );
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 업데이트에 성공한다.")
+        @MethodSource("updateParams")
+        void success_update_store_detail(String newSubPhone, String newIntroduce) {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest(newIntroduce, newSubPhone);
+
+            // when
+            sellerStoreService.updateStoreDetail(request, NEW_PROFILE, store);
+            em.flush();
+            em.clear();
+
+            // then
+            Store result = storeRepository.findById(store.getId()).orElseThrow();
+            assertThat(result.getProfile()).isEqualTo(NEW_PROFILE);
+            assertThat(result.getIntroduce()).isEqualTo(request.introduce());
+            assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
+            assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
+            assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
+            assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
+            assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
+        }
+
+        @Test
+        @DisplayName("업로드한 프로필이 없을 경우 기존 프로필을 유지한다.")
+        void success_update_store_detail_notExists_profilePath() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            UpdateStoreDetailRequest request = SellerStoreRequestFixture.defaultUpdateStoreDetailRequest();
+            String profile = store.getProfile();
+
+            // when
+            sellerStoreService.updateStoreDetail(request, null, store);
+            em.flush();
+            em.clear();
+
+            // then
+            Store result = storeRepository.findById(store.getId()).orElseThrow();
+            assertThat(result.getProfile()).isEqualTo(profile);
+            assertThat(result.getIntroduce()).isEqualTo(request.introduce());
+            assertThat(result.getPhoneNumberVO().getPhoneNumber()).isEqualTo(request.phoneNumber());
+            assertThat(result.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(request.subPhoneNumber());
+            assertThat(result.getEmailVO().getEmail()).isEqualTo(request.email());
+            assertThat(result.getOriginAddressLine()).isEqualTo(request.originAddress());
+            assertThat(result.getOriginAddressDetail()).isEqualTo(request.originAddressDetail());
         }
     }
 }

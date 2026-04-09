@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -36,6 +37,7 @@ public class SecurityConfig {
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/**")
+            .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(
@@ -69,6 +71,7 @@ public class SecurityConfig {
     public SecurityFilterChain localApiFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/**")
+            .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(

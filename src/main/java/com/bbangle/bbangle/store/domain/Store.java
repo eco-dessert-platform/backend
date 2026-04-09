@@ -2,6 +2,8 @@ package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.model.EmailVO;
 import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
 import jakarta.persistence.Column;
@@ -115,11 +117,22 @@ public class Store extends SoftDeleteBaseEntity {
         PhoneNumberVO newPhoneNumberVO = PhoneNumberVO.of(phone, subPhone);
         EmailVO newEmailVO = EmailVO.of(email);
 
-        this.profile = profile;
+        if (profile != null) {
+            this.profile = profile;
+        }
+
         this.introduce = introduce;
         this.phoneNumberVO = newPhoneNumberVO;
         this.emailVO = newEmailVO;
         this.originAddressLine = originAddressLine;
         this.originAddressDetail = originAddressDetail;
+    }
+
+    void updateName(String currentName, String newName) {
+        if (!this.name.equals(currentName)) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+        }
+
+        this.name = newName;
     }
 }

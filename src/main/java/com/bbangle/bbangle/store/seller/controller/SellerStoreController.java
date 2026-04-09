@@ -6,7 +6,12 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.UpdateStoreNameResponse;
 import com.bbangle.bbangle.store.seller.controller.swagger.SellerStoreApi;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreApplicationFacade;
 import com.bbangle.bbangle.store.seller.facade.SellerStoreFacade;
@@ -20,6 +25,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -75,9 +82,38 @@ public class SellerStoreController implements SellerStoreApi {
 
     @Override
     @GetMapping("/check-name")
-    public SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+    public SingleResult<SellerStoreAvailable> checkStoreNameDuplicate(
         @RequestParam @NotBlank(message = "스토어 이름은 필수입니다.") String storeName
     ) {
         return responseService.getSingleResult(sellerStoreFacade.checkStoreName(storeName));
+    }
+
+    @Override
+    @GetMapping()
+    public SingleResult<SellerStoreAvailable> getRegisteredStoreDetail(
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        return responseService.getSingleResult(
+            sellerStoreFacade.getRegisteredStoreDetail(sellerId)
+        );
+    }
+
+    @Override
+    @PostMapping("/store-names")
+    public SingleResult<UpdateStoreNameResponse> updateStoreName(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestBody UpdateStoreNameRequest request
+    ) {
+        return responseService.getSingleResult(sellerStoreFacade.updateStoreName(sellerId, request));
+    }
+
+    @Override
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SingleResult<SellerStoreDetail> updateStoreDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") UpdateStoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        return responseService.getSingleResult(sellerStoreFacade.updateStoreDetail(sellerId, request, profileImage));
     }
 }

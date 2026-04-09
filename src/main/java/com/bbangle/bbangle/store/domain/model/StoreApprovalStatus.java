@@ -5,6 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum StoreApplicationStatus {
+public enum StoreApprovalStatus {
     PENDING, REJECT, APPROVE
 }

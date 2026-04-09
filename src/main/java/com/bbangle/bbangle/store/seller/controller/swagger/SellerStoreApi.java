@@ -5,7 +5,11 @@ import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreApplicationResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreAvailable;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreResponse.SellerStoreDetail;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -89,10 +94,40 @@ public interface SellerStoreApi {
             )
         )
     })
-    SingleResult<StoreResponse.StoreNameCheck> checkStoreNameDuplicate(
+    SingleResult<SellerStoreAvailable> checkStoreNameDuplicate(
         @Parameter(description = "스토어명", example = "빵그리의 오븐")
         @NotBlank(message = "스토어 이름은 필수입니다.")
         String storeName
     );
 
+    @Operation(
+        summary = "판매자의 스토어 정보 조회",
+        description = "판매자가 등록한 스토어의 상세 정보와 스토어명 변경 가능 여부를 조회합니다."
+    )
+    SingleResult<SellerStoreAvailable> getRegisteredStoreDetail(
+        @AuthenticationPrincipal Long sellerId
+    );
+
+    @Operation(
+        summary = "스토어명 변경 신청",
+        description = "스토어명이 변경 되었거나 승인 대기중 일 때는 스토어명 변경 신청 불가합니다."
+    )
+    SingleResult<StoreResponse.UpdateStoreNameResponse> updateStoreName(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestBody StoreRequest.UpdateStoreNameRequest request
+    );
+
+    @Operation(
+        summary = "판매자의 스토어 상세 정보 수정",
+        description = """
+            ## 판매자의 스토어 상세 정보를 수정합니다.
+            ### 스토어 정보(JSON)와 프로필 이미지 파일을 업로드합니다.
+            - 이미지 파일을 업로드하지 않았을 경우 기존 스토어 프로필을 유지합니다.
+            """
+    )
+    SingleResult<SellerStoreDetail> updateStoreDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @Valid @RequestPart("request") UpdateStoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    );
 }

@@ -5,7 +5,12 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreNameRequest;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
+    private final StoreNameRequestRepository storeNameRequestRepository;
 
     @Transactional(readOnly = true)
     public Store findStore(Long storeId) {
@@ -41,5 +47,36 @@ public class SellerStoreService {
         String normalizedStoreName = storeName.replaceAll("\\s+", "");
 
         return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<StoreApprovalStatus> findActiveRequestsBySellerId(Seller seller) {
+        return storeNameRequestRepository.findActiveRequestsBySellerId(seller.getId());
+    }
+
+    @Transactional
+    public StoreNameRequest updateStoreName(StoreRequest.UpdateStoreNameRequest request, Seller seller) {
+        return storeNameRequestRepository.save(
+            StoreNameRequest.createStoreNameRequest(seller.getStore(), seller, request.newName())
+        );
+    }
+
+    @Transactional
+    public Store updateStoreDetail(
+        UpdateStoreDetailRequest request,
+        String profileImagePath,
+        Store store
+    ) {
+        store.updateDetail(
+            profileImagePath,
+            request.introduce(),
+            request.phoneNumber(),
+            request.subPhoneNumber(),
+            request.email(),
+            request.originAddress(),
+            request.originAddressDetail()
+        );
+
+        return store;
     }
 }

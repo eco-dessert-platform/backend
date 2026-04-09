@@ -6,6 +6,7 @@ import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.request.CompletedOrderFilter;
 import com.bbangle.bbangle.order.seller.controller.dto.request.OrderRequest;
 import com.bbangle.bbangle.order.seller.controller.dto.request.SellerOrderRequest;
+import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.CompletedOrderPageResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.CompletedOrderResponse.OrderSummary;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderResponse.OrderItemDetailResponse;
 import com.bbangle.bbangle.order.seller.controller.dto.response.SellerOrderResponse.ExchangeCreateResponse;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface SellerOrderApi {
 
     @Operation(summary = "(판매자) 완료주문내역 페이징 조회")
-    SingleResult<BbanglePageResponse<OrderSummary>> getCompletedOrders(
+    SingleResult<CompletedOrderPageResponse> getCompletedOrders(
         @ParameterObject Pageable pageable,
         @ParameterObject CompletedOrderFilter filter,
         Long sellerId
