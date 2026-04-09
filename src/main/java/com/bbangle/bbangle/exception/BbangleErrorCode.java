@@ -173,10 +173,10 @@ public enum BbangleErrorCode {
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
     DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
-    
+
     // Charge Error(801 ~ 810)
-    CHARGE_BALANCE_NOT_FOUND(-801, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND);
-    
+    CHARGE_BALANCE_NOT_FOUND(-801, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND),
+
     // Statistics Error(811~820)
     INVALID_STATISTICS_PERIOD(-811, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),
     INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST);
