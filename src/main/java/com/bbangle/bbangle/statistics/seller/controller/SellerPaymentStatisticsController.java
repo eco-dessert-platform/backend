@@ -5,6 +5,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.controller.swagger.SellerPaymentStatisticsApi;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
 import com.bbangle.bbangle.statistics.seller.service.SellerPaymentStatisticsService;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -36,6 +37,21 @@ public class SellerPaymentStatisticsController implements SellerPaymentStatistic
     ) {
         DailyPaymentAmountResponse result =
             sellerPaymentStatisticsService.getDailyPaymentAmount(sellerId, date, period);
+        return responseService.getSingleResult(result);
+    }
+
+    @Override
+    @GetMapping("/daily-count")
+    public SingleResult<DailyPaymentCountResponse> getDailyPaymentCount(
+        @AuthenticationPrincipal Long sellerId,
+        @RequestParam(value = "date", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        Optional<LocalDate> date,
+        @RequestParam(value = "period", required = false)
+        Optional<StatisticsPeriod> period
+    ) {
+        DailyPaymentCountResponse result =
+            sellerPaymentStatisticsService.getDailyPaymentCount(sellerId, date, period);
         return responseService.getSingleResult(result);
     }
 }

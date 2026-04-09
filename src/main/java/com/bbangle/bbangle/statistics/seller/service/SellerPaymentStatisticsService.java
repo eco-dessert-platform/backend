@@ -10,6 +10,8 @@ import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.repository.SellerStatisticsRepository;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse.DailyPaymentAmountItem;
+import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse.DailyPaymentCountItem;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -78,6 +80,61 @@ public class SellerPaymentStatisticsService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public DailyPaymentCountResponse getDailyPaymentCount(
+        Long sellerId,
+        Optional<LocalDate> date,
+        Optional<StatisticsPeriod> period
+    ) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
+
+        StatisticsPeriod resolvedPeriod = StatisticsPeriod.from(period.orElse(StatisticsPeriod.DAY));
+        LocalDate targetDate = date.orElse(LocalDate.now());
+        DateRange range = resolvedPeriod.resolveDateRange(targetDate, BUCKET_COUNT);
+
+        List<SellerStatisticsDaily> rows =
+            sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
+                seller.getId(),
+                range.startDate().atStartOfDay(),
+                range.endDate().atTime(LocalTime.MAX)
+            );
+
+        Map<LocalDate, SellerStatisticsDaily> statisticsByDate = rows.stream()
+            .collect(Collectors.toMap(
+                row -> row.getStatDate().toLocalDate(),
+                Function.identity(),
+                (first, second) -> first
+            ));
+
+        List<DailyPaymentCountItem> items = buildCountItems(range, resolvedPeriod, statisticsByDate);
+        Long averageBuyerCount = resolvedPeriod == StatisticsPeriod.DAY
+            ? null
+            : Math.round(
+                items.stream()
+                    .mapToLong(DailyPaymentCountItem::buyerCount)
+                    .average()
+                    .orElse(0)
+            );
+        Long averagePaymentCount = resolvedPeriod == StatisticsPeriod.DAY
+            ? null
+            : Math.round(
+                items.stream()
+                    .mapToLong(DailyPaymentCountItem::paymentCount)
+                    .average()
+                    .orElse(0)
+            );
+
+        return new DailyPaymentCountResponse(
+            range.startDate(),
+            range.endDate(),
+            resolvedPeriod,
+            averageBuyerCount,
+            averagePaymentCount,
+            items
+        );
+    }
+
     private List<DailyPaymentAmountItem> buildItems(
         DateRange range,
         StatisticsPeriod period,
@@ -98,6 +155,37 @@ public class SellerPaymentStatisticsService {
                 .longValue();
 
             items.add(new DailyPaymentAmountItem(bucketStart, amount));
+            cursor = period.nextBucketStart(cursor);
+        }
+
+        return items;
+    }
+
+    private List<DailyPaymentCountItem> buildCountItems(
+        DateRange range,
+        StatisticsPeriod period,
+        Map<LocalDate, SellerStatisticsDaily> statisticsByDate
+    ) {
+        List<DailyPaymentCountItem> items = new ArrayList<>();
+        LocalDate cursor = range.startDate();
+
+        for (int i = 0; i < BUCKET_COUNT; i++) {
+            LocalDate bucketStart = cursor;
+            LocalDate bucketEnd = period.resolveBucketEnd(bucketStart);
+
+            long buyerCount = bucketStart.datesUntil(bucketEnd.plusDays(1))
+                .map(statisticsByDate::get)
+                .filter(row -> row != null)
+                .mapToLong(SellerStatisticsDaily::getTotalBuyersCount)
+                .sum();
+
+            long paymentCount = bucketStart.datesUntil(bucketEnd.plusDays(1))
+                .map(statisticsByDate::get)
+                .filter(row -> row != null)
+                .mapToLong(SellerStatisticsDaily::getTotalOrdersCount)
+                .sum();
+
+            items.add(new DailyPaymentCountItem(bucketStart, buyerCount, paymentCount));
             cursor = period.nextBucketStart(cursor);
         }
 
