@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SellerPaymentStatisticsService {
 
+    // 통계 응답은 항상 7개 버킷(일/주/월)으로 고정합니다.
     private static final int BUCKET_COUNT = 7;
 
     private final SellerRepository sellerRepository;
@@ -54,6 +55,7 @@ public class SellerPaymentStatisticsService {
                 range.endDate().atTime(LocalTime.MAX)
             );
 
+        // 같은 날짜의 통계는 하나만 사용하도록 date 기준 맵으로 변환합니다.
         Map<LocalDate, SellerStatisticsDaily> statisticsByDate = rows.stream()
             .collect(Collectors.toMap(
                 row -> row.getStatDate().toLocalDate(),
@@ -93,6 +95,7 @@ public class SellerPaymentStatisticsService {
         LocalDate targetDate = date.orElse(LocalDate.now());
         DateRange range = resolvedPeriod.resolveDateRange(targetDate, BUCKET_COUNT);
 
+        // 조회 구간의 일별 통계만 가져와 이후 버킷 단위로 다시 합산합니다.
         List<SellerStatisticsDaily> rows =
             sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
                 seller.getId(),
@@ -140,6 +143,7 @@ public class SellerPaymentStatisticsService {
         StatisticsPeriod period,
         Map<LocalDate, SellerStatisticsDaily> statisticsByDate
     ) {
+        // 각 버킷에 포함되는 날짜들의 매출 합계를 계산합니다.
         List<DailyPaymentAmountItem> items = new ArrayList<>();
         LocalDate cursor = range.startDate();
 
@@ -166,6 +170,7 @@ public class SellerPaymentStatisticsService {
         StatisticsPeriod period,
         Map<LocalDate, SellerStatisticsDaily> statisticsByDate
     ) {
+        // 구매자 수와 주문 수를 같은 버킷 기준으로 각각 누적합니다.
         List<DailyPaymentCountItem> items = new ArrayList<>();
         LocalDate cursor = range.startDate();
 
