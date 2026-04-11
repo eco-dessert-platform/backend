@@ -179,7 +179,8 @@ public enum BbangleErrorCode {
     SETTLEMENT_ACCESS_DENIED(-803, "해당 정산에 대한 접근 권한이 없습니다.", FORBIDDEN),
     INVALID_SETTLEMENT_DATE_RANGE(-804, "조회 시작일은 종료일보다 이전이어야 합니다.", BAD_REQUEST),
     SETTLEMENT_DATE_RANGE_EXCEEDED(-805, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST),
-    SETTLEMENT_DATE_REQUIRED(-806, "엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST);
+    SETTLEMENT_DATE_REQUIRED(-806, "엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST),
+
     // Charge Error(801 ~ 810)
     CHARGE_BALANCE_NOT_FOUND(-801, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND),
 
