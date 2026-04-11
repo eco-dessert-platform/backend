@@ -185,6 +185,8 @@ public enum BbangleErrorCode {
 
     // Charge Error(801 ~ 810)
     CHARGE_BALANCE_NOT_FOUND(-801, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND),
+    CHARGE_WITHDRAWAL_DUPLICATED(-802, "동일한 출금 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.", CONFLICT),
+    CHARGE_WITHDRAWAL_INSUFFICIENT_BALANCE(-803, "충전금 잔액이 부족합니다.", BAD_REQUEST),
 
     // Statistics Error(811~820)
     INVALID_STATISTICS_PERIOD(-811, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),

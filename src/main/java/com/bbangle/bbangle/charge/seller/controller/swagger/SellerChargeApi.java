@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.charge.seller.controller.swagger;
 
+import com.bbangle.bbangle.charge.seller.controller.dto.request.WithdrawalRequest;
 import com.bbangle.bbangle.charge.seller.controller.dto.response.ChargeBalanceResponse;
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,5 +36,24 @@ public interface SellerChargeApi {
         LocalDate endDate,
 
         @ParameterObject Pageable pageable
+    );
+
+    @Operation(
+        summary = "(판매자) 충전금 출금 신청",
+        description = "판매자가 보유한 충전금을 지정 계좌로 출금 신청합니다. "
+            + "신청 즉시 잔액에서 차감되며, X-Transaction-Id 헤더로 중복 요청을 방지합니다."
+    )
+    CommonResult requestWithdrawal(
+        @Parameter(hidden = true)
+        Long sellerId,
+
+        @Parameter(
+            description = "중복 요청 방지용 고유 거래 ID (UUID, 요청 시 생성)",
+            example = "550e8400-e29b-41d4-a716-446655440000",
+            required = true
+        )
+        String transactionId,
+
+        WithdrawalRequest request
     );
 }
