@@ -34,33 +34,6 @@ public class DailySettlement extends BaseEntity {
     @Column(name = "id")
     private Long id;
 
-    @Builder
-    private DailySettlement(
-        LocalDate scheduledDate,
-        LocalDate completedDate,
-        BigDecimal amount,
-        BigDecimal fee,
-        BigDecimal deductibleRefund,
-        BigDecimal withHoldingPayment,
-        SettlementMethod settlementMethod,
-        Seller seller,
-        String settlementNumber,
-        BigDecimal deliveryFeeChange,
-        BigDecimal balanceOffset
-    ) {
-        this.scheduledDate = scheduledDate;
-        this.completedDate = completedDate;
-        this.amount = amount;
-        this.fee = fee;
-        this.deductibleRefund = deductibleRefund;
-        this.withHoldingPayment = withHoldingPayment;
-        this.settlementMethod = settlementMethod;
-        this.seller = seller;
-        this.settlementNumber = settlementNumber;
-        this.deliveryFeeChange = deliveryFeeChange;
-        this.balanceOffset = balanceOffset;
-    }
-
     // 정산예정일
     @Column(name = "scheduled_date")
     private LocalDate scheduledDate;
@@ -106,6 +79,33 @@ public class DailySettlement extends BaseEntity {
     // 공제/환급 상세 - 충전금 상계
     @Column(name = "balance_offset", precision = 15, scale = 2)
     private BigDecimal balanceOffset;
+
+    @Builder
+    private DailySettlement(
+        LocalDate scheduledDate,
+        LocalDate completedDate,
+        BigDecimal amount,
+        BigDecimal fee,
+        BigDecimal deductibleRefund,
+        BigDecimal withHoldingPayment,
+        SettlementMethod settlementMethod,
+        Seller seller,
+        String settlementNumber,
+        BigDecimal deliveryFeeChange,
+        BigDecimal balanceOffset
+    ) {
+        this.scheduledDate = scheduledDate;
+        this.completedDate = completedDate;
+        this.amount = amount;
+        this.fee = fee;
+        this.deductibleRefund = deductibleRefund;
+        this.withHoldingPayment = withHoldingPayment;
+        this.settlementMethod = settlementMethod;
+        this.seller = seller;
+        this.settlementNumber = settlementNumber;
+        this.deliveryFeeChange = deliveryFeeChange;
+        this.balanceOffset = balanceOffset;
+    }
 
     // 정산금액 = 결제금액(a) + 수수료(b) + 공제/환급(c) + 지급보류(d)
     public BigDecimal getTotalSettlementAmount() {
