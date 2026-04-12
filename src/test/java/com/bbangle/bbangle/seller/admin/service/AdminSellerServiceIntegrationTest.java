@@ -5,13 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bbangle.bbangle.fixture.seller.domain.AccountVerificationFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
 import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -59,9 +60,7 @@ class AdminSellerServiceIntegrationTest {
             // given
             Seller seller = createSeller();
 
-            createAccountVerification(seller, "111", false);
-            createAccountVerification(seller, "222", true);
-            createAccountVerification(seller, "333", true); // 최신
+            createAccountVerification(seller, "111", true); // 최신
 
             for (int i = 1; i <= 150; i++) {
                 createStoreApplication(seller, "store" + i, StoreApprovalStatus.PENDING);
@@ -74,11 +73,11 @@ class AdminSellerServiceIntegrationTest {
             em.clear();
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(1);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(1);
 
             // then
             // ✅ 페이지 크기
-            assertThat(result.adminSellerApplicationList()).hasSize(100);
+            assertThat(result.sellerApplicationInfoList()).hasSize(100);
 
             // ✅ total 계산
             assertThat(result.totalElements()).isEqualTo(150);
@@ -88,9 +87,13 @@ class AdminSellerServiceIntegrationTest {
             assertThat(result.hasPrevious()).isFalse();
             assertThat(result.hasNext()).isTrue();
 
-            // ✅ 최신 verified=true 계좌 검증
-            for (AdminSellerApplication app : result.adminSellerApplicationList()) {
-                assertThat(app.sellerInfo().accountNumber()).isEqualTo("333");
+            for (SellerApplicationInfo app : result.sellerApplicationInfoList()) {
+                assertThat(app.sellerInfo().accountNumber()).isEqualTo("111");
+            }
+
+            List<SellerApplicationInfo> list = result.sellerApplicationInfoList();
+            for (int i = 0; i < list.size() - 1; i++) {
+                assertThat(list.get(i).storeApplicationId()).isLessThan(list.get(i + 1).storeApplicationId());
             }
         }
 
@@ -111,10 +114,10 @@ class AdminSellerServiceIntegrationTest {
             em.clear();
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(2);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(2);
 
             // then
-            assertThat(result.adminSellerApplicationList()).hasSize(50);
+            assertThat(result.sellerApplicationInfoList()).hasSize(50);
             assertThat(result.totalElements()).isEqualTo(150);
             assertThat(result.totalPages()).isEqualTo(2);
             assertThat(result.hasPrevious()).isTrue();
@@ -135,12 +138,56 @@ class AdminSellerServiceIntegrationTest {
             em.clear();
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(1);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(1);
 
             // then
-            assertThat(result.totalPages()).isEqualTo(1);
+            assertThat(result.totalPages()).isEqualTo(0);
+            assertThat(result.totalElements()).isEqualTo(0);
             assertThat(result.hasNext()).isFalse();
             assertThat(result.hasPrevious()).isFalse();
+            assertThat(result.sellerApplicationInfoList()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("승인 대기 중인 데이터가 없으면 결과는 빈 리스트를 반환한다")
+        void getAdminSellerApplicationList_noExist_pending() {
+
+            Seller seller = createSeller();
+            createAccountVerification(seller, "111", true);
+
+            createStoreApplication(seller, "store1", StoreApprovalStatus.APPROVE);
+
+            em.flush();
+            em.clear();
+
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(1);
+
+            assertThat(result.totalElements()).isEqualTo(0);
+            assertThat(result.totalPages()).isEqualTo(0);
+            assertThat(result.hasNext()).isFalse();
+            assertThat(result.hasPrevious()).isFalse();
+            assertThat(result.sellerApplicationInfoList()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("조회할 페이지가 전체 페이지보다 크면 빈 리스트 반환한다")
+        void getAdminSellerApplicationList_page_overflow() {
+
+            Seller seller = createSeller();
+            createAccountVerification(seller, "111", true);
+
+            for (int i = 1; i <= 150; i++) {
+                createStoreApplication(seller, "store" + i, StoreApprovalStatus.PENDING);
+            }
+
+            em.flush();
+            em.clear();
+
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(3);
+
+            assertThat(result.sellerApplicationInfoList()).isEmpty();
+            assertThat(result.hasNext()).isFalse();
+            assertThat(result.hasPrevious()).isTrue();
         }
     }
 }

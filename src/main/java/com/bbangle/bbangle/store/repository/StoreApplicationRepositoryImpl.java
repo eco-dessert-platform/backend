@@ -70,11 +70,13 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
             .from(storeApplication)
             .join(storeApplication.seller, seller)
 
-            // ✅ verified = true
+            // 인증 완료된 계좌만
             .join(accountVerification)
-            .on(accountVerification.seller.eq(seller))
+            .on(accountVerification.seller.eq(seller)
+                .and(accountVerification.verified.isTrue())
+            )
 
-            // ✅ pending만
+            // ✅ pending
             .where(storeApplication.status.eq(StoreApprovalStatus.PENDING))
 
             // ✅ 오래된 순
@@ -82,9 +84,26 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
                 storeApplication.createdAt.asc(),
                 storeApplication.id.asc()
             )
-
             .offset(offset)
             .limit(limit)
             .fetch();
+    }
+
+    @Override
+    public long countSellerApplications() {
+
+        return Optional.ofNullable(
+            queryFactory
+                .select(storeApplication.count())
+                .from(storeApplication)
+                .join(storeApplication.seller, seller)
+                .join(accountVerification)
+                .on(
+                    accountVerification.seller.eq(seller)
+                        .and(accountVerification.verified.isTrue())
+                )
+                .where(storeApplication.status.eq(StoreApprovalStatus.PENDING))
+                .fetchOne()
+        ).orElse(0L);
     }
 }

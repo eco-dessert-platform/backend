@@ -16,7 +16,7 @@ import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationList;
-import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
+import com.bbangle.bbangle.seller.admin.facade.AdminSellerFacade;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -47,7 +47,7 @@ class AdminSellerControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private AdminSellerService adminSellerService;
+    private AdminSellerFacade adminSellerFacade;
 
     @SpyBean
     private ResponseService responseService;
@@ -71,7 +71,7 @@ class AdminSellerControllerTest {
                 .hasNext(true)
                 .build();
 
-            given(adminSellerService.getAdminSellerApplicationList(page)).willReturn(response);
+            given(adminSellerFacade.getAdminSellerApplicationList(page)).willReturn(response);
 
             // when & then
             mockMvc.perform(get(AdminApiPath.PREFIX + "/sellers")
@@ -82,7 +82,7 @@ class AdminSellerControllerTest {
                 .andExpect(jsonPath("$.result.hasPrevious").value(false))
                 .andExpect(jsonPath("$.result.hasNext").value(true));
 
-            verify(adminSellerService).getAdminSellerApplicationList(page);
+            verify(adminSellerFacade).getAdminSellerApplicationList(page);
         }
 
         @Test
@@ -100,11 +100,11 @@ class AdminSellerControllerTest {
                 .hasNext(false)
                 .build();
 
-            given(adminSellerService.getAdminSellerApplicationList(page)).willReturn(response);
+            given(adminSellerFacade.getAdminSellerApplicationList(page)).willReturn(response);
 
             // when & then
             mockMvc.perform(get(AdminApiPath.PREFIX + "/sellers")).andExpect(status().isOk());
-            verify(adminSellerService).getAdminSellerApplicationList(1);
+            verify(adminSellerFacade).getAdminSellerApplicationList(1);
         }
 
         @Test
@@ -116,7 +116,7 @@ class AdminSellerControllerTest {
             mockMvc.perform(get(AdminApiPath.PREFIX + "/sellers")
                     .param("page", "0"))
                 .andExpect(status().isBadRequest());
-            verify(adminSellerService, never()).getAdminSellerApplicationList(anyInt());
+            verify(adminSellerFacade, never()).getAdminSellerApplicationList(anyInt());
         }
     }
 }

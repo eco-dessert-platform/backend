@@ -2,7 +2,6 @@ package com.bbangle.bbangle.seller.admin.service;
 
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
-import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class AdminSellerService {
         int offset = (page - 1) * DEFAULT_PAGE_SIZE;
 
         List<SellerApplicationInfo> content = storeApplicationRepository.findSellerApplications(offset, DEFAULT_PAGE_SIZE);
-        long totalElements = storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING);
+        long totalElements = storeApplicationRepository.countSellerApplications();
         int totalPages = (int) Math.ceil((double) totalElements / DEFAULT_PAGE_SIZE);
 
         return SellerApplicationInfoList.builder()

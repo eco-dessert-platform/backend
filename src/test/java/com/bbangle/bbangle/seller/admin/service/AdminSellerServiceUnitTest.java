@@ -5,9 +5,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication;
-import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -42,19 +41,19 @@ class AdminSellerServiceUnitTest {
             // given
             int page = 1;
 
-            List<AdminSellerApplication> mockContent = List.of(
-                mock(AdminSellerApplication.class),
-                mock(AdminSellerApplication.class)
+            List<SellerApplicationInfo> mockContent = List.of(
+                mock(SellerApplicationInfo.class),
+                mock(SellerApplicationInfo.class)
             );
 
             given(storeApplicationRepository.findSellerApplications(0, DEFAULT_PAGE_SIZE)).willReturn(mockContent);
-            given(storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING)).willReturn(250L);
+            given(storeApplicationRepository.countSellerApplications()).willReturn(250L);
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(page);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
 
             // then
-            assertThat(result.adminSellerApplicationList()).hasSize(2);
+            assertThat(result.sellerApplicationInfoList()).hasSize(2);
             assertThat(result.totalElements()).isEqualTo(250);
             assertThat(result.totalPages()).isEqualTo(3);
 
@@ -62,7 +61,7 @@ class AdminSellerServiceUnitTest {
             assertThat(result.hasNext()).isTrue();
 
             verify(storeApplicationRepository).findSellerApplications(0, DEFAULT_PAGE_SIZE);
-            verify(storeApplicationRepository).countByStatus(StoreApprovalStatus.PENDING);
+            verify(storeApplicationRepository).countSellerApplications();
         }
 
         @Test
@@ -72,13 +71,13 @@ class AdminSellerServiceUnitTest {
             // given
             int page = 2;
 
-            List<AdminSellerApplication> mockContent = List.of(mock(AdminSellerApplication.class));
+            List<SellerApplicationInfo> mockContent = List.of(mock(SellerApplicationInfo.class));
 
             given(storeApplicationRepository.findSellerApplications(100, DEFAULT_PAGE_SIZE)).willReturn(mockContent);
-            given(storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING)).willReturn(250L);
+            given(storeApplicationRepository.countSellerApplications()).willReturn(250L);
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(page);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
 
             // then
             assertThat(result.totalPages()).isEqualTo(3);
@@ -86,7 +85,7 @@ class AdminSellerServiceUnitTest {
             assertThat(result.hasNext()).isTrue();
 
             verify(storeApplicationRepository).findSellerApplications(100, DEFAULT_PAGE_SIZE);
-            verify(storeApplicationRepository).countByStatus(StoreApprovalStatus.PENDING);
+            verify(storeApplicationRepository).countSellerApplications();
         }
 
         @Test
@@ -96,11 +95,13 @@ class AdminSellerServiceUnitTest {
             // given
             int page = 3;
 
-            given(storeApplicationRepository.findSellerApplications(200, DEFAULT_PAGE_SIZE)).willReturn(List.of());
-            given(storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING)).willReturn(250L);
+            List<SellerApplicationInfo> lastPageContent = List.of(mock(SellerApplicationInfo.class));
+
+            given(storeApplicationRepository.findSellerApplications(200, DEFAULT_PAGE_SIZE)).willReturn(lastPageContent);
+            given(storeApplicationRepository.countSellerApplications()).willReturn(250L);
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(page);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
 
             // then
             assertThat(result.totalPages()).isEqualTo(3);
@@ -108,7 +109,7 @@ class AdminSellerServiceUnitTest {
             assertThat(result.hasNext()).isFalse();
 
             verify(storeApplicationRepository).findSellerApplications(200, DEFAULT_PAGE_SIZE);
-            verify(storeApplicationRepository).countByStatus(StoreApprovalStatus.PENDING);
+            verify(storeApplicationRepository).countSellerApplications();
         }
 
         @Test
@@ -117,22 +118,22 @@ class AdminSellerServiceUnitTest {
 
             // given
             int page = 1;
-            List<AdminSellerApplication> mockContent = IntStream.range(0, 100)
-                .mapToObj(i -> mock(AdminSellerApplication.class))
+            List<SellerApplicationInfo> mockContent = IntStream.range(0, 100)
+                .mapToObj(i -> mock(SellerApplicationInfo.class))
                 .toList();
 
             given(storeApplicationRepository.findSellerApplications(0, DEFAULT_PAGE_SIZE)).willReturn(mockContent);
-            given(storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING)).willReturn(100L); // 딱 1페이지
+            given(storeApplicationRepository.countSellerApplications()).willReturn(100L); // 딱 1페이지
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(page);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
 
             // then
             assertThat(result.totalPages()).isEqualTo(1);
             assertThat(result.hasPrevious()).isFalse();
             assertThat(result.hasNext()).isFalse();
 
-            verify(storeApplicationRepository).countByStatus(StoreApprovalStatus.PENDING);
+            verify(storeApplicationRepository).countSellerApplications();
         }
 
         @Test
@@ -143,19 +144,38 @@ class AdminSellerServiceUnitTest {
             int page = 1;
 
             given(storeApplicationRepository.findSellerApplications(0, DEFAULT_PAGE_SIZE)).willReturn(List.of());
-            given(storeApplicationRepository.countByStatus(StoreApprovalStatus.PENDING)).willReturn(0L);
+            given(storeApplicationRepository.countSellerApplications()).willReturn(0L);
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerService.getAdminSellerApplicationList(page);
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
 
             // then
-            assertThat(result.adminSellerApplicationList()).isEmpty();
+            assertThat(result.sellerApplicationInfoList()).isEmpty();
             assertThat(result.totalPages()).isEqualTo(0);
             assertThat(result.totalElements()).isEqualTo(0);
             assertThat(result.hasPrevious()).isFalse();
             assertThat(result.hasNext()).isFalse();
 
-            verify(storeApplicationRepository).countByStatus(StoreApprovalStatus.PENDING);
+            verify(storeApplicationRepository).countSellerApplications();
+        }
+
+        @Test
+        @DisplayName("요청한 페이지가 전체 페이지보다 클 경우 hasNext는 false")
+        void getAdminSellerApplicationList_page_overflow() {
+
+            // given
+            int page = 5;
+
+            given(storeApplicationRepository.findSellerApplications(400, DEFAULT_PAGE_SIZE)).willReturn(List.of());
+            given(storeApplicationRepository.countSellerApplications()).willReturn(250L); // totalPages = 3
+
+            // when
+            SellerApplicationInfoList result = adminSellerService.getAdminSellerApplicationList(page);
+
+            // then
+            assertThat(result.totalPages()).isEqualTo(3);
+            assertThat(result.hasPrevious()).isTrue();
+            assertThat(result.hasNext()).isFalse();
         }
     }
 }

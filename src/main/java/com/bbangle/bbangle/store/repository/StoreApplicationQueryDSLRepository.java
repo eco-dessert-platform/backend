@@ -10,4 +10,6 @@ public interface StoreApplicationQueryDSLRepository {
     Optional<StoreApplication> findLatestBySellerId(Long sellerId);
 
     List<SellerApplicationInfo> findSellerApplications(int offset, int limit);
+
+    long countSellerApplications();
 }
