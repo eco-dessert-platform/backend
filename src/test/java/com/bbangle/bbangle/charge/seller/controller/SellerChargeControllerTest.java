@@ -2,12 +2,16 @@ package com.bbangle.bbangle.charge.seller.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.charge.domain.enums.ChargeCategory;
 import com.bbangle.bbangle.charge.domain.enums.ChargeTransactionStatus;
+import com.bbangle.bbangle.charge.seller.controller.dto.request.WithdrawalRequest;
 import com.bbangle.bbangle.charge.seller.controller.dto.response.ChargeBalanceResponse;
 import com.bbangle.bbangle.charge.seller.controller.dto.response.ChargeBalanceResponse.ChargeTransactionResponse;
 import com.bbangle.bbangle.charge.seller.service.SellerChargeService;
@@ -32,6 +36,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -55,8 +60,13 @@ class SellerChargeControllerTest {
     @MockBean
     private SellerChargeService chargeService;
 
+    @Autowired
+    private JsonDataEncoder jsonDataEncoder;
+
     private static final Long TEST_SELLER_ID = 1L;
     private static final String BASE_URL = SellerApiPath.PREFIX + "/charge-balance";
+    private static final String WITHDRAWAL_URL = BASE_URL + "/withdrawal";
+    private static final String TEST_TRANSACTION_ID = "550e8400-e29b-41d4-a716-446655440000";
 
     @Nested
     @DisplayName("충전금 현황 조회")
@@ -205,7 +215,7 @@ class SellerChargeControllerTest {
         }
 
         @Test
-        @DisplayName("다양한 거래 구분 조회 (ACCUMULATE, DEDUCT)")
+        @DisplayName("다양한 거래 구분 조회 (ACCUMULATE, DEDUCT) - status 함께 검증")
         @WithMockUser(roles = "SELLER")
         void testGetChargeBalanceWithDifferentCategories() throws Exception {
             // Given
@@ -245,6 +255,158 @@ class SellerChargeControllerTest {
                 .andExpect(jsonPath("$.result.pageResponse.content[0].category").value("ACCUMULATE"))
                 .andExpect(jsonPath("$.result.pageResponse.content[1].category").value("DEDUCT"))
                 .andExpect(jsonPath("$.result.pageResponse.content[1].status").value("PENDING"));
+        }
+    }
+
+    @Nested
+    @DisplayName("충전금 출금 신청")
+    class RequestWithdrawal {
+
+        @Test
+        @DisplayName("출금 신청 성공")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_success() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("50000"), "국민은행", "홍길동", "123456789012");
+
+            willDoNothing().given(chargeService).requestWithdrawal(any());
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+        }
+
+        @Test
+        @DisplayName("실패 - X-Transaction-Id 헤더 누락")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_missingTransactionIdHeader_badRequest() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("50000"), "국민은행", "홍길동", "123456789012");
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("실패 - 출금 금액 누락")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_missingWithdrawalAmount_badRequest() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                null, "국민은행", "홍길동", "123456789012");
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("실패 - 출금 금액 0 이하")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_zeroWithdrawalAmount_badRequest() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                BigDecimal.ZERO, "국민은행", "홍길동", "123456789012");
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("실패 - 계좌번호에 문자 포함")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_invalidAccountNumber_badRequest() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("50000"), "국민은행", "홍길동", "12345-6789");
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("실패 - 중복 요청 (동일 transactionId)")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_duplicateTransactionId_conflict() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("50000"), "국민은행", "홍길동", "123456789012");
+
+            willThrow(new BbangleException(BbangleErrorCode.CHARGE_WITHDRAWAL_DUPLICATED))
+                .given(chargeService).requestWithdrawal(any());
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(-802))
+                .andExpect(jsonPath("$.message").value("동일한 출금 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."));
+        }
+
+        @Test
+        @DisplayName("실패 - 잔액 부족")
+        @WithMockUser(roles = "SELLER")
+        void requestWithdrawal_insufficientBalance_badRequest() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("999999999"), "국민은행", "홍길동", "123456789012");
+
+            willThrow(new BbangleException(BbangleErrorCode.CHARGE_WITHDRAWAL_INSUFFICIENT_BALANCE))
+                .given(chargeService).requestWithdrawal(any());
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(-803))
+                .andExpect(jsonPath("$.message").value("충전금 잔액이 부족합니다."));
+        }
+
+        @Test
+        @DisplayName("실패 - 인증 없이 접근")
+        void requestWithdrawal_unauthorized() throws Exception {
+            // Given
+            WithdrawalRequest request = new WithdrawalRequest(
+                new BigDecimal("50000"), "국민은행", "홍길동", "123456789012");
+
+            // When & Then
+            mockMvc.perform(post(WITHDRAWAL_URL)
+                    .header("X-Transaction-Id", TEST_TRANSACTION_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isUnauthorized());
         }
     }
 }
