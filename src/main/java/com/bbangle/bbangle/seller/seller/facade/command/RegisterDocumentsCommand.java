@@ -12,19 +12,16 @@ public record RegisterDocumentsCommand(
 
     MultipartFile foodManufactureLicense,
 
-    Long accountVerificationId,
-
     Long sellerId
 ) {
     @Builder
     public RegisterDocumentsCommand(MultipartFile businessLicense, MultipartFile mailOrderLicense,
                                     MultipartFile bankbookCopy, MultipartFile foodManufactureLicense,
-                                    Long accountVerificationId, Long sellerId) {
+                                    Long sellerId) {
         this.businessLicense = businessLicense;
         this.mailOrderLicense = mailOrderLicense;
         this.bankbookCopy = bankbookCopy;
         this.foodManufactureLicense = foodManufactureLicense;
-        this.accountVerificationId = accountVerificationId;
         this.sellerId = sellerId;
     }
 }

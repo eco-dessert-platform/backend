@@ -2355,7 +2355,7 @@
         "comment": "판매자 ID",
         "dataType": "BIGINT(20)",
         "default": "",
-        "options": 8,
+        "options": 10,
         "ui": {
           "keys": 2,
           "widthName": 60,
