@@ -5,7 +5,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationList;
 import com.bbangle.bbangle.seller.admin.controller.swagger.AdminSellerApi;
-import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
+import com.bbangle.bbangle.seller.admin.facade.AdminSellerFacade;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminSellerController implements AdminSellerApi {
 
     private final ResponseService responseService;
-    private final AdminSellerService adminSellerService;
+    private final AdminSellerFacade adminSellerFacade;
 
     @Override
     @GetMapping()
@@ -29,7 +29,7 @@ public class AdminSellerController implements AdminSellerApi {
         @RequestParam(defaultValue = "1") @Min(1) int page
     ) {
         return responseService.getSingleResult(
-            adminSellerService.getAdminSellerApplicationList(page)
+            adminSellerFacade.getAdminSellerApplicationList(page)
         );
     }
 }

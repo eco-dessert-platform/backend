@@ -4,14 +4,12 @@ import static com.bbangle.bbangle.seller.domain.QAccountVerification.accountVeri
 import static com.bbangle.bbangle.seller.domain.QSeller.seller;
 import static com.bbangle.bbangle.store.domain.QStoreApplication.storeApplication;
 
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication;
+import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerInfo;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerStoreInfo;
-import com.bbangle.bbangle.seller.domain.QAccountVerification;
 import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Optional;
@@ -39,13 +37,11 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
     }
 
     @Override
-    public List<AdminSellerApplication> findSellerApplications(int offset, int limit) {
-
-        QAccountVerification avSub = new QAccountVerification("avSub");
+    public List<SellerApplicationInfo> findSellerApplications(int offset, int limit) {
 
         return queryFactory
             .select(Projections.constructor(
-                AdminSellerApplication.class,
+                SellerApplicationInfo.class,
 
                 // storeApplicationId
                 storeApplication.id,
@@ -74,19 +70,9 @@ public class StoreApplicationRepositoryImpl implements StoreApplicationQueryDSLR
             .from(storeApplication)
             .join(storeApplication.seller, seller)
 
-            // ✅ verified = true 중 최신 1건
-            .leftJoin(accountVerification)
-            .on(
-                accountVerification.id.eq(
-                    JPAExpressions
-                        .select(avSub.id.max())
-                        .from(avSub)
-                        .where(
-                            avSub.seller.eq(seller),
-                            avSub.verified.isTrue()
-                        )
-                )
-            )
+            // ✅ verified = true
+            .join(accountVerification)
+            .on(accountVerification.seller.eq(seller))
 
             // ✅ pending만
             .where(storeApplication.status.eq(StoreApprovalStatus.PENDING))

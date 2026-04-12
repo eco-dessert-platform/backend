@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.seller.admin.service.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Builder;
 
 public class AdminSellerInfo {
@@ -23,4 +24,19 @@ public class AdminSellerInfo {
         String accountNumber,
         LocalDateTime createdAt
     ) {}
+
+    @Builder
+    public record SellerApplicationInfoList(
+        List<SellerApplicationInfo> sellerApplicationInfoList,
+        long totalElements,
+        int totalPages,
+        boolean hasPrevious,
+        boolean hasNext
+    ) {
+        public record SellerApplicationInfo(
+            Long storeApplicationId,
+            SellerStoreInfo sellerStoreInfo,
+            SellerInfo sellerInfo
+        ) {}
+    }
 }
