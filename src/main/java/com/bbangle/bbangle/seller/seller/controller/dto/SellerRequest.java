@@ -3,6 +3,7 @@ package com.bbangle.bbangle.seller.seller.controller.dto;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 import com.bbangle.bbangle.seller.seller.facade.command.RegisterDocumentsCommand;
+import com.bbangle.bbangle.seller.seller.service.command.UpdateAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -61,23 +62,18 @@ public class SellerRequest {
 
     @Schema(description = "계좌 정보 변경 요청 DTO")
     public record SellerAccountUpdateRequest(
-        @Schema(description = "상점 ID", example = "1")
-        @NotNull(message = "상점 ID는 필수입니다.")
-        Long storeId,
+        @Schema(description = "은행코드 (토스페이먼츠 표준)", example = "92")
+        @NotBlank(message = "은행코드는 필수입니다.")
+        String bankCode,
 
-        @Schema(description = "은행명", example = "국민은행")
-        @NotBlank(message = "은행명은 필수입니다.")
-        String bankName,
-
-        @Schema(description = "예금주", example = "홍길동")
-        @NotBlank(message = "예금주는 필수입니다.")
-        String accountHolder,
-
-        @Schema(description = "계좌번호", example = "123456-78-901234")
+        @Schema(description = "계좌번호", example = "123412341234")
         @NotBlank(message = "계좌번호는 필수입니다.")
         String accountNumber
     ) {
 
+        public UpdateAccountCommand toCommand(Long sellerId) {
+            return new UpdateAccountCommand(sellerId, bankCode, accountNumber);
+        }
     }
 
     @Schema(description = "판매자 정보 수정 요청 DTO")

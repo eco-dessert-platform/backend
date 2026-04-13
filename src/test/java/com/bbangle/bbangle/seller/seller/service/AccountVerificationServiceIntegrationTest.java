@@ -12,6 +12,7 @@ import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.seller.seller.service.command.UpdateAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
@@ -186,6 +187,40 @@ class AccountVerificationServiceIntegrationTest {
     void fail_get_account_verification_not_found() {
         // act & assert
         assertThatThrownBy(() -> accountVerificationService.getAccountVerification(testSeller.getId()))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("계좌 수정에 성공한다")
+    void success_update_account() {
+        // arrange: 최초 계좌 인증 등록
+        accountVerificationService.verifyAccount(new VerifyAccountCommand(testSeller.getId(), "92", "123412341234"));
+        em.flush();
+        em.clear();
+
+        UpdateAccountCommand command = new UpdateAccountCommand(testSeller.getId(), "20", "987654321");
+
+        // act
+        accountVerificationService.updateAccount(command);
+        em.flush();
+        em.clear();
+
+        // assert
+        AccountVerificationDetailInfo result = accountVerificationService.getAccountVerification(testSeller.getId());
+        assertThat(result.bankCode()).isEqualTo("20");
+        assertThat(result.accountNumber()).isEqualTo("987654321");
+        assertThat(result.accountHolder()).isNotNull();
+        assertThat(result.verified()).isTrue();
+    }
+
+    @Test
+    @DisplayName("계좌 인증 이력이 없으면 계좌 수정에 실패한다")
+    void fail_update_account_not_found() {
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.updateAccount(
+            new UpdateAccountCommand(testSeller.getId(), "20", "987654321")
+        ))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
     }

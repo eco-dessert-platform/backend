@@ -6,7 +6,6 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
-import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.service.command.SellerCreateCommand;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerService {
 
     private final SellerRepository sellerRepository;
-
-    public void updateAccount(SellerAccountUpdateRequest request, Long sellerId) {
-        // TODO: 실제 비즈니스 로직 구현
-    }
 
     @Transactional(readOnly = true)
     public Seller getSellerById(Long sellerId) {

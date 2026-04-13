@@ -48,7 +48,7 @@ public class SellerController implements SellerApi {
         @RequestBody @Validated SellerAccountUpdateRequest request,
         @AuthenticationPrincipal Long sellerId
     ) {
-        sellerService.updateAccount(request, sellerId);
+        accountVerificationService.updateAccount(request.toCommand(sellerId));
         return responseService.getSuccessResult();
     }
 
