@@ -56,4 +56,26 @@ class AccountVerificationUnitTest {
         assertThat(accountVerification).isNotNull();
         assertThat(accountVerification.isVerified()).isFalse();
     }
+
+    @Test
+    @DisplayName("계좌 정보 수정에 성공한다")
+    void success_update_account_verification() {
+        // arrange
+        AccountVerification accountVerification = AccountVerification.create(
+            "92", "oldEncryptedNumber", "홍길동", true, seller
+        );
+
+        String newBankCode = "20";
+        String newEncryptedAccountNumber = "newEncryptedNumber";
+        String newAccountHolder = "김철수";
+
+        // act
+        accountVerification.update(newBankCode, newEncryptedAccountNumber, newAccountHolder);
+
+        // assert
+        assertThat(accountVerification.getBankCode()).isEqualTo(newBankCode);
+        assertThat(accountVerification.getAccountNumber()).isEqualTo(newEncryptedAccountNumber);
+        assertThat(accountVerification.getAccountHolder()).isEqualTo(newAccountHolder);
+        assertThat(accountVerification.isVerified()).isTrue();
+    }
 }
