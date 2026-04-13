@@ -119,8 +119,43 @@ public interface SellerApi {
 
     @Operation(
         summary = "계좌 정보 변경",
-        description = "판매자 계좌 정보를 변경합니다."
+        description = """
+            판매자의 계좌 정보를 변경합니다.
+            - 토스페이먼츠 표준 은행코드를 사용합니다.
+            - 계좌번호 변경 시 Toss API를 통해 재인증이 진행됩니다.
+            - 계좌 인증 이력이 없는 경우 변경이 불가합니다. 먼저 계좌 인증(POST /account-verifications)을 진행해주세요.
+            """
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "계좌 정보 변경 성공",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success": true,
+                            "code": 0,
+                            "message": "SUCCESS"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Toss API 계좌 인증 실패",
+            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "계좌 인증 이력 없음",
+            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
+        )
+    })
     CommonResult updateAccount(
         @RequestBody SellerAccountUpdateRequest request,
         @AuthenticationPrincipal Long sellerId
