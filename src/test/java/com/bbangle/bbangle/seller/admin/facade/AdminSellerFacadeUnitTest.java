@@ -45,7 +45,7 @@ class AdminSellerFacadeUnitTest {
         void success_getAdminSellerApplicationList() {
 
             // given
-            int page = 0;
+            int page = 1;
 
             String encryptedAccountNumber = "encrypted";
             String decryptedAccountNumber = "123-456-789";
@@ -108,7 +108,7 @@ class AdminSellerFacadeUnitTest {
         void getAdminSellerApplicationList_empty() {
 
             // given
-            given(adminSellerService.getAdminSellerApplicationList(0))
+            given(adminSellerService.getAdminSellerApplicationList(1))
                 .willReturn(
                     AdminSellerInfo.SellerApplicationInfoList.builder()
                         .sellerApplicationInfoList(List.of())
@@ -120,11 +120,11 @@ class AdminSellerFacadeUnitTest {
                 );
 
             // when
-            AdminSellerResponse.AdminSellerApplicationList result = adminSellerFacade.getAdminSellerApplicationList(0);
+            AdminSellerResponse.AdminSellerApplicationList result = adminSellerFacade.getAdminSellerApplicationList(1);
 
             // then
             assertThat(result.adminSellerApplicationList()).isEmpty();
-            verify(adminSellerService, times(1)).getAdminSellerApplicationList(0);
+            verify(adminSellerService, times(1)).getAdminSellerApplicationList(1);
             verify(aesEncryptionUtil, never()).decrypt(any());
         }
     }
