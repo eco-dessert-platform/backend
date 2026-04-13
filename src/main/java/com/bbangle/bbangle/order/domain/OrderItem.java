@@ -171,4 +171,11 @@ public class OrderItem extends BaseEntity {
         }
         this.orderStatus = OrderStatus.CANCEL_REJECTED;
     }
+
+    public void returnComplete() {
+        if (orderStatus != OrderStatus.RETURN_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_COMPLETED;
+    }
 }

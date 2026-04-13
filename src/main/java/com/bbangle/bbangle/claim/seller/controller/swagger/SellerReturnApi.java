@@ -23,6 +23,15 @@ public interface SellerReturnApi {
     );
 
     @Operation(
+        summary = "반품 최종 처리 (환불 확정)",
+        description = "검수 완료(INSPECTION_APPROVED) 상태의 반품을 최종 승인하여 COMPLETED로 변경하고 환불을 확정한다."
+    )
+    CommonResult processReturn(
+        @Parameter(description = "반품 요청 ID") Long returnId,
+        @Parameter(hidden = true) Long sellerId
+    );
+
+    @Operation(
         summary = "반품 운송장 입력",
         description = "반품 승인(APPROVED) 상태의 클레임에 택배사 코드와 운송장 번호를 등록하고, 상태를 반품 수거 예정(PICKUP_SCHEDULED)으로 변경한다."
     )

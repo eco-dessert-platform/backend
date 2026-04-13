@@ -69,10 +69,16 @@ public class ReturnRequest extends Claim {
         this.status.validateTransition(ReturnRequestRequestStatus.PICKUP_SCHEDULED);
         this.status = ReturnRequestRequestStatus.PICKUP_SCHEDULED;
     }
-    
+
+    public void processReturn() {
+        this.status.validateTransition(ReturnRequestRequestStatus.COMPLETED);
+        this.status = ReturnRequestRequestStatus.COMPLETED;
+    }
+
     public void validatePickupScheduled() {
         if (this.status != PICKUP_SCHEDULED) {
             throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
         }
+
     }
 }

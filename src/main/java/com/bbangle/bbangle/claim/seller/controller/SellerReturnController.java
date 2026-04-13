@@ -39,6 +39,15 @@ public class SellerReturnController implements SellerReturnApi {
         return responseService.getSuccessResult();
     }
 
+    @PostMapping("/{returnId}/process")
+    public CommonResult processReturn(
+        @PathVariable Long returnId,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerReturnService.processReturn(returnId, sellerId);
+        return responseService.getSuccessResult();
+    }
+
     @PatchMapping("/{returnId}/invoice")
     public CommonResult registerReturnInvoice(
         @PathVariable Long returnId,
