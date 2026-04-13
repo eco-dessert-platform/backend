@@ -237,3 +237,6 @@ src/main/resources/docker/
 
 ### claude ###
 .claude/
+
+### worktrees ###
+.worktrees/

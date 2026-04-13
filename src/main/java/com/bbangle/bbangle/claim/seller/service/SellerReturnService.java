@@ -2,11 +2,13 @@ package com.bbangle.bbangle.claim.seller.service;
 
 import com.bbangle.bbangle.claim.domain.ClaimDelivery;
 import com.bbangle.bbangle.claim.domain.ReturnRequest;
+import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus;
 import com.bbangle.bbangle.claim.repository.ClaimDeliveryRepository;
 import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.repository.ReturnRequestRepository;
+import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceResponse;
 import com.bbangle.bbangle.claim.seller.service.model.ReturnCreateCommand;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -145,6 +147,28 @@ public class SellerReturnService {
 
         ClaimDelivery claimDelivery = ClaimDelivery.createReturnPickup(returnRequest, courierCode, trackingNumber);
         claimDeliveryRepository.save(claimDelivery);
+    }
+
+    @Transactional
+    public UpdateReturnInvoiceResponse updateReturnInvoice(
+        Long returnId, Long sellerId, CourierCompany courierCode, String trackingNumber
+    ) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+
+        returnRequest.validatePickupScheduled();
+
+        ClaimDelivery claimDelivery = claimDeliveryRepository
+            .findByClaimIdAndDeliveryType(returnId, ClaimDeliveryType.RETURN_PICKUP)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND));
+
+        claimDelivery.updateInvoice(courierCode, trackingNumber);
+
+        return UpdateReturnInvoiceResponse.of(returnId, claimDelivery);
     }
 
     private Long getStoreIdOrThrow(Long sellerId) {

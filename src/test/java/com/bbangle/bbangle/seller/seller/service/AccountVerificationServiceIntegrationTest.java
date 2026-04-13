@@ -13,6 +13,7 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -66,12 +67,12 @@ class AccountVerificationServiceIntegrationTest {
     @DisplayName("인증된 계좌 확인에 성공한다")
     void success_confirm_verified_account() {
         // arrange: 인증된 계좌 정보 생성
-        AccountVerification accountVerification = createAccountVerification(testSeller, true);
+        createAccountVerification(testSeller, true);
         em.flush();
         em.clear();
 
         // act & assert
-        assertThatCode(() -> accountVerificationService.confirmAccount(accountVerification.getId()))
+        assertThatCode(() -> accountVerificationService.confirmAccount(testSeller.getId()))
             .doesNotThrowAnyException();
     }
 
@@ -79,34 +80,27 @@ class AccountVerificationServiceIntegrationTest {
     @DisplayName("인증되지 않은 계좌 확인 시 예외가 발생한다")
     void fail_confirm_unverified_account() {
         // arrange: 인증되지 않은 계좌 정보 생성
-        AccountVerification accountVerification = createAccountVerification(testSeller, false);
+        createAccountVerification(testSeller, false);
         em.flush();
         em.clear();
 
         // act & assert
-        assertThatThrownBy(() -> accountVerificationService.confirmAccount(accountVerification.getId()))
+        assertThatThrownBy(() -> accountVerificationService.confirmAccount(testSeller.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_NOT_VERIFIED.getMessage());
     }
 
     @Test
-    @DisplayName("존재하지 않는 계좌 인증 ID로 확인 시 예외가 발생한다")
-    void fail_confirm_with_non_existent_id() {
-        // arrange
-        Long nonExistentId = 99999L;
+    @DisplayName("계좌 인증 이력이 없는 판매자로 확인 시 예외가 발생한다")
+    void fail_confirm_with_non_existent_account_verification() {
+        // arrange: 계좌 인증 없이 바로 sellerId 사용
+        em.flush();
+        em.clear();
 
         // act & assert
-        assertThatThrownBy(() -> accountVerificationService.confirmAccount(nonExistentId))
+        assertThatThrownBy(() -> accountVerificationService.confirmAccount(testSeller.getId()))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    @DisplayName("null ID로 계좌 확인 시 예외가 발생한다")
-    void fail_confirm_with_null_id() {
-        // act & assert
-        assertThatThrownBy(() -> accountVerificationService.confirmAccount(null))
-            .isInstanceOf(Exception.class);
     }
 
     @Test
@@ -131,6 +125,21 @@ class AccountVerificationServiceIntegrationTest {
     }
 
     @Test
+    @DisplayName("이미 계좌 인증 정보가 존재하면 계좌 인증이 실패한다")
+    void fail_verify_account_already_exists() {
+        // arrange: 계좌 인증 먼저 등록
+        VerifyAccountCommand command = new VerifyAccountCommand(testSeller.getId(), "92", "123412341234");
+        accountVerificationService.verifyAccount(command);
+        em.flush();
+        em.clear();
+
+        // act & assert: 동일 판매자로 재시도
+        assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_ALREADY_EXISTS.getMessage());
+    }
+
+    @Test
     @DisplayName("존재하지 않는 판매자로 계좌 인증 요청 시 예외가 발생한다")
     void fail_verify_account_with_non_existent_seller() {
         // arrange
@@ -144,6 +153,41 @@ class AccountVerificationServiceIntegrationTest {
         assertThatThrownBy(() -> accountVerificationService.verifyAccount(command))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.SELLER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("계좌 인증 조회에 성공한다")
+    void success_get_account_verification() {
+        // arrange
+        VerifyAccountCommand command = new VerifyAccountCommand(
+            testSeller.getId(),
+            "92",
+            "123412341234"
+        );
+        accountVerificationService.verifyAccount(command);
+        em.flush();
+        em.clear();
+
+        // act
+        AccountVerificationDetailInfo result = accountVerificationService.getAccountVerification(testSeller.getId());
+
+        // assert
+        assertThat(result).isNotNull();
+        assertThat(result.sellerId()).isEqualTo(testSeller.getId());
+        assertThat(result.bankCode()).isEqualTo("92");
+        assertThat(result.accountNumber()).isEqualTo("123412341234");
+        assertThat(result.accountHolder()).isNotNull();
+        assertThat(result.verified()).isTrue();
+        assertThat(result.createdAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("계좌 인증 이력이 없는 판매자 조회 시 예외가 발생한다")
+    void fail_get_account_verification_not_found() {
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.getAccountVerification(testSeller.getId()))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
     }
 
     /**

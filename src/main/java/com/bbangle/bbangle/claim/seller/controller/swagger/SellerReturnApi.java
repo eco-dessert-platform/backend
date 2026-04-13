@@ -2,7 +2,10 @@ package com.bbangle.bbangle.claim.seller.controller.swagger;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.RegisterReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +38,17 @@ public interface SellerReturnApi {
     CommonResult registerReturnInvoice(
         @Parameter(description = "반품 요청 ID") Long returnId,
         RegisterReturnInvoiceRequest request,
+        @Parameter(hidden = true) Long sellerId
+    );
+
+    @Operation(
+        summary = "반품 수거 운송장 수정",
+        description = "수거 예정(PICKUP_SCHEDULED) 상태일 때만 택배사 코드와 운송장 번호를 수정할 수 있다. "
+            + "수거가 시작(PICKED_UP)된 이후에는 물류 흐름이 시작된 것으로 간주하여 수정이 차단된다."
+    )
+    SingleResult<UpdateReturnInvoiceResponse> updateReturnInvoice(
+        @Parameter(description = "반품 요청 ID") Long returnId,
+        UpdateReturnInvoiceRequest request,
         @Parameter(hidden = true) Long sellerId
     );
 }

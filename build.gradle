@@ -163,6 +163,10 @@ dependencies {
     // CSV
     implementation 'org.apache.commons:commons-csv:1.10.0'
 
+    // Excel (Apache POI)
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
     // flyway
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.flywaydb:flyway-core'

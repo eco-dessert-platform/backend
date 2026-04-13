@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +50,16 @@ public class SellerController implements SellerApi {
     ) {
         sellerService.updateAccount(request, sellerId);
         return responseService.getSuccessResult();
+    }
+
+    @GetMapping("/account-verifications")
+    @Override
+    public CommonResult getAccountVerification(
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        return responseService.getSingleResult(
+            accountVerificationService.getAccountVerification(sellerId)
+        );
     }
 
     @PostMapping("/account-verifications")

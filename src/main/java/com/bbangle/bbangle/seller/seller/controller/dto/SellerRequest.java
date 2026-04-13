@@ -45,11 +45,7 @@ public class SellerRequest {
 
         @Schema(description = "즉석식품제조가공업 & 식품제조업", requiredMode = REQUIRED, type = "string", format = "binary")
         @NotNull(message = "즉석식품제조가공업 & 식품제조업은 필수 입니다.")
-        MultipartFile foodManufactureLicense,
-
-        @Schema(description = "계좌인증 ID", requiredMode = REQUIRED)
-        @NotNull(message = "계좌인증 ID는 필수 입니다")
-        Long accountVerificationId
+        MultipartFile foodManufactureLicense
     ) {
 
         public RegisterDocumentsCommand toCommand(Long sellerId) {
@@ -58,7 +54,6 @@ public class SellerRequest {
                 .mailOrderLicense(mailOrderLicense)
                 .bankbookCopy(bankbookCopy)
                 .foodManufactureLicense(foodManufactureLicense)
-                .accountVerificationId(accountVerificationId)
                 .sellerId(sellerId)
                 .build();
         }

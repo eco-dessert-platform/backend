@@ -5,6 +5,7 @@ import com.bbangle.bbangle.exception.GlobalControllerAdvice;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.AccountVerificationRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerAccountUpdateRequest;
 import com.bbangle.bbangle.seller.seller.controller.dto.SellerRequest.SellerDocumentsRegisterRequest;
+import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -75,6 +76,46 @@ public interface SellerApi {
         SellerDocumentsRegisterRequest request,
         Long sellerId
     );
+
+    @Operation(
+        summary = "계좌 인증 조회",
+        description = "판매자의 계좌 인증 정보를 조회합니다. 계좌번호는 복호화되어 반환됩니다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "계좌 인증 조회 성공",
+            content = @Content(
+                schema = @Schema(implementation = CommonResult.class),
+                examples = @ExampleObject(
+                    name = "successResponse",
+                    summary = "성공응답 예시",
+                    value = """
+                        {
+                            "success": true,
+                            "code": 0,
+                            "message": "SUCCESS",
+                            "result": {
+                                "id": 1,
+                                "sellerId": 1,
+                                "bankCode": "92",
+                                "accountNumber": "123412341234",
+                                "accountHolder": "홍길동",
+                                "verified": true,
+                                "createdAt": "2025-12-10T14:32:10"
+                            }
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "계좌 인증 이력 없음",
+            content = @Content(schema = @Schema(implementation = GlobalControllerAdvice.class))
+        )
+    })
+    CommonResult getAccountVerification(@AuthenticationPrincipal Long sellerId);
 
     @Operation(
         summary = "계좌 정보 변경",

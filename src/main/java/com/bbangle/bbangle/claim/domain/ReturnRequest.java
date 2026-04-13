@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.domain;
 
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.APPROVED;
+import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.PICKUP_SCHEDULED;
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REJECTED;
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REQUESTED;
 
@@ -72,5 +73,11 @@ public class ReturnRequest extends Claim {
     public void processReturn() {
         this.status.validateTransition(ReturnRequestRequestStatus.COMPLETED);
         this.status = ReturnRequestRequestStatus.COMPLETED;
+    
+    public void validatePickupScheduled() {
+        if (this.status != PICKUP_SCHEDULED) {
+            throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+        }
+
     }
 }
