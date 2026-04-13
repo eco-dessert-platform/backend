@@ -61,7 +61,7 @@ public class AccountVerificationService {
             command.accountNumber()
         );
 
-        if (accountHolder == null || accountHolder.isEmpty()) {
+        if (accountHolder == null || accountHolder.isBlank()) {
             throw new BbangleException(ACCOUNT_VERIFICATION_FAILED);
         }
 
@@ -88,7 +88,7 @@ public class AccountVerificationService {
             command.accountNumber()
         );
 
-        if (accountHolder == null || accountHolder.isEmpty()) {
+        if (accountHolder == null || accountHolder.isBlank()) {
             throw new BbangleException(ACCOUNT_VERIFICATION_FAILED);
         }
 
