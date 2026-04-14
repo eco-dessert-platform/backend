@@ -1,0 +1,49 @@
+package com.bbangle.bbangle.seller.admin.controller.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.Builder;
+
+public class AdminSellerResponse {
+
+    @Builder
+    @Schema(description = "판매자 신규 회원가입 정보 DTO")
+    public record AdminSellerApplication(
+        @Schema(description = "스토어 신청서 ID", example = "1")
+        Long storeApplicationId,
+        SellerStoreDTO sellerStoreDTO,
+        SellerDTO sellerDTO
+    ) {
+        @Builder
+        @Schema(description = "판매자 스토어 등록 신청 정보 DTO")
+        public record SellerStoreDTO(
+            @Schema(description = "스토어명", example = "빵그리의 오븐") String storeName,
+            @Schema(description = "스토어 연락처", example = "01012345678") String phone,
+            @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhone,
+            @Schema(description = "스토어 이메일", example = "user@example.com") String email,
+            @Schema(description = "스토어 출고지 주소", example = "(우편번호) 성남시 금광동 222-31") String originAddressLine,
+            @Schema(description = "스토어 출고지 상세 주소", example = "나동 202호") String originAddressDetail
+        ) {}
+
+        @Builder
+        @Schema(description = "판매자 정보 DTO")
+        public record SellerDTO(
+            @Schema(description = "판매자 ID", example = "1") Long sellerId,
+            @Schema(description = "은행 코드", example = "92") String bankCode,
+            @Schema(description = "예금주", example = "빵그리") String accountHolder,
+            @Schema(description = "계좌 번호", example = "111-1111") String accountNumber,
+            @Schema(description = "판매자 계정 생성일", example = "2026-01-01T01:23:45") LocalDateTime createdAt
+        ) {}
+    }
+
+    @Builder
+    @Schema(description = "판매자 신규 회원가입 정보 목록 DTO")
+    public record AdminSellerApplicationList(
+        List<AdminSellerApplication> adminSellerApplicationList,
+        @Schema(description = "전체 데이터 갯수", example = "1") long totalElements,
+        @Schema(description = "전체 페이지", example = "1") int totalPages,
+        @Schema(description = "이전 페이지 여부", example = "false") boolean hasPrevious,
+        @Schema(description = "다음 페이지 여부", example = "false") boolean hasNext
+    ) {}
+}
