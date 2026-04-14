@@ -2,8 +2,10 @@ package com.bbangle.bbangle.store.admin.service;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
@@ -73,6 +75,25 @@ public class AdminStoreService {
             .prevName(request.getCurrentName())
             .updateName(store.getName())
             .modifiedAt(store.getModifiedAt())
+            .build();
+    }
+
+    // TODO : Test
+    @Transactional
+    public UpdateStoreNameReject rejectStoreName(long requestId, UpdateStoreNameRejectRequest request) {
+
+        StoreNameRequest storeNameRequest = storeNameRequestRepository.findById(requestId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
+
+        storeNameRequest.reject(request.category(), request.rejectDetail());
+        return UpdateStoreNameReject.builder()
+            .requestId(storeNameRequest.getId())
+            .storeId(storeNameRequest.getStore().getId())
+            .currentName(storeNameRequest.getCurrentName())
+            .newName(storeNameRequest.getNewName())
+            .status(storeNameRequest.getStatus())
+            .category(storeNameRequest.getRejectCategory())
+            .rejectDetail(storeNameRequest.getRejectDetail())
             .build();
     }
 }

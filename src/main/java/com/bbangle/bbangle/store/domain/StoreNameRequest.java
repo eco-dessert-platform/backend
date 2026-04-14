@@ -94,9 +94,9 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
         this.status = StoreApprovalStatus.APPROVE;
     }
 
-    public void reject(StoreNameRejectCategory rejectReason, String rejectDetail) {
+    public void reject(StoreNameRejectCategory category, String rejectDetail) {
         validateStatus();
-        this.rejectCategory = rejectReason;
+        this.rejectCategory = category;
         this.rejectDetail = rejectDetail;
         this.status = StoreApprovalStatus.REJECT;
     }
