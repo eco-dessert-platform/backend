@@ -13,6 +13,7 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.client.AccountVerificationClient;
+import com.bbangle.bbangle.seller.seller.service.command.UpdateAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
@@ -234,5 +235,66 @@ class AccountVerificationServiceUnitTest {
         assertThatThrownBy(() -> accountVerificationService.confirmAccount(sellerId))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("계좌 수정에 성공한다")
+    void success_update_account() {
+        // arrange
+        Long sellerId = 1L;
+        String bankCode = "20";
+        String accountNumber = "987654321";
+        String encryptedAccountNumber = "newEncryptedValue";
+        String accountHolder = "김철수";
+
+        UpdateAccountCommand command = new UpdateAccountCommand(sellerId, bankCode, accountNumber);
+
+        given(accountVerificationRepository.findBySellerId(sellerId))
+            .willReturn(Optional.of(accountVerification));
+        given(accountVerificationClient.verifyAccount(bankCode, accountNumber)).willReturn(accountHolder);
+        given(aesEncryptionUtil.encrypt(accountNumber)).willReturn(encryptedAccountNumber);
+
+        // act
+        accountVerificationService.updateAccount(command);
+
+        // assert
+        verify(accountVerificationRepository).findBySellerId(sellerId);
+        verify(accountVerificationClient).verifyAccount(bankCode, accountNumber);
+        verify(aesEncryptionUtil).encrypt(accountNumber);
+        verify(accountVerification).update(bankCode, encryptedAccountNumber, accountHolder);
+    }
+
+    @Test
+    @DisplayName("계좌 인증 이력이 없으면 계좌 수정에 실패한다")
+    void fail_update_account_not_found() {
+        // arrange
+        Long sellerId = 999L;
+        UpdateAccountCommand command = new UpdateAccountCommand(sellerId, "20", "987654321");
+
+        given(accountVerificationRepository.findBySellerId(sellerId)).willReturn(Optional.empty());
+
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.updateAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("Toss API 인증 실패 시 계좌 수정에 실패한다")
+    void fail_update_account_verification_failed() {
+        // arrange
+        Long sellerId = 1L;
+        UpdateAccountCommand command = new UpdateAccountCommand(sellerId, "20", "987654321");
+
+        given(accountVerificationRepository.findBySellerId(sellerId))
+            .willReturn(Optional.of(accountVerification));
+        given(accountVerificationClient.verifyAccount("20", "987654321")).willReturn(null);
+
+        // act & assert
+        assertThatThrownBy(() -> accountVerificationService.updateAccount(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ACCOUNT_VERIFICATION_FAILED.getMessage());
+
+        verify(accountVerification, org.mockito.Mockito.never()).update(any(), any(), any());
     }
 }

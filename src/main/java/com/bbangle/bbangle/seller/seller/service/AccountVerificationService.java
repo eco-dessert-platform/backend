@@ -12,6 +12,7 @@ import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.AccountVerificationRepository;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.seller.seller.service.client.AccountVerificationClient;
+import com.bbangle.bbangle.seller.seller.service.command.UpdateAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.command.VerifyAccountCommand;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationDetailInfo;
 import com.bbangle.bbangle.seller.seller.service.info.AccountVerificationInfo;
@@ -60,7 +61,7 @@ public class AccountVerificationService {
             command.accountNumber()
         );
 
-        if (accountHolder == null || accountHolder.isEmpty()) {
+        if (accountHolder == null || accountHolder.isBlank()) {
             throw new BbangleException(ACCOUNT_VERIFICATION_FAILED);
         }
 
@@ -75,5 +76,24 @@ public class AccountVerificationService {
         );
 
         return AccountVerificationInfo.from(accountVerificationRepository.save(accountVerification));
+    }
+
+    @Transactional
+    public void updateAccount(UpdateAccountCommand command) {
+        AccountVerification accountVerification = accountVerificationRepository.findBySellerId(command.sellerId())
+            .orElseThrow(() -> new BbangleException(ACCOUNT_VERIFICATION_NOT_FOUND));
+
+        String accountHolder = accountVerificationClient.verifyAccount(
+            command.bankCode(),
+            command.accountNumber()
+        );
+
+        if (accountHolder == null || accountHolder.isBlank()) {
+            throw new BbangleException(ACCOUNT_VERIFICATION_FAILED);
+        }
+
+        String encryptedAccountNumber = aesEncryptionUtil.encrypt(command.accountNumber());
+
+        accountVerification.update(command.bankCode(), encryptedAccountNumber, accountHolder);
     }
 }

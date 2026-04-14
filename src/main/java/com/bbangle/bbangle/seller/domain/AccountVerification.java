@@ -53,4 +53,11 @@ public class AccountVerification extends BaseEntity {
                                              String accountHolder, boolean verified, Seller seller) {
         return new AccountVerification(bankCode, encryptedAccountNumber, accountHolder, verified, seller);
     }
+
+    public void update(String bankCode, String encryptedAccountNumber, String accountHolder) {
+        this.bankCode = bankCode;
+        this.accountNumber = encryptedAccountNumber;
+        this.accountHolder = accountHolder;
+        this.verified = true;
+    }
 }
