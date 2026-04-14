@@ -8,6 +8,7 @@ public class UpdateStoreNamesInfo {
 
     @Builder
     public record UpdateStoreNames(
+        Long requestId,
         Long storeId,
         String currentName,
         String newName,
@@ -16,6 +17,7 @@ public class UpdateStoreNamesInfo {
 
         public static UpdateStoreNames from(StoreNameRequest storeNameRequest) {
             return UpdateStoreNames.builder()
+                .requestId(storeNameRequest.getId())
                 .storeId(storeNameRequest.getStore().getId())
                 .currentName(storeNameRequest.getCurrentName())
                 .newName(storeNameRequest.getNewName())

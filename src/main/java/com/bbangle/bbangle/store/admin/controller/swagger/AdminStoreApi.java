@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Admin Store", description = "(관리자) 스토어 관리 API")
@@ -20,5 +21,14 @@ public interface AdminStoreApi {
         @RequestParam(name = "page", defaultValue = "1")
         @Min(1)
         int page
+    );
+
+    @Operation(
+        summary = "(관리자) 스토어명 변경 요청 승인",
+        description = "판매자가 요청한 스토어명 변경을 승인합니다."
+    )
+    SingleResult<AdminStoreResponse.UpdateStoreNameApprove> approveStoreName(
+        @Parameter(description = "승인할 요청 번호", example = "1")
+        @PathVariable Long requestId
     );
 }

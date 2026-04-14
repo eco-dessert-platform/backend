@@ -89,21 +89,25 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
     }
 
     public void approve() {
-        if (this.status.equals(StoreApprovalStatus.REJECT)) {
-            throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
-        }
-
+        validateStatus();
         this.store.updateName(this.currentName, this.newName);
         this.status = StoreApprovalStatus.APPROVE;
     }
 
     public void reject(StoreNameRejectCategory rejectReason, String rejectDetail) {
-        if (this.status.equals(StoreApprovalStatus.APPROVE)) {
-            throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
-        }
-
+        validateStatus();
         this.rejectCategory = rejectReason;
         this.rejectDetail = rejectDetail;
         this.status = StoreApprovalStatus.REJECT;
+    }
+
+    private void validateStatus() {
+        if (this.status.equals(StoreApprovalStatus.REJECT)) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
+        }
+
+        if (this.status.equals(StoreApprovalStatus.APPROVE)) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+        }
     }
 }

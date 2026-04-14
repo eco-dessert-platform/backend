@@ -94,6 +94,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    NOT_FOUND_REQUEST(-989, "해당 요청을 찾을 수 없습니다.", NOT_FOUND),
     REQUEST_IS_REJECTED(-990, "이미 거절된 요청입니다.", BAD_REQUEST),
     REQUEST_IS_APPROVED(-991, "이미 승인된 요청입니다.", BAD_REQUEST),
     REQUEST_IS_PENDING(-992, "승인 대기중인 요청입니다.", BAD_REQUEST),
