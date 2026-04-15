@@ -144,6 +144,7 @@ class AdminStoreControllerTest {
                 .storeId(1L)
                 .prevName(DEFAULT_STORE_NAME)
                 .updateName(NEW_STORE_NAME)
+                .status(StoreApprovalStatus.APPROVE)
                 .modifiedAt(now)
                 .build();
 
@@ -157,6 +158,7 @@ class AdminStoreControllerTest {
                 .andExpect(jsonPath("$.result.storeId").value(1L))
                 .andExpect(jsonPath("$.result.prevName").value(DEFAULT_STORE_NAME))
                 .andExpect(jsonPath("$.result.updateName").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.APPROVE.name()))
                 .andExpect(jsonPath("$.result.modifiedAt").value(startsWith(expectedTimePrefix)));
         }
 

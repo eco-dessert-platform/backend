@@ -170,6 +170,7 @@ class AdminStoreServiceUnitTest {
             assertThat(result.storeId()).isEqualTo(10L);
             assertThat(result.prevName()).isEqualTo(DEFAULT_STORE_NAME);
             assertThat(result.updateName()).isEqualTo(NEW_STORE_NAME);
+            assertThat(result.status()).isEqualTo(StoreApprovalStatus.APPROVE);
             assertThat(result.modifiedAt()).isEqualTo(store.getModifiedAt());
             assertThat(store.getName()).isEqualTo(NEW_STORE_NAME);
         }

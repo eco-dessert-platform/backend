@@ -73,6 +73,7 @@ public class AdminStoreService {
             .storeId(store.getId())
             .prevName(request.getCurrentName())
             .updateName(store.getName())
+            .status(request.getStatus())
             .modifiedAt(store.getModifiedAt())
             .build();
     }

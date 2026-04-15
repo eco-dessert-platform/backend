@@ -26,6 +26,7 @@ public class AdminStoreResponse {
         @Schema(description = "스토어 Id", example = "1") long storeId,
         @Schema(description = "이전 스토어 이름", example = "1") String prevName,
         @Schema(description = "변경된 스토어 이름", example = "1") String updateName,
+        @Schema(description = "요청 승인 상태", example = "APPROVE") StoreApprovalStatus status,
         @Schema(description = "수정일", example = "2026-01-01T01:23:45") LocalDateTime modifiedAt
     ) {}
 

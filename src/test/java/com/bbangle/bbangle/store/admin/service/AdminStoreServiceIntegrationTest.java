@@ -175,6 +175,7 @@ class AdminStoreServiceIntegrationTest {
             assertThat(updatedRequest.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
             assertThat(result.prevName()).isEqualTo(DEFAULT_STORE_NAME);
             assertThat(result.updateName()).isEqualTo(NEW_STORE_NAME);
+            assertThat(result.status()).isEqualTo(StoreApprovalStatus.APPROVE);
             assertThat(result.modifiedAt()).isEqualTo(updatedStore.getModifiedAt());
         }
 
