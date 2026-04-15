@@ -200,7 +200,7 @@ class AdminStoreControllerTest {
                 .storeId(1L)
                 .currentName(DEFAULT_STORE_NAME)
                 .newName(NEW_STORE_NAME)
-                .status(StoreApprovalStatus.PENDING)
+                .status(StoreApprovalStatus.REJECT)
                 .category(StoreNameRejectCategory.ETC)
                 .rejectDetail(StoreNameRejectCategory.ETC.getDescription())
                 .build();
@@ -220,7 +220,7 @@ class AdminStoreControllerTest {
                 .andExpect(jsonPath("$.result.storeId").value(1L))
                 .andExpect(jsonPath("$.result.currentName").value(DEFAULT_STORE_NAME))
                 .andExpect(jsonPath("$.result.newName").value(NEW_STORE_NAME))
-                .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.PENDING.name()))
+                .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.REJECT.name()))
                 .andExpect(jsonPath("$.result.category").value(StoreNameRejectCategory.ETC.name()))
                 .andExpect(jsonPath("$.result.rejectDetail").value(StoreNameRejectCategory.ETC.getDescription()));
         }

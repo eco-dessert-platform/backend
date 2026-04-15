@@ -24,8 +24,8 @@ public class AdminStoreResponse {
     @Schema(description = "판매자 스토어명 변경 승인 결과 DTO")
     public record UpdateStoreNameApprove(
         @Schema(description = "스토어 Id", example = "1") long storeId,
-        @Schema(description = "이전 스토어 이름", example = "1") String prevName,
-        @Schema(description = "변경된 스토어 이름", example = "1") String updateName,
+        @Schema(description = "이전 스토어 이름", example = "빵그리") String prevName,
+        @Schema(description = "변경된 스토어 이름", example = "빵그리의 오븐") String updateName,
         @Schema(description = "요청 승인 상태", example = "APPROVE") StoreApprovalStatus status,
         @Schema(description = "수정일", example = "2026-01-01T01:23:45") LocalDateTime modifiedAt
     ) {}
@@ -33,7 +33,7 @@ public class AdminStoreResponse {
     @Builder
     @Schema(description = "판매자 스토어명 변경 거부 결과 DTO")
     public record UpdateStoreNameReject(
-        @Schema(description = "전체 데이터 갯수", example = "1") Long requestId,
+        @Schema(description = "판매자 스토어명 변경 요청 Id", example = "1") Long requestId,
         @Schema(description = "스토어 id", example = "1") Long storeId,
         @Schema(description = "현재 스토어 이름", example = "빵그리") String currentName,
         @Schema(description = "변경할 스토어 이름", example = "빵그리의 오븐") String newName,

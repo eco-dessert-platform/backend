@@ -216,6 +216,37 @@ class AdminStoreServiceUnitTest {
                 });
             assertThat(store.getName()).isEqualTo(DEFAULT_STORE_NAME);
         }
+
+        @ParameterizedTest
+        @EnumSource(value = StoreApprovalStatus.class, names = {"APPROVE", "REJECT"})
+        @DisplayName("이미 처리된 요청은 승인할 수 없다.")
+        void fail_approveStoreName_alreadyProcessed(StoreApprovalStatus status) {
+
+            // given
+            long requestId = 1L;
+
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 10L);
+            Seller seller = SellerFixture.defaultSeller(store);
+            StoreNameRequest request = StoreNameRequestFixture.defaultStoreNameRequest(seller, store, status);
+
+            given(storeNameRequestRepository.findById(requestId)).willReturn(Optional.of(request));
+
+            BbangleErrorCode expected =
+                status == StoreApprovalStatus.REJECT
+                    ? BbangleErrorCode.REQUEST_IS_REJECTED
+                    : BbangleErrorCode.REQUEST_IS_APPROVED;
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.approveStoreName(requestId)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(expected);
+                });
+
+            assertThat(request.getStatus()).isEqualTo(status);
+        }
     }
 
     @Nested

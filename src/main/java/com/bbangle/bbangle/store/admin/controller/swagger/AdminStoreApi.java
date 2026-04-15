@@ -40,7 +40,7 @@ public interface AdminStoreApi {
         description = "판매자가 요청한 스토어명 변경을 거절합니다."
     )
     SingleResult<AdminStoreResponse.UpdateStoreNameReject> rejectStoreName(
-        @Parameter(description = "승인할 요청 번호", example = "1")
+        @Parameter(description = "거절할 요청 번호", example = "1")
         @PathVariable Long requestId,
         @RequestBody @Valid UpdateStoreNameRejectRequest request
     );

@@ -102,11 +102,11 @@ public class StoreNameRequest extends CreatedAtBaseEntity {
     }
 
     private void validateStatus() {
-        if (this.status.equals(StoreApprovalStatus.REJECT)) {
+        if (StoreApprovalStatus.REJECT.equals(this.status)) {
             throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
         }
 
-        if (this.status.equals(StoreApprovalStatus.APPROVE)) {
+        if (StoreApprovalStatus.APPROVE.equals(this.status)) {
             throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
         }
     }

@@ -10,7 +10,7 @@ public class UpdateStoreNamesInfo {
     @Builder
     @Schema(description = "판매자 스토어명 변경 요청 DTO")
     public record UpdateStoreNames(
-        @Schema(description = "전체 데이터 갯수", example = "1") Long requestId,
+        @Schema(description = "판매자 스토어명 변경 요청 Id", example = "1") Long requestId,
         @Schema(description = "스토어 id", example = "1") Long storeId,
         @Schema(description = "현재 스토어 이름", example = "빵그리") String currentName,
         @Schema(description = "변경할 스토어 이름", example = "빵그리의 오븐") String newName,
