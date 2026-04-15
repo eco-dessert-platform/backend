@@ -57,7 +57,6 @@ public class AdminStoreService {
             .build();
     }
 
-    // TODO : Test
     @Transactional
     public UpdateStoreNameApprove approveStoreName(long requestId) {
 
@@ -78,7 +77,6 @@ public class AdminStoreService {
             .build();
     }
 
-    // TODO : Test
     @Transactional
     public UpdateStoreNameReject rejectStoreName(long requestId, UpdateStoreNameRejectRequest request) {
 

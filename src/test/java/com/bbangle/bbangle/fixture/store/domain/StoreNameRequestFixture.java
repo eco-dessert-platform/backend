@@ -5,6 +5,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class StoreNameRequestFixture {
 
@@ -38,5 +39,10 @@ public class StoreNameRequestFixture {
 
     public static StoreNameRequest defaultStoreNameRequest(Seller seller, Store store, StoreApprovalStatus status) {
         return baseBuilder(store.getName(), NEW_STORE_NAME, status, null, null, seller, store);
+    }
+
+    public static StoreNameRequest withId(StoreNameRequest storeNameRequest, Long id) {
+        ReflectionTestUtils.setField(storeNameRequest, "id", id);
+        return storeNameRequest;
     }
 }
