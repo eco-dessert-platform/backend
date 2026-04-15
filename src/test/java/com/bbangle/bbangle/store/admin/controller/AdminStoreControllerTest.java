@@ -1,8 +1,14 @@
 package com.bbangle.bbangle.store.admin.controller;
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,12 +19,22 @@ import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.AdminStoreService;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -51,6 +67,9 @@ class AdminStoreControllerTest {
 
     @MockBean
     private AdminStoreService adminStoreService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("스토어명 변경 요청 목록을 조회한다.")
@@ -105,5 +124,132 @@ class AdminStoreControllerTest {
             .andExpect(jsonPath("$.result.updateStoreNames[0].createdAt").exists())
 
             .andExpect(jsonPath("$.result.updateStoreNames[1].storeId").value(2L));
+    }
+
+    @Nested
+    @DisplayName("approveStoreName() 테스트")
+    class ApproveStoreNameTest {
+
+        @Test
+        @DisplayName("스토어명 변경 요청을 승인한다.")
+        @WithMockUser(roles = "ADMIN")
+        void success_approveStoreName() throws Exception {
+
+            // given
+            long requestId = 1L;
+            LocalDateTime now = LocalDateTime.now();
+            String expectedTimePrefix = now.truncatedTo(ChronoUnit.SECONDS).toString();
+
+            UpdateStoreNameApprove response = UpdateStoreNameApprove.builder()
+                .storeId(1L)
+                .prevName(DEFAULT_STORE_NAME)
+                .updateName(NEW_STORE_NAME)
+                .modifiedAt(now)
+                .build();
+
+            given(adminStoreService.approveStoreName(requestId)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(patch(AdminApiPath.PREFIX + "/stores" + "/{requestId}/approve", requestId)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.prevName").value(DEFAULT_STORE_NAME))
+                .andExpect(jsonPath("$.result.updateName").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.modifiedAt").value(startsWith(expectedTimePrefix)));
+        }
+
+        @Test
+        @DisplayName("스토어명 변경 요청 승인 시, 이미 존재하는 이름이면 예외가 발생한다.")
+        @WithMockUser(roles = "ADMIN")
+        void fail_approveStoreName() throws Exception {
+
+            // given
+            long requestId = 1L;
+
+            given(adminStoreService.approveStoreName(requestId)).willThrow(new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE));
+
+            // when & then
+            mockMvc.perform(patch(AdminApiPath.PREFIX + "/stores/{requestId}/approve", requestId)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.ALREADY_RESERVED_STORE.getMessage()));
+        }
+    }
+
+    @Nested
+    @DisplayName("rejectStoreName() 테스트")
+    class RejectStoreNameTest {
+
+        @Test
+        @DisplayName("스토어명 변경 요청을 거절한다.")
+        @WithMockUser(roles = "ADMIN")
+        void success_rejectStoreName() throws Exception {
+
+            // given
+            long requestId = 1L;
+            UpdateStoreNameRejectRequest request =
+                new UpdateStoreNameRejectRequest(StoreNameRejectCategory.ETC, StoreNameRejectCategory.ETC.getDescription());
+            UpdateStoreNameReject response = UpdateStoreNameReject.builder()
+                .requestId(1L)
+                .storeId(1L)
+                .currentName(DEFAULT_STORE_NAME)
+                .newName(NEW_STORE_NAME)
+                .status(StoreApprovalStatus.PENDING)
+                .category(StoreNameRejectCategory.ETC)
+                .rejectDetail(StoreNameRejectCategory.ETC.getDescription())
+                .build();
+
+            given(adminStoreService.rejectStoreName(
+                eq(requestId),
+                any(UpdateStoreNameRejectRequest.class)
+            )).willReturn(response);
+
+            // when & then
+            mockMvc.perform(patch(AdminApiPath.PREFIX + "/stores" + "/{requestId}/reject", requestId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.requestId").value(1L))
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.currentName").value(DEFAULT_STORE_NAME))
+                .andExpect(jsonPath("$.result.newName").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.status").value(StoreApprovalStatus.PENDING.name()))
+                .andExpect(jsonPath("$.result.category").value(StoreNameRejectCategory.ETC.name()))
+                .andExpect(jsonPath("$.result.rejectDetail").value(StoreNameRejectCategory.ETC.getDescription()));
+        }
+
+        @Test
+        @DisplayName("스토어명 변경 요청 거절 시, 요청이 존재하지 않으면 예외가 발생한다.")
+        @WithMockUser(roles = "ADMIN")
+        void fail_rejectStoreName() throws Exception {
+
+            // given
+            long requestId = 1L;
+
+            UpdateStoreNameRejectRequest request =
+                new UpdateStoreNameRejectRequest(
+                    StoreNameRejectCategory.ETC,
+                    StoreNameRejectCategory.ETC.getDescription()
+                );
+
+            given(adminStoreService.rejectStoreName(
+                eq(requestId),
+                any(UpdateStoreNameRejectRequest.class)
+            )).willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
+
+            // when & then
+            mockMvc.perform(patch(AdminApiPath.PREFIX + "/stores/{requestId}/reject", requestId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_REQUEST.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_REQUEST.getMessage()));
+        }
     }
 }

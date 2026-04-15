@@ -42,7 +42,6 @@ public class AdminStoreController implements AdminStoreApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PatchMapping("/{requestId}/approve")
     public SingleResult<UpdateStoreNameApprove> approveStoreName(
@@ -53,7 +52,6 @@ public class AdminStoreController implements AdminStoreApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PatchMapping("/{requestId}/reject")
     public SingleResult<UpdateStoreNameReject> rejectStoreName(
