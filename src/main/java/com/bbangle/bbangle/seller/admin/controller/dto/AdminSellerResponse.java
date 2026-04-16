@@ -46,4 +46,18 @@ public class AdminSellerResponse {
         @Schema(description = "이전 페이지 여부", example = "false") boolean hasPrevious,
         @Schema(description = "다음 페이지 여부", example = "false") boolean hasNext
     ) {}
+
+    @Builder
+    @Schema(description = "판매자 스토어 등록 신청 거절 결과 목록 DTO")
+    public record AdminSellerApplicationRejectList(
+        @Schema(description = "거절 처리한 신청 Id 목록", example = "[1]") List<Long> successIds,
+        @Schema(description = "거절 실패한 신청 Id 목록", example = "1", nullable = true) List<FailDetail> failDetails
+    ) {
+
+        @Builder
+        public record FailDetail(
+            @Schema(description = "거절 실패한 신청 Id", example = "1") long storeApplicationId,
+            @Schema(description = "거절 실패한 상세 사유", example = "존재하지 않는 신청입니다.") String reason
+        ) {}
+    }
 }
