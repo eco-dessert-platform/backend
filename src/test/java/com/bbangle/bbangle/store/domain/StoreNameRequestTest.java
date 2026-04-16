@@ -67,7 +67,7 @@ class StoreNameRequestTest {
 
         @Test
         @DisplayName("거절된 신청은 승인 실패한다.")
-        void fail_approve() {
+        void fail_approve_by_reject() {
 
             // given
             Store store = StoreFixture.defaultStore();
@@ -82,6 +82,44 @@ class StoreNameRequestTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_REJECTED);
                 });
+        }
+
+        @Test
+        @DisplayName("승인된 신청은 승인 실패한다.")
+        void fail_approve_by_approve() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store, StoreApprovalStatus.APPROVE
+            );
+
+            // when & then
+            assertThatThrownBy(storeNameRequest::approve)
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
+                });
+        }
+
+        @Test
+        @DisplayName("승인 후 rejectCategory와 rejectDetail은 null을 유지한다.")
+        void approve_doesNotSetRejectFields() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store
+            );
+
+            // when
+            storeNameRequest.approve();
+
+            // then
+            assertThat(storeNameRequest.getRejectCategory()).isNull();
+            assertThat(storeNameRequest.getRejectDetail()).isNull();
+            assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
         }
     }
 
@@ -108,7 +146,7 @@ class StoreNameRequestTest {
 
         @Test
         @DisplayName("승인된 신청은 거절에 실패한다.")
-        void fail_reject() {
+        void fail_reject_by_approve() {
 
             // given
             Store store = StoreFixture.defaultStore();
@@ -124,6 +162,45 @@ class StoreNameRequestTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
                 });
+        }
+
+        @Test
+        @DisplayName("거절된 신청은 거절에 실패한다.")
+        void fail_reject_by_reject() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store, StoreApprovalStatus.REJECT
+            );
+
+            // when & then
+            assertThatThrownBy(() -> storeNameRequest.reject(
+                StoreNameRejectCategory.ETC, "test"))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_REJECTED);
+                });
+        }
+
+        @Test
+        @DisplayName("rejectDetail이 null이어도 거절에 성공한다.")
+        void success_reject_withNullDetail() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store
+            );
+
+            // when
+            storeNameRequest.reject(StoreNameRejectCategory.ETC, null);
+
+            // then
+            assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(storeNameRequest.getRejectCategory()).isEqualTo(StoreNameRejectCategory.ETC);
+            assertThat(storeNameRequest.getRejectDetail()).isNull();
         }
     }
 }
