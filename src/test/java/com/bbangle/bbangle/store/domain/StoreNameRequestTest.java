@@ -67,7 +67,7 @@ class StoreNameRequestTest {
 
         @Test
         @DisplayName("거절된 신청은 승인 실패한다.")
-        void fail_approve() {
+        void fail_approve_by_reject() {
 
             // given
             Store store = StoreFixture.defaultStore();
@@ -81,6 +81,25 @@ class StoreNameRequestTest {
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_REJECTED);
+                });
+        }
+
+        @Test
+        @DisplayName("승인된 신청은 승인 실패한다.")
+        void fail_approve_by_approve() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store, StoreApprovalStatus.APPROVE
+            );
+
+            // when & then
+            assertThatThrownBy(storeNameRequest::approve)
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
                 });
         }
     }
@@ -108,7 +127,7 @@ class StoreNameRequestTest {
 
         @Test
         @DisplayName("승인된 신청은 거절에 실패한다.")
-        void fail_reject() {
+        void fail_reject_by_approve() {
 
             // given
             Store store = StoreFixture.defaultStore();
@@ -124,6 +143,64 @@ class StoreNameRequestTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
                 });
+        }
+
+        @Test
+        @DisplayName("거절된 신청은 거절에 실패한다.")
+        void fail_reject_by_reject() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store, StoreApprovalStatus.REJECT
+            );
+
+            // when & then
+            assertThatThrownBy(() -> storeNameRequest.reject(
+                StoreNameRejectCategory.ETC, "test"))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_REJECTED);
+                });
+        }
+
+        @Test
+        @DisplayName("거절 시 스토어 이름은 변경되지 않는다.")
+        void reject_doesNotChangeStoreName() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            String originalName = store.getName();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store
+            );
+
+            // when
+            storeNameRequest.reject(StoreNameRejectCategory.ETC, "부적절한 이름");
+
+            // then
+            assertThat(store.getName()).isEqualTo(originalName);
+            assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+        }
+
+        @Test
+        @DisplayName("rejectDetail이 null이어도 거절에 성공한다.")
+        void reject_withNullRejectDetail_succeeds() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            StoreNameRequest storeNameRequest = StoreNameRequestFixture.defaultStoreNameRequest(
+                SellerFixture.defaultSeller(), store
+            );
+
+            // when
+            storeNameRequest.reject(StoreNameRejectCategory.ETC, null);
+
+            // then
+            assertThat(storeNameRequest.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(storeNameRequest.getRejectCategory()).isEqualTo(StoreNameRejectCategory.ETC);
+            assertThat(storeNameRequest.getRejectDetail()).isNull();
         }
     }
 }
