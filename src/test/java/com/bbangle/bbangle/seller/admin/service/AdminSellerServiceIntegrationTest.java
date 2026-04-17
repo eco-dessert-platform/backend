@@ -1,16 +1,22 @@
 package com.bbangle.bbangle.seller.admin.service;
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.fixture.seller.domain.AccountVerificationFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationRejectList;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
 import com.bbangle.bbangle.seller.domain.AccountVerification;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +38,12 @@ class AdminSellerServiceIntegrationTest {
 
     @Autowired
     private EntityManager em;
+
+    @Autowired
+    private StoreApplicationRepository storeApplicationRepository;
+
+    @Autowired
+    private SellerRepository sellerRepository;
 
     @Nested
     @DisplayName("getAdminSellerApplicationList() 테스트")
@@ -188,6 +200,185 @@ class AdminSellerServiceIntegrationTest {
             assertThat(result.sellerApplicationInfoList()).isEmpty();
             assertThat(result.hasNext()).isFalse();
             assertThat(result.hasPrevious()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("rejectStoreApplications() 테스트")
+    class RejectStoreApplicationsTest {
+
+        @Test
+        @DisplayName("모든 신청이 정상적으로 거절된다")
+        void success_rejectStoreApplications() {
+
+            // given
+            Seller seller1 = sellerRepository.save(SellerFixture.defaultSeller());
+            Seller seller2 = sellerRepository.save(SellerFixture.defaultSeller());
+            StoreApplication app1 = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(seller1, null)
+            );
+            StoreApplication app2 = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(seller2, null)
+            );
+            em.flush();
+            em.clear();
+
+            List<Long> ids = List.of(app1.getId(), app2.getId());
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(result.successIds()).containsExactlyInAnyOrderElementsOf(ids);
+            assertThat(result.failDetails()).isEmpty();
+
+            // DB 반영 확인 (핵심)
+            StoreApplication updated1 = storeApplicationRepository.findById(app1.getId()).orElseThrow();
+            StoreApplication updated2 = storeApplicationRepository.findById(app2.getId()).orElseThrow();
+
+            assertThat(updated1.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(updated2.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+
+            assertThat(updated1.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+            assertThat(updated2.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 신청의 ID는 실패로 처리된다")
+        void rejectStoreApplications_with_not_found() {
+
+            // given
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller());
+            StoreApplication app = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(seller, null)
+            );
+            em.flush();
+            em.clear();
+
+            List<Long> ids = List.of(app.getId(), 999L);
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(result.successIds()).containsExactly(app.getId());
+            assertThat(result.failDetails()).hasSize(1);
+
+            StoreApplication persisted = storeApplicationRepository.findById(app.getId()).orElseThrow();
+            assertThat(persisted.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(persisted.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+
+            assertThat(result.failDetails().get(0).storeApplicationId()).isEqualTo(999L);
+        }
+
+        @Test
+        @DisplayName("이미 승인된 요청은 거절 시 실패 처리된다.")
+        void rejectStoreApplications_business_exception() {
+
+            // given
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.APPROVED));
+            StoreApplication app = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, StoreApprovalStatus.APPROVE)
+            );
+            em.flush();
+            em.clear();
+
+            List<Long> ids = List.of(app.getId());
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(result.successIds()).isEmpty();
+            assertThat(result.failDetails()).hasSize(1);
+
+            assertThat(result.failDetails().get(0).reason()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED.getMessage());
+
+            // DB 상태 그대로 유지 확인
+            StoreApplication persisted = storeApplicationRepository.findById(app.getId()).orElseThrow();
+            assertThat(persisted.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
+            assertThat(persisted.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
+        }
+
+        @Test
+        @DisplayName("빈 리스트를 입력하면 성공/실패 목록 모두 비어있다")
+        void rejectStoreApplications_empty_list() {
+
+            // given
+            List<Long> ids = List.of();
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+
+            // then
+            assertThat(result.successIds()).isEmpty();
+            assertThat(result.failDetails()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공과 실패가 혼합된 경우 각각 독립적으로 처리되며 성공한 항목은 DB에 반영된다")
+        void rejectStoreApplications_mixed_success_and_failure() {
+
+            // given
+            Seller pendingSeller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
+            Seller approvedSeller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.APPROVED));
+
+            StoreApplication pendingApp = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(pendingSeller, null)
+            );
+            StoreApplication approvedApp = storeApplicationRepository.save(
+                StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, approvedSeller, StoreApprovalStatus.APPROVE)
+            );
+            em.flush();
+            em.clear();
+
+            List<Long> ids = List.of(pendingApp.getId(), approvedApp.getId());
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(result.successIds()).containsExactly(pendingApp.getId());
+            assertThat(result.failDetails()).hasSize(1);
+            assertThat(result.failDetails().get(0).storeApplicationId()).isEqualTo(approvedApp.getId());
+            assertThat(result.failDetails().get(0).reason()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED.getMessage());
+
+            // PENDING 신청은 REJECT 상태로 변경됨
+            StoreApplication updatedPending = storeApplicationRepository.findById(pendingApp.getId()).orElseThrow();
+            assertThat(updatedPending.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(updatedPending.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+
+            // APPROVED 신청은 상태 그대로 유지됨
+            StoreApplication updatedApproved = storeApplicationRepository.findById(approvedApp.getId()).orElseThrow();
+            assertThat(updatedApproved.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
+            assertThat(updatedApproved.getSeller().getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
+        }
+
+        @Test
+        @DisplayName("NOT_FOUND 실패 상세 정보에 올바른 에러 메시지가 담긴다")
+        void rejectStoreApplications_not_found_error_message() {
+
+            // given
+            long nonExistentId = Long.MAX_VALUE;
+            List<Long> ids = List.of(nonExistentId);
+
+            // when
+            AdminSellerApplicationRejectList result = adminSellerService.rejectStoreApplications(ids);
+
+            // then
+            assertThat(result.successIds()).isEmpty();
+            assertThat(result.failDetails()).hasSize(1);
+            assertThat(result.failDetails().get(0).storeApplicationId()).isEqualTo(nonExistentId);
+            assertThat(result.failDetails().get(0).reason())
+                .isEqualTo(BbangleErrorCode.NOT_FOUND_REQUEST.getMessage());
         }
     }
 }
