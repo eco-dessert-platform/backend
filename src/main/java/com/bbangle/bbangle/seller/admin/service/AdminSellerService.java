@@ -42,7 +42,6 @@ public class AdminSellerService {
             .build();
     }
 
-    // TODO : Test
     @Transactional
     public AdminSellerResponse.AdminSellerApplicationRejectList rejectStoreApplications(List<Long> ids) {
 
