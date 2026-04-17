@@ -9,12 +9,18 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROF
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("[단위 테스트] StoreApplication")
@@ -49,5 +55,101 @@ class StoreApplicationTest {
         assertThat(storeApplication.getOriginAddressDetail()).isEqualTo(DEFAULT_DETAIL_ADDRESS);
         assertThat(storeApplication.getSeller()).isEqualTo(seller);
         assertThat(storeApplication.getStore()).isEqualTo(store);
+    }
+
+    @Nested
+    @DisplayName("reject() 테스트")
+    class RejectTest {
+
+        @Test
+        @DisplayName("승인 대기 중인 요청을 거절한다.")
+        void success_reject() {
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, null);
+
+            // when
+            application.reject();
+
+            // then
+            assertThat(application.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("이미 승인된 판매자의 승인 대기중인 요청을 거절할 경우 해당 요청만 거절된 상태로 업데이트된다.")
+        void reject_already_approved_seller() {
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.APPROVED);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, null);
+
+            // when
+            application.reject();
+
+            // then
+            assertThat(application.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
+        }
+
+        @Test
+        @DisplayName("이미 승인된 요청을 거절할 경우 예외가 발생한다.")
+        void fail_reject_already_approved_application() {
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.APPROVED);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, StoreApprovalStatus.APPROVE);
+
+            // when & then
+            assertThatThrownBy(application::reject)
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
+                });
+        }
+
+        @Test
+        @DisplayName("이미 거절된 요청을 다시 거절해도 예외가 발생하지 않는다.")
+        void reject_already_rejected_application() {
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.REJECTED);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, StoreApprovalStatus.REJECT);
+
+            // when
+            application.reject();
+
+            // then
+            assertThat(application.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("판매자 인증 상태가 REJECTED인 경우 승인 대기 요청 거절 시 판매자 상태가 유지된다.")
+        void reject_pending_application_with_rejected_seller() {
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.REJECTED);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, null);
+
+            // when
+            application.reject();
+
+            // then
+            assertThat(application.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("승인 상태이지만 판매자가 APPROVED가 아닌 경우 거절이 성공한다.")
+        void reject_approved_application_with_non_approved_seller() {
+            // given - APPROVE status but seller is PENDING (edge case: validation only throws when BOTH are true)
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, StoreApprovalStatus.APPROVE);
+
+            // when
+            application.reject();
+
+            // then
+            assertThat(application.getStatus()).isEqualTo(StoreApprovalStatus.REJECT);
+            assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.REJECTED);
+        }
     }
 }
