@@ -126,7 +126,6 @@ public class StoreApplication extends BaseEntity {
         this.status = StoreApprovalStatus.APPROVE;
     }
 
-    // TODO : Test
     public void reject() {
         validateRejectable();
 
