@@ -40,7 +40,6 @@ public class AdminSellerController implements AdminSellerApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PatchMapping("/reject")
     public SingleResult<AdminSellerApplicationRejectList> rejectSellerApplications(

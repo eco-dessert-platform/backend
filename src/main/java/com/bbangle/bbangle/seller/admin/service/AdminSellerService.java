@@ -15,9 +15,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminSellerService {
@@ -75,9 +77,10 @@ public class AdminSellerService {
                     .build()
                 );
             } catch (Exception e) {
+                log.error("스토어 등록 거절 처리 중 예기치 못한 오류 발생. id={}", id, e);
                 failDetails.add(FailDetail.builder()
                     .storeApplicationId(id)
-                    .reason("알 수 없는 오류")
+                    .reason(BbangleErrorCode.INTERNAL_SERVER_ERROR.getMessage())
                     .build()
                 );
             }

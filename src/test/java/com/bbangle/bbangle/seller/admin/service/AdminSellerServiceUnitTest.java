@@ -300,7 +300,7 @@ class AdminSellerServiceUnitTest {
 
             // then
             assertThat(result.failDetails()).hasSize(1);
-            assertThat(result.failDetails().get(0).reason()).isEqualTo("알 수 없는 오류");
+            assertThat(result.failDetails().get(0).reason()).isEqualTo(BbangleErrorCode.INTERNAL_SERVER_ERROR.getMessage());
 
             verify(app).reject();
         }

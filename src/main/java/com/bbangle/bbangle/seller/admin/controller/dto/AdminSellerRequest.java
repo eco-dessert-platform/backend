@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.admin.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
 
@@ -12,6 +13,6 @@ public class AdminSellerRequest {
     public record StoreApplicationIds(
         @NotEmpty(message = "신청 Id 목록은 비어 있을 수 없습니다.")
         @Schema(description = "스토어 신청서 Id 목록", example = "[1]")
-        List<Long> applicationIds
+        List<@NotNull Long> applicationIds
     ) {}
 }
