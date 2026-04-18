@@ -70,6 +70,7 @@ public class SellerChargeService {
         return new ChargeBalanceResponse(chargeBalance.getBalance(), pageResponse);
     }
 
+    // TODO: 계좌이체 외부 API 연동 필요.
     @Transactional
     public void requestWithdrawal(WithdrawalCommand command) {
         preventDuplicateRequest(command.transactionId(), command.sellerId());
