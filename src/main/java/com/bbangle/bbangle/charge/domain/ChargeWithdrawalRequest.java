@@ -55,6 +55,10 @@ public class ChargeWithdrawalRequest extends BaseEntity {
     @Column(columnDefinition = "tinyint", nullable = false)
     private Boolean success;
 
+    @Comment("출금 실패 이유")
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String failureReason;
+
     @Builder
     private ChargeWithdrawalRequest(
         Seller seller,
@@ -62,19 +66,21 @@ public class ChargeWithdrawalRequest extends BaseEntity {
         String bankName,
         String accountHolder,
         String accountNumber,
-        Boolean success) {
+        Boolean success,
+        String failureReason) {
         this.seller = seller;
         this.withdrawalAmount = withdrawalAmount;
         this.bankName = bankName;
         this.accountHolder = accountHolder;
         this.accountNumber = accountNumber;
         this.success = success;
+        this.failureReason = failureReason;
     }
 
     /**
-     * 출금 신청 생성
+     * 출금 신청 성공 생성
      */
-    public static ChargeWithdrawalRequest create(
+    public static ChargeWithdrawalRequest createSuccess(
         Seller seller,
         BigDecimal withdrawalAmount,
         String bankName,
@@ -86,14 +92,28 @@ public class ChargeWithdrawalRequest extends BaseEntity {
             .bankName(bankName)
             .accountHolder(accountHolder)
             .accountNumber(accountNumber)
-            .success(false)
+            .success(true)
             .build();
     }
 
     /**
-     * 출금 처리 결과 설정
+     * 출금 신청 실패 생성
      */
-    public void setWithdrawalResult(boolean success) {
-        this.success = success;
+    public static ChargeWithdrawalRequest createFailure(
+        Seller seller,
+        BigDecimal withdrawalAmount,
+        String bankName,
+        String accountHolder,
+        String accountNumber,
+        String failureReason) {
+        return ChargeWithdrawalRequest.builder()
+            .seller(seller)
+            .withdrawalAmount(withdrawalAmount)
+            .bankName(bankName)
+            .accountHolder(accountHolder)
+            .accountNumber(accountNumber)
+            .success(false)
+            .failureReason(failureReason)
+            .build();
     }
 }
