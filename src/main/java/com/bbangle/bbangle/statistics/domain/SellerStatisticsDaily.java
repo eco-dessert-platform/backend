@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -55,4 +56,59 @@ public class SellerStatisticsDaily extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private Seller seller;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    private SellerStatisticsDaily(
+        LocalDateTime statDate,
+        Integer weekday,
+        BigDecimal totalAmount,
+        Integer totalOrders,
+        Integer totalBuyers,
+        BigDecimal refundAmount,
+        Integer refundCount,
+        BigDecimal refundRate,
+        Seller seller
+    ) {
+        this.statDate = statDate;
+        this.weekday = weekday;
+        this.totalAmount = totalAmount;
+        this.totalOrders = totalOrders;
+        this.totalBuyers = totalBuyers;
+        this.refundAmount = refundAmount;
+        this.refundCount = refundCount;
+        this.refundRate = refundRate;
+        this.seller = seller;
+    }
+
+    public static SellerStatisticsDaily create(
+        LocalDateTime statDate,
+        Integer weekday,
+        BigDecimal totalAmount,
+        Integer totalOrders,
+        Integer totalBuyers,
+        BigDecimal refundAmount,
+        Integer refundCount,
+        BigDecimal refundRate,
+        Seller seller
+    ) {
+        return SellerStatisticsDaily.builder()
+            .statDate(statDate)
+            .weekday(weekday)
+            .totalAmount(totalAmount)
+            .totalOrders(totalOrders)
+            .totalBuyers(totalBuyers)
+            .refundAmount(refundAmount)
+            .refundCount(refundCount)
+            .refundRate(refundRate)
+            .seller(seller)
+            .build();
+    }
+
+    public long getTotalOrdersCount() {
+        return totalOrders == null ? 0L : totalOrders.longValue();
+    }
+
+    public long getTotalBuyersCount() {
+        return totalBuyers == null ? 0L : totalBuyers.longValue();
+    }
 }

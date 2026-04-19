@@ -12,6 +12,8 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse.DailyPaymentAmountItem;
+import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse.DailyPaymentCountItem;
 import com.bbangle.bbangle.statistics.seller.service.SellerPaymentStatisticsService;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,7 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @ActiveProfiles("test")
-@DisplayName("[컨트롤러] SellerPaymentStatisticsController")
+@DisplayName("[Controller] SellerPaymentStatisticsController")
 @Import({
     TestSlackAdaptorConfig.class,
     ResponseService.class
@@ -42,7 +44,7 @@ class SellerPaymentStatisticsControllerSliceTest {
     private SellerPaymentStatisticsService sellerPaymentStatisticsService;
 
     @Test
-    @DisplayName("결제 금액 통계 조회 성공")
+    @DisplayName("returns payment amount statistics")
     void getDailyPaymentAmount_success() throws Exception {
         DailyPaymentAmountResponse response = new DailyPaymentAmountResponse(
             LocalDate.of(2026, 3, 1),
@@ -77,5 +79,45 @@ class SellerPaymentStatisticsControllerSliceTest {
             .andExpect(jsonPath("$.result.dailyAmounts[0].amount").value(12000))
             .andExpect(jsonPath("$.result.dailyAmounts[2].amount").value(3000))
             .andExpect(jsonPath("$.result.dailyAmounts[6].amount").value(0));
+    }
+
+    @Test
+    @DisplayName("returns payment count statistics")
+    void getDailyPaymentCount_success() throws Exception {
+        DailyPaymentCountResponse response = new DailyPaymentCountResponse(
+            LocalDate.of(2026, 3, 1),
+            LocalDate.of(2026, 3, 7),
+            StatisticsPeriod.DAY,
+            null,
+            null,
+            List.of(
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 1), 1L, 2L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 2), 0L, 0L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 3), 1L, 1L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 4), 0L, 0L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 5), 0L, 0L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 6), 0L, 0L),
+                new DailyPaymentCountItem(LocalDate.of(2026, 3, 7), 0L, 0L)
+            )
+        );
+
+        given(sellerPaymentStatisticsService.getDailyPaymentCount(any(), any(), any()))
+            .willReturn(response);
+
+        mvc.perform(get("/api/v1/seller/payments/statistics/daily-count")
+                .param("date", "2026-03-07")
+                .param("period", "DAY"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
+            .andExpect(jsonPath("$.result.startDate").value("2026-03-01"))
+            .andExpect(jsonPath("$.result.endDate").value("2026-03-07"))
+            .andExpect(jsonPath("$.result.period").value("DAY"))
+            .andExpect(jsonPath("$.result.dailyCounts.length()").value(7))
+            .andExpect(jsonPath("$.result.dailyCounts[0].buyerCount").value(1))
+            .andExpect(jsonPath("$.result.dailyCounts[0].paymentCount").value(2))
+            .andExpect(jsonPath("$.result.dailyCounts[2].buyerCount").value(1))
+            .andExpect(jsonPath("$.result.dailyCounts[2].paymentCount").value(1));
     }
 }
