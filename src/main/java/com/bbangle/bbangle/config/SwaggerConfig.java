@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.config;
 
+import com.bbangle.bbangle.config.security.AdminApiPath;
+import com.bbangle.bbangle.config.security.CustomerApiPath;
+import com.bbangle.bbangle.config.security.PublicApiPath;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -12,6 +16,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -89,5 +94,51 @@ public class SwaggerConfig {
                     .addResourceLocations("classpath:/META-INF/resources/webjars/");
             }
         };
+    }
+
+    @Bean public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder()
+            .group("Admin")
+            .pathsToMatch(AdminApiPath.PREFIX + "/**")
+            .build();
+    }
+
+    @Bean public GroupedOpenApi sellerApi() {
+        return GroupedOpenApi.builder()
+            .group("Seller")
+            .pathsToMatch(SellerApiPath.PREFIX + "/**")
+            .build();
+    }
+
+    @Bean public GroupedOpenApi customerApi() {
+        return GroupedOpenApi.builder()
+            .group("Customer")
+            .pathsToMatch(CustomerApiPath.PREFIX + "/**")
+            .build();
+    }
+
+    @Bean public GroupedOpenApi authApi() {
+        return GroupedOpenApi.builder()
+            .group("Auth")
+            .pathsToMatch(
+                PublicApiPath.AUTH_PREFIX + "/**",
+                PublicApiPath.OAUTH_PREFIX + "/**"
+                )
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi otherApi() {
+        return GroupedOpenApi.builder()
+            .group("Public")
+            .pathsToMatch("/**")
+            .pathsToExclude(
+                AdminApiPath.PREFIX + "/**",
+                SellerApiPath.PREFIX + "/**",
+                CustomerApiPath.PREFIX + "/**",
+                PublicApiPath.AUTH_PREFIX + "/**",
+                PublicApiPath.OAUTH_PREFIX + "/**"
+            )
+            .build();
     }
 }
