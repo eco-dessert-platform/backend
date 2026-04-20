@@ -114,6 +114,7 @@ slack:
 springdoc:
   swagger-ui:
     config-url: ${SWAGGER_CONFIG_URL}
+    url: ${SWAGGER_URL}
 
 app:
   cookie:
