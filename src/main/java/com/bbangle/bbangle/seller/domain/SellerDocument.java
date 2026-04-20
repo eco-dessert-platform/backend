@@ -67,6 +67,11 @@ public class SellerDocument extends BaseEntity {
         this.status = status;
     }
 
+    public String getZipFileName() {
+        String extension = name.substring(name.lastIndexOf('.'));
+        return type.getKoreanName() + extension;
+    }
+
     public static SellerDocument create(String name, String url, String type, Seller seller) {
         createValidate(name, url, type, seller);
         return SellerDocument.builder()

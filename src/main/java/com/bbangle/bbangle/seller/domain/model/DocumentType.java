@@ -8,19 +8,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum DocumentType {
 
-    // TODO : 각 문서 형식을 이해하기 쉽게 주석 추가
-
-    // 사업자등록증
-    BUSINESS_REGISTRATION_CERTIFICATE("Business Registration Certificate"),
-    // 통신판매업신고증
-    MAIL_ORDER_SALES_REPORT("Mail Order Sales Report"),
-    // 즉석식품제조가공업등록증
+    BUSINESS_REGISTRATION_CERTIFICATE("Business Registration Certificate", "사업자등록증"),
+    MAIL_ORDER_SALES_REPORT("Mail Order Sales Report", "통신판매업신고증"),
     INSTANT_FOOD_MANUFACTURING_PROCESSING_REGISTRATION(
-        "Instant Food Manufacturing Processing Registration"),
-    // 통장사본
-    BANKBOOK_COPY("Bankbook Copy");
+        "Instant Food Manufacturing Processing Registration", "즉석식품제조가공업등록증"),
+    BANKBOOK_COPY("Bankbook Copy", "통장사본");
 
     private final String description;
+    private final String koreanName;
 
 
     public static DocumentType fromDescription(String desc) {
