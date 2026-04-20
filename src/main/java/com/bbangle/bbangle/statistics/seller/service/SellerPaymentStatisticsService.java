@@ -12,7 +12,10 @@ import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse.DailyPaymentAmountItem;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse.DailyPaymentCountItem;
+import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse.WeekdayPaymentAmountItem;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -79,6 +82,41 @@ public class SellerPaymentStatisticsService {
             resolvedPeriod,
             averageAmount,
             items
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public WeekdayPaymentAmountResponse getWeekdayPaymentAmount(
+        Long sellerId,
+        Optional<LocalDate> date,
+        Optional<StatisticsPeriod> period
+    ) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.SELLER_NOT_FOUND));
+
+        StatisticsPeriod resolvedPeriod = StatisticsPeriod.from(period.orElse(StatisticsPeriod.DAY));
+        LocalDate targetDate = date.orElse(LocalDate.now());
+        DateRange range = resolvedPeriod.resolveDateRange(targetDate, BUCKET_COUNT);
+
+        List<SellerStatisticsDaily> rows =
+            sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
+                seller.getId(),
+                range.startDate().atStartOfDay(),
+                range.endDate().atTime(LocalTime.MAX)
+            );
+
+        Map<LocalDate, SellerStatisticsDaily> statisticsByDate = rows.stream()
+            .collect(Collectors.toMap(
+                row -> row.getStatDate().toLocalDate(),
+                Function.identity(),
+                (first, second) -> first
+            ));
+
+        return new WeekdayPaymentAmountResponse(
+            range.startDate(),
+            range.endDate(),
+            resolvedPeriod,
+            buildWeekdayItems(range, statisticsByDate)
         );
     }
 
@@ -192,6 +230,36 @@ public class SellerPaymentStatisticsService {
 
             items.add(new DailyPaymentCountItem(bucketStart, buyerCount, paymentCount));
             cursor = period.nextBucketStart(cursor);
+        }
+
+        return items;
+    }
+
+    private List<WeekdayPaymentAmountItem> buildWeekdayItems(
+        DateRange range,
+        Map<LocalDate, SellerStatisticsDaily> statisticsByDate
+    ) {
+        List<WeekdayPaymentAmountItem> items = new ArrayList<>();
+
+        for (int weekday = DayOfWeek.MONDAY.getValue(); weekday <= DayOfWeek.SUNDAY.getValue(); weekday++) {
+            final int currentWeekday = weekday;
+            List<LocalDate> matchingDates = range.startDate()
+                .datesUntil(range.endDate().plusDays(1))
+                .filter(date -> date.getDayOfWeek().getValue() == currentWeekday)
+                .toList();
+
+            long amount = matchingDates.stream()
+                .map(statisticsByDate::get)
+                .filter(row -> row != null && row.getTotalAmount() != null)
+                .map(SellerStatisticsDaily::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .longValue();
+
+            long averageAmount = matchingDates.isEmpty()
+                ? 0L
+                : Math.round((double) amount / matchingDates.size());
+
+            items.add(new WeekdayPaymentAmountItem(currentWeekday, amount, averageAmount));
         }
 
         return items;
