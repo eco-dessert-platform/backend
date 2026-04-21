@@ -2,13 +2,13 @@
 -- [MOCK] 접두사로 식별 및 삭제 용이
 
 -- 1. Mock Store 5개 삽입
-INSERT INTO store (name, introduce, profile, is_deleted, created_at, modified_at)
+INSERT INTO store (identifier, name, introduce, profile, is_deleted, created_at, modified_at)
 VALUES
-    ('[MOCK] 밀담 베이커리', '건강한 저당 빵을 만드는 베이커리', NULL, 0, NOW(), NOW()),
-    ('[MOCK] 그린웨이브', '비건 전문 베이커리', NULL, 0, NOW(), NOW()),
-    ('[MOCK] 오트하우스', '귀리 전문 베이커리', NULL, 0, NOW(), NOW()),
-    ('[MOCK] 헬시브레드', '단백질 강화 베이커리', NULL, 0, NOW(), NOW()),
-    ('[MOCK] 케토팩토리', '키토제닉 전문 베이커리', NULL, 0, NOW(), NOW());
+    ('mock-mildam', '[MOCK] 밀담 베이커리', '건강한 저당 빵을 만드는 베이커리', NULL, 0, NOW(), NOW()),
+    ('mock-greenwave', '[MOCK] 그린웨이브', '비건 전문 베이커리', NULL, 0, NOW(), NOW()),
+    ('mock-oathouse', '[MOCK] 오트하우스', '귀리 전문 베이커리', NULL, 0, NOW(), NOW()),
+    ('mock-healthybread', '[MOCK] 헬시브레드', '단백질 강화 베이커리', NULL, 0, NOW(), NOW()),
+    ('mock-ketofactory', '[MOCK] 케토팩토리', '키토제닉 전문 베이커리', NULL, 0, NOW(), NOW());
 
 -- 2. PENDING 상태 product_board 20개 삽입 (스토어당 4개)
 INSERT INTO product_board (store_id, title, price, sale_status, is_deleted, created_at, modified_at)
