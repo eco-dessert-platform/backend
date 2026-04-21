@@ -204,3 +204,24 @@ FROM product_board
 WHERE title LIKE '[MOCK]%'
   AND is_crawling = 1
   AND is_deleted = 0;
+
+-- =====================================================================
+-- getUpdateStoreNames: status = 'PENDING' 인 store_name_request
+-- =====================================================================
+
+-- 7. store_name_request 10개 삽입 (스토어당 2개, PENDING)
+INSERT INTO store_name_request (store_id, seller_id, current_name, new_name, status, created_at)
+SELECT s.id, NULL, s.name, r.new_name, 'PENDING', NOW()
+FROM store s
+         JOIN (
+    SELECT '[MOCK] 밀담 베이커리' AS store_name, '[MOCK] 밀담브레드' AS new_name
+    UNION ALL SELECT '[MOCK] 밀담 베이커리', '[MOCK] 밀담베이커스'
+    UNION ALL SELECT '[MOCK] 그린웨이브', '[MOCK] 그린웨이브 비건'
+    UNION ALL SELECT '[MOCK] 그린웨이브', '[MOCK] 그린플랜트베이커리'
+    UNION ALL SELECT '[MOCK] 오트하우스', '[MOCK] 오트하우스 키친'
+    UNION ALL SELECT '[MOCK] 오트하우스', '[MOCK] 오트웰니스'
+    UNION ALL SELECT '[MOCK] 헬시브레드', '[MOCK] 헬시브레드랩'
+    UNION ALL SELECT '[MOCK] 헬시브레드', '[MOCK] 프로틴베이커리'
+    UNION ALL SELECT '[MOCK] 케토팩토리', '[MOCK] 케토팩토리 프리미엄'
+    UNION ALL SELECT '[MOCK] 케토팩토리', '[MOCK] 키토브레드'
+) r ON s.name = r.store_name;
