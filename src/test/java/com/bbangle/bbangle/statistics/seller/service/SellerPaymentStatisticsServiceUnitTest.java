@@ -15,6 +15,7 @@ import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.repository.SellerStatisticsRepository;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@DisplayName("[UnitTest] SellerPaymentStatisticsService")
+@DisplayName("[단위 테스트] SellerPaymentStatisticsService")
 @ExtendWith(MockitoExtension.class)
 class SellerPaymentStatisticsServiceUnitTest {
 
@@ -41,7 +42,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     private SellerStatisticsRepository sellerStatisticsRepository;
 
     @Test
-    @DisplayName("fills missing day buckets with zero for payment amount")
+    @DisplayName("결제 금액 조회 시 비어 있는 일자 구간은 0으로 채운다")
     void getDailyPaymentAmount_fillMissingDatesWithZero() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
@@ -81,7 +82,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("aggregates weekly payment amount buckets")
+    @DisplayName("주간 결제 금액 구간을 집계한다")
     void getDailyPaymentAmount_weeklyBuckets() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 16);
@@ -124,7 +125,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("aggregates monthly payment amount buckets")
+    @DisplayName("월간 결제 금액 구간을 집계한다")
     void getDailyPaymentAmount_monthlyBuckets() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 10);
@@ -167,7 +168,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("uses DAY as the default period for payment amount")
+    @DisplayName("결제 금액 조회 시 기본 기간은 DAY를 사용한다")
     void getDailyPaymentAmount_defaultPeriodIsDay() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
@@ -187,7 +188,64 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("aggregates weekly buyer and payment counts")
+    @DisplayName("결제 금액을 요일별로 집계하고 요일 평균 금액을 계산한다")
+    void getWeekdayPaymentAmount_success() {
+        Long sellerId = 1L;
+        LocalDate targetDate = LocalDate.of(2026, 3, 16);
+
+        givenExistingSeller(sellerId);
+
+        SellerStatisticsDaily monday1 = mockStatisticsDaily(
+            LocalDateTime.of(2026, 2, 2, 10, 0),
+            1000L,
+            0,
+            0
+        );
+        SellerStatisticsDaily monday2 = mockStatisticsDaily(
+            LocalDateTime.of(2026, 3, 16, 10, 0),
+            3000L,
+            0,
+            0
+        );
+        SellerStatisticsDaily thursday = mockStatisticsDaily(
+            LocalDateTime.of(2026, 2, 5, 10, 0),
+            2000L,
+            0,
+            0
+        );
+        SellerStatisticsDaily friday = mockStatisticsDaily(
+            LocalDateTime.of(2026, 3, 20, 10, 0),
+            7000L,
+            0,
+            0
+        );
+
+        given(sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
+            eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).willReturn(List.of(monday1, monday2, thursday, friday));
+
+        WeekdayPaymentAmountResponse result = sut.getWeekdayPaymentAmount(
+            sellerId, Optional.of(targetDate), Optional.of(StatisticsPeriod.WEEK));
+
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 2, 2));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 22));
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.WEEK);
+        assertThat(result.weekdayAmounts()).hasSize(7);
+        assertThat(result.weekdayAmounts().get(0).weekday()).isEqualTo(1);
+        assertThat(result.weekdayAmounts().get(0).amount()).isEqualTo(4000L);
+        assertThat(result.weekdayAmounts().get(0).averageAmount()).isEqualTo(571L);
+        assertThat(result.weekdayAmounts().get(3).weekday()).isEqualTo(4);
+        assertThat(result.weekdayAmounts().get(3).amount()).isEqualTo(2000L);
+        assertThat(result.weekdayAmounts().get(3).averageAmount()).isEqualTo(286L);
+        assertThat(result.weekdayAmounts().get(4).weekday()).isEqualTo(5);
+        assertThat(result.weekdayAmounts().get(4).amount()).isEqualTo(7000L);
+        assertThat(result.weekdayAmounts().get(4).averageAmount()).isEqualTo(1000L);
+        assertThat(result.weekdayAmounts().get(6).amount()).isEqualTo(0L);
+        assertThat(result.weekdayAmounts().get(6).averageAmount()).isEqualTo(0L);
+    }
+
+    @Test
+    @DisplayName("주간 구매자 수와 결제 건수를 집계한다")
     void getDailyPaymentCount_weeklyBuckets() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 16);
@@ -233,7 +291,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("fills missing day buckets with zero for payment count")
+    @DisplayName("결제 건수 조회 시 비어 있는 일자 구간은 0으로 채운다")
     void getDailyPaymentCount_fillMissingDatesWithZero() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
@@ -272,7 +330,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("throws SELLER_NOT_FOUND when seller does not exist")
+    @DisplayName("판매자가 없으면 SELLER_NOT_FOUND 예외를 던진다")
     void getDailyPaymentAmount_sellerNotFound() {
         Long sellerId = 999L;
         given(sellerRepository.findById(sellerId)).willReturn(Optional.empty());
