@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "Admin Store", description = "(관리자) 판매자 관리 API")
+@Tag(name = "Admin Seller", description = "(관리자) 판매자 관리 API")
 public interface AdminSellerApi {
 
     @Operation(
