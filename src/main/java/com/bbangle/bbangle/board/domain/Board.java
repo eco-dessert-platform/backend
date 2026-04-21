@@ -69,7 +69,7 @@ public class Board extends SoftDeleteBaseEntity {
     private int discountValue;
 
     @Column(name = "discount_rate")
-    private int discountRate;
+    private Integer discountRate;
 
     @Column(name = "is_soldout", columnDefinition = "tinyint")
     private Boolean status;
