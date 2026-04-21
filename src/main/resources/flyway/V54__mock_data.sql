@@ -196,6 +196,83 @@ FROM product_board pb
     AND pb.store_id = (SELECT id FROM store WHERE name = p.store_name)
     AND pb.is_crawling = 1;
 
+-- =====================================================================
+-- getSellerApplicationList: store_application (PENDING) + sellers + account_verifications
+-- =====================================================================
+
+-- 6-a. Mock sellers 5개 삽입 (provider_id UNIQUE 제약 → MOCK_SELLER_00N)
+INSERT INTO sellers (name, provider, provider_id, status, is_deleted, created_at)
+VALUES
+    ('[MOCK]김민준', 'KAKAO', 'MOCK_SELLER_001', 'PENDING', 0, NOW()),
+    ('[MOCK]이서연', 'KAKAO', 'MOCK_SELLER_002', 'PENDING', 0, NOW()),
+    ('[MOCK]박지호', 'GOOGLE', 'MOCK_SELLER_003', 'PENDING', 0, NOW()),
+    ('[MOCK]최유나', 'GOOGLE', 'MOCK_SELLER_004', 'PENDING', 0, NOW()),
+    ('[MOCK]정하은', 'KAKAO', 'MOCK_SELLER_005', 'PENDING', 0, NOW());
+
+-- 6-b. account_verifications 5개 삽입 (verified=1, account_number=NULL → 복호화 없이 null 반환)
+INSERT INTO account_verifications (seller_id, bank_code, account_number, account_holder, verified, created_at, modified_at)
+SELECT s.id, av.bank_code, NULL, av.account_holder, 1, NOW(), NOW()
+FROM sellers s
+         JOIN (
+    SELECT 'MOCK_SELLER_001' AS provider_id, '004' AS bank_code, '[MOCK]김민준' AS account_holder
+    UNION ALL SELECT 'MOCK_SELLER_002', '020', '[MOCK]이서연'
+    UNION ALL SELECT 'MOCK_SELLER_003', '088', '[MOCK]박지호'
+    UNION ALL SELECT 'MOCK_SELLER_004', '081', '[MOCK]최유나'
+    UNION ALL SELECT 'MOCK_SELLER_005', '011', '[MOCK]정하은'
+) av ON s.provider_id = av.provider_id;
+
+-- 6-c. store_application 5개 삽입 (status=PENDING)
+INSERT INTO store_application (seller_id, store_id, name, introduce, profile, status,
+                               phone, sub_phone, email,
+                               origin_address_line, origin_address_detail,
+                               created_at, modified_at)
+SELECT s.id, NULL, sa.name, sa.introduce, NULL, 'PENDING',
+       sa.phone, NULL, sa.email,
+       sa.origin_address_line, sa.origin_address_detail,
+       NOW(), NOW()
+FROM sellers s
+         JOIN (
+    SELECT 'MOCK_SELLER_001' AS provider_id,
+           '[MOCK] 밀담 베이커리'   AS name,
+           '건강한 저당 빵 전문'     AS introduce,
+           '01012341001'           AS phone,
+           'mock1@example.com'     AS email,
+           '(13494) 경기도 성남시 분당구 판교역로 235' AS origin_address_line,
+           '판교 테크원타워 1동 101호'               AS origin_address_detail
+    UNION ALL
+    SELECT 'MOCK_SELLER_002',
+           '[MOCK] 그린웨이브',
+           '비건 전문 베이커리',
+           '01012341002',
+           'mock2@example.com',
+           '(04524) 서울시 중구 세종대로 110',
+           '광화문빌딩 3층 302호'
+    UNION ALL
+    SELECT 'MOCK_SELLER_003',
+           '[MOCK] 오트하우스',
+           '귀리 전문 베이커리',
+           '01012341003',
+           'mock3@example.com',
+           '(06236) 서울시 강남구 테헤란로 152',
+           '강남파이낸스센터 2층 205호'
+    UNION ALL
+    SELECT 'MOCK_SELLER_004',
+           '[MOCK] 헬시브레드',
+           '단백질 강화 베이커리',
+           '01012341004',
+           'mock4@example.com',
+           '(48058) 부산시 해운대구 센텀중앙로 55',
+           '센텀시티타워 7층 701호'
+    UNION ALL
+    SELECT 'MOCK_SELLER_005',
+           '[MOCK] 케토팩토리',
+           '키토제닉 전문 베이커리',
+           '01012341005',
+           'mock5@example.com',
+           '(61452) 광주시 동구 금남로 245',
+           '광주금남빌딩 4층 401호'
+) sa ON s.provider_id = sa.provider_id;
+
 -- 6. board_statistic 삽입 - getAdminBoards EntityGraph 로딩 대응
 INSERT INTO board_statistic (board_id, basic_score, board_wish_count, board_review_count,
                              board_view_count, board_review_grade, is_deleted, created_at, modified_at)
