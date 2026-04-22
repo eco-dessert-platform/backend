@@ -200,7 +200,7 @@ class SellerChargeControllerTest {
                     .param("size", "20"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(-801))
+                .andExpect(jsonPath("$.code").value(-821))
                 .andExpect(jsonPath("$.message").value("충전금 잔액 정보를 찾을 수 없습니다."));
         }
 
@@ -368,7 +368,7 @@ class SellerChargeControllerTest {
                     .content(jsonDataEncoder.encode(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(-802))
+                .andExpect(jsonPath("$.code").value(-822))
                 .andExpect(jsonPath("$.message").value("동일한 출금 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."));
         }
 
@@ -390,7 +390,7 @@ class SellerChargeControllerTest {
                     .content(jsonDataEncoder.encode(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(-803))
+                .andExpect(jsonPath("$.code").value(-823))
                 .andExpect(jsonPath("$.message").value("충전금 잔액이 부족합니다."));
         }
 

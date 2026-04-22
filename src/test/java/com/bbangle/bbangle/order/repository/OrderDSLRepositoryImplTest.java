@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.TestContainersConfig;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
@@ -76,6 +77,7 @@ class OrderDSLRepositoryImplTest {
         board = Board.builder()
             .store(store)
             .title("테스트 게시글")
+            .saleStatus(SaleStatus.ON_SALE)
             .build();
         boardRepository.save(board);
     }
