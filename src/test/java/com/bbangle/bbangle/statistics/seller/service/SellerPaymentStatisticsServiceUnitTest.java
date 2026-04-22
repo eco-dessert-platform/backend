@@ -354,11 +354,16 @@ class SellerPaymentStatisticsServiceUnitTest {
         int totalOrders,
         int totalBuyers
     ) {
-        SellerStatisticsDaily row = org.mockito.Mockito.mock(SellerStatisticsDaily.class);
-        given(row.getStatDate()).willReturn(statDate);
-        given(row.getTotalAmount()).willReturn(BigDecimal.valueOf(amount));
-        given(row.getTotalOrdersCount()).willReturn((long) totalOrders);
-        given(row.getTotalBuyersCount()).willReturn((long) totalBuyers);
-        return row;
+        return SellerStatisticsDaily.create(
+            statDate,
+            statDate.getDayOfWeek().getValue(),
+            BigDecimal.valueOf(amount),
+            totalOrders,
+            totalBuyers,
+            BigDecimal.ZERO,
+            0,
+            BigDecimal.ZERO,
+            null
+        );
     }
 }
