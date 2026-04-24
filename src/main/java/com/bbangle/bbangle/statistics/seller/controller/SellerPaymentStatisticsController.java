@@ -2,6 +2,7 @@ package com.bbangle.bbangle.statistics.seller.controller;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.SellerApiPath;
 import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.seller.controller.swagger.SellerPaymentStatisticsApi;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/seller/payments/statistics")
+@RequestMapping(SellerApiPath.PREFIX + "/payments/statistics")
 public class SellerPaymentStatisticsController implements SellerPaymentStatisticsApi {
 
     private final ResponseService responseService;
