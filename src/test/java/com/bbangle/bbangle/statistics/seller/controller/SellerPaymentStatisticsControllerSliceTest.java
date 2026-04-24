@@ -173,7 +173,6 @@ class SellerPaymentStatisticsControllerSliceTest {
             LocalDate.of(2026, 3, 1),
             LocalDate.of(2026, 3, 7),
             StatisticsPeriod.DAY,
-            null,
             List.of(
                 new DailyRefundRateItem(LocalDate.of(2026, 3, 1), 12000L, 3000L, new BigDecimal("25.00")),
                 new DailyRefundRateItem(LocalDate.of(2026, 3, 2), 0L, 0L, new BigDecimal("0.00")),

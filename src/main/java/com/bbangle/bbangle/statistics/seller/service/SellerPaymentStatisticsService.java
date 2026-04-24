@@ -43,7 +43,8 @@ public class SellerPaymentStatisticsService {
     private final SellerStatisticsRepository sellerStatisticsRepository;
 
     /**
-     * 판매자 결제금액 통계를 조회합니다. 일별 적재 데이터를 조회한 뒤 요청한 기간 단위(DAY/WEEK/MONTH)에 맞게 7개 버킷으로 다시 합산합니다.
+     * 판매자 결제금액 통계를 조회합니다.
+     * 일별 적재 데이터를 조회한 뒤 요청된 기간 단위(DAY/WEEK/MONTH)에 맞게 7개 버킷으로 다시 합산합니다.
      */
     @Transactional(readOnly = true)
     public DailyPaymentAmountResponse getDailyPaymentAmount(
@@ -93,7 +94,8 @@ public class SellerPaymentStatisticsService {
     }
 
     /**
-     * 판매자 요일별 결제금액 통계를 조회합니다. 조회 기간의 일별 데이터를 월~일 요일 기준으로 재분류해 총 결제금액과 평균 결제금액을 계산합니다.
+     * 판매자 요일별 결제금액 통계를 조회합니다.
+     * 조회 기간의 일별 데이터를 모아 월~일 요일 기준으로 재분류한 뒤 총 결제금액과 평균 결제금액을 계산합니다.
      */
     @Transactional(readOnly = true)
     public WeekdayPaymentAmountResponse getWeekdayPaymentAmount(
@@ -131,7 +133,8 @@ public class SellerPaymentStatisticsService {
     }
 
     /**
-     * 판매자 결제건수 및 구매자수 통계를 조회합니다. 일별 적재된 주문 수와 구매자 수를 요청한 기간 단위 버킷으로 누적해 응답합니다.
+     * 판매자 결제건수 및 구매자수 통계를 조회합니다.
+     * 일별 적재된 주문 수와 구매자 수를 요청된 기간 버킷 단위로 누적해 응답합니다.
      */
     @Transactional(readOnly = true)
     public DailyPaymentCountResponse getDailyPaymentCount(
@@ -146,7 +149,7 @@ public class SellerPaymentStatisticsService {
         LocalDate targetDate = date.orElse(LocalDate.now());
         DateRange range = resolvedPeriod.resolveDateRange(targetDate, BUCKET_COUNT);
 
-        // 조회 구간의 일별 통계만 가져와 이후 버킷 단위로 다시 합산합니다.
+        // 조회 구간의 일별 통계만 가져온 이후 버킷 단위로 다시 합산합니다.
         List<SellerStatisticsDaily> rows =
             sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
                 seller.getId(),
@@ -190,7 +193,8 @@ public class SellerPaymentStatisticsService {
     }
 
     /**
-     * 판매자 환불율 통계를 조회합니다. 일별 적재 데이터에서 결제금액과 환불금액을 합산한 뒤 버킷별 환불율을 다시 계산해 응답합니다.
+     * 판매자 환불율 통계를 조회합니다.
+     * 일별 적재 데이터에서 결제금액과 환불금액을 합산한 뒤 버킷별 환불율을 다시 계산해 응답합니다.
      */
     @Transactional(readOnly = true)
     public DailyRefundRateResponse getDailyRefundRate(
@@ -222,15 +226,11 @@ public class SellerPaymentStatisticsService {
             ));
 
         List<DailyRefundRateItem> items = buildRefundRateItems(range, resolvedPeriod, statisticsByDate);
-        BigDecimal averageRefundRate = resolvedPeriod == StatisticsPeriod.DAY
-            ? null
-            : calculateAverageRefundRate(items);
 
         return new DailyRefundRateResponse(
             range.startDate(),
             range.endDate(),
             resolvedPeriod,
-            averageRefundRate,
             items
         );
     }
@@ -334,14 +334,15 @@ public class SellerPaymentStatisticsService {
     }
 
     /**
-     * 기간 버킷별 결제금액/환불금액 합계와 환불율을 계산합니다. 환불율은 적재된 일별 환불율이 아니라 합산 금액 기준으로 다시 계산합니다.
+     * 기간 버킷별 결제금액/환불금액 합계와 환불율을 계산합니다.
+     * 환불율은 적재된 일별 환불율이 아니라 합산 금액 기준으로 다시 계산합니다.
      */
     private List<DailyRefundRateItem> buildRefundRateItems(
         DateRange range,
         StatisticsPeriod period,
         Map<LocalDate, SellerStatisticsDaily> statisticsByDate
     ) {
-        // refund_rate 컬럼은 참고용으로 두고, 응답용 비율은 합산 금액 기준으로 다시 계산합니다.
+        // refund_rate 컬럼은 참고용으로만 두고, 응답의 비율은 합산 금액 기준으로 다시 계산합니다.
         List<DailyRefundRateItem> items = new ArrayList<>();
         LocalDate cursor = range.startDate();
 
@@ -376,25 +377,10 @@ public class SellerPaymentStatisticsService {
     }
 
     /**
-     * 버킷별 환불율의 산술 평균을 계산합니다.
-     */
-    private BigDecimal calculateAverageRefundRate(List<DailyRefundRateItem> items) {
-        // 주/월 조회의 평균 환불율은 각 버킷 환불율의 평균으로 제공합니다.
-        if (items.isEmpty()) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-
-        return items.stream()
-            .map(DailyRefundRateItem::refundRate)
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .divide(BigDecimal.valueOf(items.size()), 2, RoundingMode.HALF_UP);
-    }
-
-    /**
      * 결제금액 대비 환불금액 비율을 계산합니다.
      */
     private BigDecimal calculateRefundRate(long paymentAmount, long refundAmount) {
-        // 분모가 0이면 환불율은 0으로 간주합니다.
+        // 분모가 0이면 환불율을 0으로 간주합니다.
         if (paymentAmount <= 0L || refundAmount <= 0L) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }

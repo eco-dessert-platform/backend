@@ -21,9 +21,6 @@ public record DailyRefundRateResponse(
     @Schema(description = "집계 단위", example = "DAY")
     StatisticsPeriod period,
 
-    @Schema(description = "버킷 평균 환불율(%)", example = "35.42", nullable = true)
-    BigDecimal averageRefundRate,
-
     @Schema(description = "버킷별 환불 통계 목록")
     List<DailyRefundRateItem> dailyRefundRates
 ) {

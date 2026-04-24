@@ -377,7 +377,6 @@ class SellerPaymentStatisticsServiceUnitTest {
         assertThat(result.dailyRefundRates().get(6).paymentAmount()).isEqualTo(18000L);
         assertThat(result.dailyRefundRates().get(6).refundAmount()).isEqualTo(5000L);
         assertThat(result.dailyRefundRates().get(6).refundRate()).isEqualByComparingTo("27.78");
-        assertThat(result.averageRefundRate()).isEqualByComparingTo("6.83");
     }
 
     @Test
