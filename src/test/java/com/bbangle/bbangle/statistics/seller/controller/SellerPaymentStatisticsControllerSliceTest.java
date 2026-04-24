@@ -14,9 +14,12 @@ import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse.DailyPaymentAmountItem;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse.DailyPaymentCountItem;
+import com.bbangle.bbangle.statistics.seller.dto.DailyRefundRateResponse;
+import com.bbangle.bbangle.statistics.seller.dto.DailyRefundRateResponse.DailyRefundRateItem;
 import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse.WeekdayPaymentAmountItem;
 import com.bbangle.bbangle.statistics.seller.service.SellerPaymentStatisticsService;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -161,5 +164,44 @@ class SellerPaymentStatisticsControllerSliceTest {
             .andExpect(jsonPath("$.result.weekdayAmounts[6].weekday").value(7))
             .andExpect(jsonPath("$.result.weekdayAmounts[6].amount").value(7000))
             .andExpect(jsonPath("$.result.weekdayAmounts[6].averageAmount").value(7000));
+    }
+
+    @Test
+    @DisplayName("환불율 통계를 반환한다")
+    void getDailyRefundRate_success() throws Exception {
+        DailyRefundRateResponse response = new DailyRefundRateResponse(
+            LocalDate.of(2026, 3, 1),
+            LocalDate.of(2026, 3, 7),
+            StatisticsPeriod.DAY,
+            null,
+            List.of(
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 1), 12000L, 3000L, new BigDecimal("25.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 2), 0L, 0L, new BigDecimal("0.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 3), 10000L, 2000L, new BigDecimal("20.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 4), 0L, 0L, new BigDecimal("0.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 5), 0L, 0L, new BigDecimal("0.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 6), 0L, 0L, new BigDecimal("0.00")),
+                new DailyRefundRateItem(LocalDate.of(2026, 3, 7), 0L, 0L, new BigDecimal("0.00"))
+            )
+        );
+
+        given(sellerPaymentStatisticsService.getDailyRefundRate(any(), any(), any()))
+            .willReturn(response);
+
+        mvc.perform(get("/api/v1/seller/payments/statistics/daily-refund-rate")
+                .param("date", "2026-03-07")
+                .param("period", "DAY"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.message").value(SUCCESS.getMessage()))
+            .andExpect(jsonPath("$.result.startDate").value("2026-03-01"))
+            .andExpect(jsonPath("$.result.endDate").value("2026-03-07"))
+            .andExpect(jsonPath("$.result.period").value("DAY"))
+            .andExpect(jsonPath("$.result.dailyRefundRates.length()").value(7))
+            .andExpect(jsonPath("$.result.dailyRefundRates[0].paymentAmount").value(12000))
+            .andExpect(jsonPath("$.result.dailyRefundRates[0].refundAmount").value(3000))
+            .andExpect(jsonPath("$.result.dailyRefundRates[0].refundRate").value(25.00))
+            .andExpect(jsonPath("$.result.dailyRefundRates[2].refundRate").value(20.00));
     }
 }
