@@ -2,7 +2,9 @@ package com.bbangle.bbangle.auth.admin.controller;
 
 import com.bbangle.bbangle.auth.admin.controller.swagger.AdminAuthApi;
 import com.bbangle.bbangle.auth.admin.dto.AdminLoginResponse;
+import com.bbangle.bbangle.auth.admin.dto.AdminReissueResponse;
 import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminLoginRequest;
+import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminReissueRequest;
 import com.bbangle.bbangle.auth.admin.service.AdminAuthService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
@@ -34,5 +36,11 @@ public class AdminAuthController implements AdminAuthApi {
     public CommonResult logout(@AuthenticationPrincipal Long adminId) {
         adminAuthService.logout(adminId);
         return responseService.getSuccessResult();
+    }
+
+    @Override
+    @PostMapping("/reissue")
+    public SingleResult<AdminReissueResponse> reissue(@RequestBody AdminReissueRequest request) {
+        return responseService.getSingleResult(adminAuthService.reissue(request));
     }
 }
