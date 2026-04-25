@@ -10,6 +10,9 @@ public record AdminProductResponse(
     @Schema(description = "상품 ID", example = "1001")
     Long productId,
 
+    @Schema(description = "스토어 ID", example = "10")
+    Long storeId,
+
     @Schema(description = "스토어명", example = "그린베이커리")
     String storeName,
 
@@ -59,6 +62,7 @@ public record AdminProductResponse(
 
         return new AdminProductResponse(
             board.getId(),
+            board.getStore().getId(),
             board.getStore().getName(),
             board.getTitle(),
             board.getPrice(),
