@@ -6,7 +6,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.auth.admin.dto.AdminLoginResponse;
+import com.bbangle.bbangle.auth.admin.dto.AdminReissueResponse;
 import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminLoginRequest;
+import com.bbangle.bbangle.auth.admin.dto.AdminRequest.AdminReissueRequest;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
 import org.junit.jupiter.api.DisplayName;
@@ -86,6 +88,39 @@ public class AdminAuthServiceIntegrationTest {
 
         // assert
         assertThat(refreshTokenRepository.findByUserIdAndUserRole(adminId, Role.ROLE_ADMIN)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("reissue 성공 시 새 access/refresh 토큰이 발급되고 refresh_token row가 갱신된다")
+    void reissue_success() {
+        // arrange
+        String rawPassword = "password";
+        String encoded = passwordEncoder.encode(rawPassword);
+
+        Admin admin = Admin.builder()
+                .accountId("adminReissue")
+                .password(encoded)
+                .name("Admin")
+                .build();
+        adminRepository.saveAndFlush(admin);
+
+        AdminLoginRequest loginRequest = new AdminLoginRequest("adminReissue", rawPassword);
+        AdminLoginResponse loginResponse = adminAuthService.login(loginRequest);
+
+        String originalRefreshToken = loginResponse.getRefreshToken();
+
+        // act
+        AdminReissueResponse reissueResponse = adminAuthService.reissue(
+                new AdminReissueRequest(originalRefreshToken)
+        );
+
+        // assert — 새 토큰이 발급됨
+        assertThat(reissueResponse.getAccessToken()).isNotNull();
+        assertThat(reissueResponse.getRefreshToken()).isNotNull();
+
+        // assert — DB의 refresh row가 새 refresh 값으로 갱신됨 (Rotation)
+        // 새 refresh 토큰으로 row 조회 가능
+        assertThat(refreshTokenRepository.findByRefreshToken(reissueResponse.getRefreshToken())).isPresent();
     }
 
 }
