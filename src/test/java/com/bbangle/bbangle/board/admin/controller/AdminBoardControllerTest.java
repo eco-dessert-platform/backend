@@ -187,6 +187,7 @@ class AdminBoardControllerTest {
         Board board = BoardFixture.defaultBoard();
         UploadApprovalResponse response = new UploadApprovalResponse(
             board.getId(),
+            board.getStore().getId(),
             board.getStore().getName(),
             board.getTitle()
         );

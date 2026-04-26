@@ -8,6 +8,9 @@ public record UploadApprovalResponse(
     @Schema(description = "상품(게시글) ID", example = "101")
     Long boardId,
 
+    @Schema(description = "스토어 ID", example = "10")
+    Long storeId,
+
     @Schema(description = "스토어명", example = "빠진 빵집")
     String storeName,
 
@@ -18,6 +21,7 @@ public record UploadApprovalResponse(
   public static UploadApprovalResponse fromEntity(Board board) {
     return new UploadApprovalResponse(
         board.getId(),
+        board.getStore().getId(),
         board.getStore().getName(),
         board.getTitle()
     );

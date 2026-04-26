@@ -11,6 +11,7 @@ public final class AdminProductResponseFixture {
     public static AdminProductResponse defaultResponse() {
         return new AdminProductResponse(
             1L,
+            1L,
             "스토어명",
             "상품명",
             10000,
