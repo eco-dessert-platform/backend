@@ -6,6 +6,8 @@ import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +28,8 @@ public class OrderRequest {
         @Schema(description = "검색 상세조건")
         private CompletedOrderSearchType searchType;
 
+        @NotNull
+        @Valid
         @JsonUnwrapped
         @Schema(hidden = true, description = "기본 검색 조건")
         private SearchFormDto.DefaultSearchCondition defaultSearchCondition;
