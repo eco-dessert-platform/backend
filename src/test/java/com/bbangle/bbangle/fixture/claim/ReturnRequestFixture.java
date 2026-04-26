@@ -36,6 +36,14 @@ public class ReturnRequestFixture {
         return withStatus(ReturnRequestRequestStatus.PICKUP_SCHEDULED, orderItem);
     }
 
+    public static ReturnRequest inspectionApproved(OrderItem orderItem) {
+        return withStatus(ReturnRequestRequestStatus.INSPECTION_APPROVED, orderItem);
+    }
+
+    public static ReturnRequest completed(OrderItem orderItem) {
+        return withStatus(ReturnRequestRequestStatus.COMPLETED, orderItem);
+    }
+
     public static ReturnRequest withId(ReturnRequest rr, Long id) {
         ReflectionTestUtils.setField(rr, "id", id); // Claim의 id 필드
         return rr;

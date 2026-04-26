@@ -16,6 +16,7 @@ import com.bbangle.bbangle.fixture.order.OrderItemFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.order.domain.OrderItem;
+import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.seller.domain.Seller;
@@ -274,6 +275,237 @@ class SellerReturnServiceIntegrationTest {
             // when & then
             assertThatThrownBy(
                 () -> sut.decision(nonExistentIds, seller.getId(), DecisionType.APPROVE, "사유")
+            ).isInstanceOf(BbangleException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("refuseReturn() - 성공 시나리오")
+    class RefuseReturnSuccessTests {
+
+        @Test
+        @DisplayName("REQUESTED 상태의 반품을 거절하면 REJECTED로 변경되고 거절 사유와 히스토리가 저장된다")
+        void refuseReturn_fromRequested_success() {
+            // given
+            long historyCountBefore = orderItemHistoryRepository.count();
+
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnRequestedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.requested(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+            Long orderItemId = orderItem.getId();
+            String refusalReason = "사용 흔적이 있는 상품입니다.";
+
+            em.flush();
+            em.clear();
+
+            // when
+            sut.refuseReturn(returnId, seller.getId(), refusalReason);
+
+            // then
+            em.flush();
+            em.clear();
+
+            ReturnRequest refused = returnRequestRepository.findById(returnId).orElseThrow();
+            assertThat(refused.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
+            assertThat(refused.getSellerComment()).isEqualTo(refusalReason);
+
+            OrderItem refusedItem = orderItemRepository.findById(orderItemId).orElseThrow();
+            assertThat(refusedItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
+
+            assertThat(orderItemHistoryRepository.count()).isEqualTo(historyCountBefore + 1);
+        }
+
+        @Test
+        @DisplayName("PICKUP_SCHEDULED 상태의 반품을 거절하면 REJECTED로 변경되고 히스토리가 저장된다")
+        void refuseReturn_fromPickupScheduled_success() {
+            // given
+            long historyCountBefore = orderItemHistoryRepository.count();
+
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnApprovedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.pickupScheduled(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+            Long orderItemId = orderItem.getId();
+            String refusalReason = "수거 중 파손이 확인되어 반품 불가합니다.";
+
+            em.flush();
+            em.clear();
+
+            // when
+            sut.refuseReturn(returnId, seller.getId(), refusalReason);
+
+            // then
+            em.flush();
+            em.clear();
+
+            ReturnRequest refused = returnRequestRepository.findById(returnId).orElseThrow();
+            assertThat(refused.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
+            assertThat(refused.getSellerComment()).isEqualTo(refusalReason);
+
+            OrderItem refusedItem = orderItemRepository.findById(orderItemId).orElseThrow();
+            assertThat(refusedItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
+
+            assertThat(orderItemHistoryRepository.count()).isEqualTo(historyCountBefore + 1);
+        }
+    }
+
+    @Nested
+    @DisplayName("refuseReturn() - 실패 시나리오")
+    class RefuseReturnFailureTests {
+
+        @Test
+        @DisplayName("다른 판매자의 반품은 거절할 수 없다")
+        void refuseReturn_fails_when_seller_mismatch() {
+            // given
+            Store otherStore = storeRepository.save(StoreFixture.defaultStore());
+            Seller otherSeller = sellerRepository.save(SellerFixture.defaultSeller(otherStore));
+
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnRequestedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.requested(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(
+                () -> sut.refuseReturn(returnId, otherSeller.getId(), "거절 사유")
+            ).isInstanceOf(BbangleException.class);
+
+            // 상태가 변경되지 않았는지 확인
+            ReturnRequest unchanged = returnRequestRepository.findById(returnId).orElseThrow();
+            assertThat(unchanged.getStatus()).isEqualTo(ReturnRequestRequestStatus.REQUESTED);
+        }
+
+        @Test
+        @DisplayName("COMPLETED 상태의 반품을 거절하려 하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void refuseReturn_fails_when_already_completed() {
+            // given
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnApprovedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.completed(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(
+                () -> sut.refuseReturn(returnId, seller.getId(), "거절 사유")
+            ).isInstanceOf(BbangleException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("processReturn() - 성공 시나리오")
+    class ProcessReturnSuccessTests {
+
+        @Test
+        @DisplayName("INSPECTION_APPROVED 상태의 반품을 처리하면 COMPLETED로 변경되고 히스토리가 저장된다")
+        void processReturn_success() {
+            // given
+            long historyCountBefore = orderItemHistoryRepository.count();
+
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnApprovedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.inspectionApproved(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+            Long orderItemId = orderItem.getId();
+
+            em.flush();
+            em.clear();
+
+            // when
+            sut.processReturn(returnId, seller.getId());
+
+            // then
+            em.flush();
+            em.clear();
+
+            ReturnRequest completed = returnRequestRepository.findById(returnId).orElseThrow();
+            assertThat(completed.getStatus()).isEqualTo(ReturnRequestRequestStatus.COMPLETED);
+
+            OrderItem completedItem = orderItemRepository.findById(orderItemId).orElseThrow();
+            assertThat(completedItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_COMPLETED);
+
+            assertThat(orderItemHistoryRepository.count()).isEqualTo(historyCountBefore + 1);
+        }
+    }
+
+    @Nested
+    @DisplayName("processReturn() - 실패 시나리오")
+    class ProcessReturnFailureTests {
+
+        @Test
+        @DisplayName("다른 판매자의 반품은 처리할 수 없다")
+        void processReturn_fails_when_seller_mismatch() {
+            // given
+            Store otherStore = storeRepository.save(StoreFixture.defaultStore());
+            Seller otherSeller = sellerRepository.save(SellerFixture.defaultSeller(otherStore));
+
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnApprovedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.inspectionApproved(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(
+                () -> sut.processReturn(returnId, otherSeller.getId())
+            ).isInstanceOf(BbangleException.class);
+
+            // 상태가 변경되지 않았는지 확인
+            ReturnRequest unchanged = returnRequestRepository.findById(returnId).orElseThrow();
+            assertThat(unchanged.getStatus()).isEqualTo(ReturnRequestRequestStatus.INSPECTION_APPROVED);
+        }
+
+        @Test
+        @DisplayName("REQUESTED 상태의 반품을 최종 처리하려 하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void processReturn_fails_when_invalid_status() {
+            // given
+            OrderItem orderItem = orderItemRepository.save(
+                OrderItemFixture.returnRequestedWithProduct(product)
+            );
+            ReturnRequest returnRequest = returnRequestRepository.save(
+                ReturnRequestFixture.requested(orderItem)
+            );
+
+            Long returnId = returnRequest.getId();
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(
+                () -> sut.processReturn(returnId, seller.getId())
             ).isInstanceOf(BbangleException.class);
         }
     }
