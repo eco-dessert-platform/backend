@@ -3,6 +3,7 @@ package com.bbangle.bbangle.image.customer.service;
 import static com.bbangle.bbangle.image.customer.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
+import io.jsonwebtoken.lang.Assert;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -54,6 +55,38 @@ public class S3Service {
         log.debug("Show image path: {}", imagePath);
         imagePath = removeBucketDomainInFolder(imagePath);
         return addCdnDomain(imagePath);
+    }
+
+    public String saveDocumentAndReturnWithCdn(String folderName, MultipartFile file) {
+        String filePath = saveDocument(file, folderName);
+        log.debug("Show document path: {}", filePath);
+        filePath = removeBucketDomainInFolder(filePath);
+        return addCdnDomain(filePath);
+    }
+
+    public String saveDocument(MultipartFile file, String folder) {
+        Assert.notNull(file, "비어있는 파일은 업로드 할 수 없습니다.");
+        Assert.isTrue(!file.isEmpty(), "비어있는 파일은 업로드 할 수 없습니다.");
+        Assert.isTrue(file.getSize() < 10_000_000, "파일이 허용된 최대 크기를 초과했습니다.");
+
+        final String originName = file.getOriginalFilename();
+        Assert.notNull(originName, "파일명이 없습니다.");
+        final String ext = originName.substring(originName.lastIndexOf("."));
+        final String changedFileName = folder + "/" + UUID.randomUUID() + ext;
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+
+        try {
+            amazonS3.putObject(new PutObjectRequest(
+                bucket, changedFileName, file.getInputStream(), metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch (final IOException e) {
+            throw new BbangleException("저장하기 유효하지 않은 파일입니다.", e);
+        }
+
+        return amazonS3.getUrl(bucket, changedFileName).toString();
     }
 
     public List<String> saveMultipleAndReturnWithCdn(String folderName, List<MultipartFile> images) {

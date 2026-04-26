@@ -45,7 +45,7 @@ public class SellerFacade {
         List<UploadedDocument> uploadedDocuments = new ArrayList<>();
         try {
             for (DocumentUploadInfo doc : documents) {
-                String filePath = s3Service.saveAndReturnWithCdn(SELLER_DOCUMENT_FOLDER, doc.file());
+                String filePath = s3Service.saveDocumentAndReturnWithCdn(SELLER_DOCUMENT_FOLDER, doc.file());
                 String fileName = doc.file().getOriginalFilename();
                 uploadedDocuments.add(new UploadedDocument(doc.type(), filePath, fileName));
             }

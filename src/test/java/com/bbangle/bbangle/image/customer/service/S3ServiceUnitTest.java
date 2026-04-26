@@ -117,6 +117,43 @@ class S3ServiceUnitTest {
     }
 
     @Test
+    @DisplayName("PDF 문서를 S3에 업로드하고 CDN 도메인이 포함된 URL을 반환한다")
+    void saveDocumentAndReturnWithCdn_uploadsPdfAndReturnsCdnUrl() throws IOException {
+        // given
+        String folderName = "seller-documents";
+        byte[] content = "test pdf content".getBytes();
+        MultipartFile mockMultipartFile = new MockMultipartFile(
+            "document",
+            "business-license.pdf",
+            "application/pdf",
+            new ByteArrayInputStream(content)
+        );
+
+        when(amazonS3.putObject(any(PutObjectRequest.class))).thenReturn(mock(PutObjectResult.class));
+        when(amazonS3.getUrl(any(String.class), any(String.class)))
+            .thenAnswer(invocation -> {
+                String key = invocation.getArgument(1);
+                return new URL(BUCKET_DOMAIN + key);
+            });
+
+        // when
+        String resultUrl = s3Service.saveDocumentAndReturnWithCdn(folderName, mockMultipartFile);
+
+        // then
+        ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(amazonS3).putObject(captor.capture());
+        PutObjectRequest capturedRequest = captor.getValue();
+
+        assertThat(capturedRequest.getBucketName()).isEqualTo(BUCKET_NAME);
+        assertThat(capturedRequest.getKey()).startsWith(folderName + "/");
+        assertThat(capturedRequest.getKey()).endsWith(".pdf");
+        assertThat(capturedRequest.getMetadata().getContentType()).isEqualTo("application/pdf");
+        assertThat(resultUrl).startsWith(CDN_DOMAIN + folderName + "/");
+        assertThat(resultUrl).endsWith(".pdf");
+        assertThat(resultUrl).doesNotContain(BUCKET_DOMAIN);
+    }
+
+    @Test
     @DisplayName("유효하지 않은 이미지 파일인 경우 예외를 발생시킨다")
     void saveAndReturnWithCdn_throwsExceptionForInvalidImage() throws IOException {
         // given
