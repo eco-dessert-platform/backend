@@ -158,6 +158,13 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.RETURN_REJECTED;
     }
 
+    public void returnRefuse() {
+        if (orderStatus != RETURN_REQUESTED && orderStatus != OrderStatus.RETURN_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_REJECTED;
+    }
+
     public void cancelApprove() {
         if (orderStatus != CANCEL_REQUESTED) {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);

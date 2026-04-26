@@ -65,6 +65,15 @@ public class ReturnRequest extends Claim {
         super.decide();
     }
 
+    public void refuse(String refusalReason) {
+        if (status != REQUESTED && status != PICKUP_SCHEDULED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = REJECTED;
+        this.sellerComment = refusalReason;
+        super.decide();
+    }
+
     public void startReturnPickup() {
         this.status.validateTransition(ReturnRequestRequestStatus.PICKUP_SCHEDULED);
         this.status = ReturnRequestRequestStatus.PICKUP_SCHEDULED;
