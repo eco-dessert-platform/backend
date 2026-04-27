@@ -2,6 +2,7 @@ package com.bbangle.bbangle.claim.seller.controller;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.RegisterReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ReturnRefuseRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceResponse;
 import com.bbangle.bbangle.claim.seller.controller.swagger.SellerReturnApi;
@@ -36,6 +37,16 @@ public class SellerReturnController implements SellerReturnApi {
     ) {
         sellerReturnService.decision(returnDecisionRequest.returnIds(), sellerId,
             returnDecisionRequest.decisionType(), returnDecisionRequest.reason());
+        return responseService.getSuccessResult();
+    }
+
+    @PostMapping("/{returnId}/refuse")
+    public CommonResult refuseReturn(
+        @PathVariable Long returnId,
+        @Valid @RequestBody ReturnRefuseRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerReturnService.refuseReturn(returnId, sellerId, request.refusalReason());
         return responseService.getSuccessResult();
     }
 

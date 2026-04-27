@@ -2,6 +2,7 @@ package com.bbangle.bbangle.claim.seller.controller.swagger;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.RegisterReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ReturnDecisionRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ReturnRefuseRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.UpdateReturnInvoiceResponse;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -12,6 +13,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Return", description = "(셀러) 반품 관리 API")
 public interface SellerReturnApi {
+
+    @Operation(
+        summary = "반품 거절(반려)",
+        description = "REQUESTED(대기) 또는 PICKUP_SCHEDULED(수거 예약) 상태의 반품 요청을 거절한다. "
+            + "거절 사유(refusalReason)는 필수이며, ReturnRequest의 sellerComment 필드에 저장된다."
+    )
+    CommonResult refuseReturn(
+        @Parameter(description = "반품 요청 ID") Long returnId,
+        ReturnRefuseRequest request,
+        @Parameter(hidden = true) Long sellerId
+    );
 
     @Operation(
         summary = "반품 요청 승인/거절",
