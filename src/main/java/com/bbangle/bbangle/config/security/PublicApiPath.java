@@ -9,6 +9,7 @@ public class PublicApiPath {
         "/api/v1/token",
         AdminApiPath.PREFIX + "/login",
         AdminApiPath.PREFIX + "/logout",
+        AdminApiPath.PREFIX + "/reissue",
         "/api/v1/oauth/**",
         "/api/v1/search/**",
         "/api/v1/landingpage",
