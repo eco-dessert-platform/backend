@@ -4,7 +4,8 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-*.json
+
+**/src/main/resources/firebase/*json
 
 ### STS ###
 .apt_generated
@@ -230,3 +231,13 @@ redis/data/dump.rdb
 !/.github/workflows/cd-pipeline-aws-deploy.yml
 
 src/main/resources/docker/
+
+### log ###
+/logs/
+
+### claude ###
+.claude/
+CLAUDE.md
+
+### worktrees ###
+.worktrees/

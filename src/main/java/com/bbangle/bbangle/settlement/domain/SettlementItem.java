@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -50,7 +51,7 @@ public class SettlementItem extends BaseEntity {
     private LocalDate completedDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status",  columnDefinition = "VARCHAR(20)")
+    @Column(name = "status",  columnDefinition = "VARCHAR(30)")
     private SettlementStatus status;
 
 
@@ -61,5 +62,28 @@ public class SettlementItem extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
+
+    @Builder
+    private SettlementItem(
+        String settlementNumber,
+        String type,
+        BigDecimal scheduledAmount,
+        LocalDate baseDate,
+        LocalDate scheduledDate,
+        LocalDate completedDate,
+        SettlementStatus status,
+        DailySettlement dailySettlement,
+        OrderItem orderItem
+    ) {
+        this.settlementNumber = settlementNumber;
+        this.type = type;
+        this.scheduledAmount = scheduledAmount;
+        this.baseDate = baseDate;
+        this.scheduledDate = scheduledDate;
+        this.completedDate = completedDate;
+        this.status = status;
+        this.dailySettlement = dailySettlement;
+        this.orderItem = orderItem;
+    }
 
 }

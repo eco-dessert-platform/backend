@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.review.domain;
 
 
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.review.customer.dto.ReviewRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review extends BaseEntity {
+public class Review extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,9 +63,6 @@ public class Review extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
     public void insertBadge(Badge badge) {
         switch (badge) {
             case GOOD, BAD -> this.badgeTaste = badge;
@@ -86,10 +83,6 @@ public class Review extends BaseEntity {
         }
         this.rate = reviewRequest.rate();
         this.content = reviewRequest.content();
-    }
-
-    public void delete() {
-        this.isDeleted = true;
     }
 
     public static Review of(ReviewRequest reviewRequest, Long memberId) {

@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.board.domain;
 
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.domain.PushType;
+import com.bbangle.bbangle.store.domain.Store;
 import com.google.firebase.database.annotations.NotNull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,7 +41,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Product {
+public class Product extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,13 +52,17 @@ public class Product {
     @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Store store;
+
     @Column(name = "title")
     private String title;
 
     @Column(name = "price")
     private int price;
 
-    @Column(name = "category", columnDefinition = "varchar")
+    @Column(name = "category")
     @Enumerated(EnumType.STRING)
     private Category category;
 
@@ -74,6 +80,9 @@ public class Product {
 
     @Column(name = "ketogenic_tag", columnDefinition = "tinyint")
     private boolean ketogenicTag;
+
+    @Column(name = "low_fat_tag", columnDefinition = "tinyint")
+    private boolean lowFatTag;
 
     @Column(name = "monday", columnDefinition = "tinyint")
     private boolean monday;
@@ -114,7 +123,7 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<SegmentIntolerance> segmentIntolerances = new ArrayList<>();
 
-    public Product(Board board, String title, int price, Category category, int stock,
+    public Product(Board board, String title, int price, String category, int stock,
                    boolean glutenFreeTag, boolean highProteinTag, boolean sugarFreeTag, boolean veganTag,
                    boolean ketogenicTag, boolean monday, boolean tuesday, boolean wednesday,
                    boolean thursday, boolean friday, boolean saturday, boolean sunday,
@@ -123,9 +132,10 @@ public class Product {
         validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
 
         this.board = board;
+        this.store = board.getStore();
         this.title = title;
         this.price = price;
-        this.category = category;
+        this.category = Category.from(category);
         this.stock = stock;
         this.glutenFreeTag = glutenFreeTag;
         this.highProteinTag = highProteinTag;
@@ -146,12 +156,53 @@ public class Product {
     private void validate(String title,
                           boolean monday, boolean tuesday, boolean wednesday,
                           boolean thursday, boolean friday, boolean saturday, boolean sunday) {
-        if (title.length() < 3 || title.length() > 50) {
+        if (title == null || title.length() < 3 || title.length() > 50) {
             throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_NAME);
         }
         if (!monday && !tuesday && !wednesday && !thursday && !friday && !saturday && !sunday) {
             throw new BbangleException(BbangleErrorCode.INVALID_PRODUCT_DELIVERY_DAY);
         }
+    }
+
+    public void update(
+        String title,
+        int plusPriceWithBoardPrice,
+        String category,
+        int stock,
+        boolean glutenFreeTag,
+        boolean highProteinTag,
+        boolean sugarFreeTag,
+        boolean veganTag,
+        boolean ketogenicTag,
+        boolean monday,
+        boolean tuesday,
+        boolean wednesday,
+        boolean thursday,
+        boolean friday,
+        boolean saturday,
+        boolean sunday,
+        Nutrition nutrition
+    ) {
+        validate(title, monday, tuesday, wednesday, thursday, friday, saturday, sunday);
+
+        this.title = title;
+        this.price = plusPriceWithBoardPrice;
+        this.category = Category.from(category);
+        this.stock = stock;
+        this.soldout = stock == 0;
+        this.glutenFreeTag = glutenFreeTag;
+        this.highProteinTag = highProteinTag;
+        this.sugarFreeTag = sugarFreeTag;
+        this.veganTag = veganTag;
+        this.ketogenicTag = ketogenicTag;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
+        this.nutrition = nutrition;
     }
 
     // True인 태그 스트링 리스트로 만들어 반환
@@ -161,7 +212,8 @@ public class Product {
                 Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN.label()),
                 Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE.label()),
                 Map.entry(veganTag, TagEnum.VEGAN.label()),
-                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label())
+                Map.entry(ketogenicTag, TagEnum.KETOGENIC.label()),
+                Map.entry(lowFatTag, TagEnum.LOW_FAT.label())
             )
             .filter(Map.Entry::getKey)
             .map(Map.Entry::getValue)
@@ -176,4 +228,23 @@ public class Product {
         return PushType.WEEK;
     }
 
+    public void editStock(int amount, EditStockFlag editStockFlag) {
+        if (editStockFlag == EditStockFlag.INCREASE) {
+            this.stock = this.stock + amount;
+            if (this.soldout) {
+                this.soldout = false;
+            }
+        } else if (editStockFlag == EditStockFlag.DECREASE) {
+            if (this.stock < amount) {
+                throw new BbangleException(BbangleErrorCode.INVALID_DECREASE_STOCK_AMOUNT);
+            }
+            this.stock = this.stock - amount;
+            if (this.stock == 0) {
+                this.soldout = true;
+            }
+        } else if (editStockFlag == EditStockFlag.SOLDOUT) {
+            this.stock = 0;
+            this.soldout = true;
+        }
+    }
 }

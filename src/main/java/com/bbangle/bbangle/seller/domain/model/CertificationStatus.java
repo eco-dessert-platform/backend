@@ -8,9 +8,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CertificationStatus {
 
-    PENDING("Pending"),
-    APPROVED("Approved"),
-    REJECTED("Rejected");
+    NEW("New"), // 사업자 정보 등록 전
+    PENDING("Pending"), // 사업자 정보 심사 중
+    APPROVED("Approved"),   // 심사 승인
+    REJECTED("Rejected");   // 심사 거절
 
     private final String description;
 

@@ -8,7 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,8 +24,8 @@ public class AccountVerification extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bank_name", columnDefinition = "VARCHAR(50)")
-    private String bankName;
+    @Column(name = "bank_code", columnDefinition = "VARCHAR(10)")
+    private String bankCode;
 
     @Column(name = "account_number", columnDefinition = "VARBINARY(255)")
     private String accountNumber;
@@ -36,8 +36,28 @@ public class AccountVerification extends BaseEntity {
     @Column(name = "verified")
     private boolean verified;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", unique = true)
     private Seller seller;
 
+    private AccountVerification(String bankCode, String encryptedAccountNumber, String accountHolder,
+                                boolean verified, Seller seller) {
+        this.bankCode = bankCode;
+        this.accountNumber = encryptedAccountNumber;
+        this.accountHolder = accountHolder;
+        this.verified = verified;
+        this.seller = seller;
+    }
+
+    public static AccountVerification create(String bankCode, String encryptedAccountNumber,
+                                             String accountHolder, boolean verified, Seller seller) {
+        return new AccountVerification(bankCode, encryptedAccountNumber, accountHolder, verified, seller);
+    }
+
+    public void update(String bankCode, String encryptedAccountNumber, String accountHolder) {
+        this.bankCode = bankCode;
+        this.accountNumber = encryptedAccountNumber;
+        this.accountHolder = accountHolder;
+        this.verified = true;
+    }
 }

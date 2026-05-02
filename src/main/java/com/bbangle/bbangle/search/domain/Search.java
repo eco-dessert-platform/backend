@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.search.domain;
 
+import com.bbangle.bbangle.common.domain.SoftDeleteCreatedAtBaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -12,18 +13,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Table(name = "search")
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Search {
+public class Search extends SoftDeleteCreatedAtBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,12 +35,6 @@ public class Search {
     @Column(name = "keyword")
     private String keyword;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted = false;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
     @Builder
     public Search(Long memberId, String keyword) {
         this.member = Member.builder()
@@ -49,4 +42,5 @@ public class Search {
             .build();
         this.keyword = keyword;
     }
+    
 }

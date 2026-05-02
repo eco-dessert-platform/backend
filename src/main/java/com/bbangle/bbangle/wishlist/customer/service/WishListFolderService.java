@@ -33,7 +33,6 @@ public class WishListFolderService {
         WishListFolder folder = WishListFolder.builder()
             .member(member)
             .folderName(requestDto.title())
-            .isDeleted(false)
             .build();
 
         return wishListFolderRepository.save(folder)

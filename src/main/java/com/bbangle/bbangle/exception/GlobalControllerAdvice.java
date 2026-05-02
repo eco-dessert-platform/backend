@@ -11,11 +11,13 @@ import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.exception.swagger.ErrorApi;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -70,6 +72,29 @@ public class GlobalControllerAdvice implements ErrorApi {
         CommonResult methodArgumentNotValidExceptionResult = responseService
             .getMethodArgumentNotValidExceptionResult(ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<CommonResult> handleMissingRequestHeaderException(
+        MissingRequestHeaderException ex
+    ) {
+        log.error(ex.getMessage(), ex);
+        return new ResponseEntity<>(
+            responseService.getFailResult(ex.getLocalizedMessage(), -1),
+            HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<CommonResult> handleConstraintViolationException(
+        ConstraintViolationException ex
+    ) {
+        log.error(ex.getMessage(), ex);
+        CommonResult constraintViolationExceptionResult = responseService
+            .getConstraintViolationExceptionResult(ex);
+
+        return ResponseEntity.badRequest()
+            .body(constraintViolationExceptionResult);
     }
 
     //아마존 S3 ACL 권한 설정 안했을 시 에러 발생

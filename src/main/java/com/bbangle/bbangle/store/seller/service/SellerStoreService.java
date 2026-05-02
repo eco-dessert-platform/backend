@@ -3,10 +3,16 @@ package com.bbangle.bbangle.store.seller.service;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreNameRequest;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest;
+import com.bbangle.bbangle.store.seller.controller.dto.StoreRequest.UpdateStoreDetailRequest;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
-import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,47 +22,61 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerStoreService {
 
     private final StoreRepository storeRepository;
+    private final StoreNameRequestRepository storeNameRequestRepository;
 
-    @Transactional
-    public Store registerStoreForSeller(Long storeId, String storeName) {
-        // 1. 크롤링된 스토어 사용하는 경우
-        if (storeId != null) {
-            return storeRepository.findById(storeId)
-                .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
-        }
-        // 중복검사 진행
-        if (storeRepository.existsByStoreName(storeName)) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-
-        // 2. 새로운 스토어 생성하는 경우
-        return storeRepository.save(Store.createForSeller(storeName));
+    @Transactional(readOnly = true)
+    public Store findStore(Long storeId) {
+        return storeRepository.findById(storeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
-    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName){
-        String normalizedStoreName = normalize(storeName);
-        if (normalizedStoreName == null) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-        // 1. 스토어명이 중복이라면 사용할 수없다.
-        if (storeRepository.existsByStoreName((normalizedStoreName))){
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-
-        /// 페이징 처리를 위한 +1 조회 진행
-        ///중복되지 않은 스토어명들을 조회하고 id 값을 List로 모아 페이징 처리 로직으로 전달
-        List<Long> storeIds = storeRepository.getStoreByStoreName(normalizedStoreName).stream().map(Store::getId).toList();
-
-        // 2. 스토어 명이 중복이 아니라면 사용 가능하다
-         return storeRepository.findNextCursorPage(storeIds);
+    public Optional<Store> findStoreByStoreName(String storeName) {
+        String normalizedStoreName = storeName.strip();
+        return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName);
     }
 
-    private String normalize(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        // → "   " 같은 공백-only 문자열이면 null로 간주
-        return trimmed.isEmpty() ? null : trimmed;
+    // TODO : v3 - Admin으로 이동
+    @Transactional
+    public void registerStore(Seller seller, Store store) {
+        seller.registerStore(store);
     }
 
+    @Transactional(readOnly = true)
+    public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName, Long cursorId) {
+        String normalizedStoreName = storeName.replaceAll("\\s+", "");
+
+        return storeRepository.findByStoreNameWithCursor(normalizedStoreName, cursorId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<StoreApprovalStatus> findActiveRequestsBySellerId(Seller seller) {
+        return storeNameRequestRepository.findActiveRequestsBySellerId(seller.getId());
+    }
+
+    @Transactional
+    public StoreNameRequest updateStoreName(StoreRequest.UpdateStoreNameRequest request, Seller seller) {
+        return storeNameRequestRepository.save(
+            StoreNameRequest.createStoreNameRequest(seller.getStore(), seller, request.newName())
+        );
+    }
+
+    @Transactional
+    public Store updateStoreDetail(
+        UpdateStoreDetailRequest request,
+        String profileImagePath,
+        Store store
+    ) {
+        store.updateDetail(
+            profileImagePath,
+            request.introduce(),
+            request.phoneNumber(),
+            request.subPhoneNumber(),
+            request.email(),
+            request.originAddress(),
+            request.originAddressDetail()
+        );
+
+        return store;
+    }
 }

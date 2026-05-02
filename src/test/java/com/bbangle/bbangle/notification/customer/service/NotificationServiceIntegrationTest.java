@@ -4,9 +4,11 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FO
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.admin.domain.Admin;
+import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.NoticeFixture;
+import com.bbangle.bbangle.fixture.notification.domain.NoticeFixture;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
@@ -35,6 +37,9 @@ class NotificationServiceIntegrationTest {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
     private EntityManager em;
 
     private static final long PAGE_SIZE = 20L;
@@ -51,10 +56,11 @@ class NotificationServiceIntegrationTest {
     @Test
     void givenValidCursorId_whenGetList_thenReturnNextPage() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         // 25개의 공지사항 생성
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i), admin))
             .toList();
         notificationRepository.saveAll(notices);
 
@@ -79,16 +85,17 @@ class NotificationServiceIntegrationTest {
     @Test
     void givenInvalidCursorId_whenGetList_thenThrowsBbangleException() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         notificationRepository.saveAll(List.of(
-            NoticeFixture.notice("title1", "content1", now.minusDays(3)),
-            NoticeFixture.notice("title2", "content2", now.minusDays(2))
+            NoticeFixture.notice("title1", "content1", now.minusDays(3), admin),
+            NoticeFixture.notice("title2", "content2", now.minusDays(2), admin)
         ));
 
         Long invalidCursorId = 99999L;
 
         // When
-        assertThatThrownBy((()-> sut.getList(invalidCursorId)))
+        assertThatThrownBy((() -> sut.getList(invalidCursorId)))
             .isInstanceOf(BbangleException.class)
             .hasMessage(NOTIFICATION_NOT_FOUND.getMessage());
 

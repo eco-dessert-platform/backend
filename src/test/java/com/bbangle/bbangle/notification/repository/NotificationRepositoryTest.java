@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bbangle.bbangle.TestContainersConfig;
+import com.bbangle.bbangle.admin.domain.Admin;
+import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.fixture.NoticeFixture;
+import com.bbangle.bbangle.fixture.notification.domain.NoticeFixture;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
@@ -45,9 +47,14 @@ class NotificationRepositoryTest {
     private NotificationRepository sut;
 
     @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
     private EntityManager em;
 
     private static final Long PAGE_SIZE = 20L;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     /**
      * 테스트 전 auto increment 초기화
@@ -64,9 +71,10 @@ class NotificationRepositoryTest {
     @Test
     void givenCursorIdIsNull_whenFindNextCursorPage_thenReturnsFirstPage() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 10)
-            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i), admin))
             .toList();
         sut.saveAll(notices);
 
@@ -85,9 +93,10 @@ class NotificationRepositoryTest {
     @Test
     void givenValidCursorId_whenFindNextCursorPage_thenReturnsNextPage() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i), admin))
             .toList();
         sut.saveAll(notices);
 
@@ -111,9 +120,10 @@ class NotificationRepositoryTest {
     @Test
     void givenValidCursorId_whenFindNextCursorPageWithLessThanPageSize_thenReturnsLastPage() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i), admin))
             .toList();
         sut.saveAll(notices);
 
@@ -137,10 +147,11 @@ class NotificationRepositoryTest {
     @Test
     void givenInvalidCursorId_whenFindNextCursorPage_thenThrowsBbangleException() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         sut.saveAll(List.of(
-            NoticeFixture.notice("title1", "content1", now.minusDays(3)),
-            NoticeFixture.notice("title2", "content2", now.minusDays(2))
+            NoticeFixture.notice("title1", "content1", now.minusDays(3), admin),
+            NoticeFixture.notice("title2", "content2", now.minusDays(2), admin)
         ));
 
         Long invalidCursorId = 99999L;
@@ -173,9 +184,10 @@ class NotificationRepositoryTest {
     @Test
     void givenDataMoreThanPageSize_whenFindNextCursorPage_thenReturnsHasNextTrue() {
         // Given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices = IntStream.rangeClosed(1, 25)
-            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i)))
+            .mapToObj(i -> NoticeFixture.notice("title" + i, "content" + i, now.minusDays(i), admin))
             .toList();
         sut.saveAll(notices);
 
@@ -188,5 +200,30 @@ class NotificationRepositoryTest {
         assertThat(result.getNextCursor()).isNotNull();
     }
 
+    @DisplayName("작성자가 모든 공지사항을 삭제한다.")
+    @Test
+    void deleteNotification_success(){
+        // given
+        Admin admin = adminRepository.save(NoticeFixture.createTestAdmin());
+        List<Notice> notices = IntStream.rangeClosed(1, 25)
+            .mapToObj(i -> NoticeFixture.notice("공지사항 등록", "<div> 본문내용 <div>", admin))
+            .toList();
+        //when
+        notificationRepository.saveAll(notices);
+        em.flush();
+        em.clear();
+
+        // 저장 후 ID 수집
+        List<Long> noticeIds = notificationRepository.findAll().stream()
+            .map(Notice::getId)
+            .toList();
+
+        // then
+        notificationRepository.deleteAllByAdminIdAndIdIn(admin.getId(), noticeIds);
+        em.flush();
+
+        assertThat(notificationRepository.findAllByIdInAndAdminId(noticeIds, admin.getId())).isEmpty();
+
+    }
 }
 

@@ -3,6 +3,7 @@ package com.bbangle.bbangle.image.customer.service;
 import static com.bbangle.bbangle.image.customer.validation.ImageValidator.validateImage;
 
 import com.amazonaws.services.s3.AmazonS3;
+import io.jsonwebtoken.lang.Assert;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -24,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -41,7 +41,6 @@ public class S3Service {
     @Value("${cdn.domain}")
     private String cdnDomain;
 
-    @Transactional
     public String saveImage(MultipartFile request) {
         validateImage(request);
 
@@ -51,7 +50,6 @@ public class S3Service {
         return uploadImage(request, ext, changedImageName);
     }
 
-    @Transactional
     public String saveAndReturnWithCdn(String folderName, MultipartFile image) {
         String imagePath = saveImage(image, folderName);
         log.debug("Show image path: {}", imagePath);
@@ -59,7 +57,44 @@ public class S3Service {
         return addCdnDomain(imagePath);
     }
 
-    @Transactional
+    public String saveDocumentAndReturnWithCdn(String folderName, MultipartFile file) {
+        String filePath = saveDocument(file, folderName);
+        log.debug("Show document path: {}", filePath);
+        filePath = removeBucketDomainInFolder(filePath);
+        return addCdnDomain(filePath);
+    }
+
+    public String saveDocument(MultipartFile file, String folder) {
+        Assert.notNull(file, "비어있는 파일은 업로드 할 수 없습니다.");
+        Assert.isTrue(!file.isEmpty(), "비어있는 파일은 업로드 할 수 없습니다.");
+        Assert.isTrue(file.getSize() < 10_000_000, "파일이 허용된 최대 크기를 초과했습니다.");
+
+        final String originName = file.getOriginalFilename();
+        Assert.notNull(originName, "파일명이 없습니다.");
+        final String ext = originName.substring(originName.lastIndexOf("."));
+        final String changedFileName = folder + "/" + UUID.randomUUID() + ext;
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+
+        try {
+            amazonS3.putObject(new PutObjectRequest(
+                bucket, changedFileName, file.getInputStream(), metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch (final IOException e) {
+            throw new BbangleException("저장하기 유효하지 않은 파일입니다.", e);
+        }
+
+        return amazonS3.getUrl(bucket, changedFileName).toString();
+    }
+
+    public List<String> saveMultipleAndReturnWithCdn(String folderName, List<MultipartFile> images) {
+        return images.stream()
+            .map(image -> saveAndReturnWithCdn(folderName, image))
+            .toList();
+    }
+
     public String saveImage(MultipartFile request, String folder) {
         validateImage(request);
 
@@ -83,6 +118,10 @@ public class S3Service {
 
     public void deleteImages(List<String> urls) {
         urls.forEach(url -> amazonS3.deleteObject(bucket, url));
+    }
+
+    public void deleteImagesCdn(List<String> urls) {
+       urls.forEach(this::deleteImage);
     }
 
     public void deleteImage(String url) {

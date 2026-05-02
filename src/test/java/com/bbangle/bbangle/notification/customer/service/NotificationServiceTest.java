@@ -8,8 +8,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
+import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.common.page.NotificationCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.notification.domain.NoticeFixture;
 import com.bbangle.bbangle.notification.customer.dto.NotificationDetailResponseDto;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import com.bbangle.bbangle.notification.customer.dto.NotificationUploadRequest;
@@ -67,12 +69,9 @@ class NotificationServiceTest {
     void givenId_whenGetNoticeDetail_thenReturnNotificationDetail() {
         // Given
         Long id = 1L;
-        Notice notice = Notice.builder()
-            .id(id)
-            .title("title1")
-            .content("content1")
-            .createdAt(LocalDateTime.of(2023, 11, 12, 12, 0, 0))
-            .build();
+        Admin admin = NoticeFixture.createTestAdmin();
+        LocalDateTime createdAt = LocalDateTime.of(2023, 10, 1, 12, 0);
+        Notice notice = NoticeFixture.noticeWithIdAndCreatedAt(id, "title1", "content1", createdAt, admin);
         given(notificationRepository.findById(id)).willReturn(Optional.of(notice));
 
         // When

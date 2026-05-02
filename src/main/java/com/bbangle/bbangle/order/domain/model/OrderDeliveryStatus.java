@@ -8,11 +8,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderDeliveryStatus {
     NONE("미지정"),
+
     PREPARING("상품준비"),
+    SHIPMENT("상품발송"),
     PICKING_UP("수거중"),
     PICKED_UP("수거완료"),
+
     DELIVERING("배송중"),
-    DELIVERED("배송완료");
+    OUT_FOR_DELIVERY("배송지 인근 도착"),
+    DELIVERED("배송완료"),
+
+    FAILED("배송 실패"),
+
+    PAYMENT_COMPLETE("결제완료");
 
     private final String description;
 

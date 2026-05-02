@@ -1,13 +1,14 @@
 package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.domain.model.EmailVO;
+import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,7 +17,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,10 +26,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "store")
 @Entity
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Store extends BaseEntity {
+public class Store extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,39 +46,93 @@ public class Store extends BaseEntity {
     @Column(name = "profile")
     private String profile;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
+    @Embedded
+    private PhoneNumberVO phoneNumberVO; // phone + subPhone을 포함
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private StoreStatus status;
+    @Embedded
+    private EmailVO emailVO;
+
+    @Column(name = "origin_address_line", columnDefinition = "VARCHAR(255)")
+    private String originAddressLine;
+
+    @Column(name = "origin_address_detail", columnDefinition = "VARCHAR(255)")
+    private String originAddressDetail;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    List<Board> boards = new ArrayList<>();
+    private List<Board> boards = new ArrayList<>();
 
-    private static final String DEFAULT_IDENTIFIER =
-        String.valueOf((Math.abs(UUID.randomUUID().getLeastSignificantBits()) % 90000) + 10000);
-
-    public static Store createForSeller(String name) {
-        return new Store(name, DEFAULT_IDENTIFIER, false, StoreStatus.NONE);
-    }
-
-    private Store(String name, String identifier, boolean isDeleted, StoreStatus status) {
-        validateField(name);
+    @Builder
+    private Store(
+        String name,
+        String identifier,
+        String introduce,
+        String profile,
+        PhoneNumberVO phoneNumberVO,
+        EmailVO emailVO,
+        String originAddressLine,
+        String originAddressDetail
+    ) {
         this.name = name;
         this.identifier = identifier;
-        this.isDeleted = isDeleted;
-        this.status = status;
+        this.introduce = introduce;
+        this.profile = profile;
+        this.phoneNumberVO = phoneNumberVO;
+        this.emailVO = emailVO;
+        this.originAddressLine = originAddressLine;
+        this.originAddressDetail = originAddressDetail;
     }
 
-    public void changeStatus(StoreStatus status) {
-        this.status = status;
+    public static Store createForSeller(
+        String name,
+        String profile,
+        String introduce,
+        String identifier,
+        String phone,
+        String subPhone,
+        String email,
+        String originAddressLine,
+        String originAddressDetail
+    ) {
+        return Store.builder()
+            .name(name)
+            .identifier(identifier)
+            .profile(profile)
+            .introduce(introduce)
+            .phoneNumberVO(PhoneNumberVO.of(phone, subPhone))
+            .emailVO(EmailVO.of(email))
+            .originAddressLine(originAddressLine)
+            .originAddressDetail(originAddressDetail)
+            .build();
     }
 
-    private void validateField(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+    public void updateDetail(
+        String profile,
+        String introduce,
+        String phone,
+        String subPhone,
+        String email,
+        String originAddressLine,
+        String originAddressDetail
+    ) {
+        PhoneNumberVO newPhoneNumberVO = PhoneNumberVO.of(phone, subPhone);
+        EmailVO newEmailVO = EmailVO.of(email);
+
+        if (profile != null) {
+            this.profile = profile;
         }
+
+        this.introduce = introduce;
+        this.phoneNumberVO = newPhoneNumberVO;
+        this.emailVO = newEmailVO;
+        this.originAddressLine = originAddressLine;
+        this.originAddressDetail = originAddressDetail;
     }
 
+    void updateName(String currentName, String newName) {
+        if (!this.name.equals(currentName)) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
+        }
+
+        this.name = newName;
+    }
 }

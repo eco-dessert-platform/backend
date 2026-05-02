@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
@@ -38,16 +39,29 @@ public class RequestTimeInterceptor implements HandlerInterceptor {
 
         String requestURI = request.getRequestURI();
         String requestMethod = request.getMethod();
+        String handlerInfo = extractHandlerInfo(handler);
+
         String slackMessage = String.format("""
-                
-                - API           : %s %s
-                - 총 DB 처리 시간 : %d ms
-                - 총 처리시간     : %d ms
-                """, requestMethod, requestURI, dbTime, duration);
+            
+            - API           : %s %s
+            - TARGET       : %s
+            - 총 DB 처리 시간 : %d ms
+            - 총 처리시간     : %d ms
+            """, requestMethod, requestURI, handlerInfo, dbTime, duration);
+
         log.info(slackMessage);
+
         if (duration > THREE_SECONDS) {
             slackAdaptor.sendText("느린 요청 알림", slackMessage);
         }
     }
 
+    private String extractHandlerInfo(Object handler) {
+        if (handler instanceof HandlerMethod handlerMethod) {
+            String className = handlerMethod.getBean().getClass().getSimpleName();
+            String methodName = handlerMethod.getMethod().getName();
+            return className + "." + methodName + "()";
+        }
+        return handler.getClass().getSimpleName();
+    }
 }

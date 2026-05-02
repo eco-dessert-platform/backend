@@ -6,6 +6,7 @@ import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
 import com.bbangle.bbangle.delivery.domain.Shipping;
+import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -55,5 +56,25 @@ public class ClaimDelivery extends BaseEntity {
     private ClaimShippingStatus status;
 
     private LocalDateTime collectedAt;
+
+    private ClaimDelivery(Claim claim, ClaimDeliveryType deliveryType, Shipping shipping, ClaimShippingStatus status) {
+        this.claim = claim;
+        this.deliveryType = deliveryType;
+        this.shipping = shipping;
+        this.status = status;
+    }
+
+    public static ClaimDelivery createReturnPickup(Claim claim, CourierCompany courierCode, String trackingNumber) {
+        return new ClaimDelivery(
+            claim,
+            ClaimDeliveryType.RETURN_PICKUP,
+            Shipping.scheduled(courierCode.getDisplayName(), trackingNumber),
+            ClaimShippingStatus.IN_TRANSIT
+        );
+    }
+    
+    public void updateInvoice(CourierCompany courierCode, String trackingNumber) {
+        this.shipping.modifyShippingInfo(courierCode.getDisplayName(), trackingNumber);
+    }
 
 }

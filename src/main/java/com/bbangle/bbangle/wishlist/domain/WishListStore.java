@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.wishlist.domain;
 
-import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.common.domain.SoftDeleteBaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
-import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WishListStore extends BaseEntity {
+public class WishListStore extends SoftDeleteBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,17 +38,6 @@ public class WishListStore extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
-
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
-    public void delete() {
-        this.isDeleted = true;
-    }
-
-    public void changeDeletedFalse() {
-        this.isDeleted = false;
-    }
 
     public static WishListStore createEmptyWishList() {
         return new WishListStore();

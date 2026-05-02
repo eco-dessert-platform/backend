@@ -6,13 +6,17 @@ import com.bbangle.bbangle.board.customer.dto.QTitleDto;
 import com.bbangle.bbangle.board.customer.dto.TitleDto;
 import com.bbangle.bbangle.board.customer.dto.orders.ProductDtoAtBoardDetail;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.InventoryStatus;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.push.domain.Push;
 import com.bbangle.bbangle.push.domain.QPush;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
 import java.util.HashMap;
@@ -160,5 +164,42 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             ).from(product)
             .orderBy(product.board.id.asc())
             .fetch();
+    }
+
+    @Override
+    public Map<Long, InventoryStatus> findInventoryStatusByBoardIds(List<Long> boardIds) {
+        if (boardIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        NumberPath<Long> boardIdExpr = product.board.id;
+        NumberExpression<Long> totalCountExpr = product.count();
+        NumberExpression<Long> soldoutSumExpr =
+            product.soldout.when(true).then(1L).otherwise(0L).sum();
+
+        List<Tuple> result = queryFactory
+            .select(boardIdExpr, totalCountExpr, soldoutSumExpr)
+            .from(product)
+            .where(product.board.id.in(boardIds).and(product.isDeleted.isFalse()))
+            .groupBy(product.board.id)
+            .fetch();
+
+        Map<Long, InventoryStatus> statusMap = new HashMap<>();
+        result.forEach(tuple -> {
+            Long boardId = tuple.get(boardIdExpr);
+            long totalCount = tuple.get(totalCountExpr);
+            long soldoutCount = tuple.get(soldoutSumExpr);
+
+            InventoryStatus status;
+            if (soldoutCount == 0) {
+                status = InventoryStatus.IN_STOCK;
+            } else if (soldoutCount == totalCount) {
+                status = InventoryStatus.SOLDOUT;
+            } else {
+                status = InventoryStatus.PARTIAL_SOLDOUT;
+            }
+            statusMap.put(boardId, status);
+        });
+        return statusMap;
     }
 }

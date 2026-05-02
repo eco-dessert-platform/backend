@@ -1,138 +1,76 @@
 package com.bbangle.bbangle.seller.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
-import com.bbangle.bbangle.store.domain.Store;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 @DisplayName("[단위 테스트] Seller")
-@ExtendWith(MockitoExtension.class)
 public class SellerUnitTest {
 
-    @Mock
-    private Store store;
-
     @Test
-    @DisplayName("판매자 정보 생성에 성공한다")
-    void success_create_seller() {
-        // arrange
-        String phone = "01012346789";
-        String subPhone = "01098765432";
-        String email = "test1234@gmail.com";
-        String address = "경기도 수원시 팔달구";
-        String detailAddress = "화성행궁 12번지";
-        String profile = "test/s3/seller";
+    @DisplayName("판매자 정보 생성에 성공한다.")
+    void success_create_Seller() {
 
+        // given
+        String name = "seller";
+        OauthServerType provider = OauthServerType.KAKAO;
+        String providerId = "12345";
 
-        // act
-        Seller seller = Seller.create(phone, subPhone, email,
-            address, detailAddress, profile, CertificationStatus.APPROVED, store);
+        // when
+        Seller seller = Seller.create(name, provider, providerId);
 
-        // assert
+        // then
         assertThat(seller).isNotNull();
-        assertThat(seller.getPhoneNumberVO().getPhoneNumber()).isEqualTo(phone);
-        assertThat(seller.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(subPhone);
-        assertThat(seller.getEmailVO().getEmail()).isEqualTo(email);
-        assertThat(seller.getOriginAddressLine()).isEqualTo(address);
-        assertThat(seller.getOriginAddressDetail()).isEqualTo(detailAddress);
-        assertThat(seller.getProfile()).isEqualTo(profile);
-        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
-        assertThat(seller.getStore()).isEqualTo(store);
+        assertThat(seller.getName()).isEqualTo(name);
+        assertThat(seller.getProvider()).isEqualTo(provider);
+        assertThat(seller.getProviderId()).isEqualTo(providerId);
 
+        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.NEW);
+        assertThat(seller.isDeleted()).isFalse();
+        assertThat(seller.getStore()).isNull();
     }
 
     @ParameterizedTest
-    @DisplayName("판매자 정보 생성 시 잘못된 전화번호로 인해 실패한다")
-    @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
-    void fail_create_seller_with_invalid_phone(String invalidPhone) {
-         // act & assert
-        assertThatThrownBy(() -> Seller.create(invalidPhone, "01012346789", "test1234@gmail.com",
-            "경기도 수원시 팔달구","화성행궁 12번지", "test/s3/seller", CertificationStatus.APPROVED, store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
+    @EnumSource(
+        value = CertificationStatus.class,
+        names = {"NEW", "REJECTED"}
+    )
+    @DisplayName("스토어 등록 신청 가능한 상태일 경우 통과한다.")
+    void success_register_store(CertificationStatus status) {
+
+        // given
+        Seller seller = SellerFixture.defaultSeller(status);
+
+        // when & then
+        assertDoesNotThrow(seller::validateRegisterAvailable);
     }
 
     @ParameterizedTest
-    @DisplayName("판매자 정보 생성 시 잘못된 서브 전화번호로 인해 실패한다")
-    @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
-    void fail_create_seller_with_invalid_sub_phone(String invalidPhone) {
-        // arrange
-        // act & assert
-        assertThatThrownBy(() -> Seller.create("01012346789", invalidPhone, "test1234@gmail.com",
-            "경기도 수원시 팔달구","화성행궁 12번지", "test/s3/seller", CertificationStatus.APPROVED , store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_PHONE_NUMBER.getMessage());
+    @EnumSource(
+        value = CertificationStatus.class,
+        mode = Mode.EXCLUDE,
+        names = {"NEW", "REJECTED"}
+    )
+    @DisplayName("스토어 등록 신청 불가능한 상태일 경우 예외가 발생한다.")
+    void fail_register_store(CertificationStatus status) {
+
+        // given
+        Seller seller = SellerFixture.defaultSeller(status);
+
+        // when & then
+        BbangleException exception = assertThrows(BbangleException.class, seller::validateRegisterAvailable);
+        assertEquals(BbangleErrorCode.ALREADY_REGISTER_STORE, exception.getBbangleErrorCode());
     }
-
-
-    @ParameterizedTest
-    @DisplayName("판매자 정보 생성 시 잘못된 이메일 형식으로 인해 실패한다")
-    @ValueSource(strings = {"test1234", "@gmail", "test@gmail", "test@.com", "test@com", ""})
-    void fail_create_seller_with_invalid_email(String invalidEmail) {
-        // act & assert
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", invalidEmail,
-            "경기도 수원시 팔달구","화성행궁 12번지", "test/s3/seller", CertificationStatus.APPROVED, store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_EMAIL.getMessage());
-    }
-
-    @Test
-    @DisplayName("판매자 정보 생성시 비어 있는 주소로 인해 실패한다")
-    void fail_create_seller_with_invalid_address() {
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
-            "","화성행궁 12번지", "test/s3/seller", CertificationStatus.APPROVED , store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_ADDRESS.getMessage());
-    }
-
-
-    @Test
-    @DisplayName("판매자 정보 생성시 비어 있는 상세 주소로 인해 실패한다")
-    void fail_create_seller_with_invalid_detail_address() {
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
-            "경기도 수원시 팔달구","", "test/s3/seller", CertificationStatus.APPROVED ,store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_DETAIL_ADDRESS.getMessage());
-    }
-
-    @Test
-    @DisplayName("판매자 정보 생성시 비어 있는 프로필 이미지 주소로 인해 실패한다")
-    void fail_create_seller_with_invalid_profile_image_path() {
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
-            "경기도 수원시 팔달구","화성행궁 12번지", "", CertificationStatus.APPROVED ,store )
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_PROFILE.getMessage());
-    }
-
-
-
-    @Test
-    @DisplayName("판매자 정보 생성시 비어 있는 상태값으로 인해 실패한다")
-    void fail_create_seller_with_invalid_status_address() {
-        // act & assert
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
-            "경기도 수원시 팔달구","화성행궁 12번지", "test/s3/seller", null , store)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_CERTIFICATION_STATUS.getMessage());
-    }
-
-
-    @Test
-    @DisplayName("판매자 정보 생성시 Store가 null이면 실패한다")
-    void fail_create_seller_with_null_store() {
-        assertThatThrownBy(() -> Seller.create("01012346789", "01012346789", "test1234@gmail.com",
-            "경기도 수원시 팔달구","화성행궁 12번지", "test/s3/seller", CertificationStatus.APPROVED, null)
-        ).isInstanceOf(BbangleException.class)
-            .hasMessageContaining(BbangleErrorCode.INVALID_STORE.getMessage());
-    }
-
 }

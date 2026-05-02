@@ -2,7 +2,6 @@ package com.bbangle.bbangle.claim.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.order.domain.OrderItem;
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -38,5 +37,15 @@ public abstract class Claim extends BaseEntity {
     private String detailReason;
 
     private LocalDateTime decidedAt;
+
+    protected Claim(OrderItem orderItem, String detailReason, LocalDateTime decidedAt) {
+        this.orderItem = orderItem;
+        this.detailReason = detailReason;
+        this.decidedAt = decidedAt;
+    }
+
+    protected void decide() {
+        this.decidedAt = LocalDateTime.now();
+    }
 
 }

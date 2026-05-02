@@ -1,8 +1,12 @@
 package com.bbangle.bbangle.config.security.jwt;
 
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.common.role.Role;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.time.Duration;
@@ -18,6 +22,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class TokenProvider {
+    public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
     private static final String USER_KEY = "id";
     private static final String ROLE_KEY = "role";
     private final JwtProperties jwtProperties;
@@ -53,6 +59,21 @@ public class TokenProvider {
         }
     }
 
+    public TokenClaimsDTO parseRefreshToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+            Long id = Long.valueOf((Integer) claims.get(USER_KEY));
+            Role role = Role.from((String) claims.get(ROLE_KEY));
+
+            return TokenClaimsDTO.builder()
+                .id(id)
+                .role(role)
+                .build();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new BbangleException(BbangleErrorCode._UNAUTHORIZED);
+        }
+    }
+
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
         Long memberId = Long.valueOf((Integer) claims.get(USER_KEY));
@@ -68,5 +89,4 @@ public class TokenProvider {
             .parseClaimsJws(token)
             .getBody();
     }
-
 }

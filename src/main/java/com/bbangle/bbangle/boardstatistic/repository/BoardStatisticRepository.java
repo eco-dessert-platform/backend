@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +19,13 @@ public interface BoardStatisticRepository extends JpaRepository<BoardStatistic, 
 
     @Query(value = "select bs.boardReviewGrade from BoardStatistic bs join bs.board b where b.id = :boardId")
     BigDecimal findBoardReviewGradeByBoardId(@Param("boardId") Long boardId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE BoardStatistic bs
+            SET bs.isDeleted = true
+            WHERE bs.board.id IN :boardIds
+        """)
+    void softDeleteByBoardIds(@Param("boardIds") List<Long> boardIds);
+
 }

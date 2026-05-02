@@ -137,6 +137,9 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    // logback 설정
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.projectlombok:lombok'
@@ -160,9 +163,16 @@ dependencies {
     // CSV
     implementation 'org.apache.commons:commons-csv:1.10.0'
 
+    // Excel (Apache POI)
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
     // flyway
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.flywaydb:flyway-core'
+
+    // jsoup - HTML parser
+    implementation 'org.jsoup:jsoup:1.15.3'
 
     // mapstruct
     implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
