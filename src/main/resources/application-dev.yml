@@ -118,3 +118,6 @@ app:
 encryption:
   aes:
     secret-key: ${AES_SECRET_KEY}
+
+link-tracking:
+  destinations: https://develop.bbanggree.com

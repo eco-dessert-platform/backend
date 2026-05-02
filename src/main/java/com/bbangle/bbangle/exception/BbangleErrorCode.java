@@ -190,7 +190,10 @@ public enum BbangleErrorCode {
 
     // Statistics Error(811~820)
     INVALID_STATISTICS_PERIOD(-811, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),
-    INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST);
+    INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST),
+
+    // LinkTracking Error(831 ~ 840)
+    TRACKING_LINK_NOT_FOUND(-831, "존재하지 않는 추적 링크입니다.", NOT_FOUND);
 
     private final int code;
     private final String message;
