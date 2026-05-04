@@ -15,6 +15,7 @@ import com.bbangle.bbangle.statistics.domain.model.StatisticsPeriod;
 import com.bbangle.bbangle.statistics.repository.SellerStatisticsRepository;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentAmountResponse;
 import com.bbangle.bbangle.statistics.seller.dto.DailyPaymentCountResponse;
+import com.bbangle.bbangle.statistics.seller.dto.DailyRefundRateResponse;
 import com.bbangle.bbangle.statistics.seller.dto.WeekdayPaymentAmountResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +43,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     private SellerStatisticsRepository sellerStatisticsRepository;
 
     @Test
-    @DisplayName("결제 금액 조회 시 비어 있는 일자 구간은 0으로 채운다")
+    @DisplayName("결제 금액 조회 시 비어 있는 날짜 구간은 0으로 채운다")
     void getDailyPaymentAmount_fillMissingDatesWithZero() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
@@ -291,7 +292,7 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
-    @DisplayName("결제 건수 조회 시 비어 있는 일자 구간은 0으로 채운다")
+    @DisplayName("결제 건수 조회 시 비어 있는 날짜 구간은 0으로 채운다")
     void getDailyPaymentCount_fillMissingDatesWithZero() {
         Long sellerId = 1L;
         LocalDate targetDate = LocalDate.of(2026, 3, 7);
@@ -330,6 +331,55 @@ class SellerPaymentStatisticsServiceUnitTest {
     }
 
     @Test
+    @DisplayName("환불율 통계는 statistics 적재 데이터 기준으로 버킷 집계한다")
+    void getDailyRefundRate_success() {
+        Long sellerId = 1L;
+        LocalDate targetDate = LocalDate.of(2026, 3, 16);
+
+        givenExistingSeller(sellerId);
+
+        SellerStatisticsDaily week1Day1 = mockStatisticsDaily(
+            LocalDateTime.of(2026, 2, 2, 10, 0),
+            10000L,
+            0,
+            0,
+            2000L
+        );
+        SellerStatisticsDaily week1Day2 = mockStatisticsDaily(
+            LocalDateTime.of(2026, 2, 5, 10, 0),
+            5000L,
+            0,
+            0,
+            1000L
+        );
+        SellerStatisticsDaily week7Day = mockStatisticsDaily(
+            LocalDateTime.of(2026, 3, 20, 10, 0),
+            18000L,
+            0,
+            0,
+            5000L
+        );
+
+        given(sellerStatisticsRepository.findBySellerIdAndStatDateBetweenOrderByStatDateAsc(
+            eq(sellerId), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).willReturn(List.of(week1Day1, week1Day2, week7Day));
+
+        DailyRefundRateResponse result = sut.getDailyRefundRate(
+            sellerId, Optional.of(targetDate), Optional.of(StatisticsPeriod.WEEK));
+
+        assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 2, 2));
+        assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 3, 22));
+        assertThat(result.period()).isEqualTo(StatisticsPeriod.WEEK);
+        assertThat(result.dailyRefundRates()).hasSize(7);
+        assertThat(result.dailyRefundRates().get(0).paymentAmount()).isEqualTo(15000L);
+        assertThat(result.dailyRefundRates().get(0).refundAmount()).isEqualTo(3000L);
+        assertThat(result.dailyRefundRates().get(0).refundRate()).isEqualByComparingTo("20.00");
+        assertThat(result.dailyRefundRates().get(6).paymentAmount()).isEqualTo(18000L);
+        assertThat(result.dailyRefundRates().get(6).refundAmount()).isEqualTo(5000L);
+        assertThat(result.dailyRefundRates().get(6).refundRate()).isEqualByComparingTo("27.78");
+    }
+
+    @Test
     @DisplayName("판매자가 없으면 SELLER_NOT_FOUND 예외를 던진다")
     void getDailyPaymentAmount_sellerNotFound() {
         Long sellerId = 999L;
@@ -354,14 +404,24 @@ class SellerPaymentStatisticsServiceUnitTest {
         int totalOrders,
         int totalBuyers
     ) {
+        return mockStatisticsDaily(statDate, amount, totalOrders, totalBuyers, 0L);
+    }
+
+    private SellerStatisticsDaily mockStatisticsDaily(
+        LocalDateTime statDate,
+        long amount,
+        int totalOrders,
+        int totalBuyers,
+        long refundAmount
+    ) {
         return SellerStatisticsDaily.create(
             statDate,
             statDate.getDayOfWeek().getValue(),
             BigDecimal.valueOf(amount),
             totalOrders,
             totalBuyers,
-            BigDecimal.ZERO,
-            0,
+            BigDecimal.valueOf(refundAmount),
+            refundAmount > 0 ? 1 : 0,
             BigDecimal.ZERO,
             null
         );
