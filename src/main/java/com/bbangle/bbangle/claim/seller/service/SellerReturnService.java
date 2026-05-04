@@ -172,6 +172,23 @@ public class SellerReturnService {
     }
 
     @Transactional
+    public void holdReturn(Long returnId, Long sellerId, String holdReason) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ReturnRequest returnRequest = findReturnRequestWithLock(returnId);
+        applyHold(returnRequest, holdReason);
+    }
+
+    private void applyHold(ReturnRequest returnRequest, String holdReason) {
+        returnRequest.hold(holdReason);
+        OrderItem orderItem = returnRequest.getOrderItem();
+        orderItem.returnHold();
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
     public void refuseReturn(Long returnId, Long sellerId, String refusalReason) {
         if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
