@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixture.store.domain;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.EmailVO;
 import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public final class StoreFixture {
 
@@ -46,5 +47,10 @@ public final class StoreFixture {
 
     public static Store defaultStore(String name) {
         return baseBuilder(name);
+    }
+
+    public static Store withId(Store store, Long id) {
+        ReflectionTestUtils.setField(store, "id", id);
+        return store;
     }
 }

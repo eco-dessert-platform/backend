@@ -1,11 +1,18 @@
 package com.bbangle.bbangle.store.admin.service;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +27,7 @@ public class AdminStoreService {
 
     private static final int DEFAULT_PAGE_SIZE = 100;
     private final StoreNameRequestRepository storeNameRequestRepository;
+    private final StoreRepository storeRepository;
 
     @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
@@ -46,6 +54,45 @@ public class AdminStoreService {
             .totalPages(results.getTotalPages())
             .hasPrevious(results.hasPrevious())
             .hasNext(results.hasNext())
+            .build();
+    }
+
+    @Transactional
+    public UpdateStoreNameApprove approveStoreName(long requestId) {
+
+        StoreNameRequest request = storeNameRequestRepository.findById(requestId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
+
+        if (storeRepository.findByStoreName(request.getNewName()).isPresent()) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+        }
+
+        request.approve();
+        Store store = request.getStore();
+        return UpdateStoreNameApprove.builder()
+            .storeId(store.getId())
+            .prevName(request.getCurrentName())
+            .updateName(store.getName())
+            .status(request.getStatus())
+            .modifiedAt(store.getModifiedAt())
+            .build();
+    }
+
+    @Transactional
+    public UpdateStoreNameReject rejectStoreName(long requestId, UpdateStoreNameRejectRequest request) {
+
+        StoreNameRequest storeNameRequest = storeNameRequestRepository.findById(requestId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
+
+        storeNameRequest.reject(request.category(), request.rejectDetail());
+        return UpdateStoreNameReject.builder()
+            .requestId(storeNameRequest.getId())
+            .storeId(storeNameRequest.getStore().getId())
+            .currentName(storeNameRequest.getCurrentName())
+            .newName(storeNameRequest.getNewName())
+            .status(storeNameRequest.getStatus())
+            .category(storeNameRequest.getRejectCategory())
+            .rejectDetail(storeNameRequest.getRejectDetail())
             .build();
     }
 }
