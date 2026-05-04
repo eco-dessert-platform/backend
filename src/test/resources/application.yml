@@ -65,3 +65,6 @@ jwt:
 encryption:
   aes:
     secret-key: 1234567890123456
+
+link-tracking:
+  destinations: test
