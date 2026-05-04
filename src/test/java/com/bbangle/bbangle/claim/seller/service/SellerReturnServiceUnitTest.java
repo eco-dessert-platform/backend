@@ -389,6 +389,148 @@ class SellerReturnServiceUnitTest {
     }
 
     @Nested
+    @DisplayName("holdReturn()")
+    class HoldReturnTests {
+
+        private static final Long RETURN_ID = 1L;
+        private static final Long SELLER_ID = 10L;
+        private static final String HOLD_REASON = "배송비 미입금 확인 중입니다.";
+
+        @Test
+        @DisplayName("REQUESTED 상태의 반품을 보류하면 상태가 HOLD로 변경되고 보류 사유와 히스토리가 저장된다")
+        void holdReturn_fromRequested_success() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderReturnRequested();
+            ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when
+            sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
+
+            // then
+            assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.HOLD);
+            assertThat(returnRequest.getSellerComment()).isEqualTo(HOLD_REASON);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_ON_HOLD);
+            then(returnRequestRepository).should(times(1)).findWithLockById(RETURN_ID);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("APPROVED 상태의 반품을 보류하면 상태가 HOLD로 변경되고 히스토리가 저장된다")
+        void holdReturn_fromApproved_success() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_APPROVED);
+            ReturnRequest returnRequest = ReturnRequestFixture.approved(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when
+            sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
+
+            // then
+            assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.HOLD);
+            assertThat(returnRequest.getSellerComment()).isEqualTo(HOLD_REASON);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_ON_HOLD);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("PICKUP_SCHEDULED 상태의 반품을 보류하면 상태가 HOLD로 변경되고 히스토리가 저장된다")
+        void holdReturn_fromPickupScheduled_success() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_APPROVED);
+            ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when
+            sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
+
+            // then
+            assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.HOLD);
+            assertThat(returnRequest.getSellerComment()).isEqualTo(HOLD_REASON);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_ON_HOLD);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("셀러 소유권 검증 실패 시 SELLER_CLAIM_MISMATCH 예외가 발생하고 이후 로직은 실행되지 않는다")
+        void holdReturn_fails_when_seller_mismatch() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+
+            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 returnId로 요청하면 CLAIM_NOT_FOUND 예외가 발생한다")
+        void holdReturn_fails_when_claim_not_found() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_NOT_FOUND);
+
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("COMPLETED 상태의 반품을 보류하려 하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void holdReturn_fails_when_already_completed() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_COMPLETED);
+            ReturnRequest returnRequest = ReturnRequestFixture.withStatus(
+                ReturnRequestRequestStatus.COMPLETED, orderItem
+            );
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("REJECTED 상태의 반품을 보류하려 하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void holdReturn_fails_when_already_rejected() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.RETURN_REJECTED);
+            ReturnRequest returnRequest = ReturnRequestFixture.rejected(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
+            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+    }
+
+    @Nested
     @DisplayName("processReturn()")
     class ProcessReturnTests {
 
