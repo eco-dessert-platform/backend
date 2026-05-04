@@ -448,8 +448,10 @@ public class SellerOrderService {
             Payment payment = order.getPayment();
             PaymentInfo paymentInfo = null;
             if (payment != null) {
-                paymentInfo = PaymentInfo.of(payment.getPaymentStatus().getDescription(),
-                    payment.getPaymentMethod().getDescription());
+                paymentInfo = PaymentInfo.of(
+                    payment.getPaymentStatus().getDescription(),
+                    payment.getPaymentMethod().getDescription(),
+                    payment.getPaidAt());
             } else {
                 log.debug("결제 정보 없음 (결제 대기 상태): orderId={}, orderNumber={}",
                     order.getId(), order.getOrderNumber());
