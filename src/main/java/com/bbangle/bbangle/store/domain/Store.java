@@ -128,6 +128,32 @@ public class Store extends SoftDeleteBaseEntity {
         this.originAddressDetail = originAddressDetail;
     }
 
+    // TODO : Test
+    public void updateStoreForAdmin(
+        String identifier,
+        String profile,
+        String introduce,
+        String phone,
+        String subPhone,
+        String email,
+        String originAddressLine,
+        String originAddressDetail
+    ) {
+        PhoneNumberVO newPhoneNumberVO = PhoneNumberVO.of(phone, subPhone);
+        EmailVO newEmailVO = EmailVO.of(email);
+
+        if (profile != null) {
+            this.profile = profile;
+        }
+
+        this.identifier = identifier;
+        this.introduce = introduce;
+        this.phoneNumberVO = newPhoneNumberVO;
+        this.emailVO = newEmailVO;
+        this.originAddressLine = originAddressLine;
+        this.originAddressDetail = originAddressDetail;
+    }
+
     void updateName(String currentName, String newName) {
         if (!this.name.equals(currentName)) {
             throw new BbangleException(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
