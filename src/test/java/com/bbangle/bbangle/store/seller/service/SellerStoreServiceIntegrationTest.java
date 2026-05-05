@@ -13,7 +13,6 @@ import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
 import com.bbangle.bbangle.fixture.store.seller.controller.dto.SellerStoreRequestFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
-import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
@@ -32,8 +31,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,22 +59,6 @@ public class SellerStoreServiceIntegrationTest {
 
     @Autowired
     private EntityManager em;
-
-    @Test
-    @DisplayName("판매자가 스토어 등록에 성공한다.")
-    void success_register_store() {
-
-        // given
-        Seller seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller());
-        Store store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
-
-        // when
-        sellerStoreService.registerStore(seller, store);
-
-        // then
-        assertThat(seller.getStore()).isEqualTo(store);
-        assertThat(seller.getCertificationStatus()).isEqualTo(CertificationStatus.PENDING);
-    }
 
     @Test
     @DisplayName("스토어명 변경 신청에 성공한다.")

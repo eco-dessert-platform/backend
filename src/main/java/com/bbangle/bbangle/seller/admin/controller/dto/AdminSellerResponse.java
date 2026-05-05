@@ -1,11 +1,20 @@
 package com.bbangle.bbangle.seller.admin.controller.dto;
 
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 
 public class AdminSellerResponse {
+
+    @Builder
+    @Schema(description = "승인 및 거절 처리 실패한 신청 상세 정보")
+    public record FailDetail(
+        @Schema(description = "승인 및 거절 실패한 신청 Id", example = "1") long storeApplicationId,
+        @Schema(description = "승인 및 거절 실패한 상세 사유", example = "존재하지 않는 신청입니다.") String reason
+    ) {}
 
     @Builder
     @Schema(description = "판매자 신규 회원가입 정보 DTO")
@@ -52,13 +61,43 @@ public class AdminSellerResponse {
     public record AdminSellerApplicationRejectList(
         @Schema(description = "거절 처리한 신청 Id 목록", example = "[1]") List<Long> successIds,
         List<FailDetail> failDetails
+    ) {}
+
+    @Builder
+    @Schema(description = "판매자 스토어 등록 신청 승인 결과 목록 DTO")
+    public record AdminSellerApplicationApproveList(
+        List<SuccessDetail> successDetails,
+        List<FailDetail> failDetails
     ) {
 
         @Builder
-        @Schema(description = "거절 처리 실패한 신청 상제 정보")
-        public record FailDetail(
-            @Schema(description = "거절 실패한 신청 Id", example = "1") long storeApplicationId,
-            @Schema(description = "거절 실패한 상세 사유", example = "존재하지 않는 신청입니다.") String reason
-        ) {}
+        @Schema(description = "승인 성공한 신청 상세 정보")
+        public record SuccessDetail(
+            @Schema(description = "스토어 신청서 ID", example = "1") Long storeApplicationId,
+            @Schema(description = "판매자 상태", example = "APPROVED") StoreApprovalStatus storeApplicationStatus,
+            StoreDTO storeDTO,
+            SellerDTO sellerDTO
+        ) {
+
+            @Builder
+            @Schema(description = "스토어 정보 DTO")
+            public record StoreDTO(
+                @Schema(description = "스토어 Id", example = "1") long storeId,
+                @Schema(description = "스토어명", example = "빵그리의 오븐") String storeName,
+                @Schema(description = "스토어 연락처", example = "01012345678") String phone,
+                @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhone,
+                @Schema(description = "스토어 이메일", example = "user@example.com") String email,
+                @Schema(description = "스토어 출고지 주소", example = "(우편번호) 성남시 금광동 222-31") String originAddressLine,
+                @Schema(description = "스토어 출고지 상세 주소", example = "나동 202호") String originAddressDetail
+            ) {}
+
+            @Builder
+            @Schema(description = "판매자 정보 DTO")
+            public record SellerDTO(
+                @Schema(description = "판매자 ID", example = "1") Long sellerId,
+                @Schema(description = "판매자 이름", example = "빵그리") String sellerName,
+                @Schema(description = "판매자 상태", example = "APPROVED") CertificationStatus sellerStatus
+            ) {}
+        }
     }
 }

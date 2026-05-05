@@ -1,7 +1,11 @@
 package com.bbangle.bbangle.store.admin.service;
 
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
+import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
@@ -9,6 +13,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateS
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
@@ -28,6 +33,7 @@ public class AdminStoreService {
     private static final int DEFAULT_PAGE_SIZE = 100;
     private final StoreNameRequestRepository storeNameRequestRepository;
     private final StoreRepository storeRepository;
+    private final SellerRepository sellerRepository;
 
     @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
@@ -94,5 +100,68 @@ public class AdminStoreService {
             .category(storeNameRequest.getRejectCategory())
             .rejectDetail(storeNameRequest.getRejectDetail())
             .build();
+    }
+
+    // TODO : Test
+    @Transactional
+    public Store createStore(StoreApplication storeApplication, String identifier) {
+
+        if (storeRepository.existsByName(storeApplication.getName())) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+        }
+
+        return storeRepository.save(
+            Store.createForSeller(
+                storeApplication.getName(),
+                storeApplication.getProfile(),
+                storeApplication.getIntroduce(),
+                identifier,
+                storeApplication.getPhoneNumberVO().getPhoneNumber(),
+                storeApplication.getPhoneNumberVO().getSubPhoneNumber(),
+                storeApplication.getEmailVO().getEmail(),
+                storeApplication.getOriginAddressLine(),
+                storeApplication.getOriginAddressDetail()
+            )
+        );
+    }
+
+    // TODO : Test
+    @Transactional
+    public Store updateStore(StoreApplication storeApplication, String identifier) {
+
+        if (sellerRepository.existsByStore_Id(storeApplication.getStore().getId())) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+        }
+
+        Store store = storeApplication.getStore();
+        store.updateStoreForAdmin(
+            identifier,
+            storeApplication.getProfile(),
+            storeApplication.getIntroduce(),
+            storeApplication.getPhoneNumberVO().getPhoneNumber(),
+            storeApplication.getPhoneNumberVO().getSubPhoneNumber(),
+            storeApplication.getEmailVO().getEmail(),
+            storeApplication.getOriginAddressLine(),
+            storeApplication.getOriginAddressDetail()
+        );
+
+        return store;
+    }
+
+    // TODO : Test
+    @Transactional(propagation = REQUIRES_NEW)
+    public Store registerApprove(StoreApplication application, StoreApplicationApprove command) {
+
+        Store store;
+        if (application.getStore() == null) {
+            store = createStore(application, command.identifier());
+        } else {
+            store = updateStore(application, command.identifier());
+        }
+
+        application.getSeller().registerStore(store, command.sellerName());
+        application.approve();
+
+        return store;
     }
 }
