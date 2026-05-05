@@ -2,12 +2,14 @@ package com.bbangle.bbangle.seller.admin.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,6 +25,14 @@ public interface AdminSellerApi {
         @RequestParam(defaultValue = "1")
         @Min(1)
         int page
+    );
+
+    @Operation(
+        summary = "(관리자) 판매자 회원 가입 및 스토어 등록 요청 목록 승인",
+        description = "판매자의 회원 가입 및 스토어 등록 요청을 승인합니다."
+    )
+    SingleResult<AdminSellerResponse.AdminSellerApplicationApproveList> approveSellerApplications(
+        @Valid @RequestBody List<StoreApplicationApprove> requests
     );
 
     @Operation(
