@@ -90,7 +90,7 @@ public class AdminSellerFacade {
 
         Map<Long, StoreApplicationApprove> commandMap = requests.stream()
             .collect(Collectors.toMap(StoreApplicationApprove::applicationId, Function.identity()));
-        List<Long> ids = new ArrayList<>(commandMap.keySet());
+        List<Long> ids = requests.stream().map(StoreApplicationApprove::applicationId).toList();
 
         List<AdminSellerApplicationApproveList.SuccessDetail> successDetails = new ArrayList<>();
         List<AdminSellerResponse.FailDetail> failDetails = new ArrayList<>();
