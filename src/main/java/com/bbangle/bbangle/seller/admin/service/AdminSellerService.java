@@ -4,7 +4,6 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationRejectList;
-import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationRejectList.FailDetail;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -48,7 +47,7 @@ public class AdminSellerService {
     public AdminSellerResponse.AdminSellerApplicationRejectList rejectStoreApplications(List<Long> ids) {
 
         List<Long> successIds = new ArrayList<>();
-        List<AdminSellerApplicationRejectList.FailDetail> failDetails = new ArrayList<>();
+        List<AdminSellerResponse.FailDetail> failDetails = new ArrayList<>();
 
         List<StoreApplication> applications = storeApplicationRepository.findAllWithSellerByIdIn(ids);
 
@@ -59,7 +58,7 @@ public class AdminSellerService {
             StoreApplication app = map.get(id);
 
             if (app == null) {
-                failDetails.add(FailDetail.builder()
+                failDetails.add(AdminSellerResponse.FailDetail.builder()
                     .storeApplicationId(id)
                     .reason(BbangleErrorCode.NOT_FOUND_REQUEST.getMessage())
                     .build()
@@ -71,14 +70,14 @@ public class AdminSellerService {
                 app.reject();
                 successIds.add(id);
             } catch (BbangleException e) {
-                failDetails.add(FailDetail.builder()
+                failDetails.add(AdminSellerResponse.FailDetail.builder()
                     .storeApplicationId(id)
                     .reason(e.getMessage())
                     .build()
                 );
             } catch (Exception e) {
                 log.error("스토어 등록 거절 처리 중 예기치 못한 오류 발생. id={}", id, e);
-                failDetails.add(FailDetail.builder()
+                failDetails.add(AdminSellerResponse.FailDetail.builder()
                     .storeApplicationId(id)
                     .reason(BbangleErrorCode.INTERNAL_SERVER_ERROR.getMessage())
                     .build()
