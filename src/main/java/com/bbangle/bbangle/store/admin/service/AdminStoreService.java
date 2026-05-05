@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.store.admin.service;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
@@ -11,21 +9,26 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.StoreNameRequest;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
+import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminStoreService {
@@ -34,6 +37,7 @@ public class AdminStoreService {
     private final StoreNameRequestRepository storeNameRequestRepository;
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
+    private final StoreApplicationRepository storeApplicationRepository;
 
     @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
@@ -149,8 +153,11 @@ public class AdminStoreService {
     }
 
     // TODO : Test
-    @Transactional(propagation = REQUIRES_NEW)
-    public Store registerApprove(StoreApplication application, StoreApplicationApprove command) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public RegisterApproveResult registerApprove(long applicationId, StoreApplicationApprove command) {
+
+        StoreApplication application = storeApplicationRepository.findByIdWithDetails(applicationId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
 
         Store store;
         if (application.getStore() == null) {
@@ -161,7 +168,10 @@ public class AdminStoreService {
 
         application.getSeller().registerStore(store, command.sellerName());
         application.approve();
-
-        return store;
+        return RegisterApproveResult.builder()
+            .storeApplication(application)
+            .store(store)
+            .seller(application.getSeller())
+            .build();
     }
 }

@@ -16,6 +16,6 @@ public class AdminStoreApplicationService {
 
     @Transactional(readOnly = true)
     public List<StoreApplication> findAllByIds(List<Long> ids) {
-        return storeApplicationRepository.findAllWithSellerAndStoreByIds(ids);
+        return storeApplicationRepository.findByIdIn(ids);
     }
 }

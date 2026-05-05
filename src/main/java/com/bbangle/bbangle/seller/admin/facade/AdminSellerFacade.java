@@ -13,10 +13,9 @@ import com.bbangle.bbangle.seller.admin.controller.mapper.AdminStoreMapper;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
-import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.admin.service.AdminStoreApplicationService;
 import com.bbangle.bbangle.store.admin.service.AdminStoreService;
-import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
 import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.util.AesEncryptionUtil;
 import java.util.ArrayList;
@@ -116,16 +115,14 @@ public class AdminSellerFacade {
 
             try {
                 storeApplication.validateApprovable();
-
-                Store store = adminStoreService.registerApprove(storeApplication, command);
-                Seller seller = storeApplication.getSeller();
+                RegisterApproveResult result = adminStoreService.registerApprove(storeApplication.getId(), command);
 
                 successDetails.add(
                     SuccessDetail.builder()
-                        .storeApplicationId(storeApplication.getId())
-                        .storeApplicationStatus(storeApplication.getStatus())
-                        .storeDTO(adminStoreMapper.toApproveStoreDto(store))
-                        .sellerDTO(adminStoreMapper.toApproveSellerDto(seller))
+                        .storeApplicationId(result.storeApplication().getId())
+                        .storeApplicationStatus(result.storeApplication().getStatus())
+                        .storeDTO(adminStoreMapper.toApproveStoreDto(result.store()))
+                        .sellerDTO(adminStoreMapper.toApproveSellerDto(result.seller()))
                         .build()
                 );
             } catch (DataIntegrityViolationException e) {

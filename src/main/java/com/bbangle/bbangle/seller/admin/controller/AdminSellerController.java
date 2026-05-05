@@ -44,6 +44,7 @@ public class AdminSellerController implements AdminSellerApi {
         );
     }
 
+    // TODO : Test
     @Override
     @PutMapping("/approve")
     public SingleResult<AdminSellerApplicationApproveList> approveSellerApplications(
