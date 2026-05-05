@@ -84,6 +84,8 @@ public class AdminSellerResponse {
             public record StoreDTO(
                 @Schema(description = "스토어 Id", example = "1") long storeId,
                 @Schema(description = "스토어명", example = "빵그리의 오븐") String storeName,
+                @Schema(description = "스토어 한 줄 소개", example = "빵그리의 오븐입니다.") String introduce,
+                @Schema(description = "스토어 프로필", example = "test@example.com") String profile,
                 @Schema(description = "스토어 연락처", example = "01012345678") String phone,
                 @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhone,
                 @Schema(description = "스토어 이메일", example = "user@example.com") String email,
