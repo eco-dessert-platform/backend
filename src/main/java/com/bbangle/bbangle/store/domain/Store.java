@@ -128,7 +128,6 @@ public class Store extends SoftDeleteBaseEntity {
         this.originAddressDetail = originAddressDetail;
     }
 
-    // TODO : Test
     public void updateStoreForAdmin(
         String identifier,
         String profile,

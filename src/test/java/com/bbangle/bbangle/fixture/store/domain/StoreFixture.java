@@ -17,6 +17,7 @@ public final class StoreFixture {
     public static final String DEFAULT_ADDRESS = "서울";
     public static final String DEFAULT_DETAIL_ADDRESS = "123동";
 
+    public static final String NEW_IDENTIFIER = "98765";
     public static final String NEW_PROFILE = "new.jpg";
     public static final String NEW_INTRODUCE = "건강한 디저트 빵그리의 오븐";
     public static final String NEW_PHONE = "01011112222";

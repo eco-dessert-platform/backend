@@ -80,8 +80,11 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             .build();
     }
 
-    // TODO : Test
     public void registerStore(Store store, String name) {
+
+        if (store == null) {
+            throw new IllegalArgumentException("store must not be null");
+        }
 
         if (this.store != null || this.certificationStatus == CertificationStatus.APPROVED) {
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
