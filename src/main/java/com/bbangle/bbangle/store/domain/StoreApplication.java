@@ -142,7 +142,6 @@ public class StoreApplication extends BaseEntity {
         }
     }
 
-    // TODO : Test
     public void validateApprovable() {
         switch (this.status) {
             case APPROVE -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);

@@ -12,6 +12,7 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBP
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_ADDRESS;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_DETAIL_ADDRESS;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_EMAIL;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_IDENTIFIER;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PROFILE;
@@ -249,6 +250,151 @@ public class StoreUnitTest {
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_UPDATE_STORE_NAME);
                 });
             assertThat(store.getName()).isNotEqualTo(NEW_STORE_NAME);
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreForAdmin() 테스트")
+    class UpdateStoreForAdminTest {
+
+        static Stream<Arguments> updateParams() {
+            return Stream.of(
+                Arguments.of(null, null),
+                Arguments.of(NEW_PROFILE, null),
+                Arguments.of(NEW_PROFILE, NEW_SUBPHONE),
+                Arguments.of(null, NEW_SUBPHONE)
+            );
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정에 성공한다")
+        @MethodSource("updateParams")
+        void success_update_store(String newProfile, String newSubPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            String profile = newProfile == null ? store.getProfile() : newProfile;
+
+            // when
+            store.updateStoreForAdmin(NEW_IDENTIFIER, newProfile, NEW_INTRODUCE, NEW_PHONE, newSubPhone, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS);
+
+            // then
+            assertThat(store.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(store.getProfile()).isEqualTo(profile);
+            assertThat(store.getIntroduce()).isEqualTo(NEW_INTRODUCE);
+            assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(NEW_PHONE);
+            assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(newSubPhone);
+            assertThat(store.getEmailVO().getEmail()).isEqualTo(NEW_EMAIL);
+            assertThat(store.getOriginAddressLine()).isEqualTo(NEW_ADDRESS);
+            assertThat(store.getOriginAddressDetail()).isEqualTo(NEW_DETAIL_ADDRESS);
+        }
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정 시 프로필이 null이면 기존 프로필을 유지한다.")
+        void success_update_store_nullProfile() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // when
+            store.updateStoreForAdmin(NEW_IDENTIFIER, null, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS);
+
+            // then
+            assertThat(store.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+            assertThat(store.getIntroduce()).isEqualTo(NEW_INTRODUCE);
+            assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(NEW_PHONE);
+            assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(NEW_SUBPHONE);
+            assertThat(store.getEmailVO().getEmail()).isEqualTo(NEW_EMAIL);
+            assertThat(store.getOriginAddressLine()).isEqualTo(NEW_ADDRESS);
+            assertThat(store.getOriginAddressDetail()).isEqualTo(NEW_DETAIL_ADDRESS);
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 전화번호로 인해 실패한다")
+        @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
+        void fail_update_store_with_invalid_phone(String invalidPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreForAdmin(
+                NEW_IDENTIFIER, NEW_PROFILE, NEW_INTRODUCE,
+                invalidPhone,
+                NEW_SUBPHONE, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PHONE_NUMBER);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 서브 전화번호로 인해 실패한다")
+        @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
+        void fail_update_store_with_invalid_sub_phone(String invalidPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreForAdmin(
+                NEW_IDENTIFIER, NEW_PROFILE, NEW_INTRODUCE, NEW_PHONE,
+                invalidPhone,
+                NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PHONE_NUMBER);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 이메일 형식으로 인해 실패한다")
+        @ValueSource(strings = {"test1234", "@gmail", "test@gmail", "test@.com", "test@com", ""})
+        void fail_update_store_with_invalid_email(String invalidEmail) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreForAdmin(
+                NEW_IDENTIFIER, NEW_PROFILE, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE,
+                invalidEmail,
+                NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_EMAIL);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정 중 하나라도 유효하지 않으면 수정이 실패하고 상태는 유지된다.")
+        void fail_update_store_any_invalid() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // when & then
+            assertThatThrownBy(() -> store.updateStoreForAdmin(
+                NEW_IDENTIFIER, NEW_PROFILE, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE,
+                null,
+                NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class);
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
         }
     }
 }
