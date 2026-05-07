@@ -2,11 +2,13 @@ package com.bbangle.bbangle.seller.admin.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,10 +20,14 @@ import com.bbangle.bbangle.config.security.SecurityConfig;
 import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList.SuccessDetail;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationList;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationRejectList;
 import com.bbangle.bbangle.seller.admin.facade.AdminSellerFacade;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
+import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -200,6 +206,116 @@ class AdminSellerControllerTest {
                 .andExpect(status().isBadRequest());
 
             verify(adminSellerService, never()).rejectStoreApplications(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("approveSellerApplications() 테스트")
+    class ApproveSellerApplicationsTest {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("스토어 신청 승인 요청에 성공한다")
+        void approveSellerApplications_success() throws Exception {
+
+            // given
+            StoreApplicationApprove request = StoreApplicationApprove.builder()
+                .applicationId(1L)
+                .sellerName("홍길동")
+                .identifier("12345")
+                .build();
+
+            AdminSellerApplicationApproveList response = AdminSellerApplicationApproveList.builder()
+                .successDetails(
+                    List.of(SuccessDetail.builder()
+                        .storeApplicationId(1L)
+                        .storeApplicationStatus(StoreApprovalStatus.APPROVE)
+                        .build()))
+                .failDetails(List.of())
+                .build();
+
+            given(adminSellerFacade.approveStoreApplications(anyList())).willReturn(response);
+
+            // when & then
+            mockMvc.perform(put(AdminApiPath.PREFIX + "/sellers/approve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(List.of(request))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.successDetails.length()").value(1))
+                .andExpect(jsonPath("$.result.failDetails.length()").value(0))
+                .andExpect(jsonPath("$.result.successDetails[0].storeApplicationId").value(1L));
+
+            verify(adminSellerFacade).approveStoreApplications(anyList());
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("스토어 신청 승인 요청 시 applicationId가 null이면 검증에 실패한다")
+        void approveSellerApplications_validationFail_applicationId() throws Exception {
+
+            // given
+            String request = """
+            [
+              {
+                "applicationId": null,
+                "sellerName": "홍길동",
+                "identifier": "12345"
+              }
+            ]
+            """;
+
+            // when & then
+            mockMvc.perform(put(AdminApiPath.PREFIX + "/sellers/approve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("스토어 신청 승인 요청 시 sellerName이 비어있으면 검증에 실패한다")
+        void approveSellerApplications_validationFail_sellerName() throws Exception {
+
+            // given
+            String request = """
+            [
+              {
+                "applicationId": 1,
+                "sellerName": "",
+                "identifier": "12345"
+              }
+            ]
+            """;
+
+            // when & then
+            mockMvc.perform(put(AdminApiPath.PREFIX + "/sellers/approve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("스토어 신청 승인 요청 시 identifier가 비어있으면 검증에 실패한다")
+        void approveSellerApplications_validationFail_identifier() throws Exception {
+
+            // given
+            String request = """
+            [
+              {
+                "applicationId": 1,
+                "sellerName": "홍길동",
+                "identifier": ""
+              }
+            ]
+            """;
+
+            // when & then
+            mockMvc.perform(
+                put(AdminApiPath.PREFIX + "/sellers/approve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request))
+                .andExpect(status().isBadRequest());
         }
     }
 }

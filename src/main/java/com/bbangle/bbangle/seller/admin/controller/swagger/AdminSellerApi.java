@@ -32,7 +32,7 @@ public interface AdminSellerApi {
         description = "판매자의 회원 가입 및 스토어 등록 요청을 승인합니다."
     )
     SingleResult<AdminSellerResponse.AdminSellerApplicationApproveList> approveSellerApplications(
-        @Valid @RequestBody List<StoreApplicationApprove> requests
+        @RequestBody List<@Valid StoreApplicationApprove> requests
     );
 
     @Operation(

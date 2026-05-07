@@ -44,11 +44,10 @@ public class AdminSellerController implements AdminSellerApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PutMapping("/approve")
     public SingleResult<AdminSellerApplicationApproveList> approveSellerApplications(
-        @Valid @RequestBody List<StoreApplicationApprove> requests
+        @RequestBody List<@Valid StoreApplicationApprove> requests
     ) {
         return responseService.getSingleResult(
             adminSellerFacade.approveStoreApplications(requests)
