@@ -106,7 +106,6 @@ public class AdminStoreService {
             .build();
     }
 
-    // TODO : Test
     @Transactional
     public Store createStore(StoreApplication storeApplication, String identifier) {
 
@@ -129,7 +128,6 @@ public class AdminStoreService {
         );
     }
 
-    // TODO : Test
     @Transactional
     public Store updateStore(StoreApplication storeApplication, String identifier) {
 
@@ -152,7 +150,6 @@ public class AdminStoreService {
         return store;
     }
 
-    // TODO : Test
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public RegisterApproveResult registerApprove(long applicationId, StoreApplicationApprove command) {
 
