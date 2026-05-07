@@ -85,7 +85,6 @@ public class AdminSellerFacade {
             .build();
     }
 
-    // TODO : Test
     public AdminSellerApplicationApproveList approveStoreApplications(List<StoreApplicationApprove> requests) {
 
         Map<Long, StoreApplicationApprove> commandMap = requests.stream()
