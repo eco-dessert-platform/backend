@@ -167,10 +167,10 @@ public class SellerUnitTest {
 
             // when & then
             assertThatThrownBy(() -> seller.registerStore(null, "name"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
-                    IllegalArgumentException ex = (IllegalArgumentException) e;
-                    assertThat(ex.getMessage()).isEqualTo("store must not be null");
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getMessage()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND.getMessage());
                 });
         }
     }
