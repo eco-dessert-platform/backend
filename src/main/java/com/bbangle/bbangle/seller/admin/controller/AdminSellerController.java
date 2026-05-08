@@ -13,6 +13,7 @@ import com.bbangle.bbangle.seller.admin.facade.AdminSellerFacade;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -47,7 +48,7 @@ public class AdminSellerController implements AdminSellerApi {
     @Override
     @PutMapping("/approve")
     public SingleResult<AdminSellerApplicationApproveList> approveSellerApplications(
-        @RequestBody List<@Valid StoreApplicationApprove> requests
+        @RequestBody @NotEmpty List<@Valid StoreApplicationApprove> requests
     ) {
         return responseService.getSingleResult(
             adminSellerFacade.approveStoreApplications(requests)

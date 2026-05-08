@@ -19,6 +19,7 @@ import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,13 @@ class AdminStoreServicePartialSuccessTest {
 
     @Autowired
     private StoreApplicationRepository storeApplicationRepository;
+
+    @AfterEach
+    void tearDown() {
+        storeApplicationRepository.deleteAll();
+        sellerRepository.deleteAll();
+        storeRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("store가 없으면 createStore 후 승인 처리")

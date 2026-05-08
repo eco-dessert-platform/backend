@@ -90,7 +90,7 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
         }
         
-        if (name != null) {
+        if (name != null && !name.isBlank()) {
             this.name = name;
         }
         this.store = store;

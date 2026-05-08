@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.EnumSource.Mode;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("[단위 테스트] Seller")
 public class SellerUnitTest {
@@ -99,9 +101,11 @@ public class SellerUnitTest {
             assertThat(seller.getName()).isEqualTo("new-name");
         }
 
-        @Test
-        @DisplayName("이름이 null이면 기존 이름을 유지한다")
-        void success_registerStore_null_name() {
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {"", " ", "   ", "\t", "\n"})
+        @DisplayName("잘못된 판매자 이름을 입력하면 기존 이름을 유지한다")
+        void success_registerStore_null_name(String sellerName) {
 
             // given
             Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
@@ -109,7 +113,7 @@ public class SellerUnitTest {
             Store store = StoreFixture.defaultStore();
 
             // when
-            seller.registerStore(store, null);
+            seller.registerStore(store, sellerName);
 
             // then
             assertThat(seller.getName()).isEqualTo(originalName);

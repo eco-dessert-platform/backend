@@ -269,6 +269,7 @@ class AdminSellerControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(request))
                 .andExpect(status().isBadRequest());
+            verify(adminSellerFacade, never()).approveStoreApplications(anyList());
         }
 
         @Test
@@ -292,6 +293,7 @@ class AdminSellerControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(request))
                 .andExpect(status().isBadRequest());
+            verify(adminSellerFacade, never()).approveStoreApplications(anyList());
         }
 
         @Test
@@ -316,6 +318,7 @@ class AdminSellerControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(request))
                 .andExpect(status().isBadRequest());
+            verify(adminSellerFacade, never()).approveStoreApplications(anyList());
         }
     }
 }

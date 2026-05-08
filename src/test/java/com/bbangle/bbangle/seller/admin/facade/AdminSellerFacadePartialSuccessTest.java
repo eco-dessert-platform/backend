@@ -17,6 +17,7 @@ import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,13 @@ class AdminSellerFacadePartialSuccessTest {
 
     @Autowired
     private EntityManager em;
+
+    @AfterEach
+    void tearDown() {
+        storeApplicationRepository.deleteAll();
+        sellerRepository.deleteAll();
+        storeRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("여러 요청 중 일부 실패해도 성공 건은 반영된다")

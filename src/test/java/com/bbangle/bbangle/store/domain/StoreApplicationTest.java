@@ -125,7 +125,15 @@ class StoreApplicationTest {
             StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, status);
 
             // when & then
-            assertThatThrownBy(application::validateApprovable).isInstanceOf(BbangleException.class);
+            assertThatThrownBy(application::validateApprovable)
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    BbangleErrorCode expected = (status == StoreApprovalStatus.APPROVE)
+                        ? BbangleErrorCode.REQUEST_IS_APPROVED
+                        : BbangleErrorCode.REQUEST_IS_REJECTED;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(expected);
+                });
         }
 
         @Test
