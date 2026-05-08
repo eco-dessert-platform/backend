@@ -155,6 +155,7 @@ public class AdminStoreService {
 
         StoreApplication application = storeApplicationRepository.findByIdWithDetails(applicationId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
+        application.validateApprovable();
 
         Store store;
         if (application.getStore() == null) {

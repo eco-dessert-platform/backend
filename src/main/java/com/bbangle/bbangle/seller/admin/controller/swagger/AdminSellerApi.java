@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +33,7 @@ public interface AdminSellerApi {
         description = "판매자의 회원 가입 및 스토어 등록 요청을 승인합니다."
     )
     SingleResult<AdminSellerResponse.AdminSellerApplicationApproveList> approveSellerApplications(
-        @RequestBody List<@Valid StoreApplicationApprove> requests
+        @RequestBody @NotEmpty List<@Valid StoreApplicationApprove> requests
     );
 
     @Operation(

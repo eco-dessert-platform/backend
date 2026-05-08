@@ -74,7 +74,7 @@ public class AdminSellerResponse {
         @Schema(description = "승인 성공한 신청 상세 정보")
         public record SuccessDetail(
             @Schema(description = "스토어 신청서 ID", example = "1") Long storeApplicationId,
-            @Schema(description = "판매자 상태", example = "APPROVED") StoreApprovalStatus storeApplicationStatus,
+            @Schema(description = "스토어 신청서 상태", example = "APPROVE") StoreApprovalStatus storeApplicationStatus,
             StoreDTO storeDTO,
             SellerDTO sellerDTO
         ) {
