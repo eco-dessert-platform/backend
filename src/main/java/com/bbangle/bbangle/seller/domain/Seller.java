@@ -83,7 +83,7 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
     public void registerStore(Store store, String name) {
 
         if (store == null) {
-            throw new IllegalArgumentException("store must not be null");
+            throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
         }
 
         if (this.store != null || this.certificationStatus == CertificationStatus.APPROVED) {
