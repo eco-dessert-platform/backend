@@ -184,6 +184,13 @@ public enum BbangleErrorCode {
     SETTLEMENT_DATE_RANGE_EXCEEDED(-805, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST),
     SETTLEMENT_DATE_REQUIRED(-806, "엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST),
 
+    // Vat Error(901 ~ 910)
+    INVALID_MONTH_FORMAT(-901, "월 형식이 올바르지 않습니다.", BAD_REQUEST),
+    INVALID_VAT_DATE_RANGE(-902, "조회 기간이 올바르지 않습니다.", BAD_REQUEST),
+    EXCEEDED_MAX_VAT_DATE_RANGE(-903, "조회 기간은 최대 1년까지 가능합니다.", BAD_REQUEST),
+    INVALID_EXCEL_TYPE(-904, "엑셀 다운로드 유형이 올바르지 않습니다.", BAD_REQUEST),
+    EXCEL_CREATE_FAILED(-905, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
     // Charge Error(821 ~ 830)
     CHARGE_BALANCE_NOT_FOUND(-821, "충전금 잔액 정보를 찾을 수 없습니다.", NOT_FOUND),
     CHARGE_WITHDRAWAL_DUPLICATED(-822, "동일한 출금 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.", CONFLICT),
