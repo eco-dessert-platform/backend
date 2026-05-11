@@ -58,7 +58,7 @@ class SellerDocumentServiceIntegrationTest {
         storeRepository.save(store);
 
         testSeller = SellerFixture.defaultSeller();
-        testSeller.registerStore(store);
+        testSeller.registerStore(store, null);
         sellerRepository.save(testSeller);
 
         em.flush();

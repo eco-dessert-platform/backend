@@ -80,11 +80,21 @@ public class Seller extends SoftDeleteCreatedAtBaseEntity {
             .build();
     }
 
-    // TODO : v3 Admin이 승인하면 등록되도록 변경
-    // 판매자 스토어 등록
-    public void registerStore(Store store) {
+    public void registerStore(Store store, String name) {
+
+        if (store == null) {
+            throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
+        }
+
+        if (this.store != null || this.certificationStatus == CertificationStatus.APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_REGISTER_STORE);
+        }
+        
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
         this.store = store;
-        this.certificationStatus = CertificationStatus.PENDING;
+        this.certificationStatus = CertificationStatus.APPROVED;
     }
 
     public void updateStatus(CertificationStatus status) {

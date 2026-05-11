@@ -9,6 +9,7 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROF
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_SUBPHONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -22,6 +23,8 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @DisplayName("[단위 테스트] StoreApplication")
 class StoreApplicationTest {
@@ -105,6 +108,44 @@ class StoreApplicationTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.REQUEST_IS_APPROVED);
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("validateApprovable() 테스트")
+    class ValidateApprovableTest {
+
+        @ParameterizedTest
+        @DisplayName("승인 불가능 상태에서는 예외가 발생한다.")
+        @EnumSource(value = StoreApprovalStatus.class, names = {"APPROVE", "REJECT"})
+        void validateApprovable_notApprovable(StoreApprovalStatus status) {
+
+            // given
+            Seller seller = SellerFixture.defaultSeller();
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, status);
+
+            // when & then
+            assertThatThrownBy(application::validateApprovable)
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    BbangleErrorCode expected = (status == StoreApprovalStatus.APPROVE)
+                        ? BbangleErrorCode.REQUEST_IS_APPROVED
+                        : BbangleErrorCode.REQUEST_IS_REJECTED;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(expected);
+                });
+        }
+
+        @Test
+        @DisplayName("승인 가능한 상태에서는 예외가 발생하지 않는다.")
+        void validateApprovable_approvable() {
+
+            // given
+            Seller seller = SellerFixture.defaultSeller(CertificationStatus.PENDING);
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(DEFAULT_STORE_NAME, seller, StoreApprovalStatus.PENDING);
+
+            // when & then
+            assertThatCode(application::validateApprovable).doesNotThrowAnyException();
         }
     }
 }

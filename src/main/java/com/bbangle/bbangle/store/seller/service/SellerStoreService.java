@@ -36,12 +36,6 @@ public class SellerStoreService {
         return storeRepository.findByStoreNameAndIsNotDeleted(normalizedStoreName);
     }
 
-    // TODO : v3 - Admin으로 이동
-    @Transactional
-    public void registerStore(Seller seller, Store store) {
-        seller.registerStore(store);
-    }
-
     @Transactional(readOnly = true)
     public CursorPagination<StoreInfo> selectStoreNameForSeller(String storeName, Long cursorId) {
         String normalizedStoreName = storeName.replaceAll("\\s+", "");

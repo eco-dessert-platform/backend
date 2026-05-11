@@ -121,7 +121,6 @@ public class StoreApplication extends BaseEntity {
             .build();
     }
 
-    // TODO : (관리자) 스토어 등록 승인 구현
     public void approve() {
         this.status = StoreApprovalStatus.APPROVE;
     }
@@ -140,6 +139,13 @@ public class StoreApplication extends BaseEntity {
         if (this.status == StoreApprovalStatus.APPROVE &&
             this.seller.getCertificationStatus() == CertificationStatus.APPROVED) {
             throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+        }
+    }
+
+    public void validateApprovable() {
+        switch (this.status) {
+            case APPROVE -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+            case REJECT -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
         }
     }
 }
