@@ -36,6 +36,10 @@ public class ReturnRequestFixture {
         return withStatus(ReturnRequestRequestStatus.PICKUP_SCHEDULED, orderItem);
     }
 
+    public static ReturnRequest onHold(OrderItem orderItem) {
+        return withStatus(ReturnRequestRequestStatus.HOLD, orderItem);
+    }
+
     public static ReturnRequest inspectionApproved(OrderItem orderItem) {
         return withStatus(ReturnRequestRequestStatus.INSPECTION_APPROVED, orderItem);
     }
