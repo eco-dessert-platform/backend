@@ -1,14 +1,20 @@
 package com.bbangle.bbangle.store.admin.controller.swagger;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
+import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +33,23 @@ public interface AdminStoreApi {
         @RequestParam(defaultValue = "1")
         @Min(1)
         int page
+    );
+
+    @Operation(
+        summary = "(관리자) 등록된 스토어 목록 조회",
+        description = "등록된 전체 스토어 목록을 페이지네이션으로 조회합니다."
+    )
+    SingleResult<BbanglePageResponse<RegisteredStoreInfo>> getRegisteredStores(
+        @ParameterObject Pageable pageable
+    );
+
+    @Operation(
+        summary = "(관리자) 스토어 다중 삭제",
+        description = "등록된 스토어를 hard delete 방식으로 삭제합니다."
+    )
+    CommonResult deleteStores(
+        @Parameter(description = "삭제할 스토어 ID 목록", example = "1")
+        @RequestParam List<Long> storeIds
     );
 
     @Operation(

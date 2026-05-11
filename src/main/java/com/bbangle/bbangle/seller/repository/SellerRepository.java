@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.repository;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.seller.domain.Seller;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,7 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     Optional<Seller> findByProviderAndProviderId(OauthServerType provider, String providerId);
 
     boolean existsByStore_Id(Long storeId);
+
+    @Query("SELECT se FROM Seller se WHERE se.store.id IN :storeIds")
+    List<Seller> findByStoreIdIn(@Param("storeIds") List<Long> storeIds);
 }

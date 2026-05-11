@@ -3,6 +3,7 @@ package com.bbangle.bbangle.store.admin.service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
+import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
@@ -12,6 +13,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateS
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
+import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -20,6 +22,9 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -65,7 +70,34 @@ public class AdminStoreService {
     }
 
     @Transactional(readOnly = true)
-    public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
+    public Page<RegisteredStoreInfo> getRegisteredStores(Pageable pageable) {
+        Page<Store> storePage = storeRepository.findByIsDeletedFalse(pageable);
+
+        List<Long> storeIds = storePage.getContent().stream()
+            .map(Store::getId)
+            .toList();
+
+        Map<Long, Seller> sellerByStoreId = sellerRepository.findByStoreIdIn(storeIds)
+            .stream()
+            .collect(Collectors.toMap(
+                seller -> seller.getStore().getId(),
+                seller -> seller
+            ));
+
+        return storePage.map(store -> RegisteredStoreInfo.from(store, sellerByStoreId.get(store.getId())));
+    }
+
+    @Transactional
+    public void deleteStores(List<Long> storeIds) {
+        long count = storeRepository.countByIdInAndIsDeletedFalse(storeIds);
+        if (count != storeIds.size()) {
+            throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
+        }
+        storeRepository.softDeleteByIds(storeIds);
+    }
+
+    @Transactional(readOnly = true)
+    public UpdateStoreNameRequest getPendingRequests(int page) {
         page = Math.max(page, 1);
         Pageable pageable = PageRequest.of(
             page - 1,
