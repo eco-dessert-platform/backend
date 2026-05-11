@@ -7,6 +7,10 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,6 +25,7 @@ import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
@@ -28,7 +33,9 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateS
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.service.AdminStoreService;
+import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +46,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -143,6 +154,128 @@ class AdminStoreControllerTest {
                     .param("page", "0")
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredStores() 테스트")
+    class GetRegisteredStoresTest {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("등록된 스토어 목록을 페이징 형태로 조회한다")
+        void success_getRegisteredStores() throws Exception {
+            // given
+            int page = 0;
+            int size = 20;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            RegisteredStoreInfo info = RegisteredStoreInfo.from(store);
+            Page<RegisteredStoreInfo> pageResult = new PageImpl<>(List.of(info), PageRequest.of(page, size), 1);
+
+            given(adminStoreService.getRegisteredStores(any(Pageable.class))).willReturn(pageResult);
+
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/registered")
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.content.length()").value(1))
+                .andExpect(jsonPath("$.result.content[0].storeId").value(1L))
+                .andExpect(jsonPath("$.result.content[0].storeName").value(StoreFixture.DEFAULT_STORE_NAME))
+                .andExpect(jsonPath("$.result.content[0].businessNumber").value(StoreFixture.DEFAULT_IDENTIFIER))
+                .andExpect(jsonPath("$.result.page").value(page))
+                .andExpect(jsonPath("$.result.size").value(size))
+                .andExpect(jsonPath("$.result.totalPages").value(1))
+                .andExpect(jsonPath("$.result.totalElements").value(1));
+
+            then(adminStoreService).should().getRegisteredStores(any(Pageable.class));
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("등록된 스토어가 없으면 빈 목록을 반환한다")
+        void emptyResult_getRegisteredStores() throws Exception {
+            // given
+            int page = 0;
+            int size = 20;
+            Page<RegisteredStoreInfo> emptyPage = new PageImpl<>(List.of(), PageRequest.of(page, size), 0);
+
+            given(adminStoreService.getRegisteredStores(any(Pageable.class))).willReturn(emptyPage);
+
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/registered")
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.content.length()").value(0))
+                .andExpect(jsonPath("$.result.totalElements").value(0));
+
+            then(adminStoreService).should().getRegisteredStores(any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("ADMIN 권한이 없으면 접근에 실패한다")
+        void fail_getRegisteredStores_noAdminRole() throws Exception {
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/registered"))
+                .andExpect(status().isUnauthorized());
+
+            then(adminStoreService).shouldHaveNoInteractions();
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteStores() 테스트")
+    class DeleteStoresTest {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("지정한 스토어를 삭제한다")
+        void success_deleteStores() throws Exception {
+            // given
+            List<Long> storeIds = List.of(1L, 2L, 3L);
+            willDoNothing().given(adminStoreService).deleteStores(storeIds);
+
+            // when & then
+            mockMvc.perform(delete(AdminApiPath.PREFIX + "/stores")
+                    .param("storeIds", "1", "2", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            then(adminStoreService).should().deleteStores(storeIds);
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("존재하지 않는 storeId가 포함되면 예외 응답을 반환한다")
+        void fail_deleteStores_notFound() throws Exception {
+            // given
+            List<Long> storeIds = List.of(1L, 999L);
+            willThrow(new BbangleException(BbangleErrorCode.STORE_NOT_FOUND))
+                .given(adminStoreService).deleteStores(storeIds);
+
+            // when & then
+            mockMvc.perform(delete(AdminApiPath.PREFIX + "/stores")
+                    .param("storeIds", "1", "999"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.STORE_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.STORE_NOT_FOUND.getMessage()));
+        }
+
+        @Test
+        @DisplayName("ADMIN 권한이 없으면 접근에 실패한다")
+        void fail_deleteStores_noAdminRole() throws Exception {
+            // when & then
+            mockMvc.perform(delete(AdminApiPath.PREFIX + "/stores")
+                    .param("storeIds", "1", "2"))
+                .andExpect(status().isUnauthorized());
+
+            then(adminStoreService).shouldHaveNoInteractions();
         }
     }
 

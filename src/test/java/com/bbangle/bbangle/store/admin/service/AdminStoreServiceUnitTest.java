@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,6 +31,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSe
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
+import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -650,7 +652,7 @@ class AdminStoreServiceUnitTest {
         }
 
         @Test
-        @DisplayName("application이 없으면 예외 발생")
+        @DisplayName("등록 신청 정보가 없으면 예외 발생")
         void fail_registerApprove_notFound() {
 
             // given
@@ -670,6 +672,96 @@ class AdminStoreServiceUnitTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_REQUEST);
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredStores() 테스트")
+    class GetRegisteredStoresTest {
+
+        @Test
+        @DisplayName("등록된 스토어 목록을 페이징 형태로 반환한다")
+        void success_getRegisteredStores() {
+            // given
+            Pageable pageable = PageRequest.of(0, 20);
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            Seller seller = SellerFixture.defaultSeller("홍길동", store);
+            Page<Store> storePage = new PageImpl<>(List.of(store), pageable, 1);
+
+            given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(storePage);
+            given(sellerRepository.findByStoreIdIn(List.of(1L))).willReturn(List.of(seller));
+
+            // when
+            Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            RegisteredStoreInfo info = result.getContent().get(0);
+            assertThat(info.storeId()).isEqualTo(1L);
+            assertThat(info.storeName()).isEqualTo(DEFAULT_STORE_NAME);
+            assertThat(info.businessNumber()).isEqualTo(DEFAULT_IDENTIFIER);
+            assertThat(info.sellerName()).isEqualTo("홍길동");
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            then(storeRepository).should().findByIsDeletedFalse(pageable);
+            then(sellerRepository).should().findByStoreIdIn(List.of(1L));
+        }
+
+        @Test
+        @DisplayName("등록된 스토어가 없으면 빈 Page를 반환한다")
+        void emptyResult_getRegisteredStores() {
+            // given
+            Pageable pageable = PageRequest.of(0, 20);
+            Page<Store> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+            given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(emptyPage);
+            given(sellerRepository.findByStoreIdIn(List.of())).willReturn(List.of());
+
+            // when
+            Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isZero();
+            then(storeRepository).should().findByIsDeletedFalse(pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteStores() 테스트")
+    class DeleteStoresTest {
+
+        @Test
+        @DisplayName("모든 storeId가 유효하면 소프트 딜리트한다")
+        void success_deleteStores() {
+            // given
+            List<Long> storeIds = List.of(1L, 2L, 3L);
+            given(storeRepository.countByIdInAndIsDeletedFalse(storeIds)).willReturn(3L);
+
+            // when
+            adminStoreService.deleteStores(storeIds);
+
+            // then
+            then(storeRepository).should().countByIdInAndIsDeletedFalse(storeIds);
+            then(storeRepository).should().softDeleteByIds(storeIds);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 storeId가 포함되면 STORE_NOT_FOUND 예외가 발생한다")
+        void fail_deleteStores_notFound() {
+            // given
+            List<Long> storeIds = List.of(1L, 2L, 999L);
+            given(storeRepository.countByIdInAndIsDeletedFalse(storeIds)).willReturn(2L);
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.deleteStores(storeIds))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
+                });
+
+            then(storeRepository).should().countByIdInAndIsDeletedFalse(storeIds);
+            then(storeRepository).should(never()).softDeleteByIds(any());
         }
     }
 }
