@@ -107,7 +107,6 @@ public class AdminStoreService {
             .build();
     }
 
-    // TODO : Test 수정
     @Transactional
     public Store createStore(AdminStoreInfo adminStoreInfo) {
 
@@ -130,7 +129,6 @@ public class AdminStoreService {
         );
     }
 
-    // TODO : Test 수정
     @Transactional
     public Store updateStore(AdminStoreInfo adminStoreInfo, Store store) {
 
@@ -148,7 +146,6 @@ public class AdminStoreService {
         return store;
     }
 
-    // TODO : Test 수정
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public RegisterApproveResult registerApprove(long applicationId, StoreApplicationApprove command) {
 

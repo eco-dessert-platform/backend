@@ -9,6 +9,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
+import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
@@ -144,6 +145,33 @@ class AdminStoreServicePartialSuccessTest {
             .satisfies(e -> {
                 BbangleException ex = (BbangleException) e;
                 assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_REQUEST);
+            });
+    }
+
+    @Test
+    @DisplayName("이미 등록된 store를 다른 판매자가 등록할 경우 예외 발생")
+    void fail_registerApprove_alreadyReserved() {
+
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        sellerRepository.save(SellerFixture.defaultSeller(store));
+
+        Seller newSeller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
+        StoreApplication application = storeApplicationRepository.save(StoreApplicationFixture.defaultStoreApplication(newSeller, store));
+
+        StoreApplicationApprove command = StoreApplicationApprove.builder()
+            .applicationId(application.getId())
+            .identifier(NEW_IDENTIFIER)
+            .sellerName(newSeller.getName())
+            .build();
+
+        // when & then
+        assertThatThrownBy(() -> adminStoreService.registerApprove(application.getId(), command)
+        )
+            .isInstanceOf(BbangleException.class)
+            .satisfies(e -> {
+                BbangleException ex = (BbangleException) e;
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
             });
     }
 }

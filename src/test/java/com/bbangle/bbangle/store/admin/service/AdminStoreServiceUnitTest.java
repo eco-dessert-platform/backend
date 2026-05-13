@@ -20,6 +20,7 @@ import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
@@ -28,6 +29,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateSt
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
+import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
@@ -380,7 +382,9 @@ class AdminStoreServiceUnitTest {
             given(storeRepository.save(any(Store.class))).willReturn(store);
 
             // when
-            Store result = adminStoreService.createStore(storeApplication, DEFAULT_IDENTIFIER);
+            Store result = adminStoreService.createStore(
+                AdminStoreInfoFixture.withStoreApplication(storeApplication, DEFAULT_IDENTIFIER)
+            );
 
             // then
             assertThat(result).isEqualTo(store);
@@ -397,11 +401,12 @@ class AdminStoreServiceUnitTest {
             // given
             Seller seller = SellerFixture.defaultSeller();
             StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(seller, null);
+            AdminStoreInfo adminStoreInfo = AdminStoreInfoFixture.withStoreApplication(storeApplication, DEFAULT_IDENTIFIER);
 
-            given(storeRepository.existsByName(storeApplication.getName())).willReturn(true);
+            given(storeRepository.existsByName(adminStoreInfo.storeName())).willReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> adminStoreService.createStore(storeApplication, "identifier")
+            assertThatThrownBy(() -> adminStoreService.createStore(adminStoreInfo)
             )
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
@@ -422,58 +427,18 @@ class AdminStoreServiceUnitTest {
         void success_updateStore() {
 
             // given
+            String newIdentifier = "new-identifier";
+
             Store store = StoreFixture.defaultStore();
             Seller seller = SellerFixture.defaultSeller();
             StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(seller, store);
-
-            given(sellerRepository.existsByStore_Id(store.getId())).willReturn(false);
-
-            String newIdentifier = "new-identifier";
+            AdminStoreInfo adminStoreInfo = AdminStoreInfoFixture.withStoreApplication(storeApplication, newIdentifier);
 
             // when
-            Store result = adminStoreService.updateStore(storeApplication, newIdentifier);
+            Store result = adminStoreService.updateStore(adminStoreInfo, store);
 
             // then
-            // 1. 동일 객체인지 (영속 객체 그대로 반환)
             assertThat(result).isSameAs(store);
-
-            // 2. 값 변경 검증 (핵심)
-            assertThat(store.getIdentifier()).isEqualTo(newIdentifier);
-            assertThat(store.getIntroduce()).isEqualTo(storeApplication.getIntroduce());
-            assertThat(store.getProfile()).isEqualTo(storeApplication.getProfile());
-
-            // VO 내부 값도 검증
-            assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(storeApplication.getPhoneNumberVO().getPhoneNumber());
-            assertThat(store.getEmailVO().getEmail()).isEqualTo(storeApplication.getEmailVO().getEmail());
-
-            // 3. save 호출 없음 (dirty checking)
-            verify(storeRepository, never()).save(any());
-
-            // 4. 검증 로직 호출 확인
-            verify(sellerRepository, times(1)).existsByStore_Id(store.getId());
-        }
-
-        @Test
-        @DisplayName("이미 등록된 store를 다른 판매자가 등록할 경우 예외 발생")
-        void fail_updateStore_alreadyReserved() {
-
-            // given
-            Store store = StoreFixture.defaultStore();
-            SellerFixture.defaultSeller(store);
-            StoreApplication storeApplication =
-                StoreApplicationFixture.defaultStoreApplication(SellerFixture.defaultSeller(), store);
-
-            given(sellerRepository.existsByStore_Id(store.getId())).willReturn(true);
-
-            // when & then
-            assertThatThrownBy(() -> adminStoreService.updateStore(storeApplication, "identifier")
-            )
-                .isInstanceOf(BbangleException.class)
-                .satisfies(e -> {
-                    BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
-                });
-
             verify(storeRepository, never()).save(any());
         }
     }
@@ -524,6 +489,7 @@ class AdminStoreServiceUnitTest {
             StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, store);
 
             given(storeApplicationRepository.findByIdWithDetails(applicationId)).willReturn(Optional.of(application));
+            given(sellerRepository.existsByStore_Id(store.getId())).willReturn(false);
 
             StoreApplicationApprove command = StoreApplicationApprove.builder()
                 .applicationId(applicationId)
@@ -565,6 +531,36 @@ class AdminStoreServiceUnitTest {
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_REQUEST);
+                });
+        }
+
+        @Test
+        @DisplayName("이미 등록된 store를 다른 판매자가 등록할 경우 예외 발생")
+        void fail_registerApprove_alreadyReserved() {
+
+            // given
+            long applicationId = 1L;
+
+            Store store = StoreFixture.defaultStore();
+            Seller seller = SellerFixture.defaultSeller();
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, store);
+
+            given(storeApplicationRepository.findByIdWithDetails(applicationId)).willReturn(Optional.of(application));
+            given(sellerRepository.existsByStore_Id(store.getId())).willReturn(true);
+
+            StoreApplicationApprove command = StoreApplicationApprove.builder()
+                .applicationId(applicationId)
+                .identifier(NEW_IDENTIFIER)
+                .sellerName(seller.getName())
+                .build();
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.registerApprove(applicationId, command)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
                 });
         }
     }
