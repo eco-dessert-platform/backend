@@ -7,6 +7,8 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.seller.service.model.SellerStoreInfo.StoreInfo;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface StoreQueryDSLRepository {
 
@@ -25,4 +27,10 @@ public interface StoreQueryDSLRepository {
     boolean existsByStoreName(String name);
 
     CursorPagination<StoreInfo> findByStoreNameWithCursor(String storeName, Long cursorId);
+
+    /**
+     * 관리자용 스토어명 검색 — 삭제되지 않은 스토어만, 공백 무시 부분일치, id 오름차순 페이징
+     * normalizedStoreName 이 빈 문자열이면 전체 조회
+     */
+    Page<Store> findActiveStoresByName(String normalizedStoreName, Pageable pageable);
 }

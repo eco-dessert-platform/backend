@@ -6,6 +6,8 @@ import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreA
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
@@ -34,10 +36,33 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminStoreService {
 
     private static final int DEFAULT_PAGE_SIZE = 100;
+    /** 스토어명 검색 결과 한 페이지당 표시 건수 */
+    private static final int SEARCH_PAGE_SIZE = 20;
     private final StoreNameRequestRepository storeNameRequestRepository;
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
     private final StoreApplicationRepository storeApplicationRepository;
+
+    /**
+     * 관리자 스토어명 검색 — page 기반 페이지네이션 (페이지 크기 20 고정, id 오름차순)
+     * storeName 이 null 또는 빈 문자열이면 활성 스토어 전체를 반환한다.
+     */
+    @Transactional(readOnly = true)
+    public StoreSearchResult searchStoresByName(String storeName, int page) {
+        page = Math.max(page, 1);
+        // 서비스 단에서 공백 제거 정규화 (DB 컬럼의 공백도 REPLACE로 제거하여 비교)
+        String normalized = (storeName == null) ? "" : storeName.replaceAll("\\s+", "");
+        Pageable pageable = PageRequest.of(page - 1, SEARCH_PAGE_SIZE);
+        Page<Store> result = storeRepository.findActiveStoresByName(normalized, pageable);
+
+        return StoreSearchResult.builder()
+            .storeSummaries(result.getContent().stream().map(StoreSummary::from).toList())
+            .totalElements(result.getTotalElements())
+            .totalPages(result.getTotalPages())
+            .hasPrevious(result.hasPrevious())
+            .hasNext(result.hasNext())
+            .build();
+    }
 
     @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {

@@ -4,6 +4,7 @@ import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.AdminApiPath;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
@@ -29,6 +30,17 @@ public class AdminStoreController implements AdminStoreApi {
 
     private final ResponseService responseService;
     private final AdminStoreService adminStoreService;
+
+    @Override
+    @GetMapping("/search")
+    public SingleResult<StoreSearchResult> searchStores(
+        @RequestParam(required = false) String storeName,
+        @RequestParam(defaultValue = "1") @Min(1) int page
+    ) {
+        return responseService.getSingleResult(
+            adminStoreService.searchStoresByName(storeName, page)
+        );
+    }
 
     @Override
     @GetMapping()
