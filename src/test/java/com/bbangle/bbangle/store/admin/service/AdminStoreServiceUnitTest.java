@@ -685,11 +685,9 @@ class AdminStoreServiceUnitTest {
             // given
             Pageable pageable = PageRequest.of(0, 20);
             Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
-            Seller seller = SellerFixture.defaultSeller("홍길동", store);
             Page<Store> storePage = new PageImpl<>(List.of(store), pageable, 1);
 
             given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(storePage);
-            given(sellerRepository.findByStoreIdIn(List.of(1L))).willReturn(List.of(seller));
 
             // when
             Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
@@ -700,10 +698,8 @@ class AdminStoreServiceUnitTest {
             assertThat(info.storeId()).isEqualTo(1L);
             assertThat(info.storeName()).isEqualTo(DEFAULT_STORE_NAME);
             assertThat(info.businessNumber()).isEqualTo(DEFAULT_IDENTIFIER);
-            assertThat(info.sellerName()).isEqualTo("홍길동");
             assertThat(result.getTotalElements()).isEqualTo(1);
             then(storeRepository).should().findByIsDeletedFalse(pageable);
-            then(sellerRepository).should().findByStoreIdIn(List.of(1L));
         }
 
         @Test
@@ -714,7 +710,6 @@ class AdminStoreServiceUnitTest {
             Page<Store> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
             given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(emptyPage);
-            given(sellerRepository.findByStoreIdIn(List.of())).willReturn(List.of());
 
             // when
             Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
