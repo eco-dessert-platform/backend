@@ -9,7 +9,7 @@ import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.Admin
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication.SellerStoreDTO;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList.SuccessDetail;
-import com.bbangle.bbangle.seller.admin.controller.mapper.AdminStoreMapper;
+import com.bbangle.bbangle.seller.admin.controller.mapper.AdminSellerMapper;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList;
@@ -37,7 +37,7 @@ public class AdminSellerFacade {
     private final AesEncryptionUtil aesEncryptionUtil;
     private final AdminStoreApplicationService adminStoreApplicationService;
     private final AdminStoreService adminStoreService;
-    private final AdminStoreMapper adminStoreMapper;
+    private final AdminSellerMapper adminSellerMapper;
 
     public AdminSellerResponse.AdminSellerApplicationList getAdminSellerApplicationList(int page) {
 
@@ -120,8 +120,8 @@ public class AdminSellerFacade {
                     SuccessDetail.builder()
                         .storeApplicationId(result.storeApplication().getId())
                         .storeApplicationStatus(result.storeApplication().getStatus())
-                        .storeDTO(adminStoreMapper.toApproveStoreDto(result.store()))
-                        .sellerDTO(adminStoreMapper.toApproveSellerDto(result.seller()))
+                        .storeDTO(adminSellerMapper.toApproveStoreDto(result.store()))
+                        .sellerDTO(adminSellerMapper.toApproveSellerDto(result.seller()))
                         .build()
                 );
             } catch (DataIntegrityViolationException e) {

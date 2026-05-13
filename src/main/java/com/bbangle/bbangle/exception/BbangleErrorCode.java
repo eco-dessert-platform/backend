@@ -144,6 +144,7 @@ public enum BbangleErrorCode {
     STORE_UPDATE_FAILED(-733, "스토어 상세 정보 변경에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     ACCOUNT_VERIFICATION_ALREADY_EXISTS(-734, "이미 계좌 인증 정보가 존재합니다.", BAD_REQUEST),
     ACCOUNT_VERIFICATION_FAILED(-735, "계좌 인증에 실패했습니다.", BAD_REQUEST),
+    STORE_CREATION_FAILED(-701, "Store 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
