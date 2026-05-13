@@ -174,5 +174,6 @@ public class SellerOrderServiceIntegrationTest {
 
         // 결제 정보 검증
         assertThat(response.paymentInfo()).isNotNull();
+        assertThat(response.paymentInfo().paidAt()).isEqualTo(payment.getPaidAt());
     }
 }
