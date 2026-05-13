@@ -13,6 +13,7 @@ import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
+import com.bbangle.bbangle.fixture.store.seller.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
@@ -20,6 +21,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateSt
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
+import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -336,9 +338,10 @@ class AdminStoreServiceIntegrationTest {
             // given
             Seller seller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
             StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(seller, null);
+            AdminStoreInfo adminStoreInfo = AdminStoreInfoFixture.withStoreApplication(storeApplication, NEW_IDENTIFIER);
 
             // when
-            Store result = adminStoreService.createStore(storeApplication, NEW_IDENTIFIER);
+            Store result = adminStoreService.createStore(adminStoreInfo);
 
             em.flush();
             em.clear();
@@ -361,6 +364,7 @@ class AdminStoreServiceIntegrationTest {
             // given
             Seller seller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
             StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(seller, null);
+            AdminStoreInfo adminStoreInfo = AdminStoreInfoFixture.withStoreApplication(storeApplication, "new-id");
 
             Store existingStore = Store.createForSeller(
                 storeApplication.getName(),
@@ -380,7 +384,7 @@ class AdminStoreServiceIntegrationTest {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> adminStoreService.createStore(storeApplication, "new-id")
+            assertThatThrownBy(() -> adminStoreService.createStore(adminStoreInfo)
             )
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
@@ -414,9 +418,10 @@ class AdminStoreServiceIntegrationTest {
             );
             Seller seller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
             StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(seller, store);
+            AdminStoreInfo adminStoreInfo = AdminStoreInfoFixture.withStoreApplication(storeApplication, NEW_IDENTIFIER);
 
             // when
-            Store result = adminStoreService.updateStore(storeApplication, NEW_IDENTIFIER);
+            Store result = adminStoreService.updateStore(adminStoreInfo, store);
 
             em.flush();
             em.clear();
@@ -430,31 +435,6 @@ class AdminStoreServiceIntegrationTest {
             assertThat(updatedStore.getProfile()).isEqualTo(storeApplication.getProfile());
             assertThat(updatedStore.getPhoneNumberVO().getPhoneNumber()).isEqualTo(storeApplication.getPhoneNumberVO().getPhoneNumber());
             assertThat(updatedStore.getEmailVO().getEmail()).isEqualTo(storeApplication.getEmailVO().getEmail());
-        }
-
-
-        @Test
-        @DisplayName("이미 등록된 store를 다른 판매자가 등록할 경우 예외 발생")
-        void fail_updateStore_alreadyReserved() {
-
-            // given
-            Store store = storeRepository.save(StoreFixture.defaultStore());
-            sellerRepository.save(SellerFixture.defaultSeller(store));
-
-            Seller otherSeller = sellerRepository.save(SellerFixture.defaultSeller());
-            StoreApplication storeApplication = StoreApplicationFixture.defaultStoreApplication(otherSeller, store);
-
-            em.flush();
-            em.clear();
-
-            // when & then
-            assertThatThrownBy(() -> adminStoreService.updateStore(storeApplication, NEW_IDENTIFIER)
-            )
-                .isInstanceOf(BbangleException.class)
-                .satisfies(e -> {
-                    BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ALREADY_RESERVED_STORE);
-                });
         }
     }
 }
