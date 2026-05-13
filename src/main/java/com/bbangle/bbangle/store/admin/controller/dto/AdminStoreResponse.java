@@ -41,4 +41,19 @@ public class AdminStoreResponse {
         @Schema(description = "요청 거부 종류", example = "ETC") StoreNameRejectCategory category,
         @Schema(description = "요청 거부 상세 사유", example = "부적절한 이름") String rejectDetail
     ) {}
+
+    @Builder
+    @Schema(description = "스토어 상세 정보 DTO")
+    public record StoreDetailResponse(
+        @Schema(description = "스토어 ID", example = "1") Long storeId,
+        @Schema(description = "스토어명", example = "빵그리의 오븐") String name,
+        @Schema(description = "사업자 번호", example = "12345") String identifier,
+        @Schema(description = "스토어 한 줄 소개", example = "건강한 디저트를 만드는 베이커리") String introduce,
+        @Schema(description = "스토어 프로필 이미지 URL", example = "https://d37g3q9mfan3cw.cloudfront.net/store/000000/logo.png") String profile,
+        @Schema(description = "스토어 연락처", example = "01012345678") String phoneNumber,
+        @Schema(description = "스토어 추가 연락처", example = "01012345678") String subPhoneNumber,
+        @Schema(description = "스토어 이메일", example = "user@example.com") String email,
+        @Schema(description = "스토어 출고지 주소", example = "(우편번호) 성남시 금광동 222-31") String originAddress,
+        @Schema(description = "스토어 출고지 상세 주소", example = "나동 202호") String originAddressDetail
+    ) {}
 }

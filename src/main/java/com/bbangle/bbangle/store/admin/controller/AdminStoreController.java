@@ -3,23 +3,30 @@ package com.bbangle.bbangle.store.admin.controller;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.AdminApiPath;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
 import com.bbangle.bbangle.store.admin.controller.swagger.AdminStoreApi;
+import com.bbangle.bbangle.store.admin.facade.AdminStoreFacade;
 import com.bbangle.bbangle.store.admin.service.AdminStoreService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +36,33 @@ public class AdminStoreController implements AdminStoreApi {
 
     private final ResponseService responseService;
     private final AdminStoreService adminStoreService;
+    private final AdminStoreFacade adminStoreFacade;
+
+    // TODO : Test
+    @Override
+    @PostMapping(
+        consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public SingleResult<StoreDetailResponse> createStoreForAdmin(
+        @Valid @RequestPart("request") AdminStoreRequest.StoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        return responseService.getSingleResult(
+            adminStoreFacade.createStoreForAdmin(request, profileImage)
+        );
+    }
+
+    // TODO : Test
+    @Override
+    @PatchMapping("/{storeId}")
+    public SingleResult<StoreDetailResponse> updateStoreForAdmin(
+        @PathVariable Long storeId,
+        @Valid AdminStoreRequest.StoreDetailRequest request
+    ) {
+        return responseService.getSingleResult(
+            adminStoreFacade.updateStoreForAdmin(request, storeId)
+        );
+    }
 
     @Override
     @GetMapping()
