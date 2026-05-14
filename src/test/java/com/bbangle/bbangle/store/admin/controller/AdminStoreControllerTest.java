@@ -1,13 +1,24 @@
 package com.bbangle.bbangle.store.admin.controller;
 
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_DETAIL_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_EMAIL;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_IDENTIFIER;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_SUBPHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,14 +32,19 @@ import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.store.admin.controller.dto.StoreDetailRequestFixture;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.admin.facade.AdminStoreFacade;
 import com.bbangle.bbangle.store.admin.service.AdminStoreService;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -42,9 +58,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 @DisplayName("[컨트롤러 테스트] AdminStoreController")
 @WebMvcTest(controllers = AdminStoreController.class)
@@ -67,6 +85,9 @@ class AdminStoreControllerTest {
 
     @MockBean
     private AdminStoreService adminStoreService;
+
+    @MockBean
+    private AdminStoreFacade adminStoreFacade;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -252,6 +273,231 @@ class AdminStoreControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_REQUEST.getMessage()));
+        }
+    }
+
+    @Nested
+    @DisplayName("createStoreForAdmin() 테스트")
+    class CreateStoreForAdminTest {
+
+        private MockMultipartFile createImageFile(
+            AdminStoreRequest.StoreDetailRequest request
+        ) throws JsonProcessingException {
+            return new MockMultipartFile(
+                "request",
+                "request.json",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+            );
+        }
+
+        private MockMultipartFile createProfileFile() {
+            return new MockMultipartFile(
+                "profileImage",
+                "profile.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "profile image content".getBytes()
+            );
+        }
+
+        @Test
+        @DisplayName("관리자 스토어 생성에 성공한다")
+        @WithMockUser(roles = "ADMIN")
+        void success_createStoreForAdmin() throws Exception {
+
+            // given
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+            MockMultipartFile requestPart = createImageFile(request);
+            MockMultipartFile profileImage = createProfileFile();
+            StoreDetailResponse response = StoreDetailResponse.builder()
+                .storeId(1L)
+                .name(request.storeName())
+                .identifier(request.identifier())
+                .introduce(request.introduce())
+                .profile("https://cdn.test/profile.png")
+                .phoneNumber(request.phoneNumber())
+                .subPhoneNumber(request.subPhoneNumber())
+                .email(request.email())
+                .originAddress(request.originAddress())
+                .originAddressDetail(request.originAddressDetail())
+                .build();
+
+            given(adminStoreFacade.createStoreForAdmin(
+                any(AdminStoreRequest.StoreDetailRequest.class),
+                any(MultipartFile.class))
+            ).willReturn(response);
+
+            // when & then
+            mockMvc.perform(
+                    multipart(AdminApiPath.PREFIX + "/stores")
+                        .file(requestPart)
+                        .file(profileImage)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.storeId").value(1L))
+                .andExpect(jsonPath("$.result.name").value(request.storeName()))
+                .andExpect(jsonPath("$.result.identifier").value(request.identifier()))
+                .andExpect(jsonPath("$.result.introduce").value(request.introduce()));
+        }
+
+        @Test
+        @DisplayName("요청값이 유효하지 않으면 400 반환")
+        @WithMockUser(roles = "ADMIN")
+        void fail_createStoreForAdmin_validation() throws Exception {
+
+            // given
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture("");
+
+            MockMultipartFile requestPart = createImageFile(request);
+
+            // when & then
+            mockMvc.perform(
+                multipart(AdminApiPath.PREFIX + "/stores")
+                    .file(requestPart)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                )
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("스토어 이름 중복 시 예외 반환")
+        @WithMockUser(roles = "ADMIN")
+        void fail_createStoreForAdmin_duplicateStoreName() throws Exception {
+
+            // given
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+            MockMultipartFile requestPart = createImageFile(request);
+            MockMultipartFile profileImage = createProfileFile();
+
+            given(adminStoreFacade.createStoreForAdmin(any(), any())).willThrow(new BbangleException(BbangleErrorCode.INVALID_STORE_NAME));
+
+            // when & then
+            mockMvc.perform(
+                multipart(AdminApiPath.PREFIX + "/stores")
+                    .file(requestPart)
+                    .file(profileImage)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                )
+                .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreForAdmin() 테스트")
+    class UpdateStoreForAdminTest {
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정에 성공한다")
+        @WithMockUser(roles = "ADMIN")
+        void success_update_store() throws Exception {
+
+            // given
+            Long storeId = 1L;
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+            StoreDetailResponse response = StoreDetailResponse.builder()
+                .storeId(storeId)
+                .name(request.storeName())
+                .identifier(request.identifier())
+                .introduce(request.introduce())
+                .profile(DEFAULT_PROFILE)
+                .phoneNumber(request.phoneNumber())
+                .subPhoneNumber(request.subPhoneNumber())
+                .email(request.email())
+                .originAddress(request.originAddress())
+                .originAddressDetail(request.originAddressDetail())
+                .build();
+
+            given(adminStoreService.updateStoreWithName(
+                eq(storeId),
+                any(AdminStoreRequest.StoreDetailRequest.class)
+            )).willReturn(response);
+
+            // when & then
+            mockMvc.perform(
+                    patch(AdminApiPath.PREFIX + "/stores/{storeId}", storeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.name").value(NEW_STORE_NAME))
+                .andExpect(jsonPath("$.result.identifier").value(NEW_IDENTIFIER))
+                .andExpect(jsonPath("$.result.profile").value(DEFAULT_PROFILE));
+
+            verify(adminStoreService).updateStoreWithName(eq(storeId), any(AdminStoreRequest.StoreDetailRequest.class));
+        }
+
+        @Test
+        @DisplayName("스토어 이름이 없으면 검증에 실패한다")
+        @WithMockUser(roles = "ADMIN")
+        void fail_blank_store_name() throws Exception {
+
+            // given
+            Long storeId = 1L;
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture("");
+
+            // when & then
+            mockMvc.perform(
+                    patch(AdminApiPath.PREFIX + "/stores/{storeId}", storeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest());
+
+            verify(adminStoreService, never()).updateStoreWithName(anyLong(), any());
+            verify(responseService, never()).getSingleResult(any());
+        }
+
+        @Test
+        @DisplayName("잘못된 전화번호 형식이면 검증에 실패한다")
+        @WithMockUser(roles = "ADMIN")
+        void fail_invalid_phone() throws Exception {
+
+            // given
+            Long storeId = 1L;
+            AdminStoreRequest.StoreDetailRequest request = new AdminStoreRequest.StoreDetailRequest(
+                NEW_STORE_NAME,
+                NEW_IDENTIFIER,
+                NEW_INTRODUCE,
+                "invalid-phone",
+                NEW_SUBPHONE,
+                NEW_EMAIL,
+                NEW_ADDRESS,
+                NEW_DETAIL_ADDRESS
+            );
+
+            // when & then
+            mockMvc.perform(
+                    patch(AdminApiPath.PREFIX + "/stores/{storeId}", storeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest());
+
+            verify(adminStoreService, never()).updateStoreWithName(anyLong(), any());
+        }
+
+        @Test
+        @DisplayName("스토어가 존재하지 않으면 예외를 반환한다")
+        @WithMockUser(roles = "ADMIN")
+        void fail_store_not_found() throws Exception {
+
+            // given
+            Long storeId = 999L;
+            AdminStoreRequest.StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+
+            given(adminStoreService.updateStoreWithName(
+                eq(storeId), any(AdminStoreRequest.StoreDetailRequest.class))
+            ).willThrow(new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
+
+            // when & then
+            mockMvc.perform(
+                    patch(AdminApiPath.PREFIX + "/stores/{storeId}", storeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest());
         }
     }
 }
