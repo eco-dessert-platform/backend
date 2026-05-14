@@ -54,7 +54,7 @@ public class AdminStoreService {
     public StoreDetailResponse updateStoreWithName(long storeId, StoreDetailRequest request) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
 
-        if (!store.getName().equals(request.storeName()) && storeRepository.existsByStoreName(request.storeName())) {
+        if (!store.getName().equals(request.storeName()) && storeRepository.existsByName(request.storeName())) {
             throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
         }
 
