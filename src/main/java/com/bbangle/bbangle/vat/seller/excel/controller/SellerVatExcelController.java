@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(SellerApiPath.PREFIX + "/vat/excel")
 public class SellerVatExcelController implements SellerVatExcelApi {
 
-    private static final long DUMMY_SELLER_ID = 1L;
     private static final String XLSX_CONTENT_TYPE =
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -34,7 +33,7 @@ public class SellerVatExcelController implements SellerVatExcelApi {
         HttpServletResponse response
     ) throws IOException {
         SellerVatExcelType excelType = SellerVatExcelType.from(type);
-        SellerVatSearchCommand command = request.toCommand(resolveSellerId(sellerId));
+        SellerVatSearchCommand command = request.toCommand(sellerId);
 
         response.setContentType(XLSX_CONTENT_TYPE);
         response.setHeader("Content-Disposition", buildContentDisposition(request, excelType));
@@ -42,10 +41,6 @@ public class SellerVatExcelController implements SellerVatExcelApi {
 
         sellerVatExcelService.writeExcel(command, excelType, response.getOutputStream());
         response.getOutputStream().flush();
-    }
-
-    private Long resolveSellerId(Long sellerId) {
-        return sellerId == null ? DUMMY_SELLER_ID : sellerId;
     }
 
     private String buildContentDisposition(SellerVatSearchRequest request, SellerVatExcelType type) {

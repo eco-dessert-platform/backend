@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(SellerApiPath.PREFIX + "/vat")
 public class SellerVatController implements SellerVatApi {
 
-    private static final long DUMMY_SELLER_ID = 1L;
-
     private final ResponseService responseService;
     private final SellerVatService sellerVatService;
 
@@ -29,13 +27,9 @@ public class SellerVatController implements SellerVatApi {
         SellerVatSearchRequest request,
         @AuthenticationPrincipal Long sellerId
     ) {
-        SellerVatSearchCommand command = request.toCommand(resolveSellerId(sellerId));
+        SellerVatSearchCommand command = request.toCommand(sellerId);
         SellerVatSummaryResponse response = sellerVatService.getVatSummary(command);
 
         return responseService.getSingleResult(response);
-    }
-
-    private Long resolveSellerId(Long sellerId) {
-        return sellerId == null ? DUMMY_SELLER_ID : sellerId;
     }
 }
