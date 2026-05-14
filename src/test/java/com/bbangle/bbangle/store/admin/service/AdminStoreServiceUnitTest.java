@@ -593,7 +593,7 @@ class AdminStoreServiceUnitTest {
             StoreDetailResponse response = mock(StoreDetailResponse.class);
 
             given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
-            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(false);
+            given(storeRepository.existsByName(NEW_STORE_NAME)).willReturn(false);
             given(adminStoreMapper.toStoreDetailResponse(store)).willReturn(response);
 
             // when
@@ -606,7 +606,7 @@ class AdminStoreServiceUnitTest {
             assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
 
             verify(storeRepository).findById(store.getId());
-            verify(storeRepository).existsByStoreName(NEW_STORE_NAME);
+            verify(storeRepository).existsByName(NEW_STORE_NAME);
             verify(adminStoreMapper).toStoreDetailResponse(store);
         }
 
@@ -664,7 +664,7 @@ class AdminStoreServiceUnitTest {
             StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
 
             given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
-            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(true);
+            given(storeRepository.existsByName(NEW_STORE_NAME)).willReturn(true);
 
             // when & then
             assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
@@ -696,7 +696,7 @@ class AdminStoreServiceUnitTest {
             );
 
             given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
-            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(false);
+            given(storeRepository.existsByName(NEW_STORE_NAME)).willReturn(false);
 
             // when & then
             assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
