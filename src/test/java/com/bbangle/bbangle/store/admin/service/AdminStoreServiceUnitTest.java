@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,22 +17,20 @@ import static org.mockito.Mockito.verify;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
+import com.bbangle.bbangle.fixture.store.admin.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
-import com.bbangle.bbangle.fixture.store.seller.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
-import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
-import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -77,6 +74,9 @@ class AdminStoreServiceUnitTest {
 
     @Mock
     private StoreApplicationRepository storeApplicationRepository;
+
+    @Mock
+    private AdminStoreMapper adminStoreMapper;
 
     @InjectMocks
     private AdminStoreService adminStoreService;
@@ -755,6 +755,133 @@ class AdminStoreServiceUnitTest {
             then(storeRepository).should().countByIdIn(storeIds);
             then(sellerRepository).should(never()).clearStoreAndResetStatusByStoreIdIn(any(), any());
             then(storeRepository).should(never()).deleteAllByIdInBatch(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreWithName() 테스트")
+    class UpdateStoreWithNameTest {
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정에 성공한다")
+        void success_update_store() {
+
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+            StoreDetailResponse response = mock(StoreDetailResponse.class);
+
+            given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
+            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(false);
+            given(adminStoreMapper.toStoreDetailResponse(store)).willReturn(response);
+
+            // when
+            StoreDetailResponse result = adminStoreService.updateStoreWithName(store.getId(), request);
+
+            // then
+            assertThat(result).isEqualTo(response);
+            assertThat(store.getName()).isEqualTo(NEW_STORE_NAME);
+            assertThat(store.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+
+            verify(storeRepository).findById(store.getId());
+            verify(storeRepository).existsByStoreName(NEW_STORE_NAME);
+            verify(adminStoreMapper).toStoreDetailResponse(store);
+        }
+
+        @Test
+        @DisplayName("스토어 이름이 동일하면 중복 체크를 하지 않는다")
+        void success_same_store_name() {
+
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture(store.getName());
+            StoreDetailResponse response = mock(StoreDetailResponse.class);
+
+            given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
+            given(adminStoreMapper.toStoreDetailResponse(store)).willReturn(response);
+
+            // when
+            adminStoreService.updateStoreWithName(store.getId(), request);
+
+            // then
+            assertThat(store.getName()).isEqualTo(request.storeName());
+            assertThat(store.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(store.getProfile()).isEqualTo(DEFAULT_PROFILE);
+
+            verify(storeRepository, never()).existsByStoreName(any());
+        }
+
+        @Test
+        @DisplayName("스토어가 존재하지 않으면 예외가 발생한다")
+        void fail_store_not_found() {
+
+            // given
+            StoreDetailRequest request = mock(StoreDetailRequest.class);
+
+            given(storeRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(1L, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
+                });
+
+            verify(storeRepository, never()).existsByStoreName(any());
+            verify(adminStoreMapper, never()).toStoreDetailResponse(any());
+        }
+
+        @Test
+        @DisplayName("스토어 이름이 중복되면 예외가 발생한다")
+        void fail_duplicate_store_name() {
+
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+
+            given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
+            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_STORE_NAME);
+                });
+
+            verify(adminStoreMapper, never()).toStoreDetailResponse(any());
+        }
+
+        @Test
+        @DisplayName("스토어 수정 중 예외가 발생하면 그대로 전파된다")
+        void fail_update_store() {
+
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            StoreDetailRequest request = new StoreDetailRequest(
+                NEW_STORE_NAME,
+                NEW_IDENTIFIER,
+                NEW_INTRODUCE,
+                "invalid-phone",
+                NEW_SUBPHONE,
+                NEW_EMAIL,
+                NEW_ADDRESS,
+                NEW_DETAIL_ADDRESS
+            );
+
+            given(storeRepository.findById(store.getId())).willReturn(Optional.of(store));
+            given(storeRepository.existsByStoreName(NEW_STORE_NAME)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
+            ).isInstanceOf(BbangleException.class);
+
+            verify(adminStoreMapper, never()).toStoreDetailResponse(any());
         }
     }
 }
