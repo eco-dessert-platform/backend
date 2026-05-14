@@ -38,7 +38,6 @@ public class AdminStoreController implements AdminStoreApi {
     private final AdminStoreService adminStoreService;
     private final AdminStoreFacade adminStoreFacade;
 
-    // TODO : Test
     @Override
     @PostMapping(
         consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
@@ -52,15 +51,14 @@ public class AdminStoreController implements AdminStoreApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PatchMapping("/{storeId}")
     public SingleResult<StoreDetailResponse> updateStoreForAdmin(
         @PathVariable Long storeId,
-        @Valid AdminStoreRequest.StoreDetailRequest request
+        @Valid @RequestBody AdminStoreRequest.StoreDetailRequest request
     ) {
         return responseService.getSingleResult(
-            adminStoreFacade.updateStoreForAdmin(request, storeId)
+            adminStoreService.updateStoreWithName(storeId, request)
         );
     }
 

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-// TODO : Test
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -64,22 +63,5 @@ public class AdminStoreFacade {
 
             throw new BbangleException(BbangleErrorCode.STORE_CREATION_FAILED);
         }
-    }
-
-    @Transactional
-    public StoreDetailResponse updateStoreForAdmin(StoreDetailRequest request, long storeId) {
-
-        // Store Name이 중복되는지 검증
-        if (sellerStoreService.findStoreByStoreName(request.storeName()).isPresent()) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-
-        Store store = sellerStoreService.findStore(storeId);
-        Store updateStore = adminStoreService.updateStore(
-            adminStoreMapper.toAdminStoreInfo(request, null),
-            store
-        );
-
-        return adminStoreMapper.toStoreDetailResponse(updateStore);
     }
 }

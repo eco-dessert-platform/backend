@@ -4,11 +4,14 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.StoreDetailRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.admin.controller.mapper.AdminStoreMapper;
 import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
@@ -39,6 +42,29 @@ public class AdminStoreService {
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
     private final StoreApplicationRepository storeApplicationRepository;
+    private final AdminStoreMapper adminStoreMapper;
+
+    @Transactional
+    public StoreDetailResponse updateStoreWithName(long storeId, StoreDetailRequest request) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getName().equals(request.storeName()) && storeRepository.existsByStoreName(request.storeName())) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
+
+        store.updateStoreWithName(
+            request.storeName(),
+            request.identifier(),
+            request.introduce(),
+            request.phoneNumber(),
+            request.subPhoneNumber(),
+            request.email(),
+            request.originAddress(),
+            request.originAddressDetail()
+        );
+
+        return adminStoreMapper.toStoreDetailResponse(store);
+    }
 
     @Transactional(readOnly = true)
     public AdminStoreResponse.UpdateStoreNameRequest getPendingRequests(int page) {
