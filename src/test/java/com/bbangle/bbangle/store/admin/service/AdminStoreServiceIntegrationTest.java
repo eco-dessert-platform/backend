@@ -1,8 +1,15 @@
 package com.bbangle.bbangle.store.admin.service;
 
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_IDENTIFIER;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_PROFILE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.DEFAULT_STORE_NAME;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_DETAIL_ADDRESS;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_EMAIL;
 import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_IDENTIFIER;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_INTRODUCE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_PHONE;
+import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_SUBPHONE;
 import static com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture.NEW_STORE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,15 +17,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
+import com.bbangle.bbangle.fixture.store.admin.controller.dto.StoreDetailRequestFixture;
+import com.bbangle.bbangle.fixture.store.admin.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreNameRequestFixture;
-import com.bbangle.bbangle.fixture.store.seller.service.model.AdminStoreInfoFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.StoreDetailRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
@@ -435,6 +445,133 @@ class AdminStoreServiceIntegrationTest {
             assertThat(updatedStore.getProfile()).isEqualTo(storeApplication.getProfile());
             assertThat(updatedStore.getPhoneNumberVO().getPhoneNumber()).isEqualTo(storeApplication.getPhoneNumberVO().getPhoneNumber());
             assertThat(updatedStore.getEmailVO().getEmail()).isEqualTo(storeApplication.getEmailVO().getEmail());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateStoreWithName() 테스트")
+    class UpdateStoreWithNameTest {
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정에 성공한다")
+        void success_update_store() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+
+            em.flush();
+            em.clear();
+
+            // when
+            StoreDetailResponse result = adminStoreService.updateStoreWithName(store.getId(), request);
+
+            // then
+            Store updatedStore = storeRepository.findById(store.getId()).orElseThrow();
+
+            assertThat(result.name()).isEqualTo(NEW_STORE_NAME);
+            assertThat(updatedStore.getName()).isEqualTo(NEW_STORE_NAME);
+            assertThat(updatedStore.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(updatedStore.getIntroduce()).isEqualTo(NEW_INTRODUCE);
+            assertThat(updatedStore.getProfile()).isEqualTo(DEFAULT_PROFILE);
+            assertThat(updatedStore.getPhoneNumberVO().getPhoneNumber()).isEqualTo(NEW_PHONE);
+            assertThat(updatedStore.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(NEW_SUBPHONE);
+            assertThat(updatedStore.getEmailVO().getEmail()).isEqualTo(NEW_EMAIL);
+            assertThat(updatedStore.getOriginAddressLine()).isEqualTo(NEW_ADDRESS);
+            assertThat(updatedStore.getOriginAddressDetail()).isEqualTo(NEW_DETAIL_ADDRESS);
+        }
+
+        @Test
+        @DisplayName("스토어 이름이 동일하면 중복 체크를 하지 않는다")
+        void success_same_store_name() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture(store.getName());
+
+            em.flush();
+            em.clear();
+
+            // when
+            StoreDetailResponse result = adminStoreService.updateStoreWithName(store.getId(), request);
+
+            // then
+            Store updatedStore = storeRepository.findById(store.getId()).orElseThrow();
+
+            assertThat(result.name()).isEqualTo(store.getName());
+            assertThat(updatedStore.getName()).isEqualTo(store.getName());
+            assertThat(updatedStore.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(updatedStore.getProfile()).isEqualTo(DEFAULT_PROFILE);
+        }
+
+        @Test
+        @DisplayName("스토어가 존재하지 않으면 예외가 발생한다")
+        void fail_store_not_found() {
+
+            // given
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture();
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(999L, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("스토어 이름이 중복되면 예외가 발생한다")
+        void fail_duplicate_store_name() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Store duplicateStore = storeRepository.save(StoreFixture.defaultStore("duplicate-store"));
+            StoreDetailRequest request = StoreDetailRequestFixture.defaultStoreDetailRequestFixture(duplicateStore.getName());
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_STORE_NAME);
+                });
+
+            Store notUpdatedStore = storeRepository.findById(store.getId()).orElseThrow();
+
+            assertThat(notUpdatedStore.getName()).isEqualTo(store.getName());
+        }
+
+        @Test
+        @DisplayName("스토어 수정 중 예외가 발생하면 그대로 전파된다")
+        void fail_update_store() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+
+            StoreDetailRequest request = new StoreDetailRequest(
+                NEW_STORE_NAME,
+                NEW_IDENTIFIER,
+                NEW_INTRODUCE,
+                "invalid-phone",
+                NEW_SUBPHONE,
+                NEW_EMAIL,
+                NEW_ADDRESS,
+                NEW_DETAIL_ADDRESS
+            );
+
+            // when & then
+            assertThatThrownBy(() -> adminStoreService.updateStoreWithName(store.getId(), request)
+            ).isInstanceOf(BbangleException.class);
+
+            Store rollbackStore = storeRepository.findById(store.getId()).orElseThrow();
+
+            assertThat(rollbackStore).usingRecursiveComparison().isEqualTo(store);
         }
     }
 }
