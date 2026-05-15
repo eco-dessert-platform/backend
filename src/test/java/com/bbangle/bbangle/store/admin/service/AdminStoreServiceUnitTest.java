@@ -687,7 +687,7 @@ class AdminStoreServiceUnitTest {
             Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
             Page<Store> storePage = new PageImpl<>(List.of(store), pageable, 1);
 
-            given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(storePage);
+            given(storeRepository.findAll(pageable)).willReturn(storePage);
 
             // when
             Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
@@ -699,7 +699,7 @@ class AdminStoreServiceUnitTest {
             assertThat(info.storeName()).isEqualTo(DEFAULT_STORE_NAME);
             assertThat(info.businessNumber()).isEqualTo(DEFAULT_IDENTIFIER);
             assertThat(result.getTotalElements()).isEqualTo(1);
-            then(storeRepository).should().findByIsDeletedFalse(pageable);
+            then(storeRepository).should().findAll(pageable);
         }
 
         @Test
@@ -709,7 +709,7 @@ class AdminStoreServiceUnitTest {
             Pageable pageable = PageRequest.of(0, 20);
             Page<Store> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-            given(storeRepository.findByIsDeletedFalse(pageable)).willReturn(emptyPage);
+            given(storeRepository.findAll(pageable)).willReturn(emptyPage);
 
             // when
             Page<RegisteredStoreInfo> result = adminStoreService.getRegisteredStores(pageable);
@@ -717,7 +717,7 @@ class AdminStoreServiceUnitTest {
             // then
             assertThat(result.getContent()).isEmpty();
             assertThat(result.getTotalElements()).isZero();
-            then(storeRepository).should().findByIsDeletedFalse(pageable);
+            then(storeRepository).should().findAll(pageable);
         }
     }
 
@@ -726,18 +726,19 @@ class AdminStoreServiceUnitTest {
     class DeleteStoresTest {
 
         @Test
-        @DisplayName("모든 storeId가 유효하면 소프트 딜리트한다")
+        @DisplayName("모든 storeId가 유효하면 seller 관계를 끊고 hard delete한다")
         void success_deleteStores() {
             // given
             List<Long> storeIds = List.of(1L, 2L, 3L);
-            given(storeRepository.countByIdInAndIsDeletedFalse(storeIds)).willReturn(3L);
+            given(storeRepository.countByIdIn(storeIds)).willReturn(3L);
 
             // when
             adminStoreService.deleteStores(storeIds);
 
             // then
-            then(storeRepository).should().countByIdInAndIsDeletedFalse(storeIds);
-            then(storeRepository).should().softDeleteByIds(storeIds);
+            then(storeRepository).should().countByIdIn(storeIds);
+            then(sellerRepository).should().clearStoreByStoreIdIn(storeIds);
+            then(storeRepository).should().deleteAllByIdInBatch(storeIds);
         }
 
         @Test
@@ -745,7 +746,7 @@ class AdminStoreServiceUnitTest {
         void fail_deleteStores_notFound() {
             // given
             List<Long> storeIds = List.of(1L, 2L, 999L);
-            given(storeRepository.countByIdInAndIsDeletedFalse(storeIds)).willReturn(2L);
+            given(storeRepository.countByIdIn(storeIds)).willReturn(2L);
 
             // when & then
             assertThatThrownBy(() -> adminStoreService.deleteStores(storeIds))
@@ -755,8 +756,9 @@ class AdminStoreServiceUnitTest {
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.STORE_NOT_FOUND);
                 });
 
-            then(storeRepository).should().countByIdInAndIsDeletedFalse(storeIds);
-            then(storeRepository).should(never()).softDeleteByIds(any());
+            then(storeRepository).should().countByIdIn(storeIds);
+            then(sellerRepository).should(never()).clearStoreByStoreIdIn(any());
+            then(storeRepository).should(never()).deleteAllByIdInBatch(any());
         }
     }
 }

@@ -68,17 +68,18 @@ public class AdminStoreService {
 
     @Transactional(readOnly = true)
     public Page<RegisteredStoreInfo> getRegisteredStores(Pageable pageable) {
-        return storeRepository.findByIsDeletedFalse(pageable)
+        return storeRepository.findAll(pageable)
             .map(RegisteredStoreInfo::from);
     }
 
     @Transactional
     public void deleteStores(List<Long> storeIds) {
-        long count = storeRepository.countByIdInAndIsDeletedFalse(storeIds);
+        long count = storeRepository.countByIdIn(storeIds);
         if (count != storeIds.size()) {
             throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
         }
-        storeRepository.softDeleteByIds(storeIds);
+        sellerRepository.clearStoreByStoreIdIn(storeIds);
+        storeRepository.deleteAllByIdInBatch(storeIds);
     }
 
     @Transactional(readOnly = true)
