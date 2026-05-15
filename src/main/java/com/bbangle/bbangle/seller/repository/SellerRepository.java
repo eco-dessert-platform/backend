@@ -2,6 +2,7 @@ package com.bbangle.bbangle.seller.repository;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,6 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     List<Seller> findByStoreIdIn(@Param("storeIds") List<Long> storeIds);
 
     @Modifying
-    @Query("UPDATE Seller s SET s.store = null WHERE s.store.id IN :storeIds")
-    void clearStoreByStoreIdIn(@Param("storeIds") List<Long> storeIds);
+    @Query("UPDATE Seller s SET s.store = null, s.certificationStatus = :status WHERE s.store.id IN :storeIds")
+    void clearStoreAndResetStatusByStoreIdIn(@Param("storeIds") List<Long> storeIds, @Param("status") CertificationStatus status);
 }

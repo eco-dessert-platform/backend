@@ -3,6 +3,7 @@ package com.bbangle.bbangle.store.admin.service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
@@ -78,7 +79,7 @@ public class AdminStoreService {
         if (count != storeIds.size()) {
             throw new BbangleException(BbangleErrorCode.STORE_NOT_FOUND);
         }
-        sellerRepository.clearStoreByStoreIdIn(storeIds);
+        sellerRepository.clearStoreAndResetStatusByStoreIdIn(storeIds, CertificationStatus.NEW);
         storeRepository.deleteAllByIdInBatch(storeIds);
     }
 

@@ -726,7 +726,7 @@ class AdminStoreServiceUnitTest {
     class DeleteStoresTest {
 
         @Test
-        @DisplayName("모든 storeId가 유효하면 seller 관계를 끊고 hard delete한다")
+        @DisplayName("모든 storeId가 유효하면 seller 관계를 끊고 상태를 NEW로 변경한 뒤 hard delete한다")
         void success_deleteStores() {
             // given
             List<Long> storeIds = List.of(1L, 2L, 3L);
@@ -737,7 +737,7 @@ class AdminStoreServiceUnitTest {
 
             // then
             then(storeRepository).should().countByIdIn(storeIds);
-            then(sellerRepository).should().clearStoreByStoreIdIn(storeIds);
+            then(sellerRepository).should().clearStoreAndResetStatusByStoreIdIn(storeIds, CertificationStatus.NEW);
             then(storeRepository).should().deleteAllByIdInBatch(storeIds);
         }
 
@@ -757,7 +757,7 @@ class AdminStoreServiceUnitTest {
                 });
 
             then(storeRepository).should().countByIdIn(storeIds);
-            then(sellerRepository).should(never()).clearStoreByStoreIdIn(any());
+            then(sellerRepository).should(never()).clearStoreAndResetStatusByStoreIdIn(any(), any());
             then(storeRepository).should(never()).deleteAllByIdInBatch(any());
         }
     }
