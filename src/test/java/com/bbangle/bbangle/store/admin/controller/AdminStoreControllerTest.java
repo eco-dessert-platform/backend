@@ -22,6 +22,8 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
@@ -70,6 +72,79 @@ class AdminStoreControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Nested
+    @DisplayName("searchStores() 테스트")
+    class SearchStoresTest {
+
+        @Test
+        @DisplayName("스토어명으로 검색하면 200과 함께 결과 목록을 반환한다")
+        @WithMockUser(roles = "ADMIN")
+        void success_searchStores() throws Exception {
+            // given
+            StoreSearchResult response = StoreSearchResult.builder()
+                .storeSummaries(List.of(
+                    StoreSummary.builder().id(1L).name("빵그리의오븐").build(),
+                    StoreSummary.builder().id(2L).name("빵그리베이커리").build()
+                ))
+                .totalElements(2)
+                .totalPages(1)
+                .hasPrevious(false)
+                .hasNext(false)
+                .build();
+            given(adminStoreService.searchStoresByName("빵그리", 1)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/search")
+                    .param("storeName", "빵그리")
+                    .param("page", "1")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.storeSummaries", hasSize(2)))
+                .andExpect(jsonPath("$.result.storeSummaries[0].id").value(1L))
+                .andExpect(jsonPath("$.result.storeSummaries[0].name").value("빵그리의오븐"))
+                .andExpect(jsonPath("$.result.storeSummaries[1].id").value(2L))
+                .andExpect(jsonPath("$.result.totalElements").value(2))
+                .andExpect(jsonPath("$.result.totalPages").value(1))
+                .andExpect(jsonPath("$.result.hasPrevious").value(false))
+                .andExpect(jsonPath("$.result.hasNext").value(false));
+        }
+
+        @Test
+        @DisplayName("storeName 미지정 시 전체 조회 결과를 반환한다")
+        @WithMockUser(roles = "ADMIN")
+        void success_searchStores_noStoreName() throws Exception {
+            // given
+            StoreSearchResult response = StoreSearchResult.builder()
+                .storeSummaries(List.of(StoreSummary.builder().id(1L).name("빵그리의오븐").build()))
+                .totalElements(1)
+                .totalPages(1)
+                .hasPrevious(false)
+                .hasNext(false)
+                .build();
+            given(adminStoreService.searchStoresByName(null, 1)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/search")
+                    .param("page", "1")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.storeSummaries", hasSize(1)));
+        }
+
+        @Test
+        @DisplayName("page=0이면 @Min(1) 검증에 의해 400을 반환한다")
+        @WithMockUser(roles = "ADMIN")
+        void fail_searchStores_invalidPage() throws Exception {
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/search")
+                    .param("storeName", "빵그리")
+                    .param("page", "0")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        }
+    }
 
     @Test
     @DisplayName("스토어명 변경 요청 목록을 조회한다.")

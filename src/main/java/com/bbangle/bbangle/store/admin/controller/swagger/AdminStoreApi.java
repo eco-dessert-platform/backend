@@ -3,6 +3,7 @@ package com.bbangle.bbangle.store.admin.controller.swagger;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Admin Store", description = "(관리자) 스토어 관리 API")
 public interface AdminStoreApi {
+
+    @Operation(
+        summary = "(관리자) 스토어명 검색",
+        description = "스토어명 부분일치(공백 무시)로 활성 스토어를 페이지네이션하여 조회합니다. storeName 미입력 시 전체 조회."
+    )
+    SingleResult<StoreSearchResult> searchStores(
+        @Parameter(description = "검색할 스토어명 (선택, 빈 값이면 전체 조회)", example = "빵그리")
+        @RequestParam(required = false) String storeName,
+        @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1")
+        @RequestParam(defaultValue = "1")
+        @Min(1)
+        int page
+    );
 
     @Operation(
         summary = "(관리자) 스토어명 변경 요청 목록 조회",

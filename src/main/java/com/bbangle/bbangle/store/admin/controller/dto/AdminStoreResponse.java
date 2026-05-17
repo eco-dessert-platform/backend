@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.store.admin.controller.dto;
 
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.domain.model.StoreNameRejectCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,30 @@ import java.util.List;
 import lombok.Builder;
 
 public class AdminStoreResponse {
+
+    @Builder
+    @Schema(description = "관리자 스토어명 검색 결과 DTO")
+    public record StoreSearchResult(
+        @Schema(description = "스토어 목록") List<StoreSummary> storeSummaries,
+        @Schema(description = "전체 데이터 갯수", example = "42") long totalElements,
+        @Schema(description = "전체 페이지 수", example = "3") int totalPages,
+        @Schema(description = "이전 페이지 여부", example = "false") boolean hasPrevious,
+        @Schema(description = "다음 페이지 여부", example = "true") boolean hasNext
+    ) {
+
+        @Builder
+        @Schema(description = "스토어 요약 정보")
+        public record StoreSummary(
+            @Schema(description = "스토어 ID", example = "1") Long id,
+            @Schema(description = "스토어명", example = "빵그리의오븐") String name
+        ) {
+
+            /** Store 엔티티 → StoreSummary 변환 */
+            public static StoreSummary from(Store store) {
+                return new StoreSummary(store.getId(), store.getName());
+            }
+        }
+    }
 
     @Builder
     @Schema(description = "판매자 스토어명 변경 요청 목록 DTO")

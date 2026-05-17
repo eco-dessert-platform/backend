@@ -26,6 +26,7 @@ import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
@@ -75,6 +76,109 @@ class AdminStoreServiceUnitTest {
 
     @InjectMocks
     private AdminStoreService adminStoreService;
+
+    @Nested
+    @DisplayName("searchStoresByName() 테스트")
+    class SearchStoresByNameTest {
+
+        private static final int SEARCH_PAGE_SIZE = 20;
+
+        @Test
+        @DisplayName("storeName이 null이면 빈 문자열로 정규화하여 전체 활성 스토어를 조회한다")
+        void success_searchStoresByName_nullName() {
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            Page<Store> mockPage = new PageImpl<>(
+                List.of(store),
+                PageRequest.of(0, SEARCH_PAGE_SIZE),
+                1
+            );
+            ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+            given(storeRepository.findActiveStoresByName(any(), any(Pageable.class))).willReturn(mockPage);
+
+            // when
+            adminStoreService.searchStoresByName(null, 1);
+
+            // then
+            verify(storeRepository).findActiveStoresByName(nameCaptor.capture(), any());
+            assertThat(nameCaptor.getValue()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("storeName에 공백이 있으면 제거 후 검색한다")
+        void success_searchStoresByName_withSpaces() {
+            // given
+            Page<Store> mockPage = new PageImpl<>(List.of(), PageRequest.of(0, SEARCH_PAGE_SIZE), 0);
+            ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+            given(storeRepository.findActiveStoresByName(any(), any(Pageable.class))).willReturn(mockPage);
+
+            // when
+            adminStoreService.searchStoresByName("빵 그 리", 1);
+
+            // then
+            verify(storeRepository).findActiveStoresByName(nameCaptor.capture(), any());
+            assertThat(nameCaptor.getValue()).isEqualTo("빵그리");
+        }
+
+        @Test
+        @DisplayName("page 0 이하 입력 시 1로 보정하여 0-base index로 전달한다")
+        void success_searchStoresByName_invalidPage() {
+            // given
+            Page<Store> mockPage = new PageImpl<>(List.of(), PageRequest.of(0, SEARCH_PAGE_SIZE), 0);
+            given(storeRepository.findActiveStoresByName(any(), any(Pageable.class))).willReturn(mockPage);
+
+            // when
+            adminStoreService.searchStoresByName("test", 0);
+
+            // then
+            ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+            verify(storeRepository).findActiveStoresByName(any(), pageableCaptor.capture());
+            assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(0); // page=1로 보정 후 -1 = 0
+        }
+
+        @Test
+        @DisplayName("검색 결과의 페이지 정보가 응답 DTO에 정확히 매핑된다")
+        void success_searchStoresByName_responseMapping() {
+            // given
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 1L);
+            Page<Store> mockPage = new PageImpl<>(
+                List.of(store),
+                PageRequest.of(0, SEARCH_PAGE_SIZE),
+                1
+            );
+            given(storeRepository.findActiveStoresByName(any(), any(Pageable.class))).willReturn(mockPage);
+
+            // when
+            StoreSearchResult result = adminStoreService.searchStoresByName("test", 1);
+
+            // then
+            assertThat(result.storeSummaries()).hasSize(1);
+            assertThat(result.storeSummaries().get(0).id()).isEqualTo(1L);
+            assertThat(result.storeSummaries().get(0).name()).isEqualTo(StoreFixture.DEFAULT_STORE_NAME);
+            assertThat(result.totalElements()).isEqualTo(1);
+            assertThat(result.totalPages()).isEqualTo(1);
+            assertThat(result.hasPrevious()).isFalse();
+            assertThat(result.hasNext()).isFalse();
+        }
+
+        @Test
+        @DisplayName("검색 결과가 없으면 빈 목록과 totalElements=0을 반환한다")
+        void success_searchStoresByName_emptyResult() {
+            // given
+            Page<Store> mockPage = new PageImpl<>(List.of(), PageRequest.of(0, SEARCH_PAGE_SIZE), 0);
+            given(storeRepository.findActiveStoresByName(any(), any(Pageable.class))).willReturn(mockPage);
+
+            // when
+            StoreSearchResult result = adminStoreService.searchStoresByName("없는스토어", 1);
+
+            // then
+            assertThat(result.storeSummaries()).isEmpty();
+            assertThat(result.totalElements()).isZero();
+            assertThat(result.totalPages()).isZero();
+            assertThat(result.hasPrevious()).isFalse();
+            assertThat(result.hasNext()).isFalse();
+        }
+    }
 
     @Nested
     @DisplayName("getPendingRequests() 테스트")
