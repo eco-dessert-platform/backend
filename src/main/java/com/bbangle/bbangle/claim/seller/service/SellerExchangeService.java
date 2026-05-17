@@ -162,6 +162,22 @@ public class SellerExchangeService {
         orderItemHistoryRepository.save(OrderItemHistory.create(exchangeRequest.getOrderItem()));
     }
 
+    @Transactional
+    public void completeExchange(Long exchangeId, Long sellerId) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.completeExchange();
+
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        orderItem.exchangeComplete();
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
     private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {
         return exchangeRequestRepository.findWithLockById(exchangeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));

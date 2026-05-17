@@ -77,4 +77,11 @@ public class ExchangeRequest extends Claim {
             throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
         }
     }
+
+    public void completeExchange() {
+        if (status != RESHIPPED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = ExchangeRequestStatus.COMPLETED;
+    }
 }

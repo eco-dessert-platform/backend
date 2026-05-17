@@ -56,4 +56,13 @@ public class SellerExchangeController implements SellerExchangeApi {
         sellerExchangeService.updateExchangeInvoice(exchangeId, sellerId, request.courierCode(), request.trackingNumber());
         return responseService.getSuccessResult();
     }
+
+    @PostMapping("/{exchangeId}/complete")
+    public CommonResult completeExchange(
+        @PathVariable Long exchangeId,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerExchangeService.completeExchange(exchangeId, sellerId);
+        return responseService.getSuccessResult();
+    }
 }

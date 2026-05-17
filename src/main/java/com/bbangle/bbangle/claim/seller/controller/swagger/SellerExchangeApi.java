@@ -43,4 +43,14 @@ public interface SellerExchangeApi {
         ExchangeInvoiceUpdateRequest request,
         @Parameter(hidden = true) Long sellerId
     );
+
+    @Operation(
+        summary = "교환 최종 완료 처리",
+        description = "RESHIPPED(운송장 등록 완료) 상태의 교환 건을 최종 완료(COMPLETED/EXCHANGE_COMPLETED)로 확정한다. "
+            + "교환 엔티티와 주문 상품 상태가 함께 전이되며, 이력이 기록된다."
+    )
+    CommonResult completeExchange(
+        @Parameter(description = "교환 요청 ID") Long exchangeId,
+        @Parameter(hidden = true) Long sellerId
+    );
 }
