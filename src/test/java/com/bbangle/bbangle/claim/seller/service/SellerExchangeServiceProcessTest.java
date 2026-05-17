@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -19,6 +20,8 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.claim.ExchangeRequestFixture;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
+import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
+import com.bbangle.bbangle.delivery.domain.Shipping;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.OrderItemHistory;
 import com.bbangle.bbangle.order.domain.model.CourierCompany;
@@ -286,6 +289,121 @@ class SellerExchangeServiceProcessTest {
                 .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
 
             then(claimDeliveryRepository).should(never()).save(any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateExchangeInvoice() - 교환 재배송 운송장 수정")
+    class UpdateExchangeInvoiceTests {
+
+        private static final Long EXCHANGE_ID = 4L;
+        private static final Long SELLER_ID = 10L;
+        private static final CourierCompany NEW_COURIER = CourierCompany.LOTTE;
+        private static final String NEW_TRACKING_NUMBER = "9876543210";
+
+        @Test
+        @DisplayName("성공 - RESHIPPED 상태에서 운송장을 수정하면 ClaimDelivery가 갱신되고 OrderItemHistory가 저장된다")
+        void updateExchangeInvoice_success() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_ITEM_SHIPPED);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
+
+            ClaimDelivery mockDelivery = mock(ClaimDelivery.class);
+            Shipping mockShipping = mock(Shipping.class);
+            given(mockDelivery.getShipping()).willReturn(mockShipping);
+            given(mockShipping.getCourierName()).willReturn(NEW_COURIER.getDisplayName());
+            given(mockShipping.getTrackingNumber()).willReturn(NEW_TRACKING_NUMBER);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(claimDeliveryRepository.findByClaimIdAndDeliveryType(EXCHANGE_ID, ClaimDeliveryType.EXCHANGE_REDELIVERY))
+                .willReturn(Optional.of(mockDelivery));
+
+            // when
+            sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER);
+
+            // then
+            then(mockDelivery).should(times(1)).updateInvoice(NEW_COURIER, NEW_TRACKING_NUMBER);
+            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("실패 (권한) - 타 판매자의 교환 건에 운송장 수정을 시도하면 SELLER_CLAIM_MISMATCH 예외가 발생하고 이후 로직은 실행되지 않는다")
+        void updateExchangeInvoice_fails_when_seller_mismatch() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+
+            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(claimDeliveryRepository).should(never()).findByClaimIdAndDeliveryType(any(), any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 (상태) - APPROVED 상태(운송장 미등록)에서 수정을 시도하면 DELIVERY_MODIFY_NOT_ALLOWED 예외가 발생한다")
+        void updateExchangeInvoice_fails_when_not_reshipped() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_APPROVED);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.approved(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+
+            then(claimDeliveryRepository).should(never()).findByClaimIdAndDeliveryType(any(), any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 (상태) - REQUESTED 상태(미승인)에서 수정을 시도하면 DELIVERY_MODIFY_NOT_ALLOWED 예외가 발생한다")
+        void updateExchangeInvoice_fails_when_requested() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_REQUEST);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+
+            then(claimDeliveryRepository).should(never()).findByClaimIdAndDeliveryType(any(), any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - RESHIPPED 상태이지만 ClaimDelivery 레코드가 없으면 DELIVERY_NOT_FOUND 예외가 발생한다")
+        void updateExchangeInvoice_fails_when_delivery_not_found() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_ITEM_SHIPPED);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(claimDeliveryRepository.findByClaimIdAndDeliveryType(EXCHANGE_ID, ClaimDeliveryType.EXCHANGE_REDELIVERY))
+                .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.DELIVERY_NOT_FOUND);
+
             then(orderItemHistoryRepository).should(never()).save(any());
         }
     }
