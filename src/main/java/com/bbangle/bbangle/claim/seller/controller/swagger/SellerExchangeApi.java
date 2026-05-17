@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.seller.controller.swagger;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeDecisionRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +18,17 @@ public interface SellerExchangeApi {
     CommonResult processExchange(
         @Parameter(description = "교환 요청 ID") Long exchangeId,
         ExchangeDecisionRequest request,
+        @Parameter(hidden = true) Long sellerId
+    );
+
+    @Operation(
+        summary = "교환 재배송 운송장 입력",
+        description = "APPROVED 상태의 교환 건에 재배송 택배사 코드와 운송장 번호를 등록하고, "
+            + "상태를 교환 상품 발송(EXCHANGE_ITEM_SHIPPED)으로 변경한다."
+    )
+    CommonResult registerExchangeInvoice(
+        @Parameter(description = "교환 요청 ID") Long exchangeId,
+        ExchangeInvoiceRequest request,
         @Parameter(hidden = true) Long sellerId
     );
 }

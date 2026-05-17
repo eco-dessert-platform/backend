@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.claim.seller.service;
 
+import com.bbangle.bbangle.claim.domain.ClaimDelivery;
 import com.bbangle.bbangle.claim.domain.ExchangeRequest;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
+import com.bbangle.bbangle.claim.repository.ClaimDeliveryRepository;
 import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.repository.ExchangeRequestRepository;
 import com.bbangle.bbangle.claim.seller.service.model.ExchangeCreateCommand;
@@ -11,6 +13,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.OrderItemHistory;
+import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerExchangeService {
 
     private final ExchangeRequestRepository exchangeRequestRepository;
+    private final ClaimDeliveryRepository claimDeliveryRepository;
     private final ClaimRepository claimRepository;
     private final OrderItemHistoryRepository orderItemHistoryRepository;
     private final OrderRepository orderRepository;
@@ -119,6 +123,24 @@ public class SellerExchangeService {
 
         ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
         applyDecision(exchangeRequest, decisionType, reason);
+    }
+
+    @Transactional
+    public void registerExchangeInvoice(Long exchangeId, Long sellerId, CourierCompany courierCode, String trackingNumber) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.startRedelivery();
+
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        orderItem.exchangeItemShipped();
+
+        ClaimDelivery claimDelivery = ClaimDelivery.createExchangeRedelivery(exchangeRequest, courierCode, trackingNumber);
+        claimDeliveryRepository.save(claimDelivery);
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
     }
 
     private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {

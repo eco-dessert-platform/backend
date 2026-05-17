@@ -206,4 +206,11 @@ public class OrderItem extends BaseEntity {
         }
         this.orderStatus = OrderStatus.EXCHANGE_REJECTED;
     }
+
+    public void exchangeItemShipped() {
+        if (orderStatus != OrderStatus.EXCHANGE_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_ITEM_SHIPPED;
+    }
 }

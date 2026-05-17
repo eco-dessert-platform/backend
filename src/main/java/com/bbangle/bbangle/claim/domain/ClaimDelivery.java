@@ -72,6 +72,15 @@ public class ClaimDelivery extends BaseEntity {
             ClaimShippingStatus.IN_TRANSIT
         );
     }
+
+    public static ClaimDelivery createExchangeRedelivery(Claim claim, CourierCompany courierCode, String trackingNumber) {
+        return new ClaimDelivery(
+            claim,
+            ClaimDeliveryType.EXCHANGE_REDELIVERY,
+            Shipping.scheduled(courierCode.getDisplayName(), trackingNumber),
+            ClaimShippingStatus.IN_TRANSIT
+        );
+    }
     
     public void updateInvoice(CourierCompany courierCode, String trackingNumber) {
         this.shipping.modifyShippingInfo(courierCode.getDisplayName(), trackingNumber);

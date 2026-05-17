@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.seller.controller;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeDecisionRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.swagger.SellerExchangeApi;
 import com.bbangle.bbangle.claim.seller.service.SellerExchangeService;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -9,6 +10,7 @@ import com.bbangle.bbangle.config.security.SellerApiPath;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,16 @@ public class SellerExchangeController implements SellerExchangeApi {
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerExchangeService.processExchange(exchangeId, sellerId, request.decisionType(), request.reason());
+        return responseService.getSuccessResult();
+    }
+
+    @PatchMapping("/{exchangeId}/invoice")
+    public CommonResult registerExchangeInvoice(
+        @PathVariable Long exchangeId,
+        @Valid @RequestBody ExchangeInvoiceRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerExchangeService.registerExchangeInvoice(exchangeId, sellerId, request.courierCode(), request.trackingNumber());
         return responseService.getSuccessResult();
     }
 }
