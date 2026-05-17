@@ -71,4 +71,10 @@ public class ExchangeRequest extends Claim {
         }
         this.status = RESHIPPED;
     }
+
+    public void validateReshipped() {
+        if (this.status != RESHIPPED) {
+            throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+        }
+    }
 }

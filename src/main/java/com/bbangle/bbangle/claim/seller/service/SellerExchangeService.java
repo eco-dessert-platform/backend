@@ -2,6 +2,7 @@ package com.bbangle.bbangle.claim.seller.service;
 
 import com.bbangle.bbangle.claim.domain.ClaimDelivery;
 import com.bbangle.bbangle.claim.domain.ExchangeRequest;
+import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
 import com.bbangle.bbangle.claim.repository.ClaimDeliveryRepository;
@@ -141,6 +142,24 @@ public class SellerExchangeService {
         claimDeliveryRepository.save(claimDelivery);
 
         orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
+    public void updateExchangeInvoice(Long exchangeId, Long sellerId, CourierCompany courierCode, String trackingNumber) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.validateReshipped();
+
+        ClaimDelivery claimDelivery = claimDeliveryRepository
+            .findByClaimIdAndDeliveryType(exchangeId, ClaimDeliveryType.EXCHANGE_REDELIVERY)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND));
+
+        claimDelivery.updateInvoice(courierCode, trackingNumber);
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(exchangeRequest.getOrderItem()));
     }
 
     private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {

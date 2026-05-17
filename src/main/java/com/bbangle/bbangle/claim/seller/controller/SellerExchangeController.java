@@ -2,6 +2,7 @@ package com.bbangle.bbangle.claim.seller.controller;
 
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeDecisionRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceUpdateRequest;
 import com.bbangle.bbangle.claim.seller.controller.swagger.SellerExchangeApi;
 import com.bbangle.bbangle.claim.seller.service.SellerExchangeService;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +44,16 @@ public class SellerExchangeController implements SellerExchangeApi {
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerExchangeService.registerExchangeInvoice(exchangeId, sellerId, request.courierCode(), request.trackingNumber());
+        return responseService.getSuccessResult();
+    }
+
+    @PutMapping("/{exchangeId}/invoice")
+    public CommonResult updateExchangeInvoice(
+        @PathVariable Long exchangeId,
+        @Valid @RequestBody ExchangeInvoiceUpdateRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerExchangeService.updateExchangeInvoice(exchangeId, sellerId, request.courierCode(), request.trackingNumber());
         return responseService.getSuccessResult();
     }
 }
