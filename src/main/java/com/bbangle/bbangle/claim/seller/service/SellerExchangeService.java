@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.claim.seller.service;
 
 import com.bbangle.bbangle.claim.domain.ExchangeRequest;
+import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
+import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.repository.ExchangeRequestRepository;
 import com.bbangle.bbangle.claim.seller.service.model.ExchangeCreateCommand;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerExchangeService {
 
     private final ExchangeRequestRepository exchangeRequestRepository;
+    private final ClaimRepository claimRepository;
     private final OrderItemHistoryRepository orderItemHistoryRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -106,6 +109,36 @@ public class SellerExchangeService {
         );
 
         return ExchangeCreateResponse.of(content);
+    }
+
+    @Transactional
+    public void processExchange(Long exchangeId, Long sellerId, DecisionType decisionType, String reason) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        applyDecision(exchangeRequest, decisionType, reason);
+    }
+
+    private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {
+        return exchangeRequestRepository.findWithLockById(exchangeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+    }
+
+    private void applyDecision(ExchangeRequest exchangeRequest, DecisionType decisionType, String reason) {
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        switch (decisionType) {
+            case APPROVE -> {
+                exchangeRequest.approve(reason);
+                orderItem.exchangeApprove();
+            }
+            case REJECT -> {
+                exchangeRequest.reject(reason);
+                orderItem.exchangeReject();
+            }
+        }
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
     }
 
     private Long getStoreIdOrThrow(Long sellerId) {
