@@ -397,4 +397,128 @@ public class StoreUnitTest {
             assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
         }
     }
+
+    @Nested
+    @DisplayName("updateStoreWithName() 테스트")
+    class UpdateStoreWithNameTest {
+
+        static Stream<Arguments> updateParams() {
+            return Stream.of(
+                Arguments.of(null, null),
+                Arguments.of("", null),
+                Arguments.of("   ", NEW_SUBPHONE),
+                Arguments.of(NEW_STORE_NAME, NEW_SUBPHONE)
+            );
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정에 성공한다")
+        @MethodSource("updateParams")
+        void success_update_store(String newName, String newSubPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+            String expectedName = (newName == null || newName.isBlank()) ? store.getName() : newName;
+
+            // when
+            store.updateStoreWithName(newName, NEW_IDENTIFIER, NEW_INTRODUCE, NEW_PHONE, newSubPhone, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS);
+
+            // then
+            assertThat(store.getName()).isEqualTo(expectedName);
+            assertThat(store.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
+            assertThat(store.getIntroduce()).isEqualTo(NEW_INTRODUCE);
+            assertThat(store.getPhoneNumberVO().getPhoneNumber()).isEqualTo(NEW_PHONE);
+            assertThat(store.getPhoneNumberVO().getSubPhoneNumber()).isEqualTo(newSubPhone);
+            assertThat(store.getEmailVO().getEmail()).isEqualTo(NEW_EMAIL);
+            assertThat(store.getOriginAddressLine()).isEqualTo(NEW_ADDRESS);
+            assertThat(store.getOriginAddressDetail()).isEqualTo(NEW_DETAIL_ADDRESS);
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 전화번호로 인해 실패한다")
+        @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
+        void fail_update_store_with_invalid_phone(String invalidPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreWithName(
+                    NEW_STORE_NAME, NEW_IDENTIFIER, NEW_INTRODUCE,
+                    invalidPhone,
+                    NEW_SUBPHONE, NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PHONE_NUMBER);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 서브 전화번호로 인해 실패한다")
+        @ValueSource(strings = {"12345", "abcd", "", "010-1234-5678"})
+        void fail_update_store_with_invalid_sub_phone(String invalidPhone) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreWithName(
+                    NEW_STORE_NAME, NEW_IDENTIFIER, NEW_INTRODUCE, NEW_PHONE,
+                    invalidPhone,
+                    NEW_EMAIL, NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_PHONE_NUMBER);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @ParameterizedTest
+        @DisplayName("스토어 상세 정보 수정 시 잘못된 이메일 형식으로 인해 실패한다")
+        @ValueSource(strings = {"test1234", "@gmail", "test@gmail", "test@.com", "test@com", ""})
+        void fail_update_store_with_invalid_email(String invalidEmail) {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // act & assert
+            assertThatThrownBy(() -> store.updateStoreWithName(
+                    NEW_STORE_NAME, NEW_IDENTIFIER, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE,
+                    invalidEmail,
+                    NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_EMAIL);
+                });
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+
+        @Test
+        @DisplayName("스토어 상세 정보 수정 중 하나라도 유효하지 않으면 수정이 실패하고 상태는 유지된다.")
+        void fail_update_store_any_invalid() {
+
+            // given
+            Store store = StoreFixture.defaultStore();
+
+            // when & then
+            assertThatThrownBy(() -> store.updateStoreWithName(
+                    NEW_STORE_NAME, NEW_IDENTIFIER, NEW_INTRODUCE, NEW_PHONE, NEW_SUBPHONE,
+                    null,
+                    NEW_ADDRESS, NEW_DETAIL_ADDRESS
+                )
+            ).isInstanceOf(BbangleException.class);
+
+            assertThat(store).usingRecursiveComparison().isEqualTo(StoreFixture.defaultStore());
+        }
+    }
 }

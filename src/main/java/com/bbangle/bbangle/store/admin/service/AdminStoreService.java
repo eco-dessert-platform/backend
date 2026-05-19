@@ -5,13 +5,16 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.StoreDetailRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
-import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.admin.controller.mapper.AdminStoreMapper;
+import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
 import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
@@ -45,6 +48,29 @@ public class AdminStoreService {
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
     private final StoreApplicationRepository storeApplicationRepository;
+    private final AdminStoreMapper adminStoreMapper;
+
+    @Transactional
+    public StoreDetailResponse updateStoreWithName(long storeId, StoreDetailRequest request) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getName().equals(request.storeName()) && storeRepository.existsByName(request.storeName())) {
+            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
+        }
+
+        store.updateStoreWithName(
+            request.storeName(),
+            request.identifier(),
+            request.introduce(),
+            request.phoneNumber(),
+            request.subPhoneNumber(),
+            request.email(),
+            request.originAddress(),
+            request.originAddressDetail()
+        );
+
+        return adminStoreMapper.toStoreDetailResponse(store);
+    }
 
     /**
      * 관리자 스토어명 검색 — page 기반 페이지네이션 (페이지 크기 20 고정, id 오름차순)
@@ -151,44 +177,39 @@ public class AdminStoreService {
     }
 
     @Transactional
-    public Store createStore(StoreApplication storeApplication, String identifier) {
+    public Store createStore(AdminStoreInfo adminStoreInfo) {
 
-        if (storeRepository.existsByName(storeApplication.getName())) {
+        if (storeRepository.existsByName(adminStoreInfo.storeName())) {
             throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
         }
 
         return storeRepository.save(
             Store.createForSeller(
-                storeApplication.getName(),
-                storeApplication.getProfile(),
-                storeApplication.getIntroduce(),
-                identifier,
-                storeApplication.getPhoneNumberVO().getPhoneNumber(),
-                storeApplication.getPhoneNumberVO().getSubPhoneNumber(),
-                storeApplication.getEmailVO().getEmail(),
-                storeApplication.getOriginAddressLine(),
-                storeApplication.getOriginAddressDetail()
+                adminStoreInfo.storeName(),
+                adminStoreInfo.profile(),
+                adminStoreInfo.introduce(),
+                adminStoreInfo.identifier(),
+                adminStoreInfo.phoneNumber(),
+                adminStoreInfo.subPhoneNumber(),
+                adminStoreInfo.email(),
+                adminStoreInfo.address(),
+                adminStoreInfo.addressDetail()
             )
         );
     }
 
     @Transactional
-    public Store updateStore(StoreApplication storeApplication, String identifier) {
+    public Store updateStore(AdminStoreInfo adminStoreInfo, Store store) {
 
-        if (sellerRepository.existsByStore_Id(storeApplication.getStore().getId())) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
-        }
-
-        Store store = storeApplication.getStore();
         store.updateStoreForAdmin(
-            identifier,
-            storeApplication.getProfile(),
-            storeApplication.getIntroduce(),
-            storeApplication.getPhoneNumberVO().getPhoneNumber(),
-            storeApplication.getPhoneNumberVO().getSubPhoneNumber(),
-            storeApplication.getEmailVO().getEmail(),
-            storeApplication.getOriginAddressLine(),
-            storeApplication.getOriginAddressDetail()
+            adminStoreInfo.identifier(),
+            adminStoreInfo.profile(),
+            adminStoreInfo.introduce(),
+            adminStoreInfo.phoneNumber(),
+            adminStoreInfo.subPhoneNumber(),
+            adminStoreInfo.email(),
+            adminStoreInfo.address(),
+            adminStoreInfo.addressDetail()
         );
 
         return store;
@@ -201,11 +222,27 @@ public class AdminStoreService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_REQUEST));
         application.validateApprovable();
 
+        AdminStoreInfo adminStoreInfo = AdminStoreInfo.builder()
+            .storeName(application.getName())
+            .profile(application.getProfile())
+            .introduce(application.getIntroduce())
+            .identifier(command.identifier())
+            .phoneNumber(application.getPhoneNumberVO().getPhoneNumber())
+            .subPhoneNumber(application.getPhoneNumberVO().getSubPhoneNumber())
+            .email(application.getEmailVO().getEmail())
+            .address(application.getOriginAddressLine())
+            .addressDetail(application.getOriginAddressDetail())
+            .build();
+
         Store store;
         if (application.getStore() == null) {
-            store = createStore(application, command.identifier());
+            store = createStore(adminStoreInfo);
         } else {
-            store = updateStore(application, command.identifier());
+            if (sellerRepository.existsByStore_Id(application.getStore().getId())) {
+                throw new BbangleException(BbangleErrorCode.ALREADY_RESERVED_STORE);
+            }
+
+            store = updateStore(adminStoreInfo, application.getStore());
         }
 
         application.getSeller().registerStore(store, command.sellerName());

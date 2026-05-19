@@ -3,8 +3,10 @@ package com.bbangle.bbangle.store.admin.controller.swagger;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,9 +20,30 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Admin Store", description = "(관리자) 스토어 관리 API")
 public interface AdminStoreApi {
+
+    @Operation(
+        summary = "(관리자) 스토어 생성",
+        description = "스토어를 생성합니다."
+    )
+    SingleResult<StoreDetailResponse> createStoreForAdmin(
+        @Valid @RequestPart("request") AdminStoreRequest.StoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    );
+
+    @Operation(
+        summary = "(관리자) 스토어 업데이트",
+        description = "스토어의 상세 정보를 수정합니다."
+    )
+    SingleResult<StoreDetailResponse> updateStoreForAdmin(
+        @Parameter(description = "수정할 스토어 번호", example = "1")
+        @PathVariable Long storeId,
+        @RequestBody @Valid AdminStoreRequest.StoreDetailRequest request
+    );
 
     @Operation(
         summary = "(관리자) 스토어명 검색",
