@@ -9,6 +9,7 @@ import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
@@ -24,6 +25,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -100,6 +102,31 @@ public class AdminStoreController implements AdminStoreApi {
     public CommonResult deleteStores(@RequestParam List<Long> storeIds) {
         adminStoreService.deleteStores(storeIds);
         return responseService.getSuccessResult();
+    }
+    private final AdminStoreFacade adminStoreFacade;
+
+    @Override
+    @PostMapping(
+        consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public SingleResult<StoreDetailResponse> createStoreForAdmin(
+        @Valid @RequestPart("request") AdminStoreRequest.StoreDetailRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        return responseService.getSingleResult(
+            adminStoreFacade.createStoreForAdmin(request, profileImage)
+        );
+    }
+
+    @Override
+    @PatchMapping("/{storeId}")
+    public SingleResult<StoreDetailResponse> updateStoreForAdmin(
+        @PathVariable Long storeId,
+        @Valid @RequestBody AdminStoreRequest.StoreDetailRequest request
+    ) {
+        return responseService.getSingleResult(
+            adminStoreService.updateStoreWithName(storeId, request)
+        );
     }
 
     @Override
