@@ -3,13 +3,20 @@ package com.bbangle.bbangle.store.admin.service;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.StoreDetailRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
-import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
+import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
+import com.bbangle.bbangle.store.admin.controller.mapper.AdminStoreMapper;
+import com.bbangle.bbangle.store.admin.service.model.AdminStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.RegisterApproveResult;
+import com.bbangle.bbangle.store.admin.service.model.RegisteredStoreInfo;
 import com.bbangle.bbangle.store.admin.service.model.UpdateStoreNamesInfo.UpdateStoreNames;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.StoreApplication;
@@ -18,6 +25,7 @@ import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreNameRequestRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,29 +48,6 @@ public class AdminStoreService {
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
     private final StoreApplicationRepository storeApplicationRepository;
-    private final AdminStoreMapper adminStoreMapper;
-
-    @Transactional
-    public StoreDetailResponse updateStoreWithName(long storeId, StoreDetailRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow(() -> new BbangleException(BbangleErrorCode.STORE_NOT_FOUND));
-
-        if (!store.getName().equals(request.storeName()) && storeRepository.existsByName(request.storeName())) {
-            throw new BbangleException(BbangleErrorCode.INVALID_STORE_NAME);
-        }
-
-        store.updateStoreWithName(
-            request.storeName(),
-            request.identifier(),
-            request.introduce(),
-            request.phoneNumber(),
-            request.subPhoneNumber(),
-            request.email(),
-            request.originAddress(),
-            request.originAddressDetail()
-        );
-
-        return adminStoreMapper.toStoreDetailResponse(store);
-    }
     private final AdminStoreMapper adminStoreMapper;
 
     @Transactional

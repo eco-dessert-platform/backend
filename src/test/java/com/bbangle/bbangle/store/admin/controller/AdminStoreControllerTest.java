@@ -15,14 +15,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -39,15 +37,12 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.store.admin.controller.dto.StoreDetailRequestFixture;
-import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
-import com.bbangle.bbangle.fixture.store.admin.controller.dto.StoreDetailRequestFixture;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreRequest.UpdateStoreNameRejectRequest;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreSearchResult.StoreSummary;
-import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.StoreDetailResponse;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameApprove;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameReject;
 import com.bbangle.bbangle.store.admin.controller.dto.AdminStoreResponse.UpdateStoreNameRequest;
@@ -67,14 +62,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -109,6 +104,61 @@ class AdminStoreControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("스토어명 변경 요청 목록을 조회한다.")
+    @WithMockUser(roles = "ADMIN")
+    void getUpdateStoreNames_success() throws Exception {
+
+        // given
+        int page = 1;
+
+        List<UpdateStoreNames> content = List.of(
+            UpdateStoreNames.builder()
+                .storeId(1L)
+                .currentName("oldName1")
+                .newName("newName1")
+                .createdAt(LocalDateTime.of(2026, 3, 26, 10, 0))
+                .build(),
+            UpdateStoreNames.builder()
+                .storeId(2L)
+                .currentName("oldName2")
+                .newName("newName2")
+                .createdAt(LocalDateTime.of(2026, 3, 26, 11, 0))
+                .build()
+        );
+
+        UpdateStoreNameRequest responseDto = UpdateStoreNameRequest.builder()
+            .updateStoreNames(content)
+            .totalElements(2)
+            .totalPages(1)
+            .hasPrevious(false)
+            .hasNext(false)
+            .build();
+
+        given(adminStoreService.getPendingRequests(page)).willReturn(responseDto);
+
+        // when & then
+        mockMvc.perform(get(AdminApiPath.PREFIX + "/stores")
+                .param("page", String.valueOf(page))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            // 공통 응답 구조
+            .andExpect(jsonPath("$.success").value(true))
+
+            .andExpect(jsonPath("$.result.totalElements").value(2))
+            .andExpect(jsonPath("$.result.totalPages").value(1))
+            .andExpect(jsonPath("$.result.hasPrevious").value(false))
+            .andExpect(jsonPath("$.result.hasNext").value(false))
+            // 리스트 검증
+            .andExpect(jsonPath("$.result.updateStoreNames", hasSize(2)))
+            .andExpect(jsonPath("$.result.updateStoreNames[0].storeId").value(1L))
+            .andExpect(jsonPath("$.result.updateStoreNames[0].currentName").value("oldName1"))
+            .andExpect(jsonPath("$.result.updateStoreNames[0].newName").value("newName1"))
+            .andExpect(jsonPath("$.result.updateStoreNames[0].createdAt").exists())
+
+            .andExpect(jsonPath("$.result.updateStoreNames[1].storeId").value(2L));
+    }
 
     @Nested
     @DisplayName("searchStores() 테스트")
@@ -303,61 +353,6 @@ class AdminStoreControllerTest {
 
             then(adminStoreService).shouldHaveNoInteractions();
         }
-    }
-
-    @Test
-    @DisplayName("스토어명 변경 요청 목록을 조회한다.")
-    @WithMockUser(roles = "ADMIN")
-    void getUpdateStoreNames_success() throws Exception {
-
-        // given
-        int page = 1;
-
-        List<UpdateStoreNames> content = List.of(
-            UpdateStoreNames.builder()
-                .storeId(1L)
-                .currentName("oldName1")
-                .newName("newName1")
-                .createdAt(LocalDateTime.of(2026, 3, 26, 10, 0))
-                .build(),
-            UpdateStoreNames.builder()
-                .storeId(2L)
-                .currentName("oldName2")
-                .newName("newName2")
-                .createdAt(LocalDateTime.of(2026, 3, 26, 11, 0))
-                .build()
-        );
-
-        UpdateStoreNameRequest responseDto = UpdateStoreNameRequest.builder()
-            .updateStoreNames(content)
-            .totalElements(2)
-            .totalPages(1)
-            .hasPrevious(false)
-            .hasNext(false)
-            .build();
-
-        given(adminStoreService.getPendingRequests(page)).willReturn(responseDto);
-
-        // when & then
-        mockMvc.perform(get(AdminApiPath.PREFIX + "/stores")
-                .param("page", String.valueOf(page))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            // 공통 응답 구조
-            .andExpect(jsonPath("$.success").value(true))
-
-            .andExpect(jsonPath("$.result.totalElements").value(2))
-            .andExpect(jsonPath("$.result.totalPages").value(1))
-            .andExpect(jsonPath("$.result.hasPrevious").value(false))
-            .andExpect(jsonPath("$.result.hasNext").value(false))
-            // 리스트 검증
-            .andExpect(jsonPath("$.result.updateStoreNames", hasSize(2)))
-            .andExpect(jsonPath("$.result.updateStoreNames[0].storeId").value(1L))
-            .andExpect(jsonPath("$.result.updateStoreNames[0].currentName").value("oldName1"))
-            .andExpect(jsonPath("$.result.updateStoreNames[0].newName").value("newName1"))
-            .andExpect(jsonPath("$.result.updateStoreNames[0].createdAt").exists())
-
-            .andExpect(jsonPath("$.result.updateStoreNames[1].storeId").value(2L));
     }
 
     @Nested
