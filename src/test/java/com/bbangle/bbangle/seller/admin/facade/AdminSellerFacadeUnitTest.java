@@ -20,7 +20,7 @@ import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplication;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationApproveList.SuccessDetail;
-import com.bbangle.bbangle.seller.admin.controller.mapper.AdminStoreMapper;
+import com.bbangle.bbangle.seller.admin.controller.mapper.AdminSellerMapper;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo;
 import com.bbangle.bbangle.seller.admin.service.model.AdminSellerInfo.SellerApplicationInfoList.SellerApplicationInfo;
@@ -61,7 +61,7 @@ class AdminSellerFacadeUnitTest {
     private AdminStoreService adminStoreService;
 
     @Mock
-    private AdminStoreMapper adminStoreMapper;
+    private AdminSellerMapper adminSellerMapper;
 
     @InjectMocks
     private AdminSellerFacade adminSellerFacade;
@@ -187,8 +187,8 @@ class AdminSellerFacadeUnitTest {
             given(storeApplication.getStatus()).willReturn(StoreApprovalStatus.APPROVE);
             given(adminStoreApplicationService.findAllByIds(List.of(applicationId))).willReturn(List.of(storeApplication));
             given(adminStoreService.registerApprove(applicationId, request)).willReturn(result);
-            given(adminStoreMapper.toApproveStoreDto(store)).willReturn(storeDto);
-            given(adminStoreMapper.toApproveSellerDto(seller)).willReturn(sellerDto);
+            given(adminSellerMapper.toApproveStoreDto(store)).willReturn(storeDto);
+            given(adminSellerMapper.toApproveSellerDto(seller)).willReturn(sellerDto);
 
             // when
             AdminSellerApplicationApproveList response = adminSellerFacade.approveStoreApplications(List.of(request));
@@ -206,8 +206,8 @@ class AdminSellerFacadeUnitTest {
 
             verify(storeApplication).validateApprovable();
             verify(adminStoreService).registerApprove(applicationId, request);
-            verify(adminStoreMapper).toApproveStoreDto(store);
-            verify(adminStoreMapper).toApproveSellerDto(seller);
+            verify(adminSellerMapper).toApproveStoreDto(store);
+            verify(adminSellerMapper).toApproveSellerDto(seller);
         }
 
         @Test
@@ -320,8 +320,8 @@ class AdminSellerFacadeUnitTest {
                     .store(store)
                     .build()
                 );
-            given(adminStoreMapper.toApproveStoreDto(store)).willReturn(storeDto);
-            given(adminStoreMapper.toApproveSellerDto(seller)).willReturn(sellerDto);
+            given(adminSellerMapper.toApproveStoreDto(store)).willReturn(storeDto);
+            given(adminSellerMapper.toApproveSellerDto(seller)).willReturn(sellerDto);
 
             // when
             AdminSellerApplicationApproveList response =adminSellerFacade.approveStoreApplications(List.of(successRequest, failRequest));
@@ -372,8 +372,8 @@ class AdminSellerFacadeUnitTest {
             given(adminStoreService.registerApprove(eq(firstId), same(firstRequest))).willReturn(firstResult);
             given(adminStoreService.registerApprove(eq(secondId), same(secondRequest))).willReturn(secondResult);
 
-            given(adminStoreMapper.toApproveStoreDto(any())).willReturn(mock(SuccessDetail.StoreDTO.class));
-            given(adminStoreMapper.toApproveSellerDto(any())).willReturn(mock(SuccessDetail.SellerDTO.class));
+            given(adminSellerMapper.toApproveStoreDto(any())).willReturn(mock(SuccessDetail.StoreDTO.class));
+            given(adminSellerMapper.toApproveSellerDto(any())).willReturn(mock(SuccessDetail.SellerDTO.class));
 
             // when
             adminSellerFacade.approveStoreApplications(List.of(firstRequest, secondRequest));

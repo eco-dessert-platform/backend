@@ -13,7 +13,7 @@ import org.mapstruct.ReportingPolicy;
     injectionStrategy = InjectionStrategy.CONSTRUCTOR,
     unmappedTargetPolicy = ReportingPolicy.ERROR
 )
-public interface AdminStoreMapper {
+public interface AdminSellerMapper {
 
     @Mapping(source = "id", target = "storeId")
     @Mapping(source = "name", target = "storeName")
