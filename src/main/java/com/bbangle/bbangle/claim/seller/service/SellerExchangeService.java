@@ -1,8 +1,11 @@
 package com.bbangle.bbangle.claim.seller.service;
 
+import com.bbangle.bbangle.claim.domain.ClaimDelivery;
 import com.bbangle.bbangle.claim.domain.ExchangeRequest;
+import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
+import com.bbangle.bbangle.claim.repository.ClaimDeliveryRepository;
 import com.bbangle.bbangle.claim.repository.ClaimRepository;
 import com.bbangle.bbangle.claim.repository.ExchangeRequestRepository;
 import com.bbangle.bbangle.claim.seller.service.model.ExchangeCreateCommand;
@@ -11,6 +14,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.OrderItemHistory;
+import com.bbangle.bbangle.order.domain.model.CourierCompany;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
@@ -31,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerExchangeService {
 
     private final ExchangeRequestRepository exchangeRequestRepository;
+    private final ClaimDeliveryRepository claimDeliveryRepository;
     private final ClaimRepository claimRepository;
     private final OrderItemHistoryRepository orderItemHistoryRepository;
     private final OrderRepository orderRepository;
@@ -121,6 +126,58 @@ public class SellerExchangeService {
         applyDecision(exchangeRequest, decisionType, reason);
     }
 
+    @Transactional
+    public void registerExchangeInvoice(Long exchangeId, Long sellerId, CourierCompany courierCode, String trackingNumber) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.startRedelivery();
+
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        orderItem.exchangeItemShipped();
+
+        ClaimDelivery claimDelivery = ClaimDelivery.createExchangeRedelivery(exchangeRequest, courierCode, trackingNumber);
+        claimDeliveryRepository.save(claimDelivery);
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
+    public void updateExchangeInvoice(Long exchangeId, Long sellerId, CourierCompany courierCode, String trackingNumber) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.validateReshipped();
+
+        ClaimDelivery claimDelivery = claimDeliveryRepository
+            .findByClaimIdAndDeliveryType(exchangeId, ClaimDeliveryType.EXCHANGE_REDELIVERY)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND));
+
+        claimDelivery.updateInvoice(courierCode, trackingNumber);
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(exchangeRequest.getOrderItem()));
+    }
+
+    @Transactional
+    public void completeExchange(Long exchangeId, Long sellerId) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.completeExchange();
+
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        orderItem.exchangeComplete();
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
     private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {
         return exchangeRequestRepository.findWithLockById(exchangeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));

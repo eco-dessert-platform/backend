@@ -3,6 +3,7 @@ package com.bbangle.bbangle.claim.domain;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.APPROVED;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.REJECTED;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.REQUESTED;
+import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.RESHIPPED;
 
 import com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -62,5 +63,25 @@ public class ExchangeRequest extends Claim {
         this.status = REJECTED;
         this.sellerComment = reason;
         super.decide();
+    }
+
+    public void startRedelivery() {
+        if (status != APPROVED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = RESHIPPED;
+    }
+
+    public void validateReshipped() {
+        if (this.status != RESHIPPED) {
+            throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
+        }
+    }
+
+    public void completeExchange() {
+        if (status != RESHIPPED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = ExchangeRequestStatus.COMPLETED;
     }
 }
