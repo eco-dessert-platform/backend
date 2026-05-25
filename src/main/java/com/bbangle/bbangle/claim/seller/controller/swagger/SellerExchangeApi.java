@@ -3,6 +3,7 @@ package com.bbangle.bbangle.claim.seller.controller.swagger;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeDecisionRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceUpdateRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeHoldRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeRejectRequest;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +43,18 @@ public interface SellerExchangeApi {
     CommonResult updateExchangeInvoice(
         @Parameter(description = "교환 요청 ID") Long exchangeId,
         ExchangeInvoiceUpdateRequest request,
+        @Parameter(hidden = true) Long sellerId
+    );
+
+    @Operation(
+        summary = "교환 보류 처리",
+        description = "REQUESTED, PICKUP_SCHEDULED, PICKED_UP, INSPECTING 상태의 교환 건에 대해 "
+            + "배송비 미입금·구성품 누락 등 추가 확인이 필요한 경우 처리를 보류한다. "
+            + "보류 사유는 ExchangeRequest의 sellerComment 필드에 저장되고, 주문 상품 상태는 EXCHANGE_ON_HOLD로 전이된다."
+    )
+    CommonResult holdExchange(
+        @Parameter(description = "교환 요청 ID") Long exchangeId,
+        ExchangeHoldRequest request,
         @Parameter(hidden = true) Long sellerId
     );
 

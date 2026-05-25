@@ -178,6 +178,21 @@ public class SellerExchangeService {
     }
 
     @Transactional
+    public void holdExchange(Long exchangeId, Long sellerId, String reason) {
+        if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        exchangeRequest.holdExchange(reason);
+
+        OrderItem orderItem = exchangeRequest.getOrderItem();
+        orderItem.exchangeHold();
+
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
     public void rejectExchange(Long exchangeId, Long sellerId, String reason) {
         if (!claimRepository.existsClaimRequestBySeller(exchangeId, sellerId)) {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
