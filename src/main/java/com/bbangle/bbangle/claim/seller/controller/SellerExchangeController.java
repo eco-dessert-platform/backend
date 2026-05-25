@@ -3,6 +3,7 @@ package com.bbangle.bbangle.claim.seller.controller;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeDecisionRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceRequest;
 import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeInvoiceUpdateRequest;
+import com.bbangle.bbangle.claim.seller.controller.dto.ExchangeRejectRequest;
 import com.bbangle.bbangle.claim.seller.controller.swagger.SellerExchangeApi;
 import com.bbangle.bbangle.claim.seller.service.SellerExchangeService;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -54,6 +55,16 @@ public class SellerExchangeController implements SellerExchangeApi {
         @AuthenticationPrincipal Long sellerId
     ) {
         sellerExchangeService.updateExchangeInvoice(exchangeId, sellerId, request.courierCode(), request.trackingNumber());
+        return responseService.getSuccessResult();
+    }
+
+    @PostMapping("/{exchangeId}/reject")
+    public CommonResult rejectExchange(
+        @PathVariable Long exchangeId,
+        @Valid @RequestBody ExchangeRejectRequest request,
+        @AuthenticationPrincipal Long sellerId
+    ) {
+        sellerExchangeService.rejectExchange(exchangeId, sellerId, request.reason());
         return responseService.getSuccessResult();
     }
 

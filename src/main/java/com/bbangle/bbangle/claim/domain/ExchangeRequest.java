@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.claim.domain;
 
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.APPROVED;
+import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.INSPECTING;
+import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.PICKED_UP;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.REJECTED;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.REQUESTED;
 import static com.bbangle.bbangle.claim.domain.constant.ExchangeRequestStatus.RESHIPPED;
@@ -58,6 +60,15 @@ public class ExchangeRequest extends Claim {
 
     public void reject(String reason) {
         if (status != REQUESTED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = REJECTED;
+        this.sellerComment = reason;
+        super.decide();
+    }
+
+    public void rejectAfterInspection(String reason) {
+        if (status != PICKED_UP && status != INSPECTING) {
             throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
         }
         this.status = REJECTED;
