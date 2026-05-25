@@ -409,6 +409,110 @@ class SellerExchangeServiceProcessTest {
     }
 
     @Nested
+    @DisplayName("rejectExchange() - 교환 수거 후 반려 처리")
+    class RejectAfterInspectionTests {
+
+        private static final Long EXCHANGE_ID = 6L;
+        private static final Long SELLER_ID = 10L;
+        private static final String REASON = "고객 귀책으로 인한 상품 파손으로 교환 불가";
+
+        @Test
+        @DisplayName("성공 - INSPECTING 상태의 교환 건에 반려 사유와 함께 요청 시 상태가 REJECTED/EXCHANGE_RETURNED로 전이되고 OrderItemHistory가 저장된다")
+        void rejectExchange_success_from_inspecting() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_ITEM_INSPECTING);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.inspecting(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when
+            sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON);
+
+            // then
+            assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.REJECTED);
+            assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_RETURNED);
+            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("성공 - PICKED_UP 상태의 교환 건에 반려 사유와 함께 요청 시 상태가 REJECTED/EXCHANGE_RETURNED로 전이되고 OrderItemHistory가 저장된다")
+        void rejectExchange_success_from_picked_up() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_ITEM_COLLECTED);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.pickedUp(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when
+            sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON);
+
+            // then
+            assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.REJECTED);
+            assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_RETURNED);
+            then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
+        }
+
+        @Test
+        @DisplayName("실패 (권한) - 타 판매자의 교환 건에 반려 처리를 시도하면 SELLER_CLAIM_MISMATCH 예외가 발생하고 이후 로직은 실행되지 않는다")
+        void rejectExchange_fails_when_seller_mismatch() {
+            // given
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+
+            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 (상태) - 이미 완료된(COMPLETED) 교환 건에 반려 처리를 시도하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void rejectExchange_fails_when_already_completed() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_COMPLETED);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.COMPLETED, orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 (상태) - REQUESTED 상태(수거 전)의 교환 건에 반려 처리를 시도하면 CLAIM_INVALID_STATUS 예외가 발생한다")
+        void rejectExchange_fails_when_not_picked_up() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.EXCHANGE_REQUEST);
+            ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
+
+            given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
+            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+
+            // when & then
+            assertThatThrownBy(() -> sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.CLAIM_INVALID_STATUS);
+
+            then(orderItemHistoryRepository).should(never()).save(any());
+        }
+    }
+
+    @Nested
     @DisplayName("completeExchange() - 교환 최종 완료 처리")
     class CompleteExchangeTests {
 
