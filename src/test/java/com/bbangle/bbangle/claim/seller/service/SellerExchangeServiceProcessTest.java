@@ -21,7 +21,6 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.claim.ExchangeRequestFixture;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
 import com.bbangle.bbangle.claim.domain.constant.ClaimDeliveryType;
-import com.bbangle.bbangle.delivery.domain.Shipping;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.OrderItemHistory;
 import com.bbangle.bbangle.order.domain.model.CourierCompany;
@@ -310,10 +309,6 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
 
             ClaimDelivery mockDelivery = mock(ClaimDelivery.class);
-            Shipping mockShipping = mock(Shipping.class);
-            given(mockDelivery.getShipping()).willReturn(mockShipping);
-            given(mockShipping.getCourierName()).willReturn(NEW_COURIER.getDisplayName());
-            given(mockShipping.getTrackingNumber()).willReturn(NEW_TRACKING_NUMBER);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
             given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
