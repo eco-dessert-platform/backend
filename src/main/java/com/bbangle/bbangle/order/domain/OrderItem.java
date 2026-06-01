@@ -207,6 +207,23 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.EXCHANGE_REJECTED;
     }
 
+    public void exchangeHold() {
+        if (orderStatus != OrderStatus.EXCHANGE_REQUEST
+            && orderStatus != OrderStatus.EXCHANGE_APPROVED
+            && orderStatus != OrderStatus.EXCHANGE_ITEM_COLLECTED
+            && orderStatus != OrderStatus.EXCHANGE_ITEM_INSPECTING) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_ON_HOLD;
+    }
+
+    public void exchangeReturn() {
+        if (orderStatus != OrderStatus.EXCHANGE_ITEM_COLLECTED && orderStatus != OrderStatus.EXCHANGE_ITEM_INSPECTING) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_RETURNED;
+    }
+
     public void exchangeItemShipped() {
         if (orderStatus != OrderStatus.EXCHANGE_APPROVED) {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);

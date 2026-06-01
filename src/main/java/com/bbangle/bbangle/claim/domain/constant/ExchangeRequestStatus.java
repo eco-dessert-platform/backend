@@ -7,6 +7,7 @@ public enum ExchangeRequestStatus {
     INSPECTING,        // 교환 상품 검수 중
     APPROVED,          // 교환 승인 (새 상품 발송 가능)
     REJECTED,          // 교환 거절
+    ON_HOLD,           // 교환 보류 (추가 확인 필요)
     RESHIPPED,         // 교환 상품 재발송 완료
     COMPLETED;         // 고객 수령 및 교환 완료
 }

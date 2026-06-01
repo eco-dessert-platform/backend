@@ -31,6 +31,18 @@ public class ExchangeRequestFixture {
         return withStatus(ExchangeRequestStatus.REJECTED, orderItem);
     }
 
+    public static ExchangeRequest pickedUp(OrderItem orderItem) {
+        return withStatus(ExchangeRequestStatus.PICKED_UP, orderItem);
+    }
+
+    public static ExchangeRequest inspecting(OrderItem orderItem) {
+        return withStatus(ExchangeRequestStatus.INSPECTING, orderItem);
+    }
+
+    public static ExchangeRequest onHold(OrderItem orderItem) {
+        return withStatus(ExchangeRequestStatus.ON_HOLD, orderItem);
+    }
+
     public static ExchangeRequest withId(ExchangeRequest er, Long id) {
         ReflectionTestUtils.setField(er, "id", id);
         return er;
