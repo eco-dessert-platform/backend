@@ -70,4 +70,22 @@ public class MemberDeliveryAddress extends SoftDeleteBaseEntity {
         this.addressDetail = addressDetail;
         this.zipCode = zipCode;
     }
+
+    public void update(String addressName, String recipientName, String phone,
+                       String address, String addressDetail, String zipCode) {
+        this.addressName = addressName;
+        this.recipientName = recipientName;
+        this.phone = phone;
+        this.address = address;
+        this.addressDetail = addressDetail;
+        this.zipCode = zipCode;
+    }
+
+    public void setDefault() {
+        this.isDefault = true;
+    }
+
+    public void unsetDefault() {
+        this.isDefault = false;
+    }
 }

@@ -211,7 +211,8 @@ public enum BbangleErrorCode {
 
     // Order Customer Error(856 ~ 870)
     DELIVERY_ADDRESS_NOT_FOUND(-856, "기본 배송지를 찾을 수 없습니다.", NOT_FOUND),
-    ORDER_PRODUCT_EMPTY(-857, "주문 상품이 비어 있습니다.", BAD_REQUEST);
+    ORDER_PRODUCT_EMPTY(-857, "주문 상품이 비어 있습니다.", BAD_REQUEST),
+    DELIVERY_ADDRESS_ACCESS_DENIED(-858, "배송지에 대한 접근 권한이 없습니다.", FORBIDDEN);
 
     private final int code;
     private final String message;
