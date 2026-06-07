@@ -85,12 +85,9 @@ public class CustomerOrderService {
             .collect(Collectors.groupingBy(p -> p.getBoard().getStore().getId()));
 
         // 기본 배송지 조회
-        MemberDeliveryAddress defaultAddress = null;
-        if (request.items() != null) {
-            defaultAddress = memberDeliveryAddressRepository
-                .findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
-                .orElse(null);
-        }
+        MemberDeliveryAddress defaultAddress = memberDeliveryAddressRepository
+            .findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
+            .orElse(null);
 
         List<OrderPreviewResponse.StoreOrderGroup> storeGroups = new ArrayList<>();
         int totalProductAmount = 0;
@@ -281,7 +278,7 @@ public class CustomerOrderService {
 
             Payment payment = Payment.create(
                 savedOrder,
-                PaymentStatus.PENDING,
+                PaymentStatus.COMPLETED,
                 request.paymentMethod(),
                 null
             );

@@ -10,6 +10,6 @@ public record DeliveryAddressSaveRequest(
     @NotBlank @Size(max = 255) String address,
     @Size(max = 255) String addressDetail,
     @Size(max = 10) String zipCode,
-    boolean isDefault
+    Boolean isDefault
 ) {
 }

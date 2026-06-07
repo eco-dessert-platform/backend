@@ -30,11 +30,16 @@ public class DeliveryAddressService {
     }
 
     public DeliveryAddressResponse addDeliveryAddress(Long memberId, DeliveryAddressSaveRequest request) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+        boolean makeDefault = Boolean.TRUE.equals(request.isDefault());
 
-        // isDefault 요청 시 기존 기본 배송지 해제
-        if (request.isDefault()) {
+        // isDefault=true일 때 Member 행 잠금을 직렬화 포인트로 사용해 동시 insert 경합 방지
+        Member member = makeDefault
+            ? memberRepository.findByIdWithLock(memberId)
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER))
+            : memberRepository.findById(memberId)
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+
+        if (makeDefault) {
             deliveryAddressRepository.findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
                 .ifPresent(MemberDeliveryAddress::unsetDefault);
         }
@@ -47,7 +52,7 @@ public class DeliveryAddressService {
             .address(request.address())
             .addressDetail(request.addressDetail())
             .zipCode(request.zipCode())
-            .isDefault(request.isDefault())
+            .isDefault(makeDefault)
             .build();
 
         return DeliveryAddressResponse.from(deliveryAddressRepository.save(address));
@@ -56,12 +61,6 @@ public class DeliveryAddressService {
     public DeliveryAddressResponse updateDeliveryAddress(Long memberId, Long addressId,
                                                          DeliveryAddressSaveRequest request) {
         MemberDeliveryAddress address = findOwnedAddress(memberId, addressId);
-
-        // isDefault 요청 시 기존 기본 배송지 해제 (본인 주소 제외)
-        if (request.isDefault() && !address.isDefault()) {
-            deliveryAddressRepository.findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
-                .ifPresent(MemberDeliveryAddress::unsetDefault);
-        }
 
         address.update(
             request.addressName(),
@@ -72,10 +71,19 @@ public class DeliveryAddressService {
             request.zipCode()
         );
 
-        if (request.isDefault()) {
-            address.setDefault();
-        } else {
-            address.unsetDefault();
+        // isDefault가 null이면 기존 기본 배송지 상태 유지
+        if (request.isDefault() != null) {
+            boolean makeDefault = request.isDefault();
+            if (makeDefault && !address.isDefault()) {
+                // Member 행 잠금으로 직렬화 후 기존 기본 배송지 해제
+                memberRepository.findByIdWithLock(memberId)
+                    .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+                deliveryAddressRepository.findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
+                    .ifPresent(MemberDeliveryAddress::unsetDefault);
+                address.setDefault();
+            } else if (!makeDefault) {
+                address.unsetDefault();
+            }
         }
 
         return DeliveryAddressResponse.from(address);
@@ -87,24 +95,20 @@ public class DeliveryAddressService {
     }
 
     public void setDefaultDeliveryAddress(Long memberId, Long addressId) {
-        MemberDeliveryAddress address = findOwnedAddress(memberId, addressId);
+        // Member 행 잠금을 먼저 획득해 동시 기본 배송지 변경 직렬화
+        memberRepository.findByIdWithLock(memberId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
 
-        // 기존 기본 배송지 해제
+        MemberDeliveryAddress address = findOwnedAddress(memberId, addressId);
         deliveryAddressRepository.findByMemberIdAndIsDefaultTrueAndIsDeletedFalse(memberId)
             .ifPresent(MemberDeliveryAddress::unsetDefault);
-
         address.setDefault();
     }
 
+    // 소유권을 조회 조건에 포함해 타인 주소 접근 시에도 동일한 404 반환 (ID 열거 방지)
     private MemberDeliveryAddress findOwnedAddress(Long memberId, Long addressId) {
-        MemberDeliveryAddress address = deliveryAddressRepository.findById(addressId)
-            .filter(a -> !a.isDeleted())
+        return deliveryAddressRepository
+            .findByIdAndMemberIdAndIsDeletedFalse(addressId, memberId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
-
-        if (!address.getMember().getId().equals(memberId)) {
-            throw new BbangleException(BbangleErrorCode.DELIVERY_ADDRESS_ACCESS_DENIED);
-        }
-
-        return address;
     }
 }
