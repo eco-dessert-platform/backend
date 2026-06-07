@@ -5,6 +5,7 @@ import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAG
 import com.bbangle.bbangle.board.customer.domain.constant.FolderBoardSortType;
 import com.bbangle.bbangle.board.customer.dto.BoardResponse;
 import com.bbangle.bbangle.board.customer.dto.BoardResponses;
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.dao.BoardThumbnailDao;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
@@ -55,5 +56,9 @@ public class BoardService {
             BoardResponse::getBoardId);
     }
 
+    // TODO : Test
+    public Board getBoard(Long boardId) {
+        return boardRepository.findById(boardId).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+    }
 }
 

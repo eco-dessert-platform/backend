@@ -247,4 +247,26 @@ public class Product extends SoftDeleteBaseEntity {
             this.soldout = true;
         }
     }
+
+    // TODO : Test
+    /**
+     * Product의 재고가 충분한지 검증
+     * @param amount int
+     */
+    public void validateStock(int amount) {
+        if (this.stock < amount) {
+            throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_STOCK);
+        }
+    }
+
+    // TODO : Test
+    /**
+     * 해당 상품의 옵션인지 검증
+     * @param board Board
+     */
+    public void validateBelongsTo(Board board) {
+        if (!this.board.getId().equals(board.getId())) {
+            throw new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND);
+        }
+    }
 }

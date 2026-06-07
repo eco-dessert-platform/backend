@@ -25,6 +25,23 @@ public class ProductService {
     private static final int ONE_CATEGORY = 1;
     private final ProductRepository productRepository;
 
+    private static List<Long> getIds(List<Product> products) {
+        return products.stream()
+            .map(Product::getId)
+            .toList();
+    }
+
+    private static boolean getIsSoldOut(List<Product> products) {
+        return products.stream()
+            .noneMatch(product -> !product.isSoldout());
+    }
+
+    private static boolean getIsBundled(List<Product> products) {
+        return products.stream()
+            .map(Product::getCategory)
+            .distinct()
+            .count() > ONE_CATEGORY;
+    }
 
     public ProductResponse getProductResponseWithPush(long memberId, Long boardId) {
         List<Product> products = productRepository.findByBoardId(boardId);
@@ -75,21 +92,9 @@ public class ProductService {
         );
     }
 
-    private static List<Long> getIds(List<Product> products) {
-        return products.stream()
-            .map(Product::getId)
-            .toList();
-    }
-
-    private static boolean getIsSoldOut(List<Product> products) {
-        return products.stream()
-            .noneMatch(product -> !product.isSoldout());
-    }
-
-    private static boolean getIsBundled(List<Product> products) {
-        return products.stream()
-            .map(Product::getCategory)
-            .distinct()
-            .count() > ONE_CATEGORY;
+    // TODO : Test
+    @Transactional(readOnly = true)
+    public List<Product> findAllByIds(List<Long> productIds) {
+        return productRepository.findAllById(productIds);
     }
 }
