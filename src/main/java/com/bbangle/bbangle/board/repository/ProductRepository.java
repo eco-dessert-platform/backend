@@ -41,4 +41,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
             WHERE p.id IN :productIds
         """)
     void softDeleteByProductIds(@Param("productIds") List<Long> productIds);
+
+    @Query("""
+            SELECT p FROM Product p
+            JOIN FETCH p.board b
+            JOIN FETCH b.store s
+            WHERE p.id IN :ids
+              AND p.isDeleted = false
+        """)
+    List<Product> findAllWithBoardAndStoreByIdIn(@Param("ids") List<Long> ids);
 }
