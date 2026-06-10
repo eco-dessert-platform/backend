@@ -5,8 +5,11 @@ import static com.bbangle.bbangle.fixture.store.domain.StoreFixture.NEW_IDENTIFI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.charge.domain.ChargeBalance;
+import com.bbangle.bbangle.charge.repository.ChargeBalanceRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.charge.domain.ChargeBalanceFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreApplicationFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
@@ -20,6 +23,8 @@ import com.bbangle.bbangle.store.domain.StoreApplication;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.bbangle.bbangle.store.repository.StoreApplicationRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import java.math.BigDecimal;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,15 +49,19 @@ class AdminStoreServicePartialSuccessTest {
     @Autowired
     private StoreApplicationRepository storeApplicationRepository;
 
+    @Autowired
+    private ChargeBalanceRepository chargeBalanceRepository;
+
     @AfterEach
     void tearDown() {
+        chargeBalanceRepository.deleteAll();
         storeApplicationRepository.deleteAll();
         sellerRepository.deleteAll();
         storeRepository.deleteAll();
     }
 
     @Test
-    @DisplayName("store가 없으면 createStore 후 승인 처리")
+    @DisplayName("store가 없으면 createStore 후 승인 처리 및 충전금 생성")
     void success_registerApprove_createStore() {
 
         // given
@@ -72,16 +81,19 @@ class AdminStoreServicePartialSuccessTest {
         Store savedStore = storeRepository.findById(result.store().getId()).orElseThrow();
         Seller savedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
         StoreApplication savedApplication = storeApplicationRepository.findById(application.getId()).orElseThrow();
+        Optional<ChargeBalance> chargeBalance = chargeBalanceRepository.findBySellerId(seller.getId());
 
         assertThat(savedStore.getId()).isNotNull();
         assertThat(savedStore.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
         assertThat(savedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
         assertThat(savedSeller.getStore().getId()).isEqualTo(savedStore.getId());
         assertThat(savedApplication.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
+        assertThat(chargeBalance).isPresent();
+        assertThat(chargeBalance.get().getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
-    @DisplayName("store가 있으면 updateStore 후 승인 처리")
+    @DisplayName("store가 있으면 updateStore 후 승인 처리 및 충전금 생성")
     void success_registerApprove_updateStore() {
 
         // given
@@ -108,7 +120,6 @@ class AdminStoreServicePartialSuccessTest {
             .sellerName("updatedSeller")
             .build();
 
-
         // when
         adminStoreService.registerApprove(application.getId(), command);
 
@@ -116,6 +127,7 @@ class AdminStoreServicePartialSuccessTest {
         Store updatedStore = storeRepository.findById(store.getId()).orElseThrow();
         Seller updatedSeller = sellerRepository.findById(seller.getId()).orElseThrow();
         StoreApplication updatedApplication = storeApplicationRepository.findById(application.getId()).orElseThrow();
+        Optional<ChargeBalance> chargeBalance = chargeBalanceRepository.findBySellerId(seller.getId());
 
         assertThat(updatedStore.getId()).isEqualTo(store.getId());
         assertThat(updatedStore.getIdentifier()).isEqualTo(NEW_IDENTIFIER);
@@ -123,6 +135,35 @@ class AdminStoreServicePartialSuccessTest {
         assertThat(updatedSeller.getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
         assertThat(updatedSeller.getStore().getId()).isEqualTo(updatedStore.getId());
         assertThat(updatedApplication.getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
+        assertThat(chargeBalance).isPresent();
+        assertThat(chargeBalance.get().getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("충전금이 이미 존재하는 셀러를 재승인해도 충전금이 중복 생성되지 않는다")
+    void success_registerApprove_doesNotCreateDuplicate_whenBalanceAlreadyExists() {
+
+        // given
+        Seller seller = sellerRepository.save(SellerFixture.defaultSeller(CertificationStatus.PENDING));
+        chargeBalanceRepository.save(ChargeBalanceFixture.createDefault(seller));
+
+        StoreApplication application = storeApplicationRepository
+            .save(StoreApplicationFixture.defaultStoreApplication(seller, null));
+        StoreApplicationApprove command = StoreApplicationApprove.builder()
+            .applicationId(application.getId())
+            .identifier(NEW_IDENTIFIER)
+            .sellerName("newSellerName")
+            .build();
+
+        // when
+        adminStoreService.registerApprove(application.getId(), command);
+
+        // then
+        long count = chargeBalanceRepository.findAll().stream()
+            .filter(cb -> cb.getSeller().getId().equals(seller.getId()))
+            .count();
+
+        assertThat(count).isEqualTo(1);
     }
 
     @Test

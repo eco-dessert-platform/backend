@@ -22,6 +22,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.bbangle.bbangle.charge.domain.ChargeBalance;
+import com.bbangle.bbangle.charge.repository.ChargeBalanceRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
@@ -88,6 +90,9 @@ class AdminStoreServiceUnitTest {
 
     @Mock
     private StoreApplicationRepository storeApplicationRepository;
+
+    @Mock
+    private ChargeBalanceRepository chargeBalanceRepository;
 
     @Mock
     private AdminStoreMapper adminStoreMapper;
@@ -568,7 +573,7 @@ class AdminStoreServiceUnitTest {
     class RegisterApproveTest {
 
         @Test
-        @DisplayName("store가 없으면 createStore 호출 후 승인 처리")
+        @DisplayName("store가 없으면 createStore 호출 후 승인 처리 및 충전금 생성")
         void success_registerApprove_createStore() {
 
             // given
@@ -579,6 +584,7 @@ class AdminStoreServiceUnitTest {
 
             given(storeApplicationRepository.findByIdWithDetails(applicationId)).willReturn(Optional.of(application));
             given(storeRepository.save(any(Store.class))).willAnswer(invocation -> invocation.getArgument(0));
+            given(chargeBalanceRepository.existsBySellerId(any())).willReturn(false);
 
             StoreApplicationApprove command = StoreApplicationApprove.builder()
                 .applicationId(applicationId)
@@ -595,10 +601,11 @@ class AdminStoreServiceUnitTest {
             assertThat(result.seller().getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
             assertThat(result.storeApplication().getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
             assertThat(result.seller().getStore()).isEqualTo(result.store());
+            then(chargeBalanceRepository).should().save(any(ChargeBalance.class));
         }
 
         @Test
-        @DisplayName("store가 있으면 updateStore 호출 후 승인 처리")
+        @DisplayName("store가 있으면 updateStore 호출 후 승인 처리 및 충전금 생성")
         void success_registerApprove_updateStore() {
 
             // given
@@ -610,6 +617,7 @@ class AdminStoreServiceUnitTest {
 
             given(storeApplicationRepository.findByIdWithDetails(applicationId)).willReturn(Optional.of(application));
             given(sellerRepository.existsByStore_Id(store.getId())).willReturn(false);
+            given(chargeBalanceRepository.existsBySellerId(any())).willReturn(false);
 
             StoreApplicationApprove command = StoreApplicationApprove.builder()
                 .applicationId(applicationId)
@@ -629,6 +637,34 @@ class AdminStoreServiceUnitTest {
             assertThat(result.seller().getCertificationStatus()).isEqualTo(CertificationStatus.APPROVED);
             assertThat(result.storeApplication().getStatus()).isEqualTo(StoreApprovalStatus.APPROVE);
             assertThat(result.seller().getStore()).isEqualTo(result.store());
+            then(chargeBalanceRepository).should().save(any(ChargeBalance.class));
+        }
+
+        @Test
+        @DisplayName("셀러에 충전금이 이미 존재하면 새로 생성하지 않는다")
+        void success_registerApprove_doesNotCreateBalance_whenAlreadyExists() {
+
+            // given
+            long applicationId = 1L;
+
+            Seller seller = SellerFixture.defaultSeller();
+            StoreApplication application = StoreApplicationFixture.defaultStoreApplication(seller, null);
+
+            given(storeApplicationRepository.findByIdWithDetails(applicationId)).willReturn(Optional.of(application));
+            given(storeRepository.save(any(Store.class))).willAnswer(invocation -> invocation.getArgument(0));
+            given(chargeBalanceRepository.existsBySellerId(any())).willReturn(true);
+
+            StoreApplicationApprove command = StoreApplicationApprove.builder()
+                .applicationId(applicationId)
+                .identifier(DEFAULT_IDENTIFIER)
+                .sellerName(seller.getName())
+                .build();
+
+            // when
+            adminStoreService.registerApprove(applicationId, command);
+
+            // then
+            then(chargeBalanceRepository).should(never()).save(any(ChargeBalance.class));
         }
 
         @Test
