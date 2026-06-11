@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.store.admin.service;
 
+import com.bbangle.bbangle.charge.domain.ChargeBalance;
+import com.bbangle.bbangle.charge.repository.ChargeBalanceRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
@@ -48,6 +50,7 @@ public class AdminStoreService {
     private final StoreRepository storeRepository;
     private final SellerRepository sellerRepository;
     private final StoreApplicationRepository storeApplicationRepository;
+    private final ChargeBalanceRepository chargeBalanceRepository;
     private final AdminStoreMapper adminStoreMapper;
 
     @Transactional
@@ -247,6 +250,11 @@ public class AdminStoreService {
 
         application.getSeller().registerStore(store, command.sellerName());
         application.approve();
+
+        if (!chargeBalanceRepository.existsBySellerId(application.getSeller().getId())) {
+            chargeBalanceRepository.save(ChargeBalance.create(application.getSeller()));
+        }
+
         return RegisterApproveResult.builder()
             .storeApplication(application)
             .store(store)
