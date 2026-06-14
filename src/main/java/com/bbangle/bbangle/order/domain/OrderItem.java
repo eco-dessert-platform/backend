@@ -70,6 +70,16 @@ public class OrderItem extends BaseEntity {
     @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<OrderDelivery> orderDeliveries = new ArrayList<>();
 
+    /**
+     * 결제 승인 완료 시점에 PAYMENT_PENDING → PAYMENT_COMPLETED로 전환합니다.
+     */
+    public void completePayment() {
+        if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
+        this.orderStatus = OrderStatus.PAYMENT_COMPLETED;
+    }
+
     public boolean confirmOrder() {
         if (this.orderStatus != OrderStatus.PAYMENT_COMPLETED) {
             return false;

@@ -211,7 +211,14 @@ public enum BbangleErrorCode {
 
     // Order Customer Error(856 ~ 870)
     DELIVERY_ADDRESS_NOT_FOUND(-856, "기본 배송지를 찾을 수 없습니다.", NOT_FOUND),
-    ORDER_PRODUCT_EMPTY(-857, "주문 상품이 비어 있습니다.", BAD_REQUEST);
+    ORDER_PRODUCT_EMPTY(-857, "주문 상품이 비어 있습니다.", BAD_REQUEST),
+
+    // Payment Customer Error(871 ~ 880)
+    PAYMENT_NOT_FOUND(-871, "결제 정보를 찾을 수 없습니다.", NOT_FOUND),
+    PAYMENT_AMOUNT_MISMATCH(-872, "결제 금액이 일치하지 않습니다.", BAD_REQUEST),
+    PAYMENT_CONFIRM_FAILED(-873, "결제 승인에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_ALREADY_COMPLETED(-874, "이미 완료된 결제입니다.", CONFLICT),
+    INVALID_ORDER_STATUS_TRANSITION(-875, "해당 주문 상태에서는 상태를 변경할 수 없습니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

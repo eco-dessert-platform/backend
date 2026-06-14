@@ -40,6 +40,9 @@ public class Order extends BaseEntity {
     @Column(name = "order_number", columnDefinition = "VARCHAR(30)")
     private String orderNumber;
 
+    @Column(name = "order_group_id", length = 30)
+    private String orderGroupId;
+
     @Column(name = "order_date")
     private LocalDateTime orderDate;
 

@@ -188,6 +188,9 @@ public class CustomerOrderService {
             address.getZipCode()
         );
 
+        // 동일 결제 세션의 스토어별 주문들을 논리적으로 묶는 그룹 ID (30자 이내)
+        String orderGroupId = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
+
         List<Order> createdOrders = new ArrayList<>();
         String representativeOrderNumber = null;
 
@@ -228,6 +231,7 @@ public class CustomerOrderService {
             // 2nd pass: Order 엔티티 생성 (올바른 배송비/총액 포함)
             Order order = Order.builder()
                 .orderNumber(orderNumber)
+                .orderGroupId(orderGroupId)
                 .orderDate(LocalDateTime.now())
                 .buyerName(member.getName())
                 .buyerPhone(member.getPhone())
@@ -256,7 +260,7 @@ public class CustomerOrderService {
                     .quantity(quantity)
                     .productPrice(product.getPrice())
                     .unitPrice(unitPrice)
-                    .orderStatus(OrderStatus.PAYMENT_COMPLETED)
+                    .orderStatus(OrderStatus.PAYMENT_PENDING)
                     .orderDeliveryStatus(OrderDeliveryStatus.PREPARING)
                     .totalPrice(totalPrice)
                     .order(order)
@@ -278,7 +282,7 @@ public class CustomerOrderService {
 
             Payment payment = Payment.create(
                 savedOrder,
-                PaymentStatus.COMPLETED,
+                PaymentStatus.PENDING,
                 request.paymentMethod(),
                 null
             );

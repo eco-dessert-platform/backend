@@ -43,6 +43,9 @@ public class Payment extends BaseEntity {
 
     private LocalDateTime paidAt;
 
+    @Column(name = "payment_key", length = 200)
+    private String paymentKey;
+
     @Builder(access = AccessLevel.PRIVATE)
     private Payment(Order order,
                     PaymentStatus paymentStatus,
@@ -52,6 +55,16 @@ public class Payment extends BaseEntity {
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
         this.paidAt = paidAt;
+    }
+
+    public void confirm(String paymentKey, LocalDateTime approvedAt) {
+        this.paymentKey = paymentKey;
+        this.paidAt = approvedAt;
+        this.paymentStatus = PaymentStatus.COMPLETED;
+    }
+
+    public void fail() {
+        this.paymentStatus = PaymentStatus.FAILED;
     }
 
     public static Payment create(

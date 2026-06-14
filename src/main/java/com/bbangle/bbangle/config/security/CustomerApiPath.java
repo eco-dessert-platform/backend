@@ -7,7 +7,8 @@ public class CustomerApiPath {
     public static final String[] ANY_METHOD = {
         "/api/v1/boards/folders/**",
         "/api/v1/customer/orders/**",
-        "/api/v1/customer/delivery-addresses/**"
+        "/api/v1/customer/delivery-addresses/**",
+        "/api/v1/customer/payments/**"
     };
 
 }
