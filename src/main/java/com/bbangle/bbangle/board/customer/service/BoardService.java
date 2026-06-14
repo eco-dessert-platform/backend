@@ -56,7 +56,6 @@ public class BoardService {
             BoardResponse::getBoardId);
     }
 
-    // TODO : Test
     public Board getBoard(Long boardId) {
         return boardRepository.findById(boardId).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
     }

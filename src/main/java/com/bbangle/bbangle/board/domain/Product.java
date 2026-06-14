@@ -248,7 +248,6 @@ public class Product extends SoftDeleteBaseEntity {
         }
     }
 
-    // TODO : Test
     /**
      * Product의 재고가 충분한지 검증
      * @param amount int
@@ -259,7 +258,6 @@ public class Product extends SoftDeleteBaseEntity {
         }
     }
 
-    // TODO : Test
     /**
      * 해당 상품의 옵션인지 검증
      * @param board Board

@@ -46,7 +46,7 @@ public class CustomerCartFacade {
         validateDuplicateOptions(request.options());
 
         Member member = memberService.findById(memberId);
-        Cart cart = customerCartService.findByMemberOrCreateCart(member);
+        Cart cart = customerCartService.findCartByMember(member);
         Board board = boardService.getBoard(request.boardId());
 
         // 2. 장바구니에 담긴 상품 조회 -> 없으면 생성

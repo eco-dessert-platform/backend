@@ -36,3 +36,12 @@ CREATE TABLE cart_option (
     CONSTRAINT fk_cart_option_cart_item FOREIGN KEY (cart_item_id) REFERENCES cart_item (id),
     CONSTRAINT fk_cart_option_product FOREIGN KEY (option_id) REFERENCES product (id)
 );
+
+INSERT INTO cart (member_id)
+SELECT m.id
+FROM member m
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM cart c
+    WHERE c.member_id = m.id
+);

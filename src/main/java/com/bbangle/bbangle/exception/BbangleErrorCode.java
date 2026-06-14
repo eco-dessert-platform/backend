@@ -88,6 +88,7 @@ public enum BbangleErrorCode {
     INVALID_REQUEST_STOCK(-64, "선택하신 수량보다 현재 재고 수량이 부족합니다.", BAD_REQUEST),
     INVALID_REQUEST_QUANTITY(-65, "선택하신 수량이 0이상 이여야합니다.", BAD_REQUEST),
     DUPLICATED_PRODUCT_OPTION(-66, "장바구니에 추가할 상품 옵션이 중복이 되어선 안됩니다.", BAD_REQUEST),
+    NOT_FOUND_CART(-67, "해당 계정의 장바구니 데이터를 찾지 못했습니다.", BAD_REQUEST),
 
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
