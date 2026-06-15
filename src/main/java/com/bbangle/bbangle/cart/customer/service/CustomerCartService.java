@@ -22,7 +22,7 @@ public class CustomerCartService {
     }
 
     @Transactional
-    public void CreateCart(Member member) {
+    public void createCart(Member member) {
         cartRepository.save(Cart.create(member));
     }
 }

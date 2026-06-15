@@ -150,7 +150,7 @@ public class MemberService {
         Member newMember = memberRepository.save(oauthMember);
         Long newMemberId = newMember.getId();
         wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
-        customerCartService.CreateCart(newMember);
+        customerCartService.createCart(newMember);
         return newMember;
     }
 
