@@ -15,7 +15,7 @@ public class CartRequest {
         Long boardId,
         @NotEmpty
         @Valid
-        List<SelectedOptions> options
+        List<@NotNull @Valid SelectedOptions> options
     ) {
         public record SelectedOptions(
             @NotNull
