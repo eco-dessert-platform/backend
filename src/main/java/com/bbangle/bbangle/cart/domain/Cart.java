@@ -18,7 +18,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO : Test
 @Table(name = "cart")
 @Entity
 @Getter
