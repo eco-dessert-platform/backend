@@ -7,8 +7,6 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartItemService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartOptionService;
-import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
-import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -31,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CustomerCartFacade {
 
-    private final CustomerCartService customerCartService;
     private final CustomerCartItemService customerCartItemService;
     private final CustomerCartOptionService customerCartOptionService;
     private final MemberService memberService;
@@ -45,12 +42,11 @@ public class CustomerCartFacade {
         validateDuplicateOptions(request.options());
 
         Member member = memberService.findById(memberId);
-        Cart cart = customerCartService.findCartByMember(member);
         Board board = boardService.getBoard(request.boardId());
 
         // 2. 장바구니에 담긴 상품 조회 -> 없으면 생성
-        CartItem cartItem = customerCartItemService.findCartItem(cart, board)
-            .orElseGet(() -> customerCartItemService.createCartItem(cart, board));
+        CartItem cartItem = customerCartItemService.findCartItem(member, board)
+            .orElseGet(() -> customerCartItemService.createCartItem(member, board));
 
         // 3. 장바구니에 담긴 현재 상품의 옵션 목록 조회
         Map<Long, CartOption> optionMap = getCartOptionMap(cartItem);
@@ -68,7 +64,7 @@ public class CustomerCartFacade {
             // 7. 장바구니에 없을 경우 재고를 확인한 후 장바구니에 해당 상품 옵션 추가
             if (existingOption == null) {
                 product.validateStock(selectedOption.quantity());
-                customerCartOptionService.createCartOption(cartItem, product, selectedOption.quantity());
+                cartItem.addOption(product, selectedOption.quantity());
                 continue;
             }
 

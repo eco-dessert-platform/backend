@@ -2,7 +2,6 @@ package com.bbangle.bbangle.member.customer.service;
 
 import static com.bbangle.bbangle.image.domain.ImageCategory.MEMBER_PROFILE;
 
-import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
 import com.bbangle.bbangle.image.customer.service.ImageService;
 import com.bbangle.bbangle.member.customer.dto.MemberAssignResponse;
 import com.bbangle.bbangle.member.customer.dto.MemberInfoRequest;
@@ -50,7 +49,6 @@ public class MemberService {
     private final WishListFolderService wishListFolderService;
     private final MemberPreferenceRepository memberPreferenceRepository;
     private final SurveyRepository surveyRepository;
-    private final CustomerCartService customerCartService;
 
     @PostConstruct
     public void initSetting() {
@@ -150,7 +148,6 @@ public class MemberService {
         Member newMember = memberRepository.save(oauthMember);
         Long newMemberId = newMember.getId();
         wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
-        customerCartService.createCart(newMember);
         return newMember;
     }
 

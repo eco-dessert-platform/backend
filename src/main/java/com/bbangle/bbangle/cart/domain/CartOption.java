@@ -20,10 +20,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(
-    name = "cart_option",
+    name = "cart_item",
     uniqueConstraints = {
         @UniqueConstraint(
-            columnNames = {"cart_item_id", "option_id"}
+            columnNames = {"cart_id", "option_id"}
         )
     }
 )
@@ -37,7 +37,7 @@ public class CartOption extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_item_id")
+    @JoinColumn(name = "cart_id")
     private CartItem cartItem;
 
     @ManyToOne(fetch = FetchType.LAZY)

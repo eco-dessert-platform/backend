@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.cart.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,10 +25,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-    name = "cart_item",
+    name = "cart",
     uniqueConstraints = {
         @UniqueConstraint(
-            columnNames = {"cart_id", "item_id"}
+            columnNames = {"member_id", "item_id"}
         )
     }
 )
@@ -45,8 +47,8 @@ public class CartItem extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
@@ -56,22 +58,28 @@ public class CartItem extends BaseEntity {
 
     @Builder
     private CartItem(
-        Cart cart,
+        Member member,
         Board item
     ){
-        this.cart = cart;
+        this.member = member;
         this.item = item;
         this.request = null;
     }
 
     public static CartItem create(
-        Cart cart,
+        Member member,
         Board item
     ) {
         return CartItem.builder()
-            .cart(cart)
+            .member(member)
             .item(item)
             .build();
+    }
+
+    // TODO : Test
+    public void addOption(Product option, int quantity) {
+        CartOption cartOption = CartOption.create(this, option, quantity);
+        this.options.add(cartOption);
     }
 
     public void changeRequest(String request) {

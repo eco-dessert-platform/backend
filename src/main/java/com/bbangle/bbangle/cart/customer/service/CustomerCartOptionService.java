@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.cart.customer.service;
 
-import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.cart.repository.CartOptionRepository;
@@ -14,13 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerCartOptionService {
 
     private final CartOptionRepository cartOptionRepository;
-
-    @Transactional
-    public CartOption createCartOption(CartItem item, Product option, int quantity) {
-        return cartOptionRepository.save(
-            CartOption.create(item, option, quantity)
-        );
-    }
 
     @Transactional(readOnly = true)
     public List<CartOption> findAllByCartItem(CartItem cartItem) {
