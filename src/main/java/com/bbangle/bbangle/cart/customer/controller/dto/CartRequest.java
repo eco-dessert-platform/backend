@@ -2,6 +2,7 @@ package com.bbangle.bbangle.cart.customer.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +24,7 @@ public class CartRequest {
             Long productId,
 
             @Min(value = 1, message = "수량은 1개 이상 입력해주세요.")
+            @Max(value = 999, message = "수량은 999개 이하로 입력해주세요.")
             @Schema(description = "장바구니에 추가할 상품 옵션의 수량", example = "1")
             int quantity
         ) {}
