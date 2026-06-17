@@ -15,11 +15,10 @@ import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-@DisplayName("[단위 테스트] CartItem")
+@DisplayName("[단위 테스트] CartOption")
 class CartOptionUnitTest {
 
     @Nested
@@ -30,12 +29,10 @@ class CartOptionUnitTest {
         CartItem cartItem = CartItemFixture.defaultCartItem(cart, BoardFixture.defaultBoard());
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
-        @Test
+        @ParameterizedTest
+        @ValueSource(ints = {1, 5, 100, 999})
         @DisplayName("장바구니에 상품 옵션이 추가된다.")
-        void success_create_cartOption() {
-
-            // given
-            int quantity = 3;
+        void success_create_cartOption(int quantity) {
 
             // when
             CartOption cartOption = CartOption.create(cartItem, option, quantity);
@@ -47,8 +44,8 @@ class CartOptionUnitTest {
         }
 
         @ParameterizedTest
-        @ValueSource(ints = {0, -1, -5})
-        @DisplayName("수량이 0이하일 경우 장바구니에 상품 옵션 생성에 실패한다.")
+        @ValueSource(ints = {0, -1, -5, 1000})
+        @DisplayName("수량이 0이하이거나 1000이상일 경우 장바구니에 상품 옵션 생성에 실패한다.")
         void fail_create_cartOption(int quantity) {
 
             // when & then
@@ -71,12 +68,12 @@ class CartOptionUnitTest {
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
         @ParameterizedTest
-        @ValueSource(ints = {0, 5, 100})
+        @ValueSource(ints = {1, 5, 100, 999})
         @DisplayName("장바구니 옵션 수량 변경에 성공한다.")
         void success_updateQuantity(int quantity) {
 
             // given
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 0);
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 1);
 
             // when
             cartOption.updateQuantity(quantity);
@@ -85,15 +82,16 @@ class CartOptionUnitTest {
             assertThat(cartOption.getQuantity()).isEqualTo(quantity);
         }
 
-        @Test
-        @DisplayName("수량을 음수로 변경하면 실패한다.")
-        void fail_update_quantity() {
+        @ParameterizedTest
+        @ValueSource(ints = {0, -100, 1000})
+        @DisplayName("수량을 0 이하이거나 1000이상으로 변경하면 실패한다.")
+        void fail_update_quantity(int quantity) {
 
             // given
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 0);
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 1);
 
             // when & then
-            assertThatThrownBy(() -> cartOption.updateQuantity(-1)
+            assertThatThrownBy(() -> cartOption.updateQuantity(quantity)
             )
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {

@@ -63,7 +63,7 @@ public class CartOption extends BaseEntity {
         Product option,
         int quantity
     ) {
-        if (quantity < 1) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
+        if (quantity < 1 || quantity > 999) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
         
         return CartOption.builder()
             .cartItem(cartItem)
@@ -73,7 +73,7 @@ public class CartOption extends BaseEntity {
     }
 
     public void updateQuantity(int quantity) {
-        if (quantity < 0) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
+        if (quantity < 1 || quantity > 999) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
         this.quantity = quantity;
     }
 }
