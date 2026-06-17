@@ -15,8 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("[단위 테스트] CartItem")
-class CartItemUnitTest {
+@DisplayName("[단위 테스트] Cart")
+class CartUnitTest {
 
     @Test
     @DisplayName("소비자 장바구니 상품 추가에 성공한다.")
@@ -27,14 +27,14 @@ class CartItemUnitTest {
         Board board = BoardFixture.defaultBoard();
 
         // when
-        CartItem cartItem = CartItem.create(member, board);
+        Cart cart = Cart.create(member, board);
 
         // then
-        assertThat(cartItem.getMember()).isEqualTo(member);
-        assertThat(cartItem.getOptions()).isNotNull();
-        assertThat(cartItem.getOptions()).isEmpty();
-        assertThat(cartItem.getItem()).isEqualTo(board);
-        assertThat(cartItem.getRequest()).isNull();
+        assertThat(cart.getMember()).isEqualTo(member);
+        assertThat(cart.getOptions()).isNotNull();
+        assertThat(cart.getOptions()).isEmpty();
+        assertThat(cart.getBoard()).isEqualTo(board);
+        assertThat(cart.getRequest()).isNull();
     }
 
     @Test
@@ -43,13 +43,13 @@ class CartItemUnitTest {
 
         // given
         String request = "숟가락 1개 추가해주세요.";
-        CartItem cartItem = CartItem.create(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
+        Cart cart = Cart.create(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
 
         // when
-        cartItem.changeRequest(request);
+        cart.changeRequest(request);
 
         // then
-        assertThat(cartItem.getRequest()).isEqualTo(request);
+        assertThat(cart.getRequest()).isEqualTo(request);
     }
 
     @Nested
@@ -65,17 +65,17 @@ class CartItemUnitTest {
             Board board = BoardFixture.defaultBoard();
             Product product = ProductFixture.createWithStock(board, "옵션", 100);
 
-            CartItem cartItem = CartItem.create(member, board);
+            Cart cart = Cart.create(member, board);
 
             // when
-            cartItem.addOption(product, 3);
+            cart.addOption(product, 3);
 
             // then
-            assertThat(cartItem.getOptions()).hasSize(1);
+            assertThat(cart.getOptions()).hasSize(1);
 
-            CartOption cartOption = cartItem.getOptions().get(0);
+            CartOption cartOption = cart.getOptions().get(0);
 
-            assertThat(cartOption.getCartItem()).isEqualTo(cartItem);
+            assertThat(cartOption.getCart()).isEqualTo(cart);
             assertThat(cartOption.getOption()).isEqualTo(product);
             assertThat(cartOption.getQuantity()).isEqualTo(3);
         }
@@ -86,11 +86,11 @@ class CartItemUnitTest {
 
             // given
             Board board = BoardFixture.defaultBoard();
-            CartItem cartItem = CartItem.create(MemberFixture.defaultMember(), board);
+            Cart cart = Cart.create(MemberFixture.defaultMember(), board);
             Product product = ProductFixture.createWithStock(board, "옵션", 100);
 
             // when & then
-            assertThatThrownBy(() -> cartItem.addOption(product, 0))
+            assertThatThrownBy(() -> cart.addOption(product, 0))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;

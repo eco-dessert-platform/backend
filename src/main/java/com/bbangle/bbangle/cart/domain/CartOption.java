@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(
-    name = "cart_item",
+    name = "cart_option",
     uniqueConstraints = {
         @UniqueConstraint(
             columnNames = {"cart_id", "option_id"}
@@ -38,7 +38,7 @@ public class CartOption extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
-    private CartItem cartItem;
+    private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
@@ -49,24 +49,24 @@ public class CartOption extends BaseEntity {
 
     @Builder
     private CartOption(
-        CartItem cartItem,
+        Cart cart,
         Product option,
         int quantity
     ){
-        this.cartItem = cartItem;
+        this.cart = cart;
         this.option = option;
         this.quantity = quantity;
     }
 
     public static CartOption create(
-        CartItem cartItem,
+        Cart cart,
         Product option,
         int quantity
     ) {
         if (quantity < 1) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
         
         return CartOption.builder()
-            .cartItem(cartItem)
+            .cart(cart)
             .option(option)
             .quantity(quantity)
             .build();

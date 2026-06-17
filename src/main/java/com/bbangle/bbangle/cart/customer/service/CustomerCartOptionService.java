@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.cart.customer.service;
 
-import com.bbangle.bbangle.cart.domain.CartItem;
+import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.cart.repository.CartOptionRepository;
 import java.util.List;
@@ -15,8 +15,8 @@ public class CustomerCartOptionService {
     private final CartOptionRepository cartOptionRepository;
 
     @Transactional(readOnly = true)
-    public List<CartOption> findAllByCartItem(CartItem cartItem) {
-        return cartOptionRepository.findAllByCartItem(cartItem);
+    public List<CartOption> findAllByCart(Cart cart) {
+        return cartOptionRepository.findAllByCart(cart);
     }
 
     @Transactional

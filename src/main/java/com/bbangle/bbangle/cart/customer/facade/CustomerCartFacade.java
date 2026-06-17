@@ -5,9 +5,9 @@ import com.bbangle.bbangle.board.customer.service.ProductService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
-import com.bbangle.bbangle.cart.customer.service.CustomerCartItemService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartOptionService;
-import com.bbangle.bbangle.cart.domain.CartItem;
+import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
+import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CustomerCartFacade {
 
-    private final CustomerCartItemService customerCartItemService;
+    private final CustomerCartService customerCartService;
     private final CustomerCartOptionService customerCartOptionService;
     private final MemberService memberService;
     private final BoardService boardService;
@@ -45,11 +45,11 @@ public class CustomerCartFacade {
         Board board = boardService.getBoard(request.boardId());
 
         // 2. 장바구니에 담긴 상품 조회 -> 없으면 생성
-        CartItem cartItem = customerCartItemService.findCartItem(member, board)
-            .orElseGet(() -> customerCartItemService.createCartItem(member, board));
+        Cart cart = customerCartService.findCartByMemberAndBoard(member, board)
+            .orElseGet(() -> customerCartService.createCart(member, board));
 
         // 3. 장바구니에 담긴 현재 상품의 옵션 목록 조회
-        Map<Long, CartOption> optionMap = getCartOptionMap(cartItem);
+        Map<Long, CartOption> optionMap = getCartOptionMap(cart);
         // 4. 요청에 포함된 상품 옵션들을 한번에 조회
         Map<Long, Product> productMap = getProductMap(request.options());
 
@@ -64,7 +64,7 @@ public class CustomerCartFacade {
             // 7. 장바구니에 없을 경우 재고를 확인한 후 장바구니에 해당 상품 옵션 추가
             if (existingOption == null) {
                 product.validateStock(selectedOption.quantity());
-                cartItem.addOption(product, selectedOption.quantity());
+                cart.addOption(product, selectedOption.quantity());
                 continue;
             }
 
@@ -105,8 +105,8 @@ public class CustomerCartFacade {
     /**
      * 장바구니에 담긴 상품의 옵션 목록을 Map으로 변환
      */
-    private Map<Long, CartOption> getCartOptionMap(CartItem cartItem) {
-        return customerCartOptionService.findAllByCartItem(cartItem)
+    private Map<Long, CartOption> getCartOptionMap(Cart cart) {
+        return customerCartOptionService.findAllByCart(cart)
             .stream()
             .collect(Collectors.toMap(
                 option -> option.getOption().getId(),

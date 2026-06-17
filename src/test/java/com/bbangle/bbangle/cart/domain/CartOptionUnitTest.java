@@ -8,7 +8,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
-import com.bbangle.bbangle.fixture.cart.domain.CartItemFixture;
+import com.bbangle.bbangle.fixture.cart.domain.CartFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartOptionFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
@@ -18,14 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-@DisplayName("[단위 테스트] CartItem")
+@DisplayName("[단위 테스트] Cart")
 class CartOptionUnitTest {
 
     @Nested
     @DisplayName("create() 테스트")
     class CreateTest {
 
-        CartItem cartItem = CartItemFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
+        Cart cart = CartFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
         @Test
@@ -36,10 +36,10 @@ class CartOptionUnitTest {
             int quantity = 3;
 
             // when
-            CartOption cartOption = CartOption.create(cartItem, option, quantity);
+            CartOption cartOption = CartOption.create(cart, option, quantity);
 
             // then
-            assertThat(cartOption.getCartItem()).isEqualTo(cartItem);
+            assertThat(cartOption.getCart()).isEqualTo(cart);
             assertThat(cartOption.getOption()).isEqualTo(option);
             assertThat(cartOption.getQuantity()).isEqualTo(quantity);
         }
@@ -50,7 +50,7 @@ class CartOptionUnitTest {
         void fail_create_cartOption(int quantity) {
 
             // when & then
-            assertThatThrownBy(() -> CartOption.create(cartItem, option, quantity)
+            assertThatThrownBy(() -> CartOption.create(cart, option, quantity)
             )
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
@@ -64,7 +64,7 @@ class CartOptionUnitTest {
     @DisplayName("updateQuantity() 테스트")
     class UpdateQuantityTest {
 
-        CartItem cartItem = CartItemFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
+        Cart cart = CartFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
         @ParameterizedTest
@@ -73,7 +73,7 @@ class CartOptionUnitTest {
         void success_updateQuantity(int quantity) {
 
             // given
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 0);
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cart, option, 0);
 
             // when
             cartOption.updateQuantity(quantity);
@@ -87,7 +87,7 @@ class CartOptionUnitTest {
         void fail_update_quantity() {
 
             // given
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 0);
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cart, option, 0);
 
             // when & then
             assertThatThrownBy(() -> cartOption.updateQuantity(-1)

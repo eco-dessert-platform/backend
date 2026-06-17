@@ -28,15 +28,15 @@ import lombok.NoArgsConstructor;
     name = "cart",
     uniqueConstraints = {
         @UniqueConstraint(
-            columnNames = {"member_id", "item_id"}
+            columnNames = {"member_id", "board_id"}
         )
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CartItem extends BaseEntity {
+public class Cart extends BaseEntity {
 
     @OneToMany(
-        mappedBy = "cartItem",
+        mappedBy = "cart",
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
@@ -51,32 +51,31 @@ public class CartItem extends BaseEntity {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
-    private Board item;
+    @JoinColumn(name = "board_id")
+    private Board board;
 
     private String request;
 
     @Builder
-    private CartItem(
+    private Cart(
         Member member,
         Board item
     ){
         this.member = member;
-        this.item = item;
+        this.board = item;
         this.request = null;
     }
 
-    public static CartItem create(
+    public static Cart create(
         Member member,
         Board item
     ) {
-        return CartItem.builder()
+        return Cart.builder()
             .member(member)
             .item(item)
             .build();
     }
 
-    // TODO : Test
     public void addOption(Product option, int quantity) {
         CartOption cartOption = CartOption.create(this, option, quantity);
         this.options.add(cartOption);

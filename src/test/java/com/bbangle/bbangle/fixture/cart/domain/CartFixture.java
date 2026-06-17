@@ -1,15 +1,15 @@
 package com.bbangle.bbangle.fixture.cart.domain;
 
 import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.cart.domain.CartItem;
+import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.member.domain.Member;
 
-public class CartItemFixture {
+public class CartFixture {
 
-    private CartItemFixture() {}
+    private CartFixture() {}
 
-    public static CartItem defaultCartItem(Member member, Board board) {
-        return CartItem.builder()
+    public static Cart defaultCartItem(Member member, Board board) {
+        return Cart.builder()
             .member(member)
             .item(board)
             .build();
