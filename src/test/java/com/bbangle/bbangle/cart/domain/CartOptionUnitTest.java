@@ -8,7 +8,6 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
-import com.bbangle.bbangle.fixture.cart.domain.CartFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartItemFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartOptionFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
@@ -26,8 +25,7 @@ class CartOptionUnitTest {
     @DisplayName("create() 테스트")
     class CreateTest {
 
-        Cart cart = CartFixture.defaultCart(MemberFixture.defaultMember());
-        CartItem cartItem = CartItemFixture.defaultCartItem(cart, BoardFixture.defaultBoard());
+        CartItem cartItem = CartItemFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
         @Test
@@ -66,8 +64,7 @@ class CartOptionUnitTest {
     @DisplayName("updateQuantity() 테스트")
     class UpdateQuantityTest {
 
-        Cart cart = CartFixture.defaultCart(MemberFixture.defaultMember());
-        CartItem cartItem = CartItemFixture.defaultCartItem(cart, BoardFixture.defaultBoard());
+        CartItem cartItem = CartItemFixture.defaultCartItem(MemberFixture.defaultMember(), BoardFixture.defaultBoard());
         Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
 
         @ParameterizedTest

@@ -2,9 +2,13 @@ package com.bbangle.bbangle.cart.customer.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -15,14 +19,11 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartItemService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartOptionService;
-import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
-import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
-import com.bbangle.bbangle.fixture.cart.domain.CartFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartItemFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.member.customer.service.MemberService;
@@ -43,9 +44,6 @@ class CustomerCartFacadeUnitTest {
 
     @InjectMocks
     private CustomerCartFacade customerCartFacade;
-
-    @Mock
-    private CustomerCartService customerCartService;
 
     @Mock
     private CustomerCartItemService customerCartItemService;
@@ -69,7 +67,6 @@ class CustomerCartFacadeUnitTest {
         Long memberId = 1L;
         Long boardId = 1L;
         Member member = MemberFixture.defaultMember();
-        Cart cart = CartFixture.defaultCart(member);
         Board board = BoardFixture.defaultBoard();
         Product product = mock(Product.class);
 
@@ -88,13 +85,12 @@ class CustomerCartFacadeUnitTest {
         void success_addCartItem_create_cartItem() {
 
             // given
-            CartItem cartItem = CartItemFixture.defaultCartItem(cart, board);
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
 
             given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
             given(boardService.getBoard(boardId)).willReturn(board);
-            given(customerCartItemService.findCartItem(cart, board)).willReturn(Optional.empty());
-            given(customerCartItemService.createCartItem(cart, board)).willReturn(cartItem);
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.empty());
+            given(customerCartItemService.createCartItem(member, board)).willReturn(cartItem);
             given(customerCartOptionService.findAllByCartItem(cartItem)).willReturn(List.of());
             given(product.getId()).willReturn(1L);
             given(productService.findAllByIds(anyList())).willReturn(List.of(product));
@@ -103,7 +99,8 @@ class CustomerCartFacadeUnitTest {
             customerCartFacade.addCartItem(memberId, request);
 
             // then
-            verify(customerCartItemService).createCartItem(cart, board);
+            verify(customerCartItemService).createCartItem(member, board);
+            assertThat(cartItem.getOptions()).hasSize(1);
         }
 
         @Test
@@ -111,12 +108,11 @@ class CustomerCartFacadeUnitTest {
         void success_addCartItem_create_cartOption() {
 
             // given
-            CartItem cartItem = CartItemFixture.defaultCartItem(cart, board);
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
 
             given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
             given(boardService.getBoard(boardId)).willReturn(board);
-            given(customerCartItemService.findCartItem(cart, board)).willReturn(Optional.of(cartItem));
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
             given(customerCartOptionService.findAllByCartItem(cartItem)).willReturn(List.of());
             given(product.getId()).willReturn(1L);
             given(productService.findAllByIds(anyList())).willReturn(List.of(product));
@@ -126,7 +122,13 @@ class CustomerCartFacadeUnitTest {
 
             // then
             verify(product).validateStock(3);
-            verify(customerCartOptionService).createCartOption(cartItem, product, 3);
+
+            assertThat(cartItem.getOptions()).hasSize(1);
+
+            CartOption option = cartItem.getOptions().get(0);
+
+            assertThat(option.getOption()).isEqualTo(product);
+            assertThat(option.getQuantity()).isEqualTo(3);
         }
 
         @Test
@@ -134,16 +136,15 @@ class CustomerCartFacadeUnitTest {
         void success_addCartItem_update_carOption_quantity() {
 
             // given
-            CartItem cartItem = CartItemFixture.defaultCartItem(cart, board);
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
             CartOption cartOption = mock(CartOption.class);
 
             given(cartOption.getQuantity()).willReturn(2);
             given(cartOption.getOption()).willReturn(product);
             given(product.getId()).willReturn(1L);
             given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
             given(boardService.getBoard(boardId)).willReturn(board);
-            given(customerCartItemService.findCartItem(cart, board)).willReturn(Optional.of(cartItem));
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
             given(customerCartOptionService.findAllByCartItem(cartItem)).willReturn(List.of(cartOption));
             given(productService.findAllByIds(anyList())).willReturn(List.of(product));
 
@@ -153,6 +154,43 @@ class CustomerCartFacadeUnitTest {
             // then
             verify(product).validateStock(5);
             verify(customerCartOptionService).updateQuantity(cartOption, 5);
+        }
+
+        @Test
+        @DisplayName("기존 옵션은 수량 증가하고 신규 옵션은 추가한다.")
+        void success_addCartItem_mixed_options() {
+
+            // given
+            Product product1 = mock(Product.class);
+            Product product2 = mock(Product.class);
+            CartOption existingOption = mock(CartOption.class);
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
+
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                boardId,
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(1L, 3),
+                    new CartRequest.AddCartRequest.SelectedOptions(2L, 1)
+                )
+            );
+
+            given(existingOption.getQuantity()).willReturn(2);
+            given(existingOption.getOption()).willReturn(product1);
+            given(product1.getId()).willReturn(1L);
+            given(product2.getId()).willReturn(2L);
+            given(memberService.findById(memberId)).willReturn(member);
+            given(boardService.getBoard(boardId)).willReturn(board);
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
+            given(customerCartOptionService.findAllByCartItem(cartItem)).willReturn(List.of(existingOption));
+            given(productService.findAllByIds(anyList())).willReturn(List.of(product1, product2));
+
+            // when
+            customerCartFacade.addCartItem(memberId, request);
+
+            // then
+            verify(customerCartOptionService).updateQuantity(existingOption, 5);
+
+            assertThat(cartItem.getOptions()).hasSize(1);
         }
 
         @Test
@@ -186,9 +224,8 @@ class CustomerCartFacadeUnitTest {
 
             // given
             given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
             given(boardService.getBoard(boardId)).willReturn(board);
-            given(customerCartItemService.findCartItem(cart, board)).willReturn(Optional.empty());
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.empty());
             given(productService.findAllByIds(anyList())).willReturn(List.of());
 
             // when & then
@@ -199,6 +236,86 @@ class CustomerCartFacadeUnitTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
                 });
+        }
+
+        @Test
+        @DisplayName("상품 옵션이 다른 상품에 속하면 예외가 발생한다.")
+        void fail_addCartItem_product_not_belongs_to_board() {
+
+            // given
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(boardService.getBoard(boardId)).willReturn(board);
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
+            given(product.getId()).willReturn(1L);
+            given(productService.findAllByIds(anyList())).willReturn(List.of(product));
+
+            willThrow(new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND)).given(product).validateBelongsTo(board);
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.addCartItem(memberId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("장바구니에 추가할 상품 옵션의 수량보다 재고가 부족하면 예외가 발생한다.")
+        void fail_addCartItem_insufficient_stock() {
+
+            // given
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(boardService.getBoard(boardId)).willReturn(board);
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
+            given(product.getId()).willReturn(1L);
+            given(productService.findAllByIds(anyList())).willReturn(List.of(product));
+
+            willThrow(new BbangleException(BbangleErrorCode.INVALID_REQUEST_STOCK)).given(product).validateStock(3);
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.addCartItem(memberId, request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+        }
+
+        @Test
+        @DisplayName("기존 장바구니의 상품 옵션 수량 증가 시 재고가 부족하면 예외가 발생한다.")
+        void fail_addCartItem_update_quantity_insufficient_stock() {
+
+            // given
+            CartItem cartItem = CartItemFixture.defaultCartItem(member, board);
+            CartOption cartOption = mock(CartOption.class);
+
+            given(cartOption.getQuantity()).willReturn(2);
+            given(cartOption.getOption()).willReturn(product);
+            given(product.getId()).willReturn(1L);
+            given(memberService.findById(memberId)).willReturn(member);
+            given(boardService.getBoard(boardId)).willReturn(board);
+            given(customerCartItemService.findCartItem(member, board)).willReturn(Optional.of(cartItem));
+            given(customerCartOptionService.findAllByCartItem(cartItem)).willReturn(List.of(cartOption));
+            given(productService.findAllByIds(anyList())).willReturn(List.of(product));
+
+            willThrow(new BbangleException(BbangleErrorCode.INVALID_REQUEST_STOCK)).given(product).validateStock(5);
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.addCartItem(memberId, request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode())
+                        .isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+
+            verify(customerCartOptionService, never()).updateQuantity(any(), anyInt());
         }
     }
 }

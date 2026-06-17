@@ -8,12 +8,10 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
-import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.cart.repository.CartItemRepository;
 import com.bbangle.bbangle.cart.repository.CartOptionRepository;
-import com.bbangle.bbangle.cart.repository.CartRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
@@ -47,9 +45,6 @@ class CustomerCartFacadeIntegrationTest {
     private MemberRepository memberRepository;
 
     @Autowired
-    private CartRepository cartRepository;
-
-    @Autowired
     private CartItemRepository cartItemRepository;
 
     @Autowired
@@ -78,7 +73,6 @@ class CustomerCartFacadeIntegrationTest {
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
             Store store = storeRepository.save(StoreFixture.defaultStore());
-            cartRepository.save(Cart.create(member));
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
             Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
 
@@ -119,11 +113,10 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            Cart cart = cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
             Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
-            cartItemRepository.save(CartItem.create(cart, board));
+            CartItem original = cartItemRepository.save(CartItem.create(member, board));
 
             CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
                 board.getId(),
@@ -134,7 +127,6 @@ class CustomerCartFacadeIntegrationTest {
                     )
                 )
             );
-
 
             // when
             customerCartFacade.addCartItem(member.getId(), request);
@@ -147,6 +139,7 @@ class CustomerCartFacadeIntegrationTest {
             List<CartOption> cartOptions = cartOptionRepository.findAll();
 
             assertThat(cartItems).hasSize(1);
+            assertThat(cartItems.get(0).getId()).isEqualTo(original.getId());
             assertThat(cartOptions).hasSize(1);
             assertThat(cartOptions.get(0).getQuantity()).isEqualTo(3);
 
@@ -160,11 +153,10 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            Cart cart = cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
             Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
-            CartItem cartItem = cartItemRepository.save(CartItem.create(cart, board));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(member, board));
             CartOption cartOption = cartOptionRepository.save(CartOption.create(cartItem, product, 2));
 
             CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
@@ -192,6 +184,114 @@ class CustomerCartFacadeIntegrationTest {
         }
 
         @Test
+        @DisplayName("여러 상품 옵션을 한번에 장바구니에 추가한다.")
+        void success_addCartItem_multiple_options() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product option1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 100));
+            Product option2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 100));
+
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                board.getId(),
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(option1.getId(), 2),
+                    new CartRequest.AddCartRequest.SelectedOptions(option2.getId(), 3)
+                )
+            );
+
+            // when
+            customerCartFacade.addCartItem(member.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            List<CartOption> cartOptions = cartOptionRepository.findAll();
+
+            assertThat(cartOptions).hasSize(2);
+            assertThat(cartOptions.stream()
+                .map(CartOption::getQuantity)
+                .toList()
+            ).containsExactlyInAnyOrder(2, 3);
+        }
+
+        @Test
+        @DisplayName("기존 장바구니 상품 옵션은 유지되고 수량만 증가한다.")
+        void success_addCartItem_keep_existing_option() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(member, board));
+            CartOption cartOption = cartOptionRepository.save(CartOption.create(cartItem, product, 2));
+
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                board.getId(),
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(
+                        product.getId(),
+                        3
+                    )
+                )
+            );
+
+            // when
+            customerCartFacade.addCartItem(member.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            List<CartOption> options = cartOptionRepository.findAll();
+
+            assertThat(options).hasSize(1);
+            assertThat(options.get(0).getId()).isEqualTo(cartOption.getId());
+            assertThat(options.get(0).getQuantity()).isEqualTo(5);
+        }
+
+        @Test
+        @DisplayName("기존 장바구니 옵션은 수량 증가하고 신규 옵션은 추가한다.")
+        void success_addCartItem_mix_update_and_create() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product product1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 100));
+            Product product2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 100));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(member, board));
+            CartOption cartOption = cartOptionRepository.save(CartOption.create(cartItem, product1, 2));
+
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                board.getId(),
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(product1.getId(), 3),
+                    new CartRequest.AddCartRequest.SelectedOptions(product2.getId(), 3)
+                )
+            );
+
+            // when
+            customerCartFacade.addCartItem(member.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            List<CartOption> options = cartOptionRepository.findAll();
+
+            assertThat(options).hasSize(2);
+            assertThat(options.get(0).getId()).isEqualTo(cartOption.getId());
+            assertThat(options.get(0).getQuantity()).isEqualTo(5);
+            assertThat(options.get(1).getOption().getId()).isEqualTo(product2.getId());
+            assertThat(options.get(1).getQuantity()).isEqualTo(3);
+        }
+
+        @Test
         @DisplayName("요청에 중복된 상품 옵션이 존재하면 예외가 발생한다.")
         void fail_addCartItem_duplicate_option() {
 
@@ -207,9 +307,6 @@ class CustomerCartFacadeIntegrationTest {
                     new CartRequest.AddCartRequest.SelectedOptions(1L, 2)
                 )
             );
-
-            em.flush();
-            em.clear();
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.addCartItem(member.getId(), request)
@@ -227,7 +324,6 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
 
@@ -240,9 +336,6 @@ class CustomerCartFacadeIntegrationTest {
                     )
                 )
             );
-
-            em.flush();
-            em.clear();
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.addCartItem(member.getId(), request)
@@ -260,7 +353,6 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board1 = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명1"));
             Board board2 = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명2"));
@@ -275,9 +367,6 @@ class CustomerCartFacadeIntegrationTest {
                     )
                 )
             );
-
-            em.flush();
-            em.clear();
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.addCartItem(member.getId(), request)
@@ -295,7 +384,6 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
             Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 5));
@@ -309,9 +397,6 @@ class CustomerCartFacadeIntegrationTest {
                     )
                 )
             );
-
-            em.flush();
-            em.clear();
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.addCartItem(member.getId(), request)
@@ -329,11 +414,10 @@ class CustomerCartFacadeIntegrationTest {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
-            Cart cart = cartRepository.save(Cart.create(member));
             Store store = storeRepository.save(StoreFixture.defaultStore());
             Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
             Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 5));
-            CartItem cartItem = cartItemRepository.save(CartItem.create(cart, board));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(member, board));
             cartOptionRepository.save(CartOption.create(cartItem, product, 2));
 
             CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
@@ -345,9 +429,6 @@ class CustomerCartFacadeIntegrationTest {
                     )
                 )
             );
-
-            em.flush();
-            em.clear();
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.addCartItem(member.getId(), request)
