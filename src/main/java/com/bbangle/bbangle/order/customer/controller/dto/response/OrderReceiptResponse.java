@@ -16,12 +16,13 @@ public record OrderReceiptResponse(
 
     public static OrderReceiptResponse from(
         Payment payment,
+        String decryptedCardNumber,
         String orderNumber,
         List<OrderItem> activeItems,
         Store store
     ) {
         return new OrderReceiptResponse(
-            PaymentInfo.from(payment),
+            PaymentInfo.from(payment, decryptedCardNumber),
             PurchaseInfo.from(orderNumber, activeItems),
             StoreInfo.from(store)
         );
@@ -36,12 +37,12 @@ public record OrderReceiptResponse(
         LocalDateTime transactionAt
     ) {
 
-        public static PaymentInfo from(Payment payment) {
+        public static PaymentInfo from(Payment payment, String decryptedCardNumber) {
             return new PaymentInfo(
                 payment.getApprovalNumber(),
                 resolveTransactionType(payment.getPaymentMethod()),
                 resolveCardType(payment.getCardType()),
-                maskCardNumber(payment.getCardNumber()),
+                maskCardNumber(decryptedCardNumber),
                 payment.getInstallment(),
                 payment.getPaidAt()
             );

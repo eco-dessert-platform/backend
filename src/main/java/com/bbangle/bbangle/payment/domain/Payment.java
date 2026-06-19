@@ -50,7 +50,6 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CardType cardType;
 
-    // TODO: 카드번호 암호화 여부 결정 후 암호화하여 저장. 마스킹은 비즈니스 로직에서 처리.
     @Column(name = "card_number", length = 255)
     private String cardNumber;
 

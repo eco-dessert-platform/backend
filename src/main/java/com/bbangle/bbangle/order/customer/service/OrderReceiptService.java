@@ -9,6 +9,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.payment.domain.Payment;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.util.AesEncryptionUtil;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ public class OrderReceiptService {
         EnumSet.of(OrderStatus.CANCEL_APPROVED, OrderStatus.RETURN_COMPLETED);
 
     private final OrderRepository orderRepository;
+    private final AesEncryptionUtil aesEncryptionUtil;
 
     @Transactional(readOnly = true)
     public OrderReceiptResponse getReceipt(Long memberId, Long orderId) {
@@ -35,12 +37,12 @@ public class OrderReceiptService {
         }
 
         Payment payment = order.getPayment();
-        // TODO: 카드번호 암호화 여부 결정 후 payment.getCardNumber() 복호화 로직 추가 필요
+        String decryptedCardNumber = aesEncryptionUtil.decrypt(payment.getCardNumber());
         Store store = order.getSeller().getStore();
         List<OrderItem> activeItems = order.getOrderItems().stream()
             .filter(item -> !EXCLUDED_STATUSES.contains(item.getOrderStatus()))
             .toList();
 
-        return OrderReceiptResponse.from(payment, order.getOrderNumber(), activeItems, store);
+        return OrderReceiptResponse.from(payment, decryptedCardNumber, order.getOrderNumber(), activeItems, store);
     }
 }

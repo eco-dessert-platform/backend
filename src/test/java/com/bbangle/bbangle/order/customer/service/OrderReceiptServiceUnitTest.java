@@ -17,6 +17,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.util.AesEncryptionUtil;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("[단위 테스트] OrderReceiptService")
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +38,9 @@ class OrderReceiptServiceUnitTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private AesEncryptionUtil aesEncryptionUtil;
 
     private Store store;
     private Seller seller;
@@ -140,6 +145,51 @@ class OrderReceiptServiceUnitTest {
 
                 // then
                 assertThat(result.purchaseInfo().productName()).isEqualTo("비건 쌀빵 1종");
+            }
+
+            @Test
+            @DisplayName("DB에 암호화된 카드번호는 복호화 후 마스킹되어 반환된다")
+            void getReceipt_decryptsAndMasksCardNumber() {
+                // given
+                Long memberId = 1L;
+                Long orderId = 10L;
+
+                Order order = OrderFixture.createWithMemberAndSeller(memberId, seller, 3700);
+                OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
+
+                String encryptedCardNumber = "encrypted-card-number";
+                String decryptedCardNumber = "1234567890123456";
+                ReflectionTestUtils.setField(order.getPayment(), "cardNumber", encryptedCardNumber);
+
+                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(aesEncryptionUtil.decrypt(encryptedCardNumber)).willReturn(decryptedCardNumber);
+
+                // when
+                OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
+
+                // then
+                assertThat(result.paymentInfo().cardNumber()).isEqualTo("123456******3456");
+                then(aesEncryptionUtil).should().decrypt(encryptedCardNumber);
+            }
+
+            @Test
+            @DisplayName("카드번호가 없는 주문(무통장입금 등)은 cardNumber가 null로 반환된다")
+            void getReceipt_nullCardNumber_returnsNullCardNumber() {
+                // given
+                Long memberId = 1L;
+                Long orderId = 10L;
+
+                Order order = OrderFixture.createWithMemberAndSeller(memberId, seller, 3700);
+                OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
+
+                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(aesEncryptionUtil.decrypt(null)).willReturn(null);
+
+                // when
+                OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
+
+                // then
+                assertThat(result.paymentInfo().cardNumber()).isNull();
             }
         }
 
