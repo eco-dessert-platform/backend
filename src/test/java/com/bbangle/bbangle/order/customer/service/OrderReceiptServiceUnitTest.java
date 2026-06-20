@@ -71,7 +71,7 @@ class OrderReceiptServiceUnitTest {
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 현미빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 귀리빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
 
                 // when
                 OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
@@ -82,7 +82,7 @@ class OrderReceiptServiceUnitTest {
                 assertThat(result.purchaseInfo().productName()).isEqualTo("비건 쌀빵 1종 외 2건");
                 assertThat(result.storeInfo().storeName()).isEqualTo(store.getName());
                 assertThat(result.storeInfo().businessNumber()).isEqualTo(store.getIdentifier());
-                then(orderRepository).should().findByIdWithFullAssociations(orderId);
+                then(orderRepository).should().findByIdWithFullAssociations(orderId, memberId);
             }
 
             @Test
@@ -97,7 +97,7 @@ class OrderReceiptServiceUnitTest {
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 현미빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 귀리빵 1종", 3700, OrderStatus.CANCEL_APPROVED);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
 
                 // when
                 OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
@@ -118,7 +118,7 @@ class OrderReceiptServiceUnitTest {
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 현미빵 1종", 3700, OrderStatus.RETURN_COMPLETED);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
 
                 // when
                 OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
@@ -138,7 +138,7 @@ class OrderReceiptServiceUnitTest {
                 Order order = OrderFixture.createWithMemberAndSeller(memberId, seller, 3700);
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
 
                 // when
                 OrderReceiptResponse result = sut.getReceipt(memberId, orderId);
@@ -161,7 +161,7 @@ class OrderReceiptServiceUnitTest {
                 String decryptedCardNumber = "1234567890123456";
                 ReflectionTestUtils.setField(order.getPayment(), "cardNumber", encryptedCardNumber);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
                 given(aesEncryptionUtil.decrypt(encryptedCardNumber)).willReturn(decryptedCardNumber);
 
                 // when
@@ -182,7 +182,7 @@ class OrderReceiptServiceUnitTest {
                 Order order = OrderFixture.createWithMemberAndSeller(memberId, seller, 3700);
                 OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.of(order));
                 given(aesEncryptionUtil.decrypt(null)).willReturn(null);
 
                 // when
@@ -204,7 +204,7 @@ class OrderReceiptServiceUnitTest {
                 Long memberId = 1L;
                 Long orderId = 999L;
 
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.empty());
+                given(orderRepository.findByIdWithFullAssociations(orderId, memberId)).willReturn(Optional.empty());
 
                 // when & then
                 BbangleException ex = catchThrowableOfType(
@@ -213,21 +213,17 @@ class OrderReceiptServiceUnitTest {
                 );
 
                 assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
-                then(orderRepository).should().findByIdWithFullAssociations(orderId);
+                then(orderRepository).should().findByIdWithFullAssociations(orderId, memberId);
             }
 
             @Test
-            @DisplayName("다른 회원의 주문 조회 시 ORDER_ACCESS_DENIED 예외가 발생한다")
+            @DisplayName("다른 회원의 주문 조회 시 ORDER_NOT_FOUND 예외가 발생한다")
             void getReceipt_throwsException_whenAccessDenied() {
                 // given
                 Long requestMemberId = 2L;
-                Long actualMemberId = 1L;
                 Long orderId = 10L;
 
-                Order order = OrderFixture.createWithMemberAndSeller(actualMemberId, seller, 3700);
-                OrderItemFixture.createWithProductAndStatus(order, store, "비건 쌀빵 1종", 3700, OrderStatus.PURCHASE_CONFIRMED);
-
-                given(orderRepository.findByIdWithFullAssociations(orderId)).willReturn(Optional.of(order));
+                given(orderRepository.findByIdWithFullAssociations(orderId, requestMemberId)).willReturn(Optional.empty());
 
                 // when & then
                 BbangleException ex = catchThrowableOfType(
@@ -235,8 +231,8 @@ class OrderReceiptServiceUnitTest {
                     BbangleException.class
                 );
 
-                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
-                then(orderRepository).should().findByIdWithFullAssociations(orderId);
+                assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.ORDER_NOT_FOUND);
+                then(orderRepository).should().findByIdWithFullAssociations(orderId, requestMemberId);
             }
         }
     }

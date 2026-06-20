@@ -13,6 +13,7 @@ import com.bbangle.bbangle.fixture.order.domain.OrderItemFixture;
 import com.bbangle.bbangle.fixture.payment.domain.PaymentFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
@@ -56,6 +57,7 @@ class OrderRepositoryTest {
     private Board board;
     private Product product1;
     private Product product2;
+    private Member member;
 
     @BeforeEach
     void setUp() {
@@ -72,6 +74,9 @@ class OrderRepositoryTest {
         product2 = ProductFixture.create(board, "비건 현미빵 1종");
         em.persist(product1);
         em.persist(product2);
+
+        member = Member.builder().build();
+        em.persist(member);
 
         em.flush();
         em.clear();
@@ -91,6 +96,7 @@ class OrderRepositoryTest {
                 // given
                 Order order = OrderFixture.defaultOrder()
                     .seller(em.find(Seller.class, seller.getId()))
+                    .member(em.find(Member.class, member.getId()))
                     .build();
                 em.persist(order);
 
@@ -110,7 +116,7 @@ class OrderRepositoryTest {
                 em.clear();
 
                 // when
-                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId());
+                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId(), member.getId());
 
                 // then
                 assertThat(result).isPresent();
@@ -131,6 +137,7 @@ class OrderRepositoryTest {
                 // given
                 Order order = OrderFixture.defaultOrder()
                     .seller(em.find(Seller.class, seller.getId()))
+                    .member(em.find(Member.class, member.getId()))
                     .build();
                 em.persist(order);
 
@@ -145,7 +152,7 @@ class OrderRepositoryTest {
                 em.clear();
 
                 // when
-                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId());
+                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId(), member.getId());
 
                 // then
                 assertThat(result).isPresent();
@@ -159,6 +166,7 @@ class OrderRepositoryTest {
                 // given
                 Order order = OrderFixture.defaultOrder()
                     .seller(em.find(Seller.class, seller.getId()))
+                    .member(em.find(Member.class, member.getId()))
                     .build();
                 em.persist(order);
 
@@ -175,7 +183,7 @@ class OrderRepositoryTest {
                 em.clear();
 
                 // when
-                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId());
+                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId(), member.getId());
 
                 // then
                 assertThat(result).isPresent();
@@ -194,7 +202,37 @@ class OrderRepositoryTest {
                 Long nonExistentOrderId = 999L;
 
                 // when
-                Optional<Order> result = sut.findByIdWithFullAssociations(nonExistentOrderId);
+                Optional<Order> result = sut.findByIdWithFullAssociations(nonExistentOrderId, member.getId());
+
+                // then
+                assertThat(result).isEmpty();
+            }
+
+            @Test
+            @DisplayName("다른 회원의 주문 조회 시 Optional.empty()를 반환한다")
+            void findById_returnsEmpty_whenMemberDoesNotOwnOrder() {
+                // given
+                Member otherMember = Member.builder().build();
+                em.persist(otherMember);
+
+                Order order = OrderFixture.defaultOrder()
+                    .seller(em.find(Seller.class, seller.getId()))
+                    .member(em.find(Member.class, member.getId()))
+                    .build();
+                em.persist(order);
+
+                OrderItem item = OrderItemFixture.defaultOrderItem()
+                    .order(order)
+                    .product(em.find(Product.class, product1.getId()))
+                    .build();
+                order.addOrderItem(item);
+                em.persist(item);
+
+                em.flush();
+                em.clear();
+
+                // when
+                Optional<Order> result = sut.findByIdWithFullAssociations(order.getId(), otherMember.getId());
 
                 // then
                 assertThat(result).isEmpty();

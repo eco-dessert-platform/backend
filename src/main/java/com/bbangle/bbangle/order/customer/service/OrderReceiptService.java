@@ -29,12 +29,8 @@ public class OrderReceiptService {
 
     @Transactional(readOnly = true)
     public OrderReceiptResponse getReceipt(Long memberId, Long orderId) {
-        Order order = orderRepository.findByIdWithFullAssociations(orderId)
+        Order order = orderRepository.findByIdWithFullAssociations(orderId, memberId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
-
-        if (!order.getMember().getId().equals(memberId)) {
-            throw new BbangleException(BbangleErrorCode.ORDER_ACCESS_DENIED);
-        }
 
         Payment payment = order.getPayment();
         String decryptedCardNumber = aesEncryptionUtil.decrypt(payment.getCardNumber());

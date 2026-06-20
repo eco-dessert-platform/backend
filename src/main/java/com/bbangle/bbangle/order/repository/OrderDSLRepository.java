@@ -18,5 +18,5 @@ public interface OrderDSLRepository {
 
     Map<OrderStatus, Long> countByCompletedOrderStatus(CompletedOrderSearchCommand command);
 
-    Optional<Order> findByIdWithFullAssociations(Long orderId);
+    Optional<Order> findByIdWithFullAssociations(Long orderId, Long memberId);
 }

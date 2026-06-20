@@ -407,7 +407,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     }
 
     @Override
-    public Optional<Order> findByIdWithFullAssociations(Long orderId) {
+    public Optional<Order> findByIdWithFullAssociations(Long orderId, Long memberId) {
         List<Order> results = queryFactory
             .selectFrom(order)
             .distinct()
@@ -416,7 +416,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             .join(seller.store, store).fetchJoin()
             .join(order.orderItems, orderItem).fetchJoin()
             .join(orderItem.product, product).fetchJoin()
-            .where(order.id.eq(orderId))
+            .where(order.id.eq(orderId), order.member.id.eq(memberId))
             .fetch();
 
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
