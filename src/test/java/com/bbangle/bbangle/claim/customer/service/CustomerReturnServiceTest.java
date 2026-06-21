@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -13,6 +14,7 @@ import com.bbangle.bbangle.claim.repository.ReturnRequestRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
+import com.bbangle.bbangle.fixture.order.domain.OrderFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
@@ -20,7 +22,6 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
-import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -64,19 +65,18 @@ class CustomerReturnServiceTest {
 
             Order order = orderWithMember(orderId, customerId);
 
-            OrderItem orderItem1 = OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED);
-            ReflectionTestUtils.setField(orderItem1, "id", 201L);
-
-            OrderItem orderItem2 = OrderItemFixture.orderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
-            ReflectionTestUtils.setField(orderItem2, "id", 202L);
+            OrderItem orderItem1 = OrderItemFixture.withId(
+                OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED), 201L);
+            OrderItem orderItem2 = OrderItemFixture.withId(
+                OrderItemFixture.orderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED), 202L);
 
             CustomerReturnRequest request = new CustomerReturnRequest(
                 List.of(201L, 202L),
                 "단순 변심 / 사이즈 불일치"
             );
 
-            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(201L, 202L)))
+            given(orderRepository.findByIdWithMember(orderId)).willReturn(Optional.of(order));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(201L, 202L)))
                 .willReturn(List.of(orderItem1, orderItem2));
 
             // when
@@ -109,7 +109,7 @@ class CustomerReturnServiceTest {
                 "반품 사유"
             );
 
-            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+            given(orderRepository.findByIdWithMember(orderId)).willReturn(Optional.of(order));
 
             // when & then
             assertThatThrownBy(() -> sut.requestReturn(orderId, otherCustomerId, request))
@@ -117,7 +117,7 @@ class CustomerReturnServiceTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.ORDER_ACCESS_DENIED);
 
-            then(orderItemRepository).should(never()).findByOrderIdAndIdIn(orderId, List.of(201L));
+            then(orderItemRepository).should(never()).findByOrderIdAndIdInWithOrder(orderId, List.of(201L));
             then(returnRequestRepository).should(never()).saveAll(anyList());
             then(orderItemHistoryRepository).should(never()).saveAll(anyList());
         }
@@ -131,16 +131,16 @@ class CustomerReturnServiceTest {
 
             Order order = orderWithMember(orderId, customerId);
 
-            OrderItem invalidItem = OrderItemFixture.orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED);
-            ReflectionTestUtils.setField(invalidItem, "id", 201L);
+            OrderItem invalidItem = OrderItemFixture.withId(
+                OrderItemFixture.orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED), 201L);
 
             CustomerReturnRequest request = new CustomerReturnRequest(
                 List.of(201L),
                 "반품 사유"
             );
 
-            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(201L)))
+            given(orderRepository.findByIdWithMember(orderId)).willReturn(Optional.of(order));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(201L)))
                 .willReturn(List.of(invalidItem));
 
             // when & then
@@ -163,16 +163,16 @@ class CustomerReturnServiceTest {
 
             Order order = orderWithMember(orderId, customerId);
 
-            OrderItem cancelledItem = OrderItemFixture.orderItemWithStatus(OrderStatus.CANCEL_APPROVED);
-            ReflectionTestUtils.setField(cancelledItem, "id", 201L);
+            OrderItem cancelledItem = OrderItemFixture.withId(
+                OrderItemFixture.orderItemWithStatus(OrderStatus.CANCEL_APPROVED), 201L);
 
             CustomerReturnRequest request = new CustomerReturnRequest(
                 List.of(201L),
                 "반품 사유"
             );
 
-            given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-            given(orderItemRepository.findByOrderIdAndIdIn(orderId, List.of(201L)))
+            given(orderRepository.findByIdWithMember(orderId)).willReturn(Optional.of(order));
+            given(orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, List.of(201L)))
                 .willReturn(List.of(cancelledItem));
 
             // when & then
@@ -187,23 +187,14 @@ class CustomerReturnServiceTest {
     }
 
     private Order orderWithMember(Long orderId, Long memberId) {
-        Member member = newEntity(Member.class);
-        ReflectionTestUtils.setField(member, "id", memberId);
+        Member member = mock(Member.class);
+        given(member.getId()).willReturn(memberId);
 
-        Order order = newEntity(Order.class);
+        Order order = OrderFixture.defaultOrder()
+            .member(member)
+            .build();
         ReflectionTestUtils.setField(order, "id", orderId);
-        ReflectionTestUtils.setField(order, "member", member);
 
         return order;
-    }
-
-    private <T> T newEntity(Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

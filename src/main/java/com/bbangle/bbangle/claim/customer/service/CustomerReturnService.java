@@ -12,7 +12,6 @@ import com.bbangle.bbangle.order.domain.OrderItemHistory;
 import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ public class CustomerReturnService {
 
     @Transactional
     public void requestReturn(Long orderId, Long customerId, CustomerReturnRequest request) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithMember(orderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMember().getId().equals(customerId)) {
@@ -40,26 +39,31 @@ public class CustomerReturnService {
             .distinct()
             .toList();
 
-        List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdIn(orderId, uniqueOrderItemIds);
+        List<OrderItem> orderItems = orderItemRepository.findByOrderIdAndIdInWithOrder(orderId, uniqueOrderItemIds);
 
         if (orderItems.size() != uniqueOrderItemIds.size()) {
             throw new BbangleException(BbangleErrorCode.ORDER_ITEM_NOT_FOUND);
         }
 
-        List<ReturnRequest> returnRequestsToSave = new ArrayList<>();
-        List<OrderItemHistory> historiesToSave = new ArrayList<>();
+        // 반품 가능 상태 전면 검증 (All-or-Nothing 정책: 하나라도 불가하면 전체 실패)
+        if (orderItems.stream().anyMatch(item -> !item.canRequestReturn())) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
 
-        for (OrderItem orderItem : orderItems) {
-            if (!orderItem.requestReturn()) {
-                throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
-            }
-            returnRequestsToSave.add(ReturnRequest.builder()
+        // 전체 유효성 확인 후 상태 전이 실행
+        orderItems.forEach(OrderItem::requestReturn);
+
+        List<ReturnRequest> returnRequestsToSave = orderItems.stream()
+            .map(orderItem -> ReturnRequest.builder()
                 .orderItem(orderItem)
                 .detailReason(request.reason())
                 .status(ReturnRequestRequestStatus.REQUESTED)
-                .build());
-            historiesToSave.add(OrderItemHistory.create(orderItem));
-        }
+                .build())
+            .toList();
+
+        List<OrderItemHistory> historiesToSave = orderItems.stream()
+            .map(OrderItemHistory::create)
+            .toList();
 
         returnRequestRepository.saveAll(returnRequestsToSave);
         orderItemHistoryRepository.saveAll(historiesToSave);
