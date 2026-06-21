@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.payment.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,12 +60,18 @@ public class Payment extends BaseEntity {
     }
 
     public void confirm(String paymentKey, LocalDateTime approvedAt) {
+        if (this.paymentStatus != PaymentStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
         this.paymentKey = paymentKey;
         this.paidAt = approvedAt;
         this.paymentStatus = PaymentStatus.COMPLETED;
     }
 
     public void fail() {
+        if (this.paymentStatus != PaymentStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
         this.paymentStatus = PaymentStatus.FAILED;
     }
 

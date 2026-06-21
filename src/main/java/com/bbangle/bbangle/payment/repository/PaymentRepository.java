@@ -14,6 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByOrderOrderNumber(String orderNumber);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Payment p JOIN FETCH p.order o WHERE o.orderGroupId = :orderGroupId")
+    @Query("SELECT DISTINCT p FROM Payment p JOIN FETCH p.order o LEFT JOIN FETCH o.orderItems WHERE o.orderGroupId = :orderGroupId")
     List<Payment> findByOrderGroupIdWithLock(@Param("orderGroupId") String orderGroupId);
 }

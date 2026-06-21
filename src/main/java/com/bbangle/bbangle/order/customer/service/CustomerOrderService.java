@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.delivery.domain.Receiver;
 import com.bbangle.bbangle.delivery.domain.Sender;
+import com.bbangle.bbangle.delivery.domain.Shipping;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
@@ -270,7 +271,7 @@ public class CustomerOrderService {
                 OrderDelivery orderDelivery = OrderDelivery.create(
                     sender,
                     receiver,
-                    null,
+                    Shipping.withMemo(request.deliveryRequest()),
                     OrderDeliveryStatus.PREPARING,
                     orderItem
                 );
