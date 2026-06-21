@@ -15,6 +15,14 @@ public final class ProductFixture {
             .build();
     }
 
+    public static Product create(Board board, String title, int price) {
+        return Product.builder()
+            .title(title)
+            .board(board)
+            .price(price)
+            .build();
+    }
+
     public static Product defaultProductWithStore(Store store) {
         return Product.builder()
             .store(store)

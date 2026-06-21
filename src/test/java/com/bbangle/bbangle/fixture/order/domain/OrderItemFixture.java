@@ -1,10 +1,14 @@
 package com.bbangle.bbangle.fixture.order.domain;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
+import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
 
 public final class OrderItemFixture {
@@ -70,6 +74,20 @@ public final class OrderItemFixture {
         return defaultOrderItem()
             .product(product)
             .build();
+    }
+
+    public static OrderItem createWithProductAndStatus(
+        Order order, Store store, String productTitle, int price, OrderStatus status
+    ) {
+        Board board = BoardFixture.defaultBoardWithStore(store, productTitle);
+        Product product = ProductFixture.create(board, productTitle, price);
+        OrderItem item = defaultOrderItem()
+            .orderStatus(status)
+            .totalPrice(price)
+            .product(product)
+            .build();
+        order.addOrderItem(item);
+        return item;
     }
 
 }

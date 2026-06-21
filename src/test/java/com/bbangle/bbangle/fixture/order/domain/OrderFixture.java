@@ -1,9 +1,13 @@
 package com.bbangle.bbangle.fixture.order.domain;
 
+import com.bbangle.bbangle.fixture.member.domain.MemberFixture;
+import com.bbangle.bbangle.fixture.payment.domain.PaymentFixture;
 import com.bbangle.bbangle.order.domain.Order;
+import com.bbangle.bbangle.payment.domain.Payment;
 import com.bbangle.bbangle.seller.domain.Seller;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public final class OrderFixture {
 
@@ -48,6 +52,17 @@ public final class OrderFixture {
         return defaultOrder()
             .seller(seller)
             .build();
+    }
+
+    public static Order createWithMemberAndSeller(Long memberId, Seller seller, int totalAmount) {
+        Order order = defaultOrder()
+            .member(MemberFixture.createWithId(memberId))
+            .seller(seller)
+            .totalAmount(totalAmount)
+            .build();
+        Payment payment = PaymentFixture.createDefaultPayment(order);
+        ReflectionTestUtils.setField(order, "payment", payment);
+        return order;
     }
 
 }
