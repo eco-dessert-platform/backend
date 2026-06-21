@@ -39,10 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
         "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9101, 'DS-2002', 0.00, 0.00)",
 
     // 주문 등록 (seller_id 포함)
-    "INSERT INTO orders (id, order_number, order_date, buyer_name, buyer_phone, delivery_fee, total_amount, seller_id, created_at, modified_at) " +
+    "INSERT INTO orders (id, order_number, order_group_id, order_date, buyer_name, buyer_phone, delivery_fee, total_amount, seller_id, created_at, modified_at) " +
         "VALUES " +
-        "(3001, 'ORD-20260401-001', CURRENT_TIMESTAMP, '홍길동', '01011111111', 2500, 50000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
-        "(3002, 'ORD-20260405-002', CURRENT_TIMESTAMP, '김철수', '01022222222', 2500, 30000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "(3001, 'ORD-20260401-001', 'settle-test-grp-3001000000', CURRENT_TIMESTAMP, '홍길동', '01011111111', 2500, 50000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
+        "(3002, 'ORD-20260405-002', 'settle-test-grp-3002000000', CURRENT_TIMESTAMP, '김철수', '01022222222', 2500, 30000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
 
     // 상품 등록 (is_deleted, stock 포함)
     "INSERT INTO product (id, title, price, is_soldout, is_deleted, stock, monday, tuesday, wednesday, thursday, friday, saturday, sunday, created_at, modified_at) " +
