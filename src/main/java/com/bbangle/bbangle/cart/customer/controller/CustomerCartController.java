@@ -9,6 +9,7 @@ import com.bbangle.bbangle.config.security.CustomerApiPath;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,16 @@ public class CustomerCartController implements CustomerCartApi {
         @Valid @RequestBody CartRequest.AddCartRequest request
     ) {
         customerCartFacade.addCartItem(memberId, request);
+        return responseService.getSuccessResult();
+    }
+
+    @Override
+    @DeleteMapping("/options")
+    public CommonResult deleteCartOptions(
+        @AuthenticationPrincipal Long memberId,
+        @Valid @RequestBody CartRequest.DeleteCartOptionsRequest request
+    ) {
+        customerCartFacade.deleteCartOptions(memberId, request);
         return responseService.getSuccessResult();
     }
 }

@@ -90,6 +90,42 @@ public class CustomerCartFacade {
         }
     }
 
+    @Transactional
+    public void deleteCartOptions(Long memberId, CartRequest.DeleteCartOptionsRequest request) {
+        Member member = memberService.findById(memberId);
+        Cart cart = customerCartService.findCartByMember(member);
+
+        List<CartOption> cartOptions = customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds());
+        validateAllOptionsFound(cartOptions, request.cartOptionIds());
+
+        Set<CartItem> affectedCartItems = cartOptions.stream()
+            .map(option -> {
+                validateCartOptionOwnership(option, cart);
+                return option.getCartItem();
+            })
+            .collect(Collectors.toSet());
+
+        customerCartOptionService.deleteAll(cartOptions);
+
+        for (CartItem cartItem : affectedCartItems) {
+            if (!customerCartOptionService.existsByCartItem(cartItem)) {
+                customerCartItemService.delete(cartItem);
+            }
+        }
+    }
+
+    private void validateAllOptionsFound(List<CartOption> cartOptions, List<Long> requestedIds) {
+        if (cartOptions.size() != requestedIds.size()) {
+            throw new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+        }
+    }
+
+    private void validateCartOptionOwnership(CartOption option, Cart cart) {
+        if (!option.getCartItem().getCart().getId().equals(cart.getId())) {
+            throw new BbangleException(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
+        }
+    }
+
     /**
      * 요청에 포함된 상품 옵션들을 조회하여 Map으로 변환
      */

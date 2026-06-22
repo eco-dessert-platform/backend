@@ -24,4 +24,9 @@ public class CustomerCartItemService {
     public CartItem createCartItem(Cart cart, Board item) {
         return cartItemRepository.save(CartItem.create(cart, item));
     }
+
+    @Transactional
+    public void delete(CartItem cartItem) {
+        cartItemRepository.delete(cartItem);
+    }
 }
