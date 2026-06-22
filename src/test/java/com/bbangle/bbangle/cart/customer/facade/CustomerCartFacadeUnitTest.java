@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -24,6 +25,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartItemFixture;
+import com.bbangle.bbangle.fixture.cart.domain.CartOptionFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
@@ -198,6 +200,114 @@ class CustomerCartFacadeUnitTest {
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
+                });
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteCartOptions() 테스트")
+    class DeleteCartOptionsTest {
+
+        Long memberId = 1L;
+        Member member = MemberFixture.defaultMember();
+        Cart cart = mock(Cart.class);
+        Board board = BoardFixture.defaultBoard();
+        CartItem cartItem = mock(CartItem.class);
+        Product product = mock(Product.class);
+
+        @Test
+        @DisplayName("선택한 옵션을 삭제한다.")
+        void success_deleteCartOptions() {
+
+            // given
+            given(cart.getId()).willReturn(1L);
+            given(cartItem.getCart()).willReturn(cart);
+
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, product, 2);
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(customerCartService.findCartByMember(member)).willReturn(cart);
+            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(cartOption));
+            given(customerCartOptionService.existsByCartItem(cartItem)).willReturn(true);
+
+            // when
+            customerCartFacade.deleteCartOptions(memberId, request);
+
+            // then
+            then(customerCartOptionService).should().deleteAll(List.of(cartOption));
+        }
+
+        @Test
+        @DisplayName("옵션 삭제 후 CartItem에 남은 옵션이 없으면 CartItem도 삭제한다.")
+        void success_deleteCartOptions_cleanup_empty_cartItem() {
+
+            // given
+            given(cart.getId()).willReturn(1L);
+            given(cartItem.getCart()).willReturn(cart);
+
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, product, 2);
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(customerCartService.findCartByMember(member)).willReturn(cart);
+            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(cartOption));
+            given(customerCartOptionService.existsByCartItem(cartItem)).willReturn(false);
+
+            // when
+            customerCartFacade.deleteCartOptions(memberId, request);
+
+            // then
+            then(customerCartOptionService).should().deleteAll(List.of(cartOption));
+            then(customerCartItemService).should().delete(cartItem);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 옵션 ID가 포함되면 예외가 발생한다.")
+        void fail_deleteCartOptions_option_not_found() {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L, 2L));
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(customerCartService.findCartByMember(member)).willReturn(cart);
+            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(memberId, request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+                });
+        }
+
+        @Test
+        @DisplayName("다른 회원의 옵션을 삭제하면 예외가 발생한다.")
+        void fail_deleteCartOptions_access_denied() {
+
+            // given
+            given(cart.getId()).willReturn(1L);
+
+            Cart otherCart = mock(Cart.class);
+            given(otherCart.getId()).willReturn(2L);
+            CartItem otherCartItem = mock(CartItem.class);
+            given(otherCartItem.getCart()).willReturn(otherCart);
+
+            CartOption otherOption = CartOptionFixture.defaultCartOption(otherCartItem, product, 1);
+
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
+
+            given(memberService.findById(memberId)).willReturn(member);
+            given(customerCartService.findCartByMember(member)).willReturn(cart);
+            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(otherOption));
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(memberId, request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
                 });
         }
     }

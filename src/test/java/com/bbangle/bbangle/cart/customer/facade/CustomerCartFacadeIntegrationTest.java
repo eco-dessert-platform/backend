@@ -359,4 +359,141 @@ class CustomerCartFacadeIntegrationTest {
                 });
         }
     }
+
+    @Nested
+    @DisplayName("deleteCartOptions() 테스트")
+    class DeleteCartOptionsTest {
+
+        @Test
+        @DisplayName("선택한 옵션을 삭제한다.")
+        void success_deleteCartOptions() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            Cart cart = cartRepository.save(Cart.create(member));
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product product1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 100));
+            Product product2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 100));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(cart, board));
+            CartOption option1 = cartOptionRepository.save(CartOption.create(cartItem, product1, 2));
+            CartOption option2 = cartOptionRepository.save(CartOption.create(cartItem, product2, 3));
+
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(option1.getId())
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            customerCartFacade.deleteCartOptions(member.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(cartOptionRepository.findAll()).hasSize(1);
+            assertThat(cartOptionRepository.findById(option2.getId())).isPresent();
+            assertThat(cartItemRepository.findAll()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("CartItem의 모든 옵션을 삭제하면 CartItem도 삭제된다.")
+        void success_deleteCartOptions_cleanup_empty_cartItem() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            Cart cart = cartRepository.save(Cart.create(member));
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
+            CartItem cartItem = cartItemRepository.save(CartItem.create(cart, board));
+            CartOption option = cartOptionRepository.save(CartOption.create(cartItem, product, 2));
+
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(option.getId())
+            );
+
+            em.flush();
+            em.clear();
+
+            // when
+            customerCartFacade.deleteCartOptions(member.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(cartOptionRepository.findAll()).isEmpty();
+            assertThat(cartItemRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 옵션 ID가 포함되면 예외가 발생한다.")
+        void fail_deleteCartOptions_option_not_found() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            cartRepository.save(Cart.create(member));
+
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(99999L)
+            );
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(member.getId(), request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+                });
+        }
+
+        @Test
+        @DisplayName("다른 회원의 옵션을 삭제하면 예외가 발생한다.")
+        void fail_deleteCartOptions_access_denied() {
+
+            // given
+            Member member = memberRepository.save(MemberFixture.defaultMember());
+            cartRepository.save(Cart.create(member));
+
+            Member otherMember = memberRepository.save(
+                Member.builder()
+                    .providerId("other")
+                    .provider(com.bbangle.bbangle.auth.oauth.OauthServerType.GOOGLE)
+                    .email("other@test.com")
+                    .phone("01099999999")
+                    .name("other")
+                    .nickname("other")
+                    .birth("2000-01-01")
+                    .profile("other.png")
+                    .build()
+            );
+            Cart otherCart = cartRepository.save(Cart.create(otherMember));
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.bannedBoardWithStore(store, "상품명"));
+            Product product = productRepository.save(ProductFixture.createWithStock(board, "옵션", 100));
+            CartItem otherCartItem = cartItemRepository.save(CartItem.create(otherCart, board));
+            CartOption otherOption = cartOptionRepository.save(CartOption.create(otherCartItem, product, 1));
+
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(otherOption.getId())
+            );
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(member.getId(), request))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
+                });
+        }
+    }
 }

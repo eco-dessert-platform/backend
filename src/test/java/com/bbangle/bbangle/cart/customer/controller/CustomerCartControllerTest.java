@@ -3,8 +3,10 @@ package com.bbangle.bbangle.cart.customer.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -122,6 +124,81 @@ class CustomerCartControllerTest {
                 .andExpect(jsonPath("$.message").value(BbangleErrorCode.PRODUCT_NOT_FOUND.getMessage()));
 
             verify(customerCartFacade).addCartItem(eq(1L), any(CartRequest.AddCartRequest.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteCartOptions() 테스트")
+    class DeleteCartOptionsTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("장바구니 옵션 삭제에 성공한다.")
+        void success_delete_cart_options() throws Exception {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(1L, 2L)
+            );
+
+            // when & then
+            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            then(customerCartFacade).should().deleteCartOptions(eq(1L), any(CartRequest.DeleteCartOptionsRequest.class));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("존재하지 않는 옵션이면 예외를 반환한다.")
+        void fail_delete_cart_options_not_found() throws Exception {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(99999L)
+            );
+
+            willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION))
+                .given(customerCartFacade)
+                .deleteCartOptions(anyLong(), any(CartRequest.DeleteCartOptionsRequest.class));
+
+            // when & then
+            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("다른 회원의 옵션 삭제 시 예외를 반환한다.")
+        void fail_delete_cart_options_access_denied() throws Exception {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(1L)
+            );
+
+            willThrow(new BbangleException(BbangleErrorCode.CART_OPTION_ACCESS_DENIED))
+                .given(customerCartFacade)
+                .deleteCartOptions(anyLong(), any(CartRequest.DeleteCartOptionsRequest.class));
+
+            // when & then
+            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.CART_OPTION_ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.CART_OPTION_ACCESS_DENIED.getMessage()));
         }
     }
 }
