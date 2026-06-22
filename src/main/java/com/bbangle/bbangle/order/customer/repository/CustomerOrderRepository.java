@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.order.customer.repository;
 
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
+import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.QOrder;
@@ -32,11 +34,13 @@ public class CustomerOrderRepository {
     private final JPAQueryFactory queryFactory;
     private final QOrder order = QOrder.order;
     private final QOrderItem orderItem = QOrderItem.orderItem;
+    private final QProduct product = QProduct.product;
+    private final QBoard board = QBoard.board;
 
     /**
      * 회원의 주문을 주문일(orderDate) 최신순으로 페이징 조회합니다.
      * fetchJoin + 페이징 시 카테시안 곱 문제를 피하기 위해 2단계로 조회합니다.
-     * 1) ID만 페이징 조회 → 2) 해당 ID로 orderItems/payment fetchJoin 조회 후 정렬 순서 복원
+     * 1) ID만 페이징 조회 → 2) 해당 ID로 orderItems/product/board/payment fetchJoin 조회 후 정렬 순서 복원
      */
     public BbanglePageResponse<Order> searchCustomerOrderList(CustomerOrderSearchCommand command) {
         Pageable pageable = command.pageable();
@@ -103,6 +107,8 @@ public class CustomerOrderRepository {
             .selectFrom(order)
             .distinct()
             .leftJoin(order.orderItems, orderItem).fetchJoin()
+            .leftJoin(orderItem.product, product).fetchJoin()
+            .leftJoin(product.board, board).fetchJoin()
             .leftJoin(order.payment).fetchJoin()
             .where(order.id.in(orderIds))
             .fetch();
