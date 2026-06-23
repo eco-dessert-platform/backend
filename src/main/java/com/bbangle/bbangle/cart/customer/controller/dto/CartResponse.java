@@ -26,7 +26,6 @@ public class CartResponse {
             String itemName,
             String itemImg,
             SaleStatus status,
-            String request, // TODO : CartItem.request 제거 시 DTO 필드도 제거
             PriceDTO price,
             List<AvailableOptionDTO> availableOptions,
             List<SelectedOptionDTO> selectedOptions

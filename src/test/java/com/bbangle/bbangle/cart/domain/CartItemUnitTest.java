@@ -29,22 +29,5 @@ class CartItemUnitTest {
         assertThat(cartItem.getOptions()).isNotNull();
         assertThat(cartItem.getOptions()).isEmpty();
         assertThat(cartItem.getItem()).isEqualTo(board);
-        assertThat(cartItem.getRequest()).isNull();
-    }
-
-    @Test
-    @DisplayName("소비자 장바구니 상품 주문 요구사항 변경에 성공한다.")
-    void changeRequest() {
-
-        // given
-        String request = "숟가락 1개 추가해주세요.";
-        Cart cart = Cart.create(MemberFixture.defaultMember());
-        CartItem cartItem = CartItem.create(cart, BoardFixture.defaultBoard());
-
-        // when
-        cartItem.changeRequest(request);
-
-        // then
-        assertThat(cartItem.getRequest()).isEqualTo(request);
     }
 }

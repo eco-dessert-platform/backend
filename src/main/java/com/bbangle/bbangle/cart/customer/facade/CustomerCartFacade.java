@@ -258,7 +258,6 @@ public class CustomerCartFacade {
                 .itemName(board.getTitle())
                 .itemImg(thumbnailMap.get(board.getId()))
                 .status(board.getSaleStatus())
-                .request(cartItem.getRequest())
                 .price(
                     PriceDTO.builder()
                         .base(board.getPrice())
