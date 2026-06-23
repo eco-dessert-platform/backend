@@ -181,6 +181,8 @@ public enum BbangleErrorCode {
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
     DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
+    CUSTOMER_ORDER_UNAUTHORIZED(-786, "주문 조회를 위해 로그인이 필요합니다.", UNAUTHORIZED),
+    CUSTOMER_ORDER_MEMBER_NOT_FOUND(-787, "존재하지 않는 회원의 주문 조회 요청입니다.", NOT_FOUND),
 
     // Settlement Error(801 ~ 820)
     SETTLEMENT_NOT_FOUND(-802, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
