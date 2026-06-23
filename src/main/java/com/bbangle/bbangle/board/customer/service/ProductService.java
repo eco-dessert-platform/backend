@@ -96,4 +96,9 @@ public class ProductService {
     public List<Product> findAllByIds(List<Long> productIds) {
         return productRepository.findAllById(productIds);
     }
+
+    @Transactional(readOnly = true)
+    public List<Product> findAllByBoardIds(List<Long> boardIds) {
+        return productRepository.findByBoardIds(boardIds);
+    }
 }
