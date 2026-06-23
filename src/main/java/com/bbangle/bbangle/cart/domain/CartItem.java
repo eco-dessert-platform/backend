@@ -52,8 +52,6 @@ public class CartItem extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Board item;
 
-    private String request;
-
     @Builder
     private CartItem(
         Cart cart,
@@ -61,7 +59,6 @@ public class CartItem extends BaseEntity {
     ){
         this.cart = cart;
         this.item = item;
-        this.request = null;
     }
 
     public static CartItem create(
@@ -72,9 +69,5 @@ public class CartItem extends BaseEntity {
             .cart(cart)
             .item(item)
             .build();
-    }
-
-    public void changeRequest(String request) {
-        this.request = request;
     }
 }
