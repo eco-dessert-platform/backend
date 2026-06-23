@@ -1,14 +1,17 @@
 package com.bbangle.bbangle.cart.customer.controller;
 
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
 import com.bbangle.bbangle.cart.customer.controller.swagger.CustomerCartApi;
 import com.bbangle.bbangle.cart.customer.facade.CustomerCartFacade;
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.CustomerApiPath;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,5 +33,14 @@ public class CustomerCartController implements CustomerCartApi {
     ) {
         customerCartFacade.addCartItem(memberId, request);
         return responseService.getSuccessResult();
+    }
+
+    // TODO : Test
+    @Override
+    @GetMapping
+    public SingleResult<CartListResponse> getCart(
+        @AuthenticationPrincipal Long memberId) {
+
+        return responseService.getSingleResult(customerCartFacade.getCart(memberId));
     }
 }

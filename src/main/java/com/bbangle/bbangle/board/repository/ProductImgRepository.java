@@ -17,4 +17,12 @@ public interface ProductImgRepository extends JpaRepository<ProductImg, Long> {
             WHERE pi.board.id IN :boardIds
         """)
     void softDeleteByBoardIds(@Param("boardIds") List<Long> boardIds);
+
+    // TODO : Test
+    @Query("""
+            SELECT pi
+            FROM ProductImg pi
+            WHERE pi.board.id IN :boardIds AND pi.imgOrder = 0
+        """)
+    List<ProductImg> findThumbnailImagesByBoardIds(@Param("boardIds") List<Long> boardId);
 }
