@@ -128,8 +128,12 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.SHIPPED;
     }
 
+    public boolean canRequestReturn() {
+        return this.orderStatus == OrderStatus.SHIPPED || this.orderStatus == OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public boolean requestReturn() {
-        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+        if (!canRequestReturn()) {
             return false;
         }
         this.orderStatus = RETURN_REQUESTED;
