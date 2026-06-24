@@ -32,18 +32,4 @@ public class CustomerCartOptionService {
         cartOption.updateQuantity(quantity);
     }
 
-    @Transactional(readOnly = true)
-    public List<CartOption> findAllByIdsWithCart(List<Long> ids) {
-        return cartOptionRepository.findAllByIdInWithCart(ids);
-    }
-
-    @Transactional
-    public void deleteAll(List<CartOption> cartOptions) {
-        cartOptionRepository.deleteAll(cartOptions);
-    }
-
-    @Transactional(readOnly = true)
-    public boolean existsByCartItem(CartItem cartItem) {
-        return cartOptionRepository.existsByCartItem(cartItem);
-    }
 }

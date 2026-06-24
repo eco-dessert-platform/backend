@@ -90,7 +90,6 @@ public enum BbangleErrorCode {
     DUPLICATED_PRODUCT_OPTION(-70, "장바구니에 추가할 상품 옵션이 중복이 되어선 안됩니다.", BAD_REQUEST),
     NOT_FOUND_CART(-71, "해당 계정의 장바구니 데이터를 찾지 못했습니다.", BAD_REQUEST),
     NOT_FOUND_CART_OPTION(-72, "장바구니 옵션을 찾을 수 없습니다.", NOT_FOUND),
-    CART_OPTION_ACCESS_DENIED(-73, "해당 장바구니 옵션에 접근 권한이 없습니다.", FORBIDDEN),
 
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

@@ -16,6 +16,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,37 +93,29 @@ public class CustomerCartFacade {
 
     @Transactional
     public void deleteCartOptions(Long memberId, CartRequest.DeleteCartOptionsRequest request) {
-        Member member = memberService.findById(memberId);
-        Cart cart = customerCartService.findCartByMember(member);
+        List<Long> optionIds = request.cartOptionIds();
 
-        List<CartOption> cartOptions = customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds());
-        validateAllOptionsFound(cartOptions, request.cartOptionIds());
+        List<CartItem> cartItems = customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId,
+            optionIds);
+        validateAllOptionsFound(cartItems, optionIds);
 
-        Set<CartItem> affectedCartItems = cartOptions.stream()
-            .map(option -> {
-                validateCartOptionOwnership(option, cart);
-                return option.getCartItem();
-            })
-            .collect(Collectors.toSet());
+        Set<Long> targetOptionIds = new HashSet<>(optionIds);
+        cartItems.forEach(cartItem -> cartItem.removeOptions(targetOptionIds));
 
-        customerCartOptionService.deleteAll(cartOptions);
-
-        for (CartItem cartItem : affectedCartItems) {
-            if (!customerCartOptionService.existsByCartItem(cartItem)) {
-                customerCartItemService.delete(cartItem);
-            }
-        }
+        cartItems.stream()
+            .filter(CartItem::hasNoOptions)
+            .forEach(customerCartItemService::delete);
     }
 
-    private void validateAllOptionsFound(List<CartOption> cartOptions, List<Long> requestedIds) {
-        if (cartOptions.size() != requestedIds.size()) {
+    private void validateAllOptionsFound(List<CartItem> cartItems, List<Long> requestedIds) {
+        Set<Long> requestedSet = new HashSet<>(requestedIds);
+        long foundCount = cartItems.stream()
+            .flatMap(ci -> ci.getOptions().stream())
+            .map(CartOption::getId)
+            .filter(requestedSet::contains)
+            .count();
+        if (foundCount != requestedIds.size()) {
             throw new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION);
-        }
-    }
-
-    private void validateCartOptionOwnership(CartOption option, Cart cart) {
-        if (!option.getCartItem().getCart().getId().equals(cart.getId())) {
-            throw new BbangleException(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
         }
     }
 

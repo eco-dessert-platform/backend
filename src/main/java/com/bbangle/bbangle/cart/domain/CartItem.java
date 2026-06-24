@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.util.Set;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -76,5 +77,13 @@ public class CartItem extends BaseEntity {
 
     public void changeRequest(String request) {
         this.request = request;
+    }
+
+    public void removeOptions(Set<Long> optionIds) {
+        options.removeIf(option -> optionIds.contains(option.getId()));
+    }
+
+    public boolean hasNoOptions() {
+        return options.isEmpty();
     }
 }

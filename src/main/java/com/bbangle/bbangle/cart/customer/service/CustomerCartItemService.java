@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.repository.CartItemRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,11 @@ public class CustomerCartItemService {
     @Transactional
     public CartItem createCartItem(Cart cart, Board item) {
         return cartItemRepository.save(CartItem.create(cart, item));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CartItem> findAllWithOptionsByMemberIdAndOptionIds(Long memberId, List<Long> optionIds) {
+        return cartItemRepository.findAllWithOptionsByMemberIdAndOptionIds(memberId, optionIds);
     }
 
     @Transactional
