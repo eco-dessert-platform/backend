@@ -18,7 +18,6 @@ public interface ProductImgRepository extends JpaRepository<ProductImg, Long> {
         """)
     void softDeleteByBoardIds(@Param("boardIds") List<Long> boardIds);
 
-    // TODO : Test
     @Query("""
             SELECT pi
             FROM ProductImg pi
