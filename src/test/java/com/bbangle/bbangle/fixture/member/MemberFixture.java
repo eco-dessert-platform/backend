@@ -32,4 +32,10 @@ public class MemberFixture {
             DEFAULT_MEMBER_EMAIL, DEFAULT_MEMBER_PHONE, DEFAULT_MEMBER_NAME, DEFAULT_MEMBER_NICKNAME, DEFAULT_MEMBER_BIRTH, DEFAULT_MEMBER_PROFILE
         );
     }
+
+    public static Member createMemberWithName(String name) {
+        return baseBuilder(
+            DEFAULT_MEMBER_EMAIL, DEFAULT_MEMBER_PHONE, name, DEFAULT_MEMBER_NICKNAME, DEFAULT_MEMBER_BIRTH, DEFAULT_MEMBER_PROFILE
+        );
+    }
 }

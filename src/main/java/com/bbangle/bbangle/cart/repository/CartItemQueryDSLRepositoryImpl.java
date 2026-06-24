@@ -18,7 +18,6 @@ public class CartItemQueryDSLRepositoryImpl implements CartItemQueryDSLRepositor
 
     private final JPAQueryFactory queryFactory;
 
-    // TODO : Test
     @Override
     public List<CartItem> findCartItemsByMember(Member member) {
         return queryFactory

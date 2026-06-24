@@ -11,7 +11,6 @@ public interface CartOptionRepository extends JpaRepository<CartOption, Long> {
 
     List<CartOption> findAllByCartItem(CartItem cartItem);
 
-    // TODO : Test
     @Query("""
             SELECT co
             FROM CartOption co
