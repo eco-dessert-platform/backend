@@ -25,12 +25,13 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartFixture;
 import com.bbangle.bbangle.fixture.cart.domain.CartItemFixture;
-import com.bbangle.bbangle.fixture.cart.domain.CartOptionFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -209,33 +210,27 @@ class CustomerCartFacadeUnitTest {
     class DeleteCartOptionsTest {
 
         Long memberId = 1L;
-        Member member = MemberFixture.defaultMember();
-        Cart cart = mock(Cart.class);
-        Board board = BoardFixture.defaultBoard();
         CartItem cartItem = mock(CartItem.class);
-        Product product = mock(Product.class);
+        CartOption cartOption = mock(CartOption.class);
 
         @Test
         @DisplayName("선택한 옵션을 삭제한다.")
         void success_deleteCartOptions() {
 
             // given
-            given(cart.getId()).willReturn(1L);
-            given(cartItem.getCart()).willReturn(cart);
-
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, product, 2);
             CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
 
-            given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
-            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(cartOption));
-            given(customerCartOptionService.existsByCartItem(cartItem)).willReturn(true);
+            given(cartOption.getId()).willReturn(1L);
+            given(cartItem.getOptions()).willReturn(new ArrayList<>(List.of(cartOption)));
+            given(cartItem.hasNoOptions()).willReturn(false);
+            given(customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId, request.cartOptionIds()))
+                .willReturn(List.of(cartItem));
 
             // when
             customerCartFacade.deleteCartOptions(memberId, request);
 
             // then
-            then(customerCartOptionService).should().deleteAll(List.of(cartOption));
+            then(cartItem).should().removeOptions(Set.of(1L));
         }
 
         @Test
@@ -243,22 +238,19 @@ class CustomerCartFacadeUnitTest {
         void success_deleteCartOptions_cleanup_empty_cartItem() {
 
             // given
-            given(cart.getId()).willReturn(1L);
-            given(cartItem.getCart()).willReturn(cart);
-
-            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, product, 2);
             CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
 
-            given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
-            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(cartOption));
-            given(customerCartOptionService.existsByCartItem(cartItem)).willReturn(false);
+            given(cartOption.getId()).willReturn(1L);
+            given(cartItem.getOptions()).willReturn(new ArrayList<>(List.of(cartOption)));
+            given(cartItem.hasNoOptions()).willReturn(true);
+            given(customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId, request.cartOptionIds()))
+                .willReturn(List.of(cartItem));
 
             // when
             customerCartFacade.deleteCartOptions(memberId, request);
 
             // then
-            then(customerCartOptionService).should().deleteAll(List.of(cartOption));
+            then(cartItem).should().removeOptions(Set.of(1L));
             then(customerCartItemService).should().delete(cartItem);
         }
 
@@ -269,9 +261,8 @@ class CustomerCartFacadeUnitTest {
             // given
             CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L, 2L));
 
-            given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
-            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of());
+            given(customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId, request.cartOptionIds()))
+                .willReturn(List.of());
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(memberId, request))
@@ -283,31 +274,21 @@ class CustomerCartFacadeUnitTest {
         }
 
         @Test
-        @DisplayName("다른 회원의 옵션을 삭제하면 예외가 발생한다.")
-        void fail_deleteCartOptions_access_denied() {
+        @DisplayName("다른 회원의 옵션은 조회되지 않아 NOT_FOUND로 처리된다.")
+        void fail_deleteCartOptions_other_member_option() {
 
             // given
-            given(cart.getId()).willReturn(1L);
-
-            Cart otherCart = mock(Cart.class);
-            given(otherCart.getId()).willReturn(2L);
-            CartItem otherCartItem = mock(CartItem.class);
-            given(otherCartItem.getCart()).willReturn(otherCart);
-
-            CartOption otherOption = CartOptionFixture.defaultCartOption(otherCartItem, product, 1);
-
             CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(List.of(1L));
 
-            given(memberService.findById(memberId)).willReturn(member);
-            given(customerCartService.findCartByMember(member)).willReturn(cart);
-            given(customerCartOptionService.findAllByIdsWithCart(request.cartOptionIds())).willReturn(List.of(otherOption));
+            given(customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId, request.cartOptionIds()))
+                .willReturn(List.of());
 
             // when & then
             assertThatThrownBy(() -> customerCartFacade.deleteCartOptions(memberId, request))
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
                 });
         }
     }

@@ -177,28 +177,5 @@ class CustomerCartControllerTest {
                 .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
         }
 
-        @Test
-        @WithMockAuthenticationPrincipal()
-        @DisplayName("다른 회원의 옵션 삭제 시 예외를 반환한다.")
-        void fail_delete_cart_options_access_denied() throws Exception {
-
-            // given
-            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
-                List.of(1L)
-            );
-
-            willThrow(new BbangleException(BbangleErrorCode.CART_OPTION_ACCESS_DENIED))
-                .given(customerCartFacade)
-                .deleteCartOptions(anyLong(), any(CartRequest.DeleteCartOptionsRequest.class));
-
-            // when & then
-            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(BbangleErrorCode.CART_OPTION_ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(BbangleErrorCode.CART_OPTION_ACCESS_DENIED.getMessage()));
-        }
     }
 }

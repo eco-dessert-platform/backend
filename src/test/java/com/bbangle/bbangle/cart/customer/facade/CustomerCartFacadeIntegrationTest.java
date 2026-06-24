@@ -454,8 +454,8 @@ class CustomerCartFacadeIntegrationTest {
         }
 
         @Test
-        @DisplayName("다른 회원의 옵션을 삭제하면 예외가 발생한다.")
-        void fail_deleteCartOptions_access_denied() {
+        @DisplayName("다른 회원의 옵션은 조회되지 않아 NOT_FOUND로 처리된다.")
+        void fail_deleteCartOptions_other_member_option() {
 
             // given
             Member member = memberRepository.save(MemberFixture.defaultMember());
@@ -492,7 +492,7 @@ class CustomerCartFacadeIntegrationTest {
                 .isInstanceOf(BbangleException.class)
                 .satisfies(e -> {
                     BbangleException ex = (BbangleException) e;
-                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.CART_OPTION_ACCESS_DENIED);
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
                 });
         }
     }
