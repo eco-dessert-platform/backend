@@ -20,12 +20,17 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerDeliveryInfo;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetail;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetailItem;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerPaymentSummary;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderInfo;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderItemInfo;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderPageResponse;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderProgress;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderStatusCounts;
 import com.bbangle.bbangle.order.customer.service.CustomerOrderService;
+import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderDetailCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.model.CustomerOrderCategory;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
@@ -71,7 +76,7 @@ class CustomerOrderControllerSliceTest {
 
     private static UsernamePasswordAuthenticationToken memberAuth(Long memberId) {
         return new UsernamePasswordAuthenticationToken(
-            memberId, "N/A", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            memberId, "N/A", List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
     }
 
     @DisplayName("주문목록 조회 API - 성공(데이터 있음)")
@@ -158,6 +163,71 @@ class CustomerOrderControllerSliceTest {
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.code").value(BbangleErrorCode.CUSTOMER_ORDER_MEMBER_NOT_FOUND.getCode()))
             .andExpect(jsonPath("$.message").value(BbangleErrorCode.CUSTOMER_ORDER_MEMBER_NOT_FOUND.getMessage()));
+
+        then(globalControllerAdvice).should(times(1))
+            .handleBbangleException(any(), any(BbangleException.class));
+    }
+
+    @DisplayName("주문 상세 조회 API - 성공")
+    @Test
+    void givenAuthenticatedMember_whenGetOrderDetail_thenReturnsDetail() throws Exception {
+        // given
+        Long memberId = 1L;
+        Long orderId = 5L;
+
+        CustomerOrderProgress progress = CustomerOrderProgress.of(
+            CustomerOrderCategory.NORMAL, "상품발송", 2,
+            List.of("결제완료", "상품제작중", "상품발송", "배송완료", "구매확정"));
+        CustomerOrderDetailItem item = new CustomerOrderDetailItem(
+            10L, "비건빵빵이네", "저당 베이글 세트", "저칼로리 베이글", "상품발송",
+            OrderStatus.SHIPPED, 5800L, 4700L, 19, 2, 9400L,
+            List.of("고단백", "글루텐프리"), true, "CJ대한통운", "123-456-789", progress);
+        CustomerPaymentSummary payment = new CustomerPaymentSummary(
+            11600L, 2200L, 2500L, 11900L, 2200L, "총 2,200원 할인 받았어요", true, null);
+        CustomerDeliveryInfo delivery = new CustomerDeliveryInfo(
+            "홍길동", "서울특별시 강남구 테헤란로 123 101동 1001호", "06234",
+            "010-1234-5678", "부재 시 경비실에 맡겨주세요", true);
+        CustomerOrderDetail mockResponse = new CustomerOrderDetail(
+            orderId, "ORDER-2025-05-13-00001", LocalDate.of(2025, 5, 13), payment, delivery, List.of(item));
+
+        given(customerOrderService.getOrderDetail(any(CustomerOrderDetailCommand.class)))
+            .willReturn(mockResponse);
+
+        // when & then
+        mvc.perform(get("/api/v1/customer/orders/{orderId}", orderId)
+                .with(authentication(memberAuth(memberId))))
+
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.result.orderNumber").value("ORDER-2025-05-13-00001"))
+            .andExpect(jsonPath("$.result.orderDate").value("2025-05-13"))
+            .andExpect(jsonPath("$.result.payment.finalPaymentAmount").value(11900))
+            .andExpect(jsonPath("$.result.payment.totalDiscountMessage").value("총 2,200원 할인 받았어요"))
+            .andExpect(jsonPath("$.result.payment.receiptViewable").value(true))
+            .andExpect(jsonPath("$.result.delivery.addressChangeable").value(true))
+            .andExpect(jsonPath("$.result.orderItems[0].storeName").value("비건빵빵이네"))
+            .andExpect(jsonPath("$.result.orderItems[0].statusBadge").value("상품발송"))
+            .andExpect(jsonPath("$.result.orderItems[0].discountRate").value(19))
+            .andExpect(jsonPath("$.result.orderItems[0].deliveryTrackable").value(true));
+
+        then(customerOrderService).should(times(1)).getOrderDetail(any(CustomerOrderDetailCommand.class));
+    }
+
+    @DisplayName("주문 상세 조회 API - 실패(존재하지 않거나 접근 불가 주문)")
+    @Test
+    void givenInaccessibleOrder_whenGetOrderDetail_thenReturns4xx() throws Exception {
+        // given
+        given(customerOrderService.getOrderDetail(any(CustomerOrderDetailCommand.class)))
+            .willThrow(new BbangleException(BbangleErrorCode.CUSTOMER_ORDER_NOT_FOUND));
+
+        // when & then
+        mvc.perform(get("/api/v1/customer/orders/{orderId}", 999L)
+                .with(authentication(memberAuth(1L))))
+
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value(BbangleErrorCode.CUSTOMER_ORDER_NOT_FOUND.getCode()));
 
         then(globalControllerAdvice).should(times(1))
             .handleBbangleException(any(), any(BbangleException.class));

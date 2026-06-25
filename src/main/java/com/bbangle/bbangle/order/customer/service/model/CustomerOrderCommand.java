@@ -20,4 +20,16 @@ public class CustomerOrderCommand {
     ) {
 
     }
+
+    /**
+     * 소비자 주문 상세 조회 커맨드.
+     * 인증된 회원(memberId)이 본인 소유의 단일 주문(orderId) 상세를 조회할 때 사용합니다.
+     */
+    @Builder
+    public record CustomerOrderDetailCommand(
+        Long memberId,
+        Long orderId
+    ) {
+
+    }
 }
