@@ -109,9 +109,9 @@ class CartItemRepositoryTest {
         void success_findCartItemsByMember_fetchJoinItemAndStore() {
 
             // when
-            em.clear();
-
             List<CartItem> result = cartItemRepository.findCartItemsByMember(testMember);
+
+            em.clear();
 
             // then
             assertThat(result).hasSize(1);
