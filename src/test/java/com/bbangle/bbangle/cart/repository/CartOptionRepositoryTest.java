@@ -101,7 +101,7 @@ class CartOptionRepositoryTest {
 
         @Test
         @DisplayName("CartItemIds에 해당하는 CartOption과 Product가 함께 조회된다.")
-        void findCartOptionsByCartItemIds() {
+        void success_findCartOptionsByCartItemIds() {
 
             // given
             List<Long> cartItemIds = List.of(cartItem.getId());

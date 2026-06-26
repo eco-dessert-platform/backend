@@ -133,7 +133,7 @@ class ProductImgRepositoryTest {
 
         @Test
         @DisplayName("Board ID 목록에 해당하는 Thumbnail(imgOrder=0)만 조회된다")
-        void findThumbnailImagesByBoardIds() {
+        void success_findThumbnailImagesByBoardIds() {
 
             // given
             List<Long> boardIds = List.of(board1.getId(), board2.getId());
