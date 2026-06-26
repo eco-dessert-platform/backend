@@ -129,7 +129,6 @@ public class CustomerCartFacade {
             ));
     }
 
-    // TODO : Test
     @Transactional(readOnly = true)
     public CartListResponse getCart(Long memberId) {
 

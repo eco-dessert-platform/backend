@@ -2,6 +2,7 @@ package com.bbangle.bbangle.fixture.member;
 
 import com.bbangle.bbangle.auth.oauth.OauthServerType;
 import com.bbangle.bbangle.member.domain.Member;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class MemberFixture {
 
@@ -37,5 +38,10 @@ public class MemberFixture {
         return baseBuilder(
             DEFAULT_MEMBER_EMAIL, DEFAULT_MEMBER_PHONE, name, DEFAULT_MEMBER_NICKNAME, DEFAULT_MEMBER_BIRTH, DEFAULT_MEMBER_PROFILE
         );
+    }
+
+    public static Member withId(Member member, Long id) {
+        ReflectionTestUtils.setField(member, "id", id);
+        return member;
     }
 }

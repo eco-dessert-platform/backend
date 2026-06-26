@@ -2,12 +2,15 @@ package com.bbangle.bbangle.cart.customer.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
 import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
@@ -18,6 +21,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductImgFixture;
 import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
@@ -26,6 +30,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -63,6 +68,9 @@ class CustomerCartFacadeIntegrationTest {
 
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private ProductImgRepository productImgRepository;
 
     @Autowired
     private EntityManager em;
@@ -357,6 +365,146 @@ class CustomerCartFacadeIntegrationTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("getCart() 통합 테스트")
+    class GetCartTest {
+
+        private Member member;
+
+        private Store store;
+        private Board board;
+
+        private CartItem cartItem;
+
+        @BeforeEach
+        void setUp() {
+
+            member = memberRepository.save(MemberFixture.defaultMember());
+
+            store = storeRepository.save(StoreFixture.defaultStore());
+            board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "상품"));
+
+            Cart cart = cartRepository.save(Cart.create(member));
+            cartItem = cartItemRepository.save(CartItem.create(cart, board));
+
+            Product option1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 10));
+            Product option2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 20));
+
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "thumbnail"));
+
+            cartOptionRepository.save(CartOption.create(cartItem, option1, 5));
+            cartOptionRepository.save(CartOption.create(cartItem, option2, 1));
+
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("장바구니 정보를 Store 기준으로 그룹핑하여 반환한다")
+        void success_getCart() {
+
+            // when
+            CartListResponse result = customerCartFacade.getCart(member.getId());
+
+            // then
+            assertThat(result.carts()).hasSize(1);
+
+            CartListResponse.CartStoreDTO storeDto = result.carts().get(0);
+
+            assertThat(storeDto.storeId()).isEqualTo(store.getId());
+            assertThat(storeDto.storeName()).isEqualTo(store.getName());
+            assertThat(storeDto.storeProfile()).isEqualTo(store.getProfile());
+
+            assertThat(storeDto.items()).hasSize(1);
+
+            CartListResponse.CartItemDTO itemDto = storeDto.items().get(0);
+
+            assertThat(itemDto.cartItemId()).isEqualTo(cartItem.getId());
+            assertThat(itemDto.itemId()).isEqualTo(board.getId());
+            assertThat(itemDto.itemName()).isEqualTo(board.getTitle());
+            assertThat(itemDto.price().base()).isEqualTo(board.getPrice());
+            assertThat(itemDto.price().deliveryFee()).isEqualTo(board.getDeliveryFee());
+
+            assertThat(itemDto.availableOptions())
+                .extracting(CartListResponse.AvailableOptionDTO::optionName)
+                .containsExactlyInAnyOrder("옵션1", "옵션2");
+
+            assertThat(itemDto.selectedOptions())
+                .extracting(
+                    CartListResponse.SelectedOptionDTO::optionName,
+                    CartListResponse.SelectedOptionDTO::quantity
+                )
+                .containsExactlyInAnyOrder(
+                    tuple("옵션1", 5),
+                    tuple("옵션2", 1)
+                );
+        }
+
+        @Test
+        @DisplayName("Store별로 CartItem을 그룹핑하여 반환한다")
+        void success_getCart_multiStore() {
+
+            // given
+            Store store2 = storeRepository.save(StoreFixture.defaultStore("두번째 가게"));
+
+            Board board2 = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "상품2"));
+            Board board3 = boardRepository.save(BoardFixture.defaultBoardWithStore(store2, "상품3"));
+
+            CartItem cartItem2 = cartItemRepository.save(CartItem.create(cartItem.getCart(), board2));
+            CartItem cartItem3 = cartItemRepository.save(CartItem.create(cartItem.getCart(), board3));
+
+            Product option1 = productRepository.save(ProductFixture.createWithStock(board2, "옵션A", 10));
+            Product option2 = productRepository.save(ProductFixture.createWithStock(board3, "옵션B", 20));
+
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board2, "thumbnail2"));
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board3, "thumbnail3"));
+
+            cartOptionRepository.save(CartOption.create(cartItem2, option1, 1));
+            cartOptionRepository.save(CartOption.create(cartItem3, option2, 2));
+
+            em.flush();
+            em.clear();
+
+            // when
+            CartListResponse result = customerCartFacade.getCart(member.getId());
+
+            // then
+            assertThat(result.carts()).hasSize(2);
+
+            CartListResponse.CartStoreDTO firstStore = result.carts().stream()
+                .filter(store -> store.storeId().equals(this.store.getId()))
+                .findFirst()
+                .orElseThrow();
+
+            CartListResponse.CartStoreDTO secondStore = result.carts().stream()
+                .filter(store -> store.storeId().equals(store2.getId()))
+                .findFirst()
+                .orElseThrow();
+
+            assertThat(firstStore.items()).hasSize(2);
+            assertThat(firstStore.items())
+                .extracting(CartListResponse.CartItemDTO::itemName)
+                .containsExactlyInAnyOrder("상품", "상품2");
+
+            assertThat(secondStore.items()).hasSize(1);
+            assertThat(secondStore.items().get(0).itemName()).isEqualTo("상품3");
+        }
+
+        @Test
+        @DisplayName("장바구니가 비어있으면 빈 리스트를 반환한다")
+        void success_getCart_empty() {
+
+            // given
+            Member emptyMember = memberRepository.save(MemberFixture.createMemberWithName("empty"));
+
+            // when
+            CartListResponse result = customerCartFacade.getCart(emptyMember.getId());
+
+            // then
+            assertThat(result.carts()).isEmpty();
         }
     }
 }
