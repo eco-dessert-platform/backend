@@ -55,6 +55,11 @@ public final class BoardFixture {
             .build();
     }
 
+    public static Board withId(Board board, Long id) {
+        ReflectionTestUtils.setField(board, "id", id);
+        return board;
+    }
+
     /**
      * 판매대기(PENDING) 상태 Board (기본 Store 포함)
      */
