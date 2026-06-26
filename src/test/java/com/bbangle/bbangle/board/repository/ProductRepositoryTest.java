@@ -122,6 +122,6 @@ class ProductRepositoryTest {
         // then
         assertThat(result)
             .extracting(Product::getTitle)
-            .doesNotContain("삭제상품");
+            .doesNotContain("삭제옵션");
     }
 }
