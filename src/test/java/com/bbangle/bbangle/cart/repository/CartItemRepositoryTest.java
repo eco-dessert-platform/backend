@@ -92,7 +92,7 @@ class CartItemRepositoryTest {
 
         @Test
         @DisplayName("회원의 장바구니 상품만 조회한다.")
-        void findCartItemsByMember() {
+        void success_findCartItemsByMember() {
 
             // when
             List<CartItem> result = cartItemRepository.findCartItemsByMember(testMember);
@@ -106,7 +106,7 @@ class CartItemRepositoryTest {
 
         @Test
         @DisplayName("Item과 Store를 fetch join 하여 조회한다.")
-        void fetchJoinItemAndStore() {
+        void success_findCartItemsByMember_fetchJoinItemAndStore() {
 
             // when
             em.clear();

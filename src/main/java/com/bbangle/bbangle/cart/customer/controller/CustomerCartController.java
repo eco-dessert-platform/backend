@@ -46,7 +46,6 @@ public class CustomerCartController implements CustomerCartApi {
         return responseService.getSuccessResult();
     }
 
-    // TODO : Test
     @Override
     @GetMapping
     public SingleResult<CartListResponse> getCart(

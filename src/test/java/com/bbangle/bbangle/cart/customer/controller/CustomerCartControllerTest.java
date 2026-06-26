@@ -4,14 +4,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
 import com.bbangle.bbangle.cart.customer.facade.CustomerCartFacade;
 import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
 import com.bbangle.bbangle.common.client.annotation.WithMockAuthenticationPrincipal;
@@ -177,5 +180,31 @@ class CustomerCartControllerTest {
                 .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
         }
 
+    }
+
+    @Nested
+    @DisplayName("getCart() 테스트")
+    class GetCartTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("장바구니를 조회한다")
+        void success_getCart() throws Exception {
+
+            // given
+            CartListResponse response = CartListResponse.builder()
+                .carts(List.of())
+                .build();
+
+            given(customerCartFacade.getCart(1L)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(CustomerApiPath.PREFIX + "/carts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.carts").isArray());
+
+            verify(customerCartFacade).getCart(1L);
+        }
     }
 }
