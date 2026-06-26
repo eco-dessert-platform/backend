@@ -231,18 +231,18 @@ class CustomerCartFacadeUnitTest {
             Cart cart = Cart.create(member);
             CartItem cartItem = CartItemFixture.withId(CartItemFixture.defaultCartItem(cart, board), 1000L);
 
-            Product thumbnailOption = ProductFixture.withId(ProductFixture.createWithStock(board, "옵션1", 10), 10000L);
+            Product optionWithThumbnail = ProductFixture.withId(ProductFixture.createWithStock(board, "옵션1", 10), 10000L);
             Product option2 = ProductFixture.withId(ProductFixture.createWithStock(board, "옵션2", 20), 10001L);
 
             ProductImg thumbnail = ProductImgFixture.defaultProductImgThumbnail(board, "thumbnail");
 
-            CartOption cartOption1 = CartOptionFixture.withId(CartOptionFixture.defaultCartOption(cartItem, thumbnailOption, 5), 100000L);
+            CartOption cartOption1 = CartOptionFixture.withId(CartOptionFixture.defaultCartOption(cartItem, optionWithThumbnail, 5), 100000L);
             CartOption cartOption2 = CartOptionFixture.withId(CartOptionFixture.defaultCartOption(cartItem, option2, 1), 100001L);
 
             given(memberService.findById(member.getId())).willReturn(member);
             given(customerCartItemService.findAllByMember(member)).willReturn(List.of(cartItem));
             given(productImgService.findAllByBoardIds(List.of(board.getId()))).willReturn(List.of(thumbnail));
-            given(productService.findAllByBoardIds(List.of(board.getId()))).willReturn(List.of(thumbnailOption, option2));
+            given(productService.findAllByBoardIds(List.of(board.getId()))).willReturn(List.of(optionWithThumbnail, option2));
             given(customerCartOptionService.findAllByCartItemIds(List.of(cartItem.getId())))
                 .willReturn(List.of(cartOption1, cartOption2));
 

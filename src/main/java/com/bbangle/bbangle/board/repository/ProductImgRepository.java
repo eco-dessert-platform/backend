@@ -21,7 +21,7 @@ public interface ProductImgRepository extends JpaRepository<ProductImg, Long> {
     @Query("""
             SELECT pi
             FROM ProductImg pi
-            WHERE pi.board.id IN :boardIds AND pi.imgOrder = 0
+            WHERE pi.board.id IN :boardIds AND pi.imgOrder = 0 AND pi.isDeleted = false
         """)
     List<ProductImg> findThumbnailImagesByBoardIds(@Param("boardIds") List<Long> boardId);
 }

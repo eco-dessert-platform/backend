@@ -165,7 +165,8 @@ public class CustomerCartFacade {
             .stream()
             .collect(Collectors.toMap(
                 productImg -> productImg.getBoard().getId(),
-                ProductImg::getUrl
+                ProductImg::getUrl,
+                (existing, ignored) -> existing     // 동일한 Board의 이미지가 중복 조회되더라도 첫번째 이미지를 사용
             ));
     }
 

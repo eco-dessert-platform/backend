@@ -12,6 +12,7 @@ import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +41,13 @@ class ProductRepositoryTest {
     private ProductRepository sut;
 
     @Autowired
-    private EntityManager em;
+    private BoardRepository boardRepository;
 
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private EntityManager em;
 
     /**
      * 테스트 전 auto increment 초기화
@@ -95,4 +101,27 @@ class ProductRepositoryTest {
         assertThat(notDeletedProduct.get().isDeleted()).isFalse();
     }
 
+    @Test
+    @DisplayName("삭제된 상품은 조회되지 않는다")
+    void success_findByBoardIds_excludeDeletedProduct() {
+
+        // given
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "상품"));
+        Product deletedProduct = ProductFixture.createWithStock(board, "삭제옵션", 10);
+        deletedProduct.delete();
+
+        sut.save(deletedProduct);
+
+        em.flush();
+        em.clear();
+
+        // when
+        List<Product> result = sut.findByBoardIds(List.of(board.getId()));
+
+        // then
+        assertThat(result)
+            .extracting(Product::getTitle)
+            .doesNotContain("삭제상품");
+    }
 }

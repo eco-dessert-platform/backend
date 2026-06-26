@@ -121,11 +121,11 @@ class ProductImgRepositoryTest {
             board2 = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board2"));
 
             // board1 이미지 (thumbnail + 일반)
-            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board1, "img1"));
-            productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board1, "img2", 1));
+            sut.save(ProductImgFixture.defaultProductImgThumbnail(board1, "img1"));
+            sut.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board1, "img2", 1));
 
             // board2 이미지 (thumbnail)
-            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board2, "img3"));
+            sut.save(ProductImgFixture.defaultProductImgThumbnail(board2, "img3"));
 
             em.flush();
             em.clear();
@@ -139,13 +139,35 @@ class ProductImgRepositoryTest {
             List<Long> boardIds = List.of(board1.getId(), board2.getId());
 
             // when
-            List<ProductImg> result = productImgRepository.findThumbnailImagesByBoardIds(boardIds);
+            List<ProductImg> result = sut.findThumbnailImagesByBoardIds(boardIds);
 
             // then
             assertThat(result).hasSize(2);
             assertThat(result).extracting(ProductImg::getImgOrder).containsOnly(0);
             assertThat(result).extracting(img -> img.getBoard().getId())
                 .containsExactlyInAnyOrder(board1.getId(), board2.getId());
+        }
+
+        @Test
+        @DisplayName("삭제된 Thumbnail은 조회되지 않는다")
+        void success_findThumbnailImagesByBoardIds_excludeDeletedThumbnail() {
+
+            // given
+            ProductImg deletedThumbnail = ProductImgFixture.defaultProductImgThumbnail(board1, "deleted");
+            deletedThumbnail.delete();
+
+            sut.save(deletedThumbnail);
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<ProductImg> result = productImgRepository.findThumbnailImagesByBoardIds(List.of(board1.getId()));
+
+            // then
+            assertThat(result)
+                .extracting(ProductImg::getUrl)
+                .doesNotContain("deleted");
         }
     }
 }
