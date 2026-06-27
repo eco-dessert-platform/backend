@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Tag(name = "Customer Store", description = "(커스토머) 장바구니 API")
+@Tag(name = "Customer Cart", description = "(커스토머) 장바구니 API")
 public interface CustomerCartApi {
 
     @Operation(
@@ -18,5 +18,14 @@ public interface CustomerCartApi {
     CommonResult addCart(
         @AuthenticationPrincipal Long memberId,
         @Valid @RequestBody CartRequest.AddCartRequest request
+    );
+
+    @Operation(
+        summary = "(커스토머) 장바구니 상품 삭제",
+        description = "장바구니에서 선택한 상품 옵션을 삭제합니다."
+    )
+    CommonResult deleteCartOptions(
+        @AuthenticationPrincipal Long memberId,
+        @Valid @RequestBody CartRequest.DeleteCartOptionsRequest request
     );
 }

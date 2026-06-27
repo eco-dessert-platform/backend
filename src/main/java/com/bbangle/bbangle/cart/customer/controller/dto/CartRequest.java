@@ -10,6 +10,12 @@ import java.util.List;
 
 public class CartRequest {
 
+    public record DeleteCartOptionsRequest(
+        @NotEmpty
+        @Schema(description = "삭제할 장바구니 옵션 ID 목록")
+        List<@NotNull Long> cartOptionIds
+    ) {}
+
     public record AddCartRequest(
         @NotNull
         @Schema(description = "장바구니에 추가할 게시글(상품) Id", example = "1")

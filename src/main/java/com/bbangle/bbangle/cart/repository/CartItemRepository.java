@@ -6,6 +6,7 @@ import com.bbangle.bbangle.cart.domain.CartItem;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+public interface CartItemRepository extends JpaRepository<CartItem, Long>, CartItemDSLRepository {
+
     Optional<CartItem> findByCartAndItem(Cart cart, Board item);
 }

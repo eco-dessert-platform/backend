@@ -16,6 +16,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +88,34 @@ public class CustomerCartFacade {
 
         if (productIds.size() != options.size()) {
             throw new BbangleException(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+        }
+    }
+
+    @Transactional
+    public void deleteCartOptions(Long memberId, CartRequest.DeleteCartOptionsRequest request) {
+        List<Long> optionIds = request.cartOptionIds();
+
+        List<CartItem> cartItems = customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId,
+            optionIds);
+        validateAllOptionsFound(cartItems, optionIds);
+
+        Set<Long> targetOptionIds = new HashSet<>(optionIds);
+        cartItems.forEach(cartItem -> cartItem.removeOptions(targetOptionIds));
+
+        cartItems.stream()
+            .filter(CartItem::hasNoOptions)
+            .forEach(customerCartItemService::delete);
+    }
+
+    private void validateAllOptionsFound(List<CartItem> cartItems, List<Long> requestedIds) {
+        Set<Long> requestedSet = new HashSet<>(requestedIds);
+        long foundCount = cartItems.stream()
+            .flatMap(ci -> ci.getOptions().stream())
+            .map(CartOption::getId)
+            .filter(requestedSet::contains)
+            .count();
+        if (foundCount != requestedIds.size()) {
+            throw new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION);
         }
     }
 
