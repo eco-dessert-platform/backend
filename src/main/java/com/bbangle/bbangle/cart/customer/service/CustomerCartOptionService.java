@@ -4,6 +4,8 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
 import com.bbangle.bbangle.cart.repository.CartOptionRepository;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,5 +37,11 @@ public class CustomerCartOptionService {
     @Transactional(readOnly = true)
     public List<CartOption> findAllByCartItemIds(List<Long> cartItemIds) {
         return cartOptionRepository.findCartOptionsByCartItemIds(cartItemIds);
+    }
+
+    @Transactional(readOnly = true)
+    public CartOption findByIdAndMemberId(Long memberId, Long cartOptionId) {
+        return cartOptionRepository.findByIdAndMemberId(cartOptionId, memberId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION));
     }
 }

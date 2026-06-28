@@ -7,12 +7,14 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest.UpdateCartOptionRequest;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse.AvailableOptionDTO;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse.CartItemDTO;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse.CartItemDTO.PriceDTO;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse.CartStoreDTO;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse.SelectedOptionDTO;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.UpdateCartOptionResponse;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartItemService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartOptionService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
@@ -25,8 +27,8 @@ import com.bbangle.bbangle.member.customer.service.MemberService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.store.domain.Store;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -102,34 +104,6 @@ public class CustomerCartFacade {
         }
     }
 
-    @Transactional
-    public void deleteCartOptions(Long memberId, CartRequest.DeleteCartOptionsRequest request) {
-        List<Long> optionIds = request.cartOptionIds();
-
-        List<CartItem> cartItems = customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId,
-            optionIds);
-        validateAllOptionsFound(cartItems, optionIds);
-
-        Set<Long> targetOptionIds = new HashSet<>(optionIds);
-        cartItems.forEach(cartItem -> cartItem.removeOptions(targetOptionIds));
-
-        cartItems.stream()
-            .filter(CartItem::hasNoOptions)
-            .forEach(customerCartItemService::delete);
-    }
-
-    private void validateAllOptionsFound(List<CartItem> cartItems, List<Long> requestedIds) {
-        Set<Long> requestedSet = new HashSet<>(requestedIds);
-        long foundCount = cartItems.stream()
-            .flatMap(ci -> ci.getOptions().stream())
-            .map(CartOption::getId)
-            .filter(requestedSet::contains)
-            .count();
-        if (foundCount != requestedIds.size()) {
-            throw new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION);
-        }
-    }
-
     /**
      * 요청에 포함된 상품 옵션들을 조회하여 Map으로 변환
      */
@@ -156,6 +130,34 @@ public class CustomerCartFacade {
                 option -> option.getOption().getId(),
                 Function.identity()
             ));
+    }
+
+    @Transactional
+    public void deleteCartOptions(Long memberId, CartRequest.DeleteCartOptionsRequest request) {
+        List<Long> optionIds = request.cartOptionIds();
+
+        List<CartItem> cartItems = customerCartItemService.findAllWithOptionsByMemberIdAndOptionIds(memberId,
+            optionIds);
+        validateAllOptionsFound(cartItems, optionIds);
+
+        Set<Long> targetOptionIds = new HashSet<>(optionIds);
+        cartItems.forEach(cartItem -> cartItem.removeOptions(targetOptionIds));
+
+        cartItems.stream()
+            .filter(CartItem::hasNoOptions)
+            .forEach(customerCartItemService::delete);
+    }
+
+    private void validateAllOptionsFound(List<CartItem> cartItems, List<Long> requestedIds) {
+        Set<Long> requestedSet = new HashSet<>(requestedIds);
+        long foundCount = cartItems.stream()
+            .flatMap(ci -> ci.getOptions().stream())
+            .map(CartOption::getId)
+            .filter(requestedSet::contains)
+            .count();
+        if (foundCount != requestedIds.size()) {
+            throw new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -284,5 +286,22 @@ public class CustomerCartFacade {
                 .items(cartItemMap.getOrDefault(store.getId(), List.of()))
                 .build()
             ).toList();
+    }
+
+    // TODO : Test
+    @Transactional
+    public UpdateCartOptionResponse updateQuantity(Long memberId, Long cartOptionId, UpdateCartOptionRequest request) {
+        CartOption cartOption = customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId);
+        Product option = cartOption.getOption();
+
+        option.validateStock(request.quantity());
+        customerCartOptionService.updateQuantity(cartOption, request.quantity());
+
+        return UpdateCartOptionResponse.builder()
+            .cartOptionId(cartOption.getId())
+            .optionName(option.getTitle())
+            .addedPrice(option.getPrice())
+            .quantity(cartOption.getQuantity())
+            .build();
     }
 }

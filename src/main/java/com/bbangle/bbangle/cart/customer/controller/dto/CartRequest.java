@@ -35,4 +35,11 @@ public class CartRequest {
             int quantity
         ) {}
     }
+
+    public record UpdateCartOptionRequest(
+        @Min(value = 1, message = "수량은 1개 이상 입력해주세요.")
+        @Max(value = 999, message = "수량은 999개 이하로 입력해주세요.")
+        @Schema(description = "변경할 상품 옵션의 수량", example = "1")
+        int quantity
+    ) {}
 }
