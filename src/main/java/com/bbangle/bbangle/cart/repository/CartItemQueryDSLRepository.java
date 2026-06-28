@@ -7,4 +7,6 @@ import java.util.List;
 public interface CartItemQueryDSLRepository {
 
     List<CartItem> findCartItemsByMember(Member member);
+
+    List<CartItem> findAllWithOptionsByMemberIdAndOptionIds(Long memberId, List<Long> optionIds);
 }

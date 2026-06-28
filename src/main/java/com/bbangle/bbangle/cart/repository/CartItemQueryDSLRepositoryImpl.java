@@ -3,6 +3,7 @@ package com.bbangle.bbangle.cart.repository;
 import static com.bbangle.bbangle.board.domain.QBoard.board;
 import static com.bbangle.bbangle.cart.domain.QCart.cart;
 import static com.bbangle.bbangle.cart.domain.QCartItem.cartItem;
+import static com.bbangle.bbangle.cart.domain.QCartOption.cartOption;
 import static com.bbangle.bbangle.store.domain.QStore.store;
 
 import com.bbangle.bbangle.cart.domain.CartItem;
@@ -27,6 +28,20 @@ public class CartItemQueryDSLRepositoryImpl implements CartItemQueryDSLRepositor
             .join(cartItem.item, board).fetchJoin()
             .join(board.store, store).fetchJoin()
             .where(cart.member.eq(member))
+            .fetch();
+    }
+
+    @Override
+    public List<CartItem> findAllWithOptionsByMemberIdAndOptionIds(Long memberId, List<Long> optionIds) {
+        return queryFactory
+            .selectFrom(cartItem)
+            .distinct()
+            .join(cartItem.options, cartOption)
+            .join(cartItem.cart, cart)
+            .where(
+                cart.member.id.eq(memberId),
+                cartOption.id.in(optionIds)
+            )
             .fetch();
     }
 }
