@@ -506,7 +506,7 @@ class CustomerCartFacadeIntegrationTest {
     }
 
     @Nested
-    @DisplayName("getCart() 통합 테스트")
+    @DisplayName("getCart() 테스트")
     class GetCartTest {
 
         private Member member;
