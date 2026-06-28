@@ -3,11 +3,13 @@ package com.bbangle.bbangle.order.customer.repository;
 import com.bbangle.bbangle.common.page.BbanglePageResponse;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderDetailCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.QOrder;
 import com.bbangle.bbangle.order.domain.QOrderItem;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
+import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
@@ -15,6 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ public class CustomerOrderRepository {
     private final QOrderItem orderItem = QOrderItem.orderItem;
     private final QProduct product = QProduct.product;
     private final QBoard board = QBoard.board;
+    private final QStore store = QStore.store;
 
     /**
      * 회원의 주문을 주문일(orderDate) 최신순으로 페이징 조회합니다.
@@ -50,6 +54,32 @@ public class CustomerOrderRepository {
         Long total = fetchCustomerTotalCount(command.memberId());
 
         return BbanglePageResponse.of(new PageImpl<>(orders, pageable, total));
+    }
+
+    /**
+     * 회원 소유의 단일 주문 상세를 조회합니다. (소유권 검증 포함)
+     *
+     * <p>단일 컬렉션({@code orderItems})만 fetchJoin 하고 나머지는 to-one 연관이므로
+     * 카테시안 곱 없이 한 번의 쿼리로 주문상품/상품/게시글/스토어/결제를 로딩합니다.
+     * 배송정보(OrderDelivery)는 주문상품 1:N 컬렉션이라 함께 fetchJoin 하지 않고
+     * 서비스 계층에서 {@code findLatestByOrderItemIds} 로 별도 일괄 로딩하여 N+1 을 방지합니다.
+     */
+    public Optional<Order> findCustomerOrderDetail(CustomerOrderDetailCommand command) {
+        Order result = queryFactory
+            .selectFrom(order)
+            .distinct()
+            .leftJoin(order.orderItems, orderItem).fetchJoin()
+            .leftJoin(orderItem.product, product).fetchJoin()
+            .leftJoin(product.board, board).fetchJoin()
+            .leftJoin(product.store, store).fetchJoin()
+            .leftJoin(order.payment).fetchJoin()
+            .where(
+                order.id.eq(command.orderId()),
+                order.member.id.eq(command.memberId())
+            )
+            .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     /**
