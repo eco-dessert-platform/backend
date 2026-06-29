@@ -59,7 +59,6 @@ public class CustomerCartController implements CustomerCartApi {
         );
     }
 
-    // TODO : Test
     @Override
     @PatchMapping("/options/{cartOptionId}")
     public SingleResult<UpdateCartOptionResponse> updateCartOption(
