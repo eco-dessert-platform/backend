@@ -3,10 +3,13 @@ package com.bbangle.bbangle.cart.customer.facade;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -17,7 +20,9 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest.UpdateCartOptionRequest;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.UpdateCartOptionResponse;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartItemService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartOptionService;
 import com.bbangle.bbangle.cart.customer.service.CustomerCartService;
@@ -48,6 +53,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("[단위테스트] CustomerCartFacade")
 @ExtendWith(MockitoExtension.class)
@@ -388,6 +394,96 @@ class CustomerCartFacadeUnitTest {
 
             // then
             assertThat(result.carts()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("updateQuantity() 테스트")
+    class UpdateQuantityTest {
+
+        @Test
+        @DisplayName("장바구니 옵션의 수량을 변경한다.")
+        void success_updateQuantity() {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 1L;
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(3);
+
+            Board board = mock(Board.class);
+            Product option = ProductFixture.createWithStock(board, "옵션1", 10);
+            ReflectionTestUtils.setField(option, "id", 1L);
+
+            CartOption cartOption = mock(CartOption.class);
+
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getId()).willReturn(cartOptionId);
+            given(cartOption.getOption()).willReturn(option);
+            given(cartOption.getQuantity()).willReturn(3);
+
+            // when
+            UpdateCartOptionResponse result = customerCartFacade.updateQuantity(memberId, cartOptionId, request);
+
+            // then
+            assertThat(result.cartOptionId()).isEqualTo(cartOptionId);
+            assertThat(result.optionId()).isEqualTo(option.getId());
+            assertThat(result.optionName()).isEqualTo(option.getTitle());
+            assertThat(result.quantity()).isEqualTo(3);
+
+            verify(customerCartOptionService).findByIdAndMemberId(memberId, cartOptionId);
+            verify(customerCartOptionService).updateQuantity(cartOption, 3);
+        }
+
+        @Test
+        @DisplayName("재고보다 많은 수량이면 예외가 발생한다.")
+        void fail_updateQuantity_insufficientStock() {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 1L;
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(11);
+
+            Board board = mock(Board.class);
+            Product option = ProductFixture.createWithStock(board, "옵션1", 10);
+            CartOption cartOption = mock(CartOption.class);
+
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getOption()).willReturn(option);
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.updateQuantity(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+
+            verify(customerCartOptionService, never()).updateQuantity(any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("장바구니 옵션이 존재하지 않으면 예외가 발생한다.")
+        void fail_updateQuantity_notFoundCartOption() {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 1L;
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(3);
+
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId))
+                .willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION));
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.updateQuantity(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+                });
+
+            verify(customerCartOptionService, never()).updateQuantity(any(), anyInt());
         }
     }
 }

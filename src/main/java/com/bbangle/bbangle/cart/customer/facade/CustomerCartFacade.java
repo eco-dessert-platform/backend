@@ -288,7 +288,6 @@ public class CustomerCartFacade {
             ).toList();
     }
 
-    // TODO : Test
     @Transactional
     public UpdateCartOptionResponse updateQuantity(Long memberId, Long cartOptionId, UpdateCartOptionRequest request) {
         CartOption cartOption = customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId);
