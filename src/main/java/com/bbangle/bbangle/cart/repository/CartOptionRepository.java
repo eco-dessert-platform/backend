@@ -20,7 +20,6 @@ public interface CartOptionRepository extends JpaRepository<CartOption, Long> {
         """)
     List<CartOption> findCartOptionsByCartItemIds(@Param("cartItemIds") List<Long> cartItemIds);
 
-    // TODO : Test
     @Query("""
         select co
         from CartOption co

@@ -89,10 +89,10 @@ public class CartResponse {
     public record UpdateCartOptionResponse (
         @Schema(description = "장바구니에 담긴 상품 옵션 Id", example = "1")
         Long cartOptionId,
+        @Schema(description = "상품 옵션 Id", example = "1")
+        Long optionId,
         @Schema(description = "상품 옵션 명", example = "저당 초콜릿")
         String optionName,
-        @Schema(description = "상품 옵션 추가 금액", example = "2000")
-        Integer addedPrice,
         @Schema(description = "장바구니에 담긴 상품 옵션의 수량", example = "2")
         Integer quantity
     ) {}

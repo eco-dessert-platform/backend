@@ -299,8 +299,8 @@ public class CustomerCartFacade {
 
         return UpdateCartOptionResponse.builder()
             .cartOptionId(cartOption.getId())
+            .optionId(option.getId())
             .optionName(option.getTitle())
-            .addedPrice(option.getPrice())
             .quantity(cartOption.getQuantity())
             .build();
     }
