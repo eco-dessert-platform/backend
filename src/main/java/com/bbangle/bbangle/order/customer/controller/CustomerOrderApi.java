@@ -31,4 +31,16 @@ public interface CustomerOrderApi {
         Long memberId,
         @Parameter(description = "주문 ID", example = "1") Long orderId
     );
+
+    @Operation(
+        summary = "(소비자) 구매확정",
+        description = "본인 소유의 배송완료된 주문상품을 구매확정합니다. "
+            + "배송완료 후 7일이 지나면 자동으로 구매확정되며, 그 전이라도 이 API로 직접 확정할 수 있습니다. "
+            + "구매확정 이후에는 주문 조회 응답의 reviewable 플래그가 true 가 되어 후기작성 버튼이 노출됩니다."
+    )
+    SingleResult<Long> confirmPurchase(
+        Long memberId,
+        @Parameter(description = "주문 ID", example = "1") Long orderId,
+        @Parameter(description = "주문상품 ID", example = "10") Long orderItemId
+    );
 }

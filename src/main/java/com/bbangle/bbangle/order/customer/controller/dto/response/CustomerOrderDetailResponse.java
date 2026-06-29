@@ -86,7 +86,9 @@ public class CustomerOrderDetailResponse {
         @Schema(description = "배송조회 버튼 노출 여부 (운송장 등록 시 true)") boolean deliveryTrackable,
         @Schema(description = "택배사", example = "CJ대한통운") String courierCompany,
         @Schema(description = "운송장 번호", example = "123-456-789") String trackingNumber,
-        @Schema(description = "진행 단계 정보") CustomerOrderProgress progress
+        @Schema(description = "진행 단계 정보") CustomerOrderProgress progress,
+        @Schema(description = "구매확정 버튼 노출 여부 (배송완료 && 구매확정 전이면 true)") boolean purchaseConfirmable,
+        @Schema(description = "후기작성 버튼 노출 여부 (구매확정 상태면 true)") boolean reviewable
     ) {
 
     }
