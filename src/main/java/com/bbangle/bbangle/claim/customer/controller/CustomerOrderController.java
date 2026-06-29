@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.claim.customer.controller;
 
+import com.bbangle.bbangle.claim.customer.controller.dto.CustomerCancelRequest;
+import com.bbangle.bbangle.claim.customer.controller.dto.CustomerExchangeRequest;
 import com.bbangle.bbangle.claim.customer.controller.dto.CustomerReturnRequest;
-import com.bbangle.bbangle.claim.customer.service.CustomerReturnService;
+import com.bbangle.bbangle.claim.customer.service.CustomerOrderService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.security.CustomerApiPath;
@@ -17,10 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping(CustomerApiPath.PREFIX + "/orders")
 @RestController
-public class CustomerReturnController {
+public class CustomerOrderController {
 
     private final ResponseService responseService;
-    private final CustomerReturnService customerReturnService;
+    private final CustomerOrderService customerOrderService;
+
+    @PatchMapping("/{orderId}/cancel")
+    public CommonResult requestCancel(
+        @PathVariable Long orderId,
+        @Valid @RequestBody CustomerCancelRequest request,
+        @AuthenticationPrincipal Long customerId
+    ) {
+        customerOrderService.cancelOrder(orderId, customerId, request);
+        return responseService.getSuccessResult();
+    }
 
     @PatchMapping("/{orderId}/return")
     public CommonResult requestReturn(
@@ -28,7 +40,17 @@ public class CustomerReturnController {
         @Valid @RequestBody CustomerReturnRequest request,
         @AuthenticationPrincipal Long customerId
     ) {
-        customerReturnService.requestReturn(orderId, customerId, request);
+        customerOrderService.requestReturn(orderId, customerId, request);
+        return responseService.getSuccessResult();
+    }
+
+    @PatchMapping("/{orderId}/exchange")
+    public CommonResult requestExchange(
+        @PathVariable Long orderId,
+        @Valid @RequestBody CustomerExchangeRequest request,
+        @AuthenticationPrincipal Long customerId
+    ) {
+        customerOrderService.requestExchange(orderId, customerId, request);
         return responseService.getSuccessResult();
     }
 }
