@@ -37,12 +37,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@DisplayName("[단위 테스트] CustomerOrderService")
+@DisplayName("[단위 테스트] CustomerClaimService")
 @ExtendWith(MockitoExtension.class)
-class CustomerOrderServiceTest {
+class CustomerClaimServiceTest {
 
     @InjectMocks
-    private CustomerOrderService sut;
+    private CustomerClaimService sut;
 
     @Mock
     private OrderRepository orderRepository;
