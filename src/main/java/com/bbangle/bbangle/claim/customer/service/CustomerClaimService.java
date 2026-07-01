@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-public class CustomerOrderService {
+public class CustomerClaimService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
