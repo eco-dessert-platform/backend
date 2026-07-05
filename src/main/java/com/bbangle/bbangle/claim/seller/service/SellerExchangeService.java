@@ -158,8 +158,6 @@ public class SellerExchangeService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.DELIVERY_NOT_FOUND));
 
         claimDelivery.updateInvoice(courierCode, trackingNumber);
-
-        orderItemHistoryRepository.save(OrderItemHistory.create(exchangeRequest.getOrderItem()));
     }
 
     @Transactional
@@ -207,9 +205,8 @@ public class SellerExchangeService {
         orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
     }
 
-    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
     private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {
-        return exchangeRequestRepository.findWithLockById(exchangeId)
+        return exchangeRequestRepository.findById(exchangeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
     }
 

@@ -123,7 +123,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
 
         returnRequest.processReturn();
@@ -140,7 +140,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
 
         returnRequest.startReturnPickup();
@@ -157,7 +157,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
 
         returnRequest.validatePickupScheduled();
@@ -198,9 +198,8 @@ public class SellerReturnService {
         applyRefusal(returnRequest, refusalReason);
     }
 
-    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
     private ReturnRequest findReturnRequestWithLock(Long returnId) {
-        return returnRequestRepository.findWithLockById(returnId)
+        return returnRequestRepository.findById(returnId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
     }
 
@@ -234,8 +233,12 @@ public class SellerReturnService {
         }
 
         List<ReturnRequest> returnRequests = returnRequestRepository.findAllById(returnIds);
-        List<OrderItemHistory> historiesToSave = new ArrayList<>();
 
+        if (returnRequests.stream().anyMatch(rr -> rr.getStatus() != ReturnRequestRequestStatus.REQUESTED)) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+
+        List<OrderItemHistory> historiesToSave = new ArrayList<>();
         for (ReturnRequest returnRequest : returnRequests) {
             OrderItemHistory history = processDecision(returnRequest, decisionType, reason);
             historiesToSave.add(history);

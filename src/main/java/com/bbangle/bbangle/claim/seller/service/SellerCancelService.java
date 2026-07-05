@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.seller.service;
 
 import com.bbangle.bbangle.claim.domain.CancelRequest;
+import com.bbangle.bbangle.claim.domain.constant.CancelRequestStatus;
 import com.bbangle.bbangle.claim.domain.constant.DecisionType;
 import com.bbangle.bbangle.claim.repository.CancelRequestRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -28,6 +29,11 @@ public class SellerCancelService {
         }
 
         List<CancelRequest> cancelRequests = cancelRequestRepository.findAllById(cancelIds);
+
+        if (cancelRequests.stream().anyMatch(cr -> cr.getStatus() != CancelRequestStatus.REQUESTED)) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+
         for (CancelRequest cancelRequest : cancelRequests) {
             processDecision(cancelRequest, decisionType, reason);
         }

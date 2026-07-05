@@ -9,11 +9,13 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderDelivery;
 import com.bbangle.bbangle.order.domain.OrderItem;
+import com.bbangle.bbangle.order.domain.OrderItemHistory;
 import com.bbangle.bbangle.order.domain.model.CompletedOrderStatus;
 import com.bbangle.bbangle.order.domain.model.DayOfWeek;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.repository.OrderDeliveryRepository;
+import com.bbangle.bbangle.order.repository.OrderItemHistoryRepository;
 import com.bbangle.bbangle.order.repository.OrderItemRepository;
 import com.bbangle.bbangle.order.repository.OrderRepository;
 import com.bbangle.bbangle.order.seller.controller.dto.response.OrderItemListResponse.OrderItemList;
@@ -64,6 +66,7 @@ public class SellerOrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderDeliveryRepository orderDeliveryRepository;
+    private final OrderItemHistoryRepository orderItemHistoryRepository;
     private final SellerRepository sellerRepository;
 
     // ========================================================================================
@@ -97,15 +100,21 @@ public class SellerOrderService {
 
         List<Long> confirmedIds = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>(notFoundIds);
+        List<OrderItemHistory> historiesToSave = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems) {
             // confirmOrder()는 현재 상태가 발주확인 가능한 상태(결제완료)일 때만 true를 반환
             if (orderItem.confirmOrder()) {
                 confirmedIds.add(orderItem.getId());
+                historiesToSave.add(OrderItemHistory.create(orderItem));
             } else {
                 // 이미 확인 처리됐거나 전환 불가능한 상태이면 실패 처리
                 failedIds.add(orderItem.getId());
             }
+        }
+
+        if (!historiesToSave.isEmpty()) {
+            orderItemHistoryRepository.saveAll(historiesToSave);
         }
 
         SellerOrderResponse.Summary summary = SellerOrderResponse.Summary.of(
@@ -155,6 +164,7 @@ public class SellerOrderService {
                 delivery.registerShipment(command.courierName(), command.trackingNumber());
                 // OrderItem 상태를 배송중(SHIPPED)으로 전환
                 orderItem.shipOrder();
+                orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
 
                 successIds.add(orderItem.getId());
                 shippedAt = delivery.getShipping().getShippedAt();
