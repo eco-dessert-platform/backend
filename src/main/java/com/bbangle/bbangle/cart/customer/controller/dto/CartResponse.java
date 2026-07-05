@@ -84,4 +84,16 @@ public class CartResponse {
             Integer quantity
         ) {}
     }
+
+    @Builder
+    public record UpdateCartOptionResponse (
+        @Schema(description = "장바구니에 담긴 상품 옵션 Id", example = "1")
+        Long cartOptionId,
+        @Schema(description = "상품 옵션 Id", example = "1")
+        Long optionId,
+        @Schema(description = "상품 옵션 명", example = "저당 초콜릿")
+        String optionName,
+        @Schema(description = "장바구니에 담긴 상품 옵션의 수량", example = "2")
+        Integer quantity
+    ) {}
 }

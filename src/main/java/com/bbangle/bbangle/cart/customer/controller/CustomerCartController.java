@@ -2,6 +2,7 @@ package com.bbangle.bbangle.cart.customer.controller;
 
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.UpdateCartOptionResponse;
 import com.bbangle.bbangle.cart.customer.controller.swagger.CustomerCartApi;
 import com.bbangle.bbangle.cart.customer.facade.CustomerCartFacade;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -11,8 +12,10 @@ import com.bbangle.bbangle.config.security.CustomerApiPath;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,8 +52,22 @@ public class CustomerCartController implements CustomerCartApi {
     @Override
     @GetMapping
     public SingleResult<CartListResponse> getCart(
-        @AuthenticationPrincipal Long memberId) {
+        @AuthenticationPrincipal Long memberId
+    ) {
+        return responseService.getSingleResult(
+            customerCartFacade.getCart(memberId)
+        );
+    }
 
-        return responseService.getSingleResult(customerCartFacade.getCart(memberId));
+    @Override
+    @PatchMapping("/options/{cartOptionId}")
+    public SingleResult<UpdateCartOptionResponse> updateCartOption(
+        @AuthenticationPrincipal Long memberId,
+        @PathVariable Long cartOptionId,
+        @Valid @RequestBody CartRequest.UpdateCartOptionRequest request
+    ) {
+        return responseService.getSingleResult(
+            customerCartFacade.updateQuantity(memberId, cartOptionId, request)
+        );
     }
 }

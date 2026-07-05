@@ -10,7 +10,9 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest.UpdateCartOptionRequest;
 import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.UpdateCartOptionResponse;
 import com.bbangle.bbangle.cart.domain.Cart;
 import com.bbangle.bbangle.cart.domain.CartItem;
 import com.bbangle.bbangle.cart.domain.CartOption;
@@ -642,6 +644,97 @@ class CustomerCartFacadeIntegrationTest {
 
             // then
             assertThat(result.carts()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("updateQuantity() 테스트")
+    class UpdateQuantityTest {
+
+        private Member member;
+        private Member otherMember;
+        private CartOption cartOption;
+        private Product option;
+
+        @BeforeEach
+        void setUp() {
+
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board"));
+
+            member = memberRepository.save(MemberFixture.defaultMember());
+            otherMember = memberRepository.save(MemberFixture.createMemberWithName("other@test.com"));
+
+            Cart cart = cartRepository.save(Cart.create(member));
+            cartRepository.save(Cart.create(otherMember));
+
+            CartItem cartItem = cartItemRepository.save(CartItem.create(cart, board));
+
+            option = productRepository.save(ProductFixture.createWithStock(board, "옵션", 10));
+
+            cartOption = cartOptionRepository.save(CartOption.create(cartItem, option, 2));
+
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("장바구니 옵션의 수량을 변경한다.")
+        void success_updateQuantity() {
+
+            // given
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(5);
+
+            // when
+            UpdateCartOptionResponse result = customerCartFacade.updateQuantity(member.getId(), cartOption.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            CartOption updatedCartOption = cartOptionRepository.findById(cartOption.getId()).orElseThrow();
+
+            // then
+            assertThat(result.cartOptionId()).isEqualTo(cartOption.getId());
+            assertThat(result.optionId()).isEqualTo(option.getId());
+            assertThat(result.optionName()).isEqualTo(option.getTitle());
+            assertThat(result.quantity()).isEqualTo(5);
+            assertThat(updatedCartOption.getQuantity()).isEqualTo(5);
+        }
+
+        @Test
+        @DisplayName("재고보다 많은 수량이면 예외가 발생한다.")
+        void fail_updateQuantity_insufficientStock() {
+
+            // given
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(11);
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.updateQuantity(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+        }
+
+        @Test
+        @DisplayName("다른 회원의 장바구니 옵션이면 예외가 발생한다.")
+        void fail_updateQuantity_notFoundCartOption() {
+
+            // given
+            UpdateCartOptionRequest request = new UpdateCartOptionRequest(5);
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.updateQuantity(otherMember.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+                });
         }
     }
 }

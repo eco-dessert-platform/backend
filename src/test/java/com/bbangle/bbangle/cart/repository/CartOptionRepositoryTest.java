@@ -22,7 +22,9 @@ import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceUnitUtil;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -71,33 +73,35 @@ class CartOptionRepositoryTest {
     @Autowired
     EntityManager em;
 
+    private CartItem cartItem;
+    private Member member;
+    private CartOption cartOption;
+
+    @BeforeEach
+    void setUp() {
+
+        Store store = storeRepository.save(StoreFixture.defaultStore());
+        Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board"));
+
+        member = memberRepository.save(MemberFixture.defaultMember());
+
+        Cart cart = cartRepository.save(Cart.create(member));
+
+        cartItem = cartItemRepository.save(CartItem.create(cart, board));
+
+        Product option1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 10));
+        Product option2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 10));
+
+        cartOption = cartOptionRepository.save(CartOption.create(cartItem, option1, 5));
+        cartOptionRepository.save(CartOption.create(cartItem, option2, 1));
+
+        em.flush();
+        em.clear();
+    }
+
     @Nested
     @DisplayName("findCartOptionsByCartItemIds() 테스트")
     class FindCartOptionsByCartItemIdsTest {
-
-        private CartItem cartItem;
-
-        @BeforeEach
-        void setUp() {
-
-            Store store = storeRepository.save(StoreFixture.defaultStore());
-            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board"));
-
-            Member member = memberRepository.save(MemberFixture.defaultMember());
-
-            Cart cart = cartRepository.save(Cart.create(member));
-
-            cartItem = cartItemRepository.save(CartItem.create(cart, board));
-
-            Product option1 = productRepository.save(ProductFixture.createWithStock(board, "옵션1", 10));
-            Product option2 = productRepository.save(ProductFixture.createWithStock(board, "옵션2", 10));
-
-            cartOptionRepository.save(CartOption.create(cartItem, option1, 5));
-            cartOptionRepository.save(CartOption.create(cartItem, option2, 1));
-
-            em.flush();
-            em.clear();
-        }
 
         @Test
         @DisplayName("CartItemIds에 해당하는 CartOption과 Product가 함께 조회된다.")
@@ -113,6 +117,60 @@ class CartOptionRepositoryTest {
             assertThat(result).hasSize(2);
             assertThat(result).extracting(co -> co.getCartItem().getId()).containsOnly(cartItem.getId());
             assertThat(result).extracting(co -> co.getOption().getTitle()).containsExactlyInAnyOrder("옵션1", "옵션2");
+        }
+    }
+
+    @Nested
+    @DisplayName("findByIdAndMemberId() 테스트")
+    class FindByIdAndMemberIdTest {
+
+        @Test
+        @DisplayName("회원의 CartOption을 Product와 함께 조회한다.")
+        void success_findByIdAndMemberId() {
+
+            // given
+            Long cartOptionId = cartOption.getId();
+
+            // when
+            Optional<CartOption> result = cartOptionRepository.findByIdAndMemberId(cartOptionId, member.getId());
+
+            // then
+            assertThat(result).isPresent();
+
+            CartOption found = result.get();
+            assertThat(found.getId()).isEqualTo(cartOptionId);
+            assertThat(found.getOption().getTitle()).isEqualTo("옵션1");
+
+            PersistenceUnitUtil util = em.getEntityManagerFactory().getPersistenceUnitUtil();
+            assertThat(util.isLoaded(found.getOption())).isTrue();
+        }
+
+        @Test
+        @DisplayName("다른 회원의 CartOption이면 조회되지 않는다.")
+        void fail_findByIdAndMemberId_invalidMemberId() {
+
+            // given
+            Member otherMember = memberRepository.save(MemberFixture.createMemberWithName("other@test.com"));
+
+            // when
+            Optional<CartOption> result = cartOptionRepository.findByIdAndMemberId(cartOption.getId(), otherMember.getId());
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 CartOption이면 조회되지 않는다.")
+        void fail_findByIdAndMemberId_invalidCartOptionId() {
+
+            // given
+            Long invalidCartOptionId = 99999L;
+
+            // when
+            Optional<CartOption> result = cartOptionRepository.findByIdAndMemberId(invalidCartOptionId, member.getId());
+
+            // then
+            assertThat(result).isEmpty();
         }
     }
 }
