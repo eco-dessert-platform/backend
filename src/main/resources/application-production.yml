@@ -78,7 +78,7 @@ oauth2:
 logging:
   config: classpath:logback/prod.xml
   file:
-    path: /home/ubuntu/bbangle/logs
+    path: /app/logs
 
 jwt:
   issuer: ${JWT_ISSUER}
