@@ -19,6 +19,7 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.repository.PushRepository;
@@ -61,6 +62,37 @@ public class BoardDetailService {
     private final BoardRepository boardRepository;
     private final HtmlUtils htmlUtils;
     private final BoardDetailInfoMapper boardDetailInfoMapper;
+
+    private static List<String> convertToStrings(List<TagsDao> tags) {
+        Set<String> tagStrings = new HashSet<>();
+
+        Set<TagsDao> duplicationTags = tags.stream()
+            .collect(Collectors.toSet()); // 아예 똑같은 태그 DAO 중복 제거
+
+        for (TagsDao tag : duplicationTags) {
+            if (tag.glutenFreeTag()) {
+                tagStrings.add(TagEnum.GLUTEN_FREE.label());
+            }
+
+            if (tag.sugarFreeTag()) {
+                tagStrings.add(TagEnum.SUGAR_FREE.label());
+            }
+
+            if (tag.highProteinTag()) {
+                tagStrings.add(TagEnum.HIGH_PROTEIN.label());
+            }
+
+            if (tag.veganTag()) {
+                tagStrings.add(TagEnum.VEGAN.label());
+            }
+
+            if (tag.ketogenicTag()) {
+                tagStrings.add(TagEnum.KETOGENIC.label());
+            }
+        }
+
+        return tagStrings.stream().toList();
+    }
 
     @Transactional
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId,
@@ -145,37 +177,6 @@ public class BoardDetailService {
         return boardResponses;
     }
 
-    private static List<String> convertToStrings(List<TagsDao> tags) {
-        Set<String> tagStrings = new HashSet<>();
-
-        Set<TagsDao> duplicationTags = tags.stream()
-            .collect(Collectors.toSet()); // 아예 똑같은 태그 DAO 중복 제거
-
-        for (TagsDao tag : duplicationTags) {
-            if (tag.glutenFreeTag()) {
-                tagStrings.add(TagEnum.GLUTEN_FREE.label());
-            }
-
-            if (tag.sugarFreeTag()) {
-                tagStrings.add(TagEnum.SUGAR_FREE.label());
-            }
-
-            if (tag.highProteinTag()) {
-                tagStrings.add(TagEnum.HIGH_PROTEIN.label());
-            }
-
-            if (tag.veganTag()) {
-                tagStrings.add(TagEnum.VEGAN.label());
-            }
-
-            if (tag.ketogenicTag()) {
-                tagStrings.add(TagEnum.KETOGENIC.label());
-            }
-        }
-
-        return tagStrings.stream().toList();
-    }
-
     private void addRandomRecommandationBoard(List<Long> similarityOrderByBoardIds) {
         int insufficientNumber =
             RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
@@ -225,6 +226,7 @@ public class BoardDetailService {
             boardDetailHtmlWithCdnUrl);
     }
 
+    @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
         Board board = boardRepository.findById(command.boardId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
@@ -251,6 +253,7 @@ public class BoardDetailService {
     }
 
     // 패키지 구조 수정 시, 로직 변경해야함
+    @ExecutionTimeLog
     @Transactional
     public void increaseVisitor(BoardDetailCommand.Main command) {
         String visitorInfo = ViewCount.builder()
