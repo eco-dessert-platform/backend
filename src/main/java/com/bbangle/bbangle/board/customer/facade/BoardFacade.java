@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.customer.facade;
 
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.search.customer.service.SearchService;
 import com.bbangle.bbangle.search.customer.service.dto.SearchCommand;
@@ -18,6 +19,7 @@ public class BoardFacade {
     private final SearchService searchService;
     private final WishListBoardService wishListBoardService;
 
+    @ExecutionTimeLog
     @Transactional(readOnly = true)
     public CursorPagination<SearchInfo.Select> getBoardList(@Valid SearchCommand.Main command) {
         SearchInfo.BoardsInfo boardsInfo = searchService.getBoardList(command);

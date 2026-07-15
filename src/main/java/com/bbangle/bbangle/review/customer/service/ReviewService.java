@@ -9,6 +9,7 @@ import static java.util.Locale.ROOT;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.common.page.ImageCustomPage;
 import com.bbangle.bbangle.common.page.ReviewCustomPage;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -306,6 +307,7 @@ public class ReviewService {
         imageRepository.delete(reviewImg);
     }
 
+    @ExecutionTimeLog
     @Transactional
     public SummarizedReviewResponse getSummarizedReview(Long boardId) {
         List<ReviewBadgeDto> reviews = reviewRepository.findReviewBadgeByBoardId(boardId);
