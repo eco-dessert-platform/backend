@@ -230,6 +230,9 @@ public class BoardDetailService {
 
     @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
+        if (command.boardId() == 189) {
+            throw new NullPointerException("test");
+        }
         Board board = boardRepository.findById(command.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         if (Objects.isNull(command.memberId())) {
@@ -244,7 +247,6 @@ public class BoardDetailService {
         return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard, bbangkettingProductIds);
     }
 
-    @ExecutionTimeLog
     private List<Long> getBbankettingProductsIds(Board board, Long memberId) {
         long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
         List<Long> productIds = board.getProducts().stream().map(Product::getId).toList();

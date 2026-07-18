@@ -42,7 +42,6 @@ public class RequestTimeInterceptor implements HandlerInterceptor {
             long duration = endTime - startTime;
 
             long dbTime = QueryTimerContext.getTotalTime();
-            QueryTimerContext.clear();
 
             String serialId = MDC.get("serialId");
             String requestURI = request.getRequestURI();
@@ -64,7 +63,8 @@ public class RequestTimeInterceptor implements HandlerInterceptor {
                 slackAdaptor.sendText("느린 요청 알림", slackMessage);
             }
         } finally {
-            MDC.clear();
+            QueryTimerContext.clear();
+            MDC.remove("serialId");
         }
     }
 
