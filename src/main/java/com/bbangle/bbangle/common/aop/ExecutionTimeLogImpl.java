@@ -23,7 +23,12 @@ public class ExecutionTimeLogImpl {
         Object result = joinPoint.proceed();
         long duration = System.currentTimeMillis() - start;
 
-        log.info("Method : {}.{}() | Execution Time : {} ms", className, methodName, duration);
+        log.info("""
+            
+            [Execution Time Log]
+            - TARGET : {}.{}
+            - TIME : {}
+            """, className, methodName, duration);
         return result;
     }
 

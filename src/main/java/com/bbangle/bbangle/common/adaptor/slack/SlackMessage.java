@@ -1,12 +1,12 @@
 package com.bbangle.bbangle.common.adaptor.slack;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.slf4j.MDC;
 
 @Data
 @AllArgsConstructor
@@ -56,8 +56,14 @@ public class SlackMessage {
             }
 
             public static String createSection(HttpServletRequest request, Throwable t) {
-                return String.format(
-                    "- url: %s \n - 위치: %s \n - message: %s ",
+                return String.format("""
+                        
+                        - REQUEST ID : %s
+                        - url : %s
+                        - 위치 : %s
+                        - message : %s
+                        """,
+                    MDC.get("serialId"),
                     request.getRequestURI(),
                     extractMethodPosition(t),
                     truncateText(t.getMessage(), 3000)
