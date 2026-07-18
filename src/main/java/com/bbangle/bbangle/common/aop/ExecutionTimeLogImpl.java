@@ -27,7 +27,7 @@ public class ExecutionTimeLogImpl {
             
             [Execution Time Log]
             - TARGET : {}.{}
-            - TIME : {}
+            - TIME : {}ms
             """, className, methodName, duration);
         return result;
     }

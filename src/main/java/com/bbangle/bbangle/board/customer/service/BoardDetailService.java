@@ -37,9 +37,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -228,28 +230,27 @@ public class BoardDetailService {
 
     @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
-        Board board = boardRepository.findById(command.boardId())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+        Board board = boardRepository.findById(command.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         if (Objects.isNull(command.memberId())) {
-            return boardDetailInfoMapper.toMainInfo(board, NOT_WISHED_STORE, NOT_WISHED_BOARD,
-                NOT_BBANGKETTING_PRODUCT_IDS);
+            return boardDetailInfoMapper.toMainInfo(board, NOT_WISHED_STORE, NOT_WISHED_BOARD, NOT_BBANGKETTING_PRODUCT_IDS);
         }
 
-        boolean isWishedBoard = wishListBoardRepository.existsByBoardIdAndMemberId(
-            command.boardId(), command.memberId());
-        boolean isWishedStore = wishListStoreRepository.existsByStoreIdAndMemberId(
-            board.getStore().getId(), command.memberId());
+        boolean isWishedBoard = wishListBoardRepository.existsByBoardIdAndMemberId(command.boardId(), command.memberId());
+        boolean isWishedStore = wishListStoreRepository.existsByStoreIdAndMemberId(board.getStore().getId(), command.memberId());
 
         List<Long> bbangkettingProductIds = getBbankettingProductsIds(board, command.memberId());
 
-        return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard,
-            bbangkettingProductIds);
+        return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard, bbangkettingProductIds);
     }
 
+    @ExecutionTimeLog
     private List<Long> getBbankettingProductsIds(Board board, Long memberId) {
+        long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
         List<Long> productIds = board.getProducts().stream().map(Product::getId).toList();
-        return pushRepository.findExistingPushProductIds(productIds, memberId);
+        List<Long> result = pushRepository.findExistingPushProductIds(productIds, memberId);
+        log.info("[PERF] BoardDetailService.getBbankettingProductsIds() : {} ms", System.currentTimeMillis() - start);  // TODO : 임시 출력 로그 - 추후 삭제 예정
+        return result;
     }
 
     // 패키지 구조 수정 시, 로직 변경해야함
