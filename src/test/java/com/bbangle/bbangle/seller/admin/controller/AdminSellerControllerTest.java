@@ -26,6 +26,7 @@ import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.Admin
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationList;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse.AdminSellerApplicationRejectList;
 import com.bbangle.bbangle.seller.admin.facade.AdminSellerFacade;
+import com.bbangle.bbangle.seller.admin.service.AdminSellerDocumentService;
 import com.bbangle.bbangle.seller.admin.service.AdminSellerService;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,6 +68,9 @@ class AdminSellerControllerTest {
 
     @MockBean
     private AdminSellerService adminSellerService;
+
+    @MockBean
+    private AdminSellerDocumentService adminSellerDocumentService;
 
     @SpyBean
     private ResponseService responseService;
@@ -255,14 +259,14 @@ class AdminSellerControllerTest {
 
             // given
             String request = """
-            [
-              {
-                "applicationId": null,
-                "sellerName": "홍길동",
-                "identifier": "12345"
-              }
-            ]
-            """;
+                [
+                  {
+                    "applicationId": null,
+                    "sellerName": "홍길동",
+                    "identifier": "12345"
+                  }
+                ]
+                """;
 
             // when & then
             mockMvc.perform(put(AdminApiPath.PREFIX + "/sellers/approve")
@@ -279,14 +283,14 @@ class AdminSellerControllerTest {
 
             // given
             String request = """
-            [
-              {
-                "applicationId": 1,
-                "sellerName": "",
-                "identifier": "12345"
-              }
-            ]
-            """;
+                [
+                  {
+                    "applicationId": 1,
+                    "sellerName": "",
+                    "identifier": "12345"
+                  }
+                ]
+                """;
 
             // when & then
             mockMvc.perform(put(AdminApiPath.PREFIX + "/sellers/approve")
@@ -303,20 +307,20 @@ class AdminSellerControllerTest {
 
             // given
             String request = """
-            [
-              {
-                "applicationId": 1,
-                "sellerName": "홍길동",
-                "identifier": ""
-              }
-            ]
-            """;
+                [
+                  {
+                    "applicationId": 1,
+                    "sellerName": "홍길동",
+                    "identifier": ""
+                  }
+                ]
+                """;
 
             // when & then
             mockMvc.perform(
-                put(AdminApiPath.PREFIX + "/sellers/approve")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(request))
+                    put(AdminApiPath.PREFIX + "/sellers/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
                 .andExpect(status().isBadRequest());
             verify(adminSellerFacade, never()).approveStoreApplications(anyList());
         }
