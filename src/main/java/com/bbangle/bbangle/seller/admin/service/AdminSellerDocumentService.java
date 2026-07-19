@@ -15,7 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +22,6 @@ public class AdminSellerDocumentService {
 
     private final SellerDocumentRepository sellerDocumentRepository;
 
-    @Transactional(readOnly = true)
     public void downloadSellerDocuments(List<Long> sellerIds, OutputStream outputStream) {
         List<SellerDocumentDownloadInfo> documents =
             sellerDocumentRepository.findDocumentsBySellerIds(sellerIds);
