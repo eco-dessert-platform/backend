@@ -20,11 +20,19 @@ public class ExecutionTimeLogImpl {
         String methodName = signature.getMethod().getName();
 
         long start = System.currentTimeMillis();
-        Object result = joinPoint.proceed();
-        long duration = System.currentTimeMillis() - start;
 
-        log.info("Method : {}.{}() | Execution Time : {} ms", className, methodName, duration);
-        return result;
+        try {
+            return joinPoint.proceed();
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+
+            log.info("""
+            
+            [Execution Time Log]
+            - TARGET : {}.{}
+            - TIME : {}ms
+            """, className, methodName, duration);
+        }
     }
 
 }
