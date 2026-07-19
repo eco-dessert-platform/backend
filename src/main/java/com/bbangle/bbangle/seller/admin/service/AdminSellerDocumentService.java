@@ -41,7 +41,7 @@ public class AdminSellerDocumentService {
                 zipOut.closeEntry();
             }
         } catch (IOException e) {
-            throw new BbangleException(STREAM_CLOSING_ERROR);
+            throw new BbangleException(STREAM_CLOSING_ERROR, e);
         }
     }
 }
