@@ -557,10 +557,11 @@ class BoardTest {
                 // given
                 RejectionCategory[] categories = {
                     RejectionCategory.ADMIN_JUDGMENT,
-                    RejectionCategory.INVALID_PRICE_CONDITION,
-                    RejectionCategory.INAPPROPRIATE_VEGAN_EXPRESSION,
+                    RejectionCategory.INAPPROPRIATE_BRAND_NAME,
+                    RejectionCategory.OFFICIAL_MATERIAL_CONFUSION,
+                    RejectionCategory.INAPPROPRIATE_EXPRESSION,
                     RejectionCategory.PROHIBITED_STORE_EXPRESSION,
-                    RejectionCategory.PROHIBITED_LOGO_TEXT,
+                    RejectionCategory.CONTAINS_ADVERTISING,
                     RejectionCategory.CONTAINS_CONTACT_INFO,
                     RejectionCategory.CONTAINS_COMPETITOR_NAME,
                     RejectionCategory.DIRECT_INPUT
@@ -605,7 +606,7 @@ class BoardTest {
 
                 // when & then
                 assertThatThrownBy(() -> board.reject(
-                    RejectionCategory.INVALID_PRICE_CONDITION,
+                    RejectionCategory.OFFICIAL_MATERIAL_CONFUSION,
                     "두 번째 거절 시도"
                 ))
                     .isInstanceOf(BbangleException.class)

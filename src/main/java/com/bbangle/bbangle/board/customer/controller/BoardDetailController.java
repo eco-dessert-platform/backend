@@ -10,6 +10,7 @@ import com.bbangle.bbangle.board.customer.service.BoardDetailService;
 import com.bbangle.bbangle.board.customer.service.ProductService;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo;
 import com.bbangle.bbangle.board.customer.service.dto.StoreInfo.Store;
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.review.customer.dto.SummarizedReviewResponse;
@@ -93,6 +94,7 @@ public class BoardDetailController {
         return responseService.getSingleResult(productResponse);
     }
 
+    @ExecutionTimeLog
     @Operation(summary = "리뷰 조회")
     @GetMapping("/{boardId}/review")
     public SingleResult<SummarizedReviewResponse> getReviewResponse(
@@ -102,6 +104,7 @@ public class BoardDetailController {
         return responseService.getSingleResult(response);
     }
 
+    @ExecutionTimeLog
     @Operation(summary = "게시판 조회(new)")
     @GetMapping("/{boardId}/new")
     public SingleResult<Main> getBoardDetail(

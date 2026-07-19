@@ -3,8 +3,10 @@ package com.bbangle.bbangle.auth.admin.service;
 import com.bbangle.bbangle.admin.domain.Admin;
 import com.bbangle.bbangle.admin.repository.AdminRepository;
 import com.bbangle.bbangle.auth.admin.dto.AdminLoginResponse;
+import com.bbangle.bbangle.auth.admin.dto.AdminReissueResponse;
 import com.bbangle.bbangle.auth.admin.dto.AdminRequest;
 import com.bbangle.bbangle.auth.domain.RefreshToken;
+import com.bbangle.bbangle.auth.oauth.client.dto.TokenClaimsDTO;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.common.role.Role;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
@@ -61,5 +63,34 @@ public class AdminAuthService {
     @Transactional
     public void logout(Long adminId) {
         refreshTokenRepository.deleteByUserIdAndUserRole(adminId, Role.ROLE_ADMIN);
+    }
+
+    @Transactional
+    public AdminReissueResponse reissue(AdminRequest.AdminReissueRequest request) {
+        String refreshTokenVal = request.refreshToken();
+
+        if (!tokenProvider.isValidToken(refreshTokenVal)) {
+            throw new BbangleException(BbangleErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        TokenClaimsDTO claims = tokenProvider.parseRefreshToken(refreshTokenVal);
+
+        if (claims.role() != Role.ROLE_ADMIN) {
+            throw new BbangleException(BbangleErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenVal)
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.INVALID_REFRESH_TOKEN));
+
+        String newAccessToken = tokenProvider.generateToken(claims.id(), Role.ROLE_ADMIN, ACCESS_TOKEN_DURATION);
+        String newRefreshToken = tokenProvider.generateToken(claims.id(), Role.ROLE_ADMIN, REFRESH_TOKEN_DURATION);
+
+        refreshToken.update(newRefreshToken);
+        refreshTokenRepository.save(refreshToken);
+
+        return AdminReissueResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 }

@@ -9,6 +9,7 @@ public class PublicApiPath {
         "/api/v1/token",
         AdminApiPath.PREFIX + "/login",
         AdminApiPath.PREFIX + "/logout",
+        AdminApiPath.PREFIX + "/reissue",
         "/api/v1/oauth/**",
         "/api/v1/search/**",
         "/api/v1/landingpage",
@@ -25,7 +26,8 @@ public class PublicApiPath {
         "/api/v1/notification/**",
         "/api/v1/boards/notification/**",
         "/api/v1/review/**",
-        "/api/v1/analytics/**"
+        "/api/v1/analytics/**",
+        "/api/v1/link/**"
     };
 
     public static final String[] PATCH_OLLY = {

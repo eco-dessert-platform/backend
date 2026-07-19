@@ -22,4 +22,11 @@ public class AdminRequest {
     ) {
     }
 
+    public record AdminReissueRequest(
+            @Schema(description = "관리자 리프레시 토큰")
+            @NotBlank(message = "리프레시 토큰은 필수입니다.")
+            String refreshToken
+    ) {
+    }
+
 }

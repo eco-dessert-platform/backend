@@ -171,6 +171,46 @@ public class SellerReturnService {
         return UpdateReturnInvoiceResponse.of(returnId, claimDelivery);
     }
 
+    @Transactional
+    public void holdReturn(Long returnId, Long sellerId, String holdReason) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ReturnRequest returnRequest = findReturnRequestWithLock(returnId);
+        applyHold(returnRequest, holdReason);
+    }
+
+    private void applyHold(ReturnRequest returnRequest, String holdReason) {
+        returnRequest.hold(holdReason);
+        OrderItem orderItem = returnRequest.getOrderItem();
+        orderItem.returnHold();
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
+    @Transactional
+    public void refuseReturn(Long returnId, Long sellerId, String refusalReason) {
+        if (!claimRepository.existsClaimRequestBySeller(returnId, sellerId)) {
+            throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
+        }
+
+        ReturnRequest returnRequest = findReturnRequestWithLock(returnId);
+        applyRefusal(returnRequest, refusalReason);
+    }
+
+    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
+    private ReturnRequest findReturnRequestWithLock(Long returnId) {
+        return returnRequestRepository.findWithLockById(returnId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+    }
+
+    private void applyRefusal(ReturnRequest returnRequest, String refusalReason) {
+        returnRequest.refuse(refusalReason);
+        OrderItem orderItem = returnRequest.getOrderItem();
+        orderItem.returnRefuse();
+        orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
+    }
+
     private Long getStoreIdOrThrow(Long sellerId) {
         Long storeId = sellerRepository.findStoreIdBySellerId(sellerId);
         if (storeId == null) {

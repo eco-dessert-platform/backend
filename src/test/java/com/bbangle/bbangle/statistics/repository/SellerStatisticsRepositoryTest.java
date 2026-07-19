@@ -3,8 +3,11 @@ package com.bbangle.bbangle.statistics.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.TestContainersConfig;
+import com.bbangle.bbangle.config.QueryDslConfig;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.statistics.domain.SellerStatisticsDailyFixture;
+import com.bbangle.bbangle.search.repository.component.SearchFilter;
+import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.statistics.domain.SellerStatisticsDaily;
 import jakarta.persistence.EntityManager;
@@ -20,7 +23,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DisplayName("[Repository] SellerStatisticsRepository")
 @ActiveProfiles("test")
-@Import(TestContainersConfig.class)
+@Import({
+    TestContainersConfig.class,
+    QueryDslConfig.class,
+    SearchFilter.class,
+    SearchSort.class
+})
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SellerStatisticsRepositoryTest {
@@ -32,7 +40,7 @@ class SellerStatisticsRepositoryTest {
     private EntityManager em;
 
     @Test
-    @DisplayName("finds daily statistics by seller and date range ordered by date")
+    @DisplayName("판매자 일별 통계를 날짜 범위로 조회하고 오름차순 정렬한다")
     void findBySellerIdAndStatDateBetweenOrderByStatDateAsc() {
         Seller seller = SellerFixture.defaultSeller();
         Seller otherSeller = SellerFixture.defaultSeller();

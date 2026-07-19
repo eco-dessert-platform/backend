@@ -10,6 +10,7 @@ public enum ReturnRequestRequestStatus {
     PICKED_UP,           // 반품 수거 완료
     INSPECTING,          // 반품 상품 검수 중
     INSPECTION_APPROVED, // 검수 후 최종 승인 — 환불 진행 가능
+    HOLD,                // 추가 확인 필요로 보류됨
     REJECTED,            // 반품 거절
     COMPLETED;           // 환불까지 완료됨
 

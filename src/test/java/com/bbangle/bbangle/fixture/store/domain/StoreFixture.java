@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixture.store.domain;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.domain.model.EmailVO;
 import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public final class StoreFixture {
 
@@ -16,6 +17,7 @@ public final class StoreFixture {
     public static final String DEFAULT_ADDRESS = "서울";
     public static final String DEFAULT_DETAIL_ADDRESS = "123동";
 
+    public static final String NEW_IDENTIFIER = "98765";
     public static final String NEW_PROFILE = "new.jpg";
     public static final String NEW_INTRODUCE = "건강한 디저트 빵그리의 오븐";
     public static final String NEW_PHONE = "01011112222";
@@ -46,5 +48,10 @@ public final class StoreFixture {
 
     public static Store defaultStore(String name) {
         return baseBuilder(name);
+    }
+
+    public static Store withId(Store store, Long id) {
+        ReflectionTestUtils.setField(store, "id", id);
+        return store;
     }
 }

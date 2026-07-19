@@ -33,6 +33,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -173,6 +174,9 @@ public class SellerOrderServiceIntegrationTest {
         assertThat(response.sellerId()).isEqualTo(seller.getId());
 
         // 결제 정보 검증
+        // DB는 timestamp를 마이크로초까지만 저장하므로(메모리 엔티티는 나노초), 마이크로초 기준으로 비교
         assertThat(response.paymentInfo()).isNotNull();
+        assertThat(response.paymentInfo().paidAt().truncatedTo(ChronoUnit.MICROS))
+            .isEqualTo(payment.getPaidAt().truncatedTo(ChronoUnit.MICROS));
     }
 }

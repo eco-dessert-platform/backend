@@ -78,7 +78,7 @@ oauth2:
 logging:
   config: classpath:logback/dev.xml
   file:
-    path: /home/ubuntu/bbangle/logs
+    path: /app/logs
 
 jwt:
   issuer: ${JWT_ISSUER}
@@ -111,11 +111,6 @@ fcm:
 slack:
   webhook-url: ${SLACK_WEBHOOK_URL}
 
-springdoc:
-  swagger-ui:
-    config-url: ${SWAGGER_CONFIG_URL}
-    url: ${SWAGGER_URL}
-
 app:
   cookie:
     domain: ${COOKIE_DOMAIN}
@@ -123,3 +118,6 @@ app:
 encryption:
   aes:
     secret-key: ${AES_SECRET_KEY}
+
+link-tracking:
+  destinations: https://develop.bbanggree.com

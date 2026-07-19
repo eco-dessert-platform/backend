@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.claim.domain;
 
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.APPROVED;
+import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.HOLD;
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.PICKUP_SCHEDULED;
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REJECTED;
 import static com.bbangle.bbangle.claim.domain.constant.ReturnRequestRequestStatus.REQUESTED;
@@ -63,6 +64,23 @@ public class ReturnRequest extends Claim {
         this.status = REJECTED;
         this.sellerComment = reason;
         super.decide();
+    }
+
+    public void refuse(String refusalReason) {
+        if (status != REQUESTED && status != PICKUP_SCHEDULED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = REJECTED;
+        this.sellerComment = refusalReason;
+        super.decide();
+    }
+
+    public void hold(String holdReason) {
+        if (status != REQUESTED && status != APPROVED && status != PICKUP_SCHEDULED) {
+            throw new BbangleException(BbangleErrorCode.CLAIM_INVALID_STATUS);
+        }
+        this.status = HOLD;
+        this.sellerComment = holdReason;
     }
 
     public void startReturnPickup() {

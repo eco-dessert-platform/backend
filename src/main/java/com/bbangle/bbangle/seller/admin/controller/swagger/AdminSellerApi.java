@@ -2,18 +2,22 @@ package com.bbangle.bbangle.seller.admin.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerDocumentDownloadRequest;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-@Tag(name = "Admin Store", description = "(관리자) 판매자 관리 API")
+@Tag(name = "Admin Seller", description = "(관리자) 판매자 관리 API")
 public interface AdminSellerApi {
 
     @Operation(
@@ -33,5 +37,21 @@ public interface AdminSellerApi {
     )
     ResponseEntity<StreamingResponseBody> downloadSellerDocuments(
         @RequestBody @Valid AdminSellerDocumentDownloadRequest request
+    );
+
+    @Operation(
+        summary = "(관리자) 판매자 회원 가입 및 스토어 등록 요청 목록 승인",
+        description = "판매자의 회원 가입 및 스토어 등록 요청을 승인합니다."
+    )
+    SingleResult<AdminSellerResponse.AdminSellerApplicationApproveList> approveSellerApplications(
+        @RequestBody @NotEmpty List<@Valid StoreApplicationApprove> requests
+    );
+
+    @Operation(
+        summary = "(관리자) 판매자 스토어 등록 요청 목록 거절",
+        description = "판매자의 스토어 등록 요청을 거절합니다."
+    )
+    SingleResult<AdminSellerResponse.AdminSellerApplicationRejectList> rejectSellerApplications(
+        @Valid @RequestBody AdminSellerRequest.StoreApplicationIds request
     );
 }

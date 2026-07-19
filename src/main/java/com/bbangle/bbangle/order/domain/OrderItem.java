@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.order.domain;
 
 import static com.bbangle.bbangle.order.domain.model.OrderStatus.CANCEL_REQUESTED;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.ORDER_CONFIRMED;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.IN_PRODUCTION;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.PAYMENT_COMPLETED;
 import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
 
 import com.bbangle.bbangle.board.domain.Product;
@@ -128,16 +131,38 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.SHIPPED;
     }
 
+    public boolean canRequestCancel() {
+        return this.orderStatus == PAYMENT_COMPLETED
+            || this.orderStatus == ORDER_CONFIRMED
+            || this.orderStatus == IN_PRODUCTION;
+    }
+
+    public boolean requestCancel() {
+        if (!canRequestCancel()) {
+            return false;
+        }
+        this.orderStatus = CANCEL_REQUESTED;
+        return true;
+    }
+
+    public boolean canRequestReturn() {
+        return this.orderStatus == OrderStatus.SHIPPED || this.orderStatus == OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public boolean requestReturn() {
-        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+        if (!canRequestReturn()) {
             return false;
         }
         this.orderStatus = RETURN_REQUESTED;
         return true;
     }
 
+    public boolean canRequestExchange() {
+        return this.orderStatus == OrderStatus.SHIPPED || this.orderStatus == OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public boolean requestExchange() {
-        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+        if (!canRequestExchange()) {
             return false;
         }
         this.orderStatus = OrderStatus.EXCHANGE_REQUEST;
@@ -158,6 +183,13 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.RETURN_REJECTED;
     }
 
+    public void returnRefuse() {
+        if (orderStatus != RETURN_REQUESTED && orderStatus != OrderStatus.RETURN_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_REJECTED;
+    }
+
     public void cancelApprove() {
         if (orderStatus != CANCEL_REQUESTED) {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
@@ -172,10 +204,62 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.CANCEL_REJECTED;
     }
 
+    public void returnHold() {
+        if (orderStatus != RETURN_REQUESTED && orderStatus != OrderStatus.RETURN_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.RETURN_ON_HOLD;
+    }
+
     public void returnComplete() {
         if (orderStatus != OrderStatus.RETURN_APPROVED) {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
         }
         this.orderStatus = OrderStatus.RETURN_COMPLETED;
+    }
+
+    public void exchangeApprove() {
+        if (orderStatus != OrderStatus.EXCHANGE_REQUEST) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_APPROVED;
+    }
+
+    public void exchangeReject() {
+        if (orderStatus != OrderStatus.EXCHANGE_REQUEST) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_REJECTED;
+    }
+
+    public void exchangeHold() {
+        if (orderStatus != OrderStatus.EXCHANGE_REQUEST
+            && orderStatus != OrderStatus.EXCHANGE_APPROVED
+            && orderStatus != OrderStatus.EXCHANGE_ITEM_COLLECTED
+            && orderStatus != OrderStatus.EXCHANGE_ITEM_INSPECTING) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_ON_HOLD;
+    }
+
+    public void exchangeReturn() {
+        if (orderStatus != OrderStatus.EXCHANGE_ITEM_COLLECTED && orderStatus != OrderStatus.EXCHANGE_ITEM_INSPECTING) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_RETURNED;
+    }
+
+    public void exchangeItemShipped() {
+        if (orderStatus != OrderStatus.EXCHANGE_APPROVED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_ITEM_SHIPPED;
+    }
+
+    public void exchangeComplete() {
+        if (orderStatus != OrderStatus.EXCHANGE_ITEM_SHIPPED) {
+            throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.orderStatus = OrderStatus.EXCHANGE_COMPLETED;
     }
 }

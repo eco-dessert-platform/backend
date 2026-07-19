@@ -89,7 +89,7 @@ public class SellerOrderController implements SellerOrderApi {
     @PostMapping("/list")
     public SingleResult<OrderSearchPageResponse> searchOrders(
         @AuthenticationPrincipal Long sellerId,
-        @RequestBody OrderSearchRequest request,
+        @Valid @RequestBody OrderSearchRequest request,
         @PageableDefault(size = 100, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
         OrderSearchPageResponse response = sellerOrderService.orderSearch(

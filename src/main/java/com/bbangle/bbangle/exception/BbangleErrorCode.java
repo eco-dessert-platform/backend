@@ -85,6 +85,11 @@ public enum BbangleErrorCode {
     INVALID_STOCK_AMOUNT(-61, "재고 수량은 0이상이여야 합니다.", BAD_REQUEST),
     NOT_FOUND_OPTION(-62, "존재하지 않는 상품 옵션입니다", NOT_FOUND),
     INVALID_DECREASE_STOCK_AMOUNT(-63, "감소하려는 수보다 현재 재고가 더 작습니다.", BAD_REQUEST),
+    INVALID_REQUEST_STOCK(-68, "선택하신 수량보다 현재 재고 수량이 부족합니다.", BAD_REQUEST),
+    INVALID_REQUEST_QUANTITY(-69, "선택하신 수량이 1이상 999이하 이여야합니다.", BAD_REQUEST),
+    DUPLICATED_PRODUCT_OPTION(-70, "장바구니에 추가할 상품 옵션이 중복이 되어선 안됩니다.", BAD_REQUEST),
+    NOT_FOUND_CART(-71, "해당 계정의 장바구니 데이터를 찾지 못했습니다.", BAD_REQUEST),
+    NOT_FOUND_CART_OPTION(-72, "장바구니 옵션을 찾을 수 없습니다.", NOT_FOUND),
 
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -94,6 +99,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    NOT_FOUND_REQUEST(-989, "해당 요청을 찾을 수 없습니다.", NOT_FOUND),
     REQUEST_IS_REJECTED(-990, "이미 거절된 요청입니다.", BAD_REQUEST),
     REQUEST_IS_APPROVED(-991, "이미 승인된 요청입니다.", BAD_REQUEST),
     REQUEST_IS_PENDING(-992, "승인 대기중인 요청입니다.", BAD_REQUEST),
@@ -144,6 +150,7 @@ public enum BbangleErrorCode {
     STORE_UPDATE_FAILED(-733, "스토어 상세 정보 변경에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     ACCOUNT_VERIFICATION_ALREADY_EXISTS(-734, "이미 계좌 인증 정보가 존재합니다.", BAD_REQUEST),
     ACCOUNT_VERIFICATION_FAILED(-735, "계좌 인증에 실패했습니다.", BAD_REQUEST),
+    STORE_CREATION_FAILED(-736, "Store 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // AUTH (741~ 760)
     ADMIN_NOT_FOUND(-741, "존재하지 않는 관리자입니다.", NOT_FOUND),
@@ -176,6 +183,9 @@ public enum BbangleErrorCode {
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
     DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
+    CUSTOMER_ORDER_UNAUTHORIZED(-786, "주문 조회를 위해 로그인이 필요합니다.", UNAUTHORIZED),
+    CUSTOMER_ORDER_MEMBER_NOT_FOUND(-787, "존재하지 않는 회원의 주문 조회 요청입니다.", NOT_FOUND),
+    CUSTOMER_ORDER_NOT_FOUND(-788, "존재하지 않거나 접근할 수 없는 주문입니다.", NOT_FOUND),
 
     // Settlement Error(801 ~ 820)
     SETTLEMENT_NOT_FOUND(-802, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
@@ -191,7 +201,22 @@ public enum BbangleErrorCode {
 
     // Statistics Error(811~820)
     INVALID_STATISTICS_PERIOD(-811, "유효하지 않은 통계 기간입니다.", BAD_REQUEST),
-    INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST);
+    INVALID_DATE_RANGE(-812, "유효하지 않은 날짜 범위입니다.", BAD_REQUEST),
+
+    // LinkTracking Error(831 ~ 840)
+    TRACKING_LINK_NOT_FOUND(-831, "존재하지 않는 추적 링크입니다.", NOT_FOUND),
+
+    // PaymentHold Error(841~850)
+    INVALID_PAYMENT_HOLD_DATE_RANGE(-841, "지급보류 조회 시작일은 종료일보다 이전이어야 합니다.", BAD_REQUEST),
+    PAYMENT_HOLD_DATE_RANGE_EXCEEDED(-842, "지급보류 조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST),
+    PAYMENT_HOLD_DATE_REQUIRED(-843, "지급보류 엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST),
+
+    // Vat Error(851 ~ 860)
+    INVALID_MONTH_FORMAT(-851, "월 형식이 올바르지 않습니다.", BAD_REQUEST),
+    INVALID_VAT_DATE_RANGE(-852, "조회 기간이 올바르지 않습니다.", BAD_REQUEST),
+    EXCEEDED_MAX_VAT_DATE_RANGE(-853, "조회 기간은 최대 1년까지 가능합니다.", BAD_REQUEST),
+    INVALID_EXCEL_TYPE(-854, "엑셀 다운로드 유형이 올바르지 않습니다.", BAD_REQUEST),
+    EXCEL_CREATE_FAILED(-855, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;

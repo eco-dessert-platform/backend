@@ -3,6 +3,7 @@ package com.bbangle.bbangle.fixture.board.domain;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.store.domain.Store;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public final class ProductFixture {
     private ProductFixture() {
@@ -12,6 +13,14 @@ public final class ProductFixture {
         return Product.builder()
             .title(title)
             .board(board)
+            .build();
+    }
+
+    public static Product create(Board board, String title, int price) {
+        return Product.builder()
+            .title(title)
+            .board(board)
+            .price(price)
             .build();
     }
 
@@ -30,5 +39,10 @@ public final class ProductFixture {
             .stock(stock)
             .soldout(false)
             .build();
+    }
+
+    public static Product withId(Product product, Long id) {
+        ReflectionTestUtils.setField(product, "id", id);
+        return product;
     }
 }

@@ -572,6 +572,7 @@ class SellerOrderServiceUnitTest {
 
             // 결제 정보 검증
             assertThat(response.paymentInfo()).isNotNull();
+            assertThat(response.paymentInfo().paidAt()).isEqualTo(payment.getPaidAt());
         }
 
         @DisplayName("OrderItem이 없는 주문은 orderItems가 빈 목록으로 포함되어 조회된다")
@@ -677,6 +678,7 @@ class SellerOrderServiceUnitTest {
             assertThat(result.orders().content()).asList().hasSize(2);
             assertThat(result.orders().content().get(0).orderNumber()).isEqualTo(validOrder.getOrderNumber());
             assertThat(result.orders().content().get(0).paymentInfo()).isNotNull();
+            assertThat(result.orders().content().get(0).paymentInfo().paidAt()).isEqualTo(validPayment.getPaidAt());
             assertThat(result.orders().content().get(1).orderNumber()).isEqualTo(invalidOrder.getOrderNumber());
             assertThat(result.orders().content().get(1).paymentInfo()).isNull();
         }

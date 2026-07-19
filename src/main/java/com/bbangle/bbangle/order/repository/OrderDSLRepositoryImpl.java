@@ -13,6 +13,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.CompletedOrderSearchCommand;
 import com.bbangle.bbangle.seller.domain.QSeller;
+import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     private final QOrder order = QOrder.order;
     private final QOrderItem orderItem = QOrderItem.orderItem;
     private final QSeller seller = QSeller.seller;
+    private final QStore store = QStore.store;
     private final QProduct product = QProduct.product;
     private final QOrderDelivery orderDelivery = QOrderDelivery.orderDelivery;
 
@@ -77,8 +80,11 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             ? command.searchCondition().getKeyword()
             : null;
 
+        // select/get에 동일 인스턴스를 사용해 Tuple 매핑이 올바르게 동작하도록 보장
+        var countExpr = orderItem.id.countDistinct();
+
         JPAQuery<Tuple> countQuery = queryFactory
-            .select(orderItem.orderStatus, orderItem.count())
+            .select(orderItem.orderStatus, countExpr)
             .from(order)
             .leftJoin(order.seller, seller)
             .leftJoin(order.orderItems, orderItem);
@@ -87,6 +93,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
 
         // 상태별 카운트는 orderDeliveryStatus 필터 없이 전체 집계합니다.
         // 목록 쿼리(searchOrderList)와 달리 탭별 전체 건수를 보여줘야 하므로 의도적으로 다릅니다.
+        // countDistinct: TRACKING_NUMBER 검색 시 orderDelivery join으로 같은 orderItem이 중복 집계되는 것을 방지합니다.
         List<Tuple> results = countQuery
             .where(
                 seller.id.eq(command.sellerId()),
@@ -100,7 +107,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         Map<OrderStatus, Long> countMap = new EnumMap<>(OrderStatus.class);
         for (Tuple tuple : results) {
             OrderStatus status = tuple.get(orderItem.orderStatus);
-            Long count = tuple.get(orderItem.count());
+            Long count = tuple.get(countExpr);
             if (status != null && count != null) {
                 countMap.put(status, count);
             }
@@ -124,8 +131,11 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         CompletedOrderSearchType searchType = command.searchType();
         String keyword = command.searchValue();
 
+        // select/get에 동일 인스턴스를 사용해 Tuple 매핑이 올바르게 동작하도록 보장
+        var countExpr = orderItem.id.countDistinct();
+
         JPAQuery<Tuple> countQuery = queryFactory
-            .select(orderItem.orderStatus, orderItem.count())
+            .select(orderItem.orderStatus, countExpr)
             .from(order)
             .leftJoin(order.seller, seller)
             .leftJoin(order.orderItems, orderItem);
@@ -147,7 +157,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         Map<OrderStatus, Long> countMap = new EnumMap<>(OrderStatus.class);
         for (Tuple tuple : results) {
             OrderStatus status = tuple.get(orderItem.orderStatus);
-            Long count = tuple.get(orderItem.count());
+            Long count = tuple.get(countExpr);
             if (status != null && count != null) {
                 countMap.put(status, count);
             }
@@ -161,6 +171,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
 
         JPAQuery<Long> idQuery = queryFactory
             .select(order.id)
+            .distinct()
             .from(order)
             .leftJoin(order.seller, seller)
             .leftJoin(order.orderItems, orderItem);
@@ -227,6 +238,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
 
         JPAQuery<Long> idQuery = queryFactory
             .select(order.id)
+            .distinct()
             .from(order)
             .leftJoin(order.seller, seller)
             .leftJoin(order.orderItems, orderItem);
@@ -279,7 +291,9 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         Map<Long, Order> orderMap = orders.stream()
             .collect(Collectors.toMap(Order::getId, Function.identity()));
 
+        // distinct()로 중복 제거 후 복원 — fetchOrderIds가 distinct 보장하지만 방어적으로 중복 제거
         return orderIds.stream()
+            .distinct()
             .map(orderMap::get)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -350,6 +364,10 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
         if (keyword == null || keyword.isBlank()) {
             return null;
         }
+        // searchType이 null이면 keyword가 있어도 조건 없이 전체 조회
+        if (searchType == null) {
+            return null;
+        }
 
         // 검색 타입별로 서로 다른 컬럼에 LIKE 검색 적용 (대소문자 무관)
         return switch (searchType) {
@@ -365,15 +383,17 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     }
 
     private LocalDateTime extractStartDate(OrderSearchCommand command) {
-        return command.searchCondition() != null
-            ? command.searchCondition().getStartDate().atStartOfDay()
-            : null;
+        if (command.searchCondition() == null || command.searchCondition().getStartDate() == null) {
+            return null;
+        }
+        return command.searchCondition().getStartDate().atStartOfDay();
     }
 
     private LocalDateTime extractEndDate(OrderSearchCommand command) {
-        return command.searchCondition() != null
-            ? command.searchCondition().getEndDate().atTime(23, 59, 59)
-            : null;
+        if (command.searchCondition() == null || command.searchCondition().getEndDate() == null) {
+            return null;
+        }
+        return command.searchCondition().getEndDate().atTime(23, 59, 59);
     }
 
     // LocalDate → 해당 날짜 00:00:00 LocalDateTime 변환 (null-safe)
@@ -384,6 +404,22 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     // LocalDate → 해당 날짜 23:59:59 LocalDateTime 변환 (null-safe)
     private LocalDateTime toEndDateTime(LocalDate date) {
         return date != null ? date.atTime(23, 59, 59) : null;
+    }
+
+    @Override
+    public Optional<Order> findByIdWithFullAssociations(Long orderId, Long memberId) {
+        List<Order> results = queryFactory
+            .selectFrom(order)
+            .distinct()
+            .leftJoin(order.payment).fetchJoin()
+            .join(order.seller, seller).fetchJoin()
+            .join(seller.store, store).fetchJoin()
+            .join(order.orderItems, orderItem).fetchJoin()
+            .join(orderItem.product, product).fetchJoin()
+            .where(order.id.eq(orderId), order.member.id.eq(memberId))
+            .fetch();
+
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
 }

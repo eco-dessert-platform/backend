@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.store.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
+import com.bbangle.bbangle.seller.domain.model.CertificationStatus;
 import com.bbangle.bbangle.store.domain.model.EmailVO;
 import com.bbangle.bbangle.store.domain.model.PhoneNumberVO;
 import com.bbangle.bbangle.store.domain.model.StoreApprovalStatus;
@@ -118,13 +121,31 @@ public class StoreApplication extends BaseEntity {
             .build();
     }
 
-    // TODO : (관리자) 스토어 등록 승인 구현
     public void approve() {
         this.status = StoreApprovalStatus.APPROVE;
     }
 
-    // TODO : (관리자) 스토어 등록 거절 구현
     public void reject() {
+        validateRejectable();
+
         this.status = StoreApprovalStatus.REJECT;
+
+        if (this.seller.getCertificationStatus() != CertificationStatus.APPROVED) {
+            this.seller.updateStatus(CertificationStatus.REJECTED);
+        }
+    }
+
+    private void validateRejectable() {
+        if (this.status == StoreApprovalStatus.APPROVE &&
+            this.seller.getCertificationStatus() == CertificationStatus.APPROVED) {
+            throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+        }
+    }
+
+    public void validateApprovable() {
+        switch (this.status) {
+            case APPROVE -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_APPROVED);
+            case REJECT -> throw new BbangleException(BbangleErrorCode.REQUEST_IS_REJECTED);
+        }
     }
 }
