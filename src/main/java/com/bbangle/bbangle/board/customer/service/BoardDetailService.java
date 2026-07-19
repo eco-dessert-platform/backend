@@ -230,9 +230,7 @@ public class BoardDetailService {
 
     @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
-        if (command.boardId() == 189) {
-            throw new NullPointerException("test");
-        }
+
         Board board = boardRepository.findById(command.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         if (Objects.isNull(command.memberId())) {
