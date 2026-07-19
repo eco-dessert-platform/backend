@@ -132,6 +132,7 @@ public enum BbangleErrorCode {
     PRODUCT_NOT_FOUND(-716, "존재하지 않는 상품입니다.", NOT_FOUND),
     MISSING_BOARD_THUMBNAIL(-717, "썸네일 이미지는 필수입니다. 새 파일 또는 기존 URL을 제공해주세요.", BAD_REQUEST),
     NOT_REGISTERED_STORE(-718, "스토어를 등록하지 않은 계정입니다.", NOT_FOUND),
+    SELLER_DOCUMENT_NOT_FOUND(-719, "판매자의 서류가 존재하지 않습니다.", NOT_FOUND),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
