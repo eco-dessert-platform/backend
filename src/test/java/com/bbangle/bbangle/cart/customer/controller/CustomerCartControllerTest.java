@@ -279,4 +279,89 @@ class CustomerCartControllerTest {
             verify(customerCartFacade).updateQuantity(memberId, cartOptionId, request);
         }
     }
+
+    @Nested
+    @DisplayName("changeCartOption() 테스트")
+    class ChangeCartOptionTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션을 다른 옵션으로 변경한다.")
+        void success_changeCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("이미 담긴 옵션으로 변경하면 예외를 반환한다.")
+        void fail_changeCartOption_duplicated() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            willThrow(new BbangleException(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION))
+                .given(customerCartFacade)
+                .changeOption(memberId, cartOptionId, request);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION.getMessage()));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션이 존재하지 않으면 예외를 반환한다.")
+        void fail_changeCartOption_notFoundCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION))
+                .given(customerCartFacade)
+                .changeOption(memberId, cartOptionId, request);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+    }
 }

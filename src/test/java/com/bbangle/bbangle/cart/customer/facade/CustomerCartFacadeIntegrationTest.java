@@ -737,4 +737,159 @@ class CustomerCartFacadeIntegrationTest {
                 });
         }
     }
+
+    @Nested
+    @DisplayName("changeOption() 테스트")
+    class ChangeOptionTest {
+
+        private Member member;
+        private Member otherMember;
+        private Board board;
+        private CartItem cartItem;
+        private CartOption cartOption;
+        private Product newOption;
+
+        @BeforeEach
+        void setUp() {
+
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board"));
+
+            member = memberRepository.save(MemberFixture.defaultMember());
+            otherMember = memberRepository.save(MemberFixture.createMemberWithName("other@test.com"));
+
+            Cart cart = cartRepository.save(Cart.create(member));
+            cartRepository.save(Cart.create(otherMember));
+
+            cartItem = cartItemRepository.save(CartItem.create(cart, board));
+
+            Product option = productRepository.save(ProductFixture.createWithStock(board, "옵션", 10));
+            newOption = productRepository.save(ProductFixture.createWithStock(board, "새옵션", 10));
+
+            cartOption = cartOptionRepository.save(CartOption.create(cartItem, option, 2));
+
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("장바구니 옵션을 다른 옵션으로 변경한다.")
+        void success_changeOption() {
+
+            // given
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(newOption.getId());
+
+            // when
+            customerCartFacade.changeOption(member.getId(), cartOption.getId(), request);
+
+            em.flush();
+            em.clear();
+
+            // then
+            CartOption changed = cartOptionRepository.findById(cartOption.getId()).orElseThrow();
+
+            assertThat(changed.getOption().getId()).isEqualTo(newOption.getId());
+            assertThat(changed.getQuantity()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 옵션으로 변경하면 예외가 발생한다.")
+        void fail_changeOption_product_notFound() {
+
+            // given
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(99999L);
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("다른 상품에 속한 옵션으로 변경하면 예외가 발생한다.")
+        void fail_changeOption_product_not_belongs_to_board() {
+
+            // given
+            Board otherBoard = boardRepository.save(BoardFixture.defaultBoardWithStore(board.getStore(), "다른상품"));
+            Product otherBoardOption = productRepository.save(ProductFixture.createWithStock(otherBoard, "옵션", 10));
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(otherBoardOption.getId());
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("이미 담긴 옵션으로 변경하면 예외가 발생한다.")
+        void fail_changeOption_duplicated() {
+
+            // given
+            CartOption existingOption = cartOptionRepository.save(CartOption.create(cartItem, newOption, 1));
+
+            em.flush();
+            em.clear();
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(newOption.getId());
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+                });
+        }
+
+        @Test
+        @DisplayName("새 옵션의 재고가 부족하면 예외가 발생한다.")
+        void fail_changeOption_insufficientStock() {
+
+            // given
+            Product lowStockOption = productRepository.save(ProductFixture.createWithStock(board, "품절임박", 1));
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(lowStockOption.getId());
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+        }
+
+        @Test
+        @DisplayName("다른 회원의 장바구니 옵션이면 예외가 발생한다.")
+        void fail_changeOption_notFoundCartOption() {
+
+            // given
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(newOption.getId());
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(otherMember.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.NOT_FOUND_CART_OPTION);
+                });
+        }
+    }
 }
