@@ -34,6 +34,11 @@ public class CustomerCartOptionService {
         cartOption.updateQuantity(quantity);
     }
 
+    @Transactional
+    public void changeOption(CartOption cartOption, Product newOption) {
+        cartOption.changeOption(newOption);
+    }
+
     @Transactional(readOnly = true)
     public List<CartOption> findAllByCartItemIds(List<Long> cartItemIds) {
         return cartOptionRepository.findCartOptionsByCartItemIds(cartItemIds);
