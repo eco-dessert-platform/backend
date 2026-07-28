@@ -236,8 +236,7 @@ src/main/resources/docker/
 /logs/
 
 ### claude ###
-.claude/
-CLAUDE.md
+.claude/settings.local.json
 
 ### worktrees ###
 .worktrees/
