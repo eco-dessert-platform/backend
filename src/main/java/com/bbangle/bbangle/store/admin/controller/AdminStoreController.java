@@ -134,4 +134,15 @@ public class AdminStoreController implements AdminStoreApi {
             adminStoreService.rejectStoreName(requestId, request)
         );
     }
+
+    // TODO : Test
+    @Override
+    @GetMapping("/check-name")
+    public SingleResult<Boolean> duplicateStoreName(
+        @RequestParam String storeName
+    ) {
+        return responseService.getSingleResult(
+            adminStoreService.isDuplicateStoreName(storeName)
+        );
+    }
 }

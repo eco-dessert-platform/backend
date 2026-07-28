@@ -174,4 +174,19 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         return Expressions.stringTemplate("REPLACE({0}, ' ', '')", store.name)
             .contains(normalized);
     }
+
+    // TODO : Test
+    @Override
+    public boolean existsByNormalizedStoreName(String normalizedStoreName) {
+        Integer result = queryFactory
+            .selectOne()
+            .from(store)
+            .where(
+                Expressions.stringTemplate("REPLACE({0}, ' ', '')", store.name).eq(normalizedStoreName),
+                store.isDeleted.isFalse()
+            )
+            .fetchFirst();
+
+        return result != null;
+    }
 }
