@@ -262,7 +262,6 @@ public class AdminStoreService {
             .build();
     }
 
-    // TODO : Test
     @Transactional(readOnly = true)
     public boolean isDuplicateStoreName(String storeName) {
         String normalized = storeName.replaceAll("\\s+", "");

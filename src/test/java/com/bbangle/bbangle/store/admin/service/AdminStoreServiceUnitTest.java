@@ -934,4 +934,39 @@ class AdminStoreServiceUnitTest {
             verify(adminStoreMapper, never()).toStoreDetailResponse(any());
         }
     }
+
+    @Nested
+    @DisplayName("isDuplicateStoreName() 테스트")
+    class IsDuplicateStoreNameTest {
+
+        @Test
+        @DisplayName("공백을 제거한 스토어명으로 중복 여부를 조회한다.")
+        void isDuplicateStoreName() {
+
+            // given
+            given(storeRepository.existsByNormalizedStoreName("빵그리")).willReturn(true);
+
+            // when
+            boolean result = adminStoreService.isDuplicateStoreName("빵 그리");
+
+            // then
+            assertThat(result).isTrue();
+            then(storeRepository).should().existsByNormalizedStoreName("빵그리");
+        }
+
+        @Test
+        @DisplayName("중복되는 스토어명이 없으면 false를 반환한다.")
+        void isDuplicateStoreName_notExists() {
+
+            // given
+            given(storeRepository.existsByNormalizedStoreName("빵그리")).willReturn(false);
+
+            // when
+            boolean result = adminStoreService.isDuplicateStoreName("빵 그리");
+
+            // then
+            assertThat(result).isFalse();
+            then(storeRepository).should().existsByNormalizedStoreName("빵그리");
+        }
+    }
 }
