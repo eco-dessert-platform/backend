@@ -135,7 +135,6 @@ public class AdminStoreController implements AdminStoreApi {
         );
     }
 
-    // TODO : Test
     @Override
     @GetMapping("/check-name")
     public SingleResult<Boolean> duplicateStoreName(
