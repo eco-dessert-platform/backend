@@ -175,7 +175,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .contains(normalized);
     }
 
-    // TODO : Test
     @Override
     public boolean existsByNormalizedStoreName(String normalizedStoreName) {
         Integer result = queryFactory
