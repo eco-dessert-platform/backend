@@ -3,7 +3,6 @@ package com.bbangle.bbangle.board.customer.facade;
 import com.bbangle.bbangle.board.customer.service.BoardDetailService;
 import com.bbangle.bbangle.board.customer.service.dto.BoardDetailCommand;
 import com.bbangle.bbangle.board.customer.service.dto.BoardDetailInfo;
-import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +12,6 @@ public class BoardDetailFacade {
 
     private final BoardDetailService boardDetailService;
 
-    @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
         boardDetailService.increaseVisitor(command);
         return boardDetailService.getBoardDetail(command);

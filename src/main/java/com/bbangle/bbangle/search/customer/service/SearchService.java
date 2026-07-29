@@ -64,13 +64,10 @@ public class SearchService {
 
     @ExecutionTimeLog
     public SearchInfo.BoardsInfo getBoardList(Main command) {
-        long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
 
         SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
             searchRepository.getCursorCondition(command.cursorId()) :
             SearchInfo.CursorCondition.empty();
-
-        log.info("[PERF] getCursorCondition : {} ms", System.currentTimeMillis() - start);  // TODO : 임시 출력 로그 - 추후 삭제 예정
 
         return command.isExcludedProduct() ?
             getRecommendBoardList(command, cursorCondition) :
@@ -79,24 +76,18 @@ public class SearchService {
 
     private SearchInfo.BoardsInfo getDefaultBoardList(Main command,
         SearchInfo.CursorCondition cursorCondition) {
-        long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
         List<Board> boards = searchRepository.getBoards(command, cursorCondition);
         Long boardCount = searchRepository.getAllCount(command, cursorCondition);
-        SearchInfo.BoardsInfo result = searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
-        log.info("[PERF] SearchService.getDefaultBoardList() : {} ms", System.currentTimeMillis() - start); // TODO : 임시 출력 로그 - 추후 삭제 예정
-        return result;
+        return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
     }
 
     private SearchInfo.BoardsInfo getRecommendBoardList(Main command,
         SearchInfo.CursorCondition cursorCondition) {
-        long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
         MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
         List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
         Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
-        SearchInfo.BoardsInfo result = searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
-        log.info("[PERF] SearchService.getRecommendBoardList() : {} ms", System.currentTimeMillis() - start); // TODO : 임시 출력 로그 - 추후 삭제 예정
-        return result;
+        return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
     }
 
     @ExecutionTimeLog

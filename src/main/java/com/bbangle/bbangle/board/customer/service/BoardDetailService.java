@@ -19,7 +19,6 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.dao.TagsDao;
 import com.bbangle.bbangle.boardstatistic.customer.service.BoardStatisticService;
 import com.bbangle.bbangle.boardstatistic.repository.BoardStatisticRepository;
-import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.push.repository.PushRepository;
@@ -228,7 +227,6 @@ public class BoardDetailService {
             boardDetailHtmlWithCdnUrl);
     }
 
-    @ExecutionTimeLog
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
 
         Board board = boardRepository.findById(command.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
@@ -246,15 +244,11 @@ public class BoardDetailService {
     }
 
     private List<Long> getBbankettingProductsIds(Board board, Long memberId) {
-        long start = System.currentTimeMillis();    // TODO : 임시 출력 로그 - 추후 삭제 예정
         List<Long> productIds = board.getProducts().stream().map(Product::getId).toList();
-        List<Long> result = pushRepository.findExistingPushProductIds(productIds, memberId);
-        log.info("[PERF] BoardDetailService.getBbankettingProductsIds() : {} ms", System.currentTimeMillis() - start);  // TODO : 임시 출력 로그 - 추후 삭제 예정
-        return result;
+        return pushRepository.findExistingPushProductIds(productIds, memberId);
     }
 
     // 패키지 구조 수정 시, 로직 변경해야함
-    @ExecutionTimeLog
     @Transactional
     public void increaseVisitor(BoardDetailCommand.Main command) {
         String visitorInfo = ViewCount.builder()
