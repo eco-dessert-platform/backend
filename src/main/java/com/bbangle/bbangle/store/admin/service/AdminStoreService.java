@@ -261,4 +261,10 @@ public class AdminStoreService {
             .seller(application.getSeller())
             .build();
     }
+
+    @Transactional(readOnly = true)
+    public boolean isDuplicateStoreName(String storeName) {
+        String normalized = storeName.replaceAll("\\s+", "");
+        return storeRepository.existsByNormalizedStoreName(normalized);
+    }
 }

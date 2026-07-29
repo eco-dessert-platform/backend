@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -103,5 +104,19 @@ public interface AdminStoreApi {
         @Parameter(description = "거절할 요청 번호", example = "1")
         @PathVariable Long requestId,
         @RequestBody @Valid UpdateStoreNameRejectRequest request
+    );
+
+    @Operation(
+        summary = "(관리자) 스토어명 중복 검사",
+        description = "스토어명의 중복 여부를 검사합니다."
+    )
+    SingleResult<Boolean> duplicateStoreName(
+        @RequestParam
+        @NotBlank(message = "스토어 이름은 필수입니다.")
+        @Parameter(
+            description = "중복 여부를 확인할 스토어명입니다. 공백을 제거한 후 요청해주세요.",
+            example = "빵그리"
+        )
+        String storeName
     );
 }

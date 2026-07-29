@@ -33,4 +33,6 @@ public interface StoreQueryDSLRepository {
      * normalizedStoreName 이 빈 문자열이면 전체 조회
      */
     Page<Store> findActiveStoresByName(String normalizedStoreName, Pageable pageable);
+
+    boolean existsByNormalizedStoreName(String normalizedStoreName);
 }

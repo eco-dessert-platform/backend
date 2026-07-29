@@ -574,4 +574,27 @@ class AdminStoreServiceIntegrationTest {
             assertThat(rollbackStore).usingRecursiveComparison().isEqualTo(store);
         }
     }
+
+    @Nested
+    @DisplayName("isDuplicateStoreName() 테스트")
+    class IsDuplicateStoreNameTest {
+
+        @Test
+        @DisplayName("공백이 포함된 스토어명을 정규화하여 중복 여부를 조회한다.")
+        void isDuplicateStoreName() {
+
+            // given
+            Store store = StoreFixture.defaultStore("빵 그리");
+            storeRepository.save(store);
+
+            em.flush();
+            em.clear();
+
+            // when
+            boolean result = adminStoreService.isDuplicateStoreName("빵그리");
+
+            // then
+            assertThat(result).isTrue();
+        }
+    }
 }
