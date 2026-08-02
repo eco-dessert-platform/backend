@@ -554,11 +554,34 @@ class CustomerCartFacadeUnitTest {
 
             given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
             given(cartOption.getCartItem()).willReturn(cartItem);
-            given(cartOption.getId()).willReturn(cartOptionId);
             given(cartItem.getItem()).willReturn(board);
             given(cartItem.getOptions()).willReturn(List.of(existingOption));
-            given(existingOption.getId()).willReturn(99L);
             given(existingOption.getOption()).willReturn(newOption);
+            given(newOption.getId()).willReturn(newOptionId);
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.changeOption(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+                });
+
+            then(customerCartOptionService).should(never()).changeOption(any(), any());
+        }
+
+        @Test
+        @DisplayName("이미 선택되어 있는 옵션(자기 자신)으로 변경하려 하면 예외가 발생한다.")
+        void fail_changeOption_duplicated_self() {
+
+            // given
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartItem.getItem()).willReturn(board);
+            given(cartItem.getOptions()).willReturn(List.of(cartOption));
+            given(cartOption.getOption()).willReturn(newOption);
             given(newOption.getId()).willReturn(newOptionId);
             given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
 

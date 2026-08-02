@@ -855,6 +855,24 @@ class CustomerCartFacadeIntegrationTest {
         }
 
         @Test
+        @DisplayName("이미 선택되어 있는 옵션(자기 자신)으로 변경하면 예외가 발생한다.")
+        void fail_changeOption_duplicated_self() {
+
+            // given
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(cartOption.getOption().getId());
+
+            // when & then
+            assertThatThrownBy(() ->
+                customerCartFacade.changeOption(member.getId(), cartOption.getId(), request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+                });
+        }
+
+        @Test
         @DisplayName("새 옵션의 재고가 부족하면 예외가 발생한다.")
         void fail_changeOption_insufficientStock() {
 

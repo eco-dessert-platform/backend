@@ -312,7 +312,7 @@ public class CustomerCartFacade {
 
         Product newOption = getProduct(request.optionId());
         newOption.validateBelongsTo(board);
-        validateNotDuplicated(cartItem, cartOption, newOption);
+        validateNotDuplicated(cartItem, newOption);
         newOption.validateStock(cartOption.getQuantity());
 
         customerCartOptionService.changeOption(cartOption, newOption);
@@ -325,9 +325,8 @@ public class CustomerCartFacade {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND));
     }
 
-    private void validateNotDuplicated(CartItem cartItem, CartOption cartOption, Product newOption) {
+    private void validateNotDuplicated(CartItem cartItem, Product newOption) {
         boolean duplicated = cartItem.getOptions().stream()
-            .filter(option -> !option.getId().equals(cartOption.getId()))
             .anyMatch(option -> option.getOption().getId().equals(newOption.getId()));
 
         if (duplicated) {
