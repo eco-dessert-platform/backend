@@ -240,3 +240,6 @@ src/main/resources/docker/
 
 ### worktrees ###
 .worktrees/
+
+### wiki ###
+/my-wiki/
