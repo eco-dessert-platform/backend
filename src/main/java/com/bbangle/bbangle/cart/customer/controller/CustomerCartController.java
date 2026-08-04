@@ -70,4 +70,15 @@ public class CustomerCartController implements CustomerCartApi {
             customerCartFacade.updateQuantity(memberId, cartOptionId, request)
         );
     }
+
+    @Override
+    @PatchMapping("/options/{cartOptionId}/option")
+    public CommonResult changeCartOption(
+        @AuthenticationPrincipal Long memberId,
+        @PathVariable Long cartOptionId,
+        @Valid @RequestBody CartRequest.ChangeCartOptionRequest request
+    ) {
+        customerCartFacade.changeOption(memberId, cartOptionId, request);
+        return responseService.getSuccessResult();
+    }
 }

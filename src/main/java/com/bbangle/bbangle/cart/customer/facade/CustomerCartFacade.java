@@ -303,4 +303,34 @@ public class CustomerCartFacade {
             .quantity(cartOption.getQuantity())
             .build();
     }
+
+    @Transactional
+    public void changeOption(Long memberId, Long cartOptionId, CartRequest.ChangeCartOptionRequest request) {
+        CartOption cartOption = customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId);
+        CartItem cartItem = cartOption.getCartItem();
+        Board board = cartItem.getItem();
+
+        Product newOption = getProduct(request.optionId());
+        newOption.validateBelongsTo(board);
+        validateNotDuplicated(cartItem, newOption);
+        newOption.validateStock(cartOption.getQuantity());
+
+        customerCartOptionService.changeOption(cartOption, newOption);
+    }
+
+    private Product getProduct(Long optionId) {
+        return productService.findAllByIds(List.of(optionId))
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    private void validateNotDuplicated(CartItem cartItem, Product newOption) {
+        boolean duplicated = cartItem.getOptions().stream()
+            .anyMatch(option -> option.getOption().getId().equals(newOption.getId()));
+
+        if (duplicated) {
+            throw new BbangleException(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+        }
+    }
 }

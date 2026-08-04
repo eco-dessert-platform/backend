@@ -48,4 +48,14 @@ public interface CustomerCartApi {
         @PathVariable Long cartOptionId,
         @Valid @RequestBody CartRequest.UpdateCartOptionRequest request
     );
+
+    @Operation(
+        summary = "(커스토머) 장바구니 상품 옵션 변경",
+        description = "장바구니에서 선택한 상품 옵션을 다른 옵션으로 변경합니다."
+    )
+    CommonResult changeCartOption(
+        @AuthenticationPrincipal Long memberId,
+        @PathVariable Long cartOptionId,
+        @Valid @RequestBody CartRequest.ChangeCartOptionRequest request
+    );
 }

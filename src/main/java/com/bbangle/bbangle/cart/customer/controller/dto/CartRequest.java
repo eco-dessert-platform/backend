@@ -42,4 +42,10 @@ public class CartRequest {
         @Schema(description = "변경할 상품 옵션의 수량", example = "1")
         int quantity
     ) {}
+
+    public record ChangeCartOptionRequest(
+        @NotNull
+        @Schema(description = "새로 선택한 상품 옵션 Id", example = "1")
+        Long optionId
+    ) {}
 }

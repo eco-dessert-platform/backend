@@ -15,6 +15,7 @@ import com.bbangle.bbangle.fixture.member.MemberFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -98,6 +99,31 @@ class CartOptionUnitTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getMessage()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_QUANTITY.getMessage());
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("changeOption() 테스트")
+    class ChangeOptionTest {
+
+        Cart cart = CartFixture.defaultCart(MemberFixture.defaultMember());
+        CartItem cartItem = CartItemFixture.defaultCartItem(cart, BoardFixture.defaultBoard());
+        Product option = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
+        Product newOption = ProductFixture.defaultProductWithStore(StoreFixture.defaultStore());
+
+        @Test
+        @DisplayName("장바구니 옵션이 다른 상품 옵션으로 변경된다.")
+        void success_changeOption() {
+
+            // given
+            CartOption cartOption = CartOptionFixture.defaultCartOption(cartItem, option, 2);
+
+            // when
+            cartOption.changeOption(newOption);
+
+            // then
+            assertThat(cartOption.getOption()).isEqualTo(newOption);
+            assertThat(cartOption.getQuantity()).isEqualTo(2);
         }
     }
 }

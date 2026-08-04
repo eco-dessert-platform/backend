@@ -76,4 +76,8 @@ public class CartOption extends BaseEntity {
         if (quantity < 1 || quantity > 999) throw new BbangleException(BbangleErrorCode.INVALID_REQUEST_QUANTITY);
         this.quantity = quantity;
     }
+
+    public void changeOption(Product newOption) {
+        this.option = newOption;
+    }
 }

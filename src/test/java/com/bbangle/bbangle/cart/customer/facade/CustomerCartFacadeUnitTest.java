@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -484,6 +485,142 @@ class CustomerCartFacadeUnitTest {
                 });
 
             verify(customerCartOptionService, never()).updateQuantity(any(), anyInt());
+        }
+    }
+
+    @Nested
+    @DisplayName("changeOption() 테스트")
+    class ChangeOptionTest {
+
+        Long memberId = 1L;
+        Long cartOptionId = 1L;
+        Long newOptionId = 2L;
+        CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(newOptionId);
+
+        CartOption cartOption = mock(CartOption.class);
+        CartItem cartItem = mock(CartItem.class);
+        Board board = mock(Board.class);
+        Product newOption = mock(Product.class);
+
+        @Test
+        @DisplayName("장바구니 옵션을 다른 옵션으로 변경한다.")
+        void success_changeOption() {
+
+            // given
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartOption.getQuantity()).willReturn(2);
+            given(cartItem.getItem()).willReturn(board);
+            given(cartItem.getOptions()).willReturn(List.of());
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
+
+            // when
+            customerCartFacade.changeOption(memberId, cartOptionId, request);
+
+            // then
+            then(newOption).should().validateBelongsTo(board);
+            then(newOption).should().validateStock(2);
+            then(customerCartOptionService).should().changeOption(cartOption, newOption);
+        }
+
+        @Test
+        @DisplayName("변경하려는 옵션이 존재하지 않으면 예외가 발생한다.")
+        void fail_changeOption_product_notFound() {
+
+            // given
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartItem.getItem()).willReturn(board);
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.changeOption(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.PRODUCT_NOT_FOUND);
+                });
+
+            then(customerCartOptionService).should(never()).changeOption(any(), any());
+        }
+
+        @Test
+        @DisplayName("같은 상품에 이미 담긴 옵션으로 변경하려 하면 예외가 발생한다.")
+        void fail_changeOption_duplicated() {
+
+            // given
+            CartOption existingOption = mock(CartOption.class);
+
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartItem.getItem()).willReturn(board);
+            given(cartItem.getOptions()).willReturn(List.of(existingOption));
+            given(existingOption.getOption()).willReturn(newOption);
+            given(newOption.getId()).willReturn(newOptionId);
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.changeOption(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+                });
+
+            then(customerCartOptionService).should(never()).changeOption(any(), any());
+        }
+
+        @Test
+        @DisplayName("이미 선택되어 있는 옵션(자기 자신)으로 변경하려 하면 예외가 발생한다.")
+        void fail_changeOption_duplicated_self() {
+
+            // given
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartItem.getItem()).willReturn(board);
+            given(cartItem.getOptions()).willReturn(List.of(cartOption));
+            given(cartOption.getOption()).willReturn(newOption);
+            given(newOption.getId()).willReturn(newOptionId);
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.changeOption(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION);
+                });
+
+            then(customerCartOptionService).should(never()).changeOption(any(), any());
+        }
+
+        @Test
+        @DisplayName("새 옵션의 재고가 부족하면 예외가 발생한다.")
+        void fail_changeOption_insufficientStock() {
+
+            // given
+            given(customerCartOptionService.findByIdAndMemberId(memberId, cartOptionId)).willReturn(cartOption);
+            given(cartOption.getCartItem()).willReturn(cartItem);
+            given(cartOption.getQuantity()).willReturn(5);
+            given(cartItem.getItem()).willReturn(board);
+            given(cartItem.getOptions()).willReturn(List.of());
+            given(productService.findAllByIds(List.of(newOptionId))).willReturn(List.of(newOption));
+            willThrow(new BbangleException(BbangleErrorCode.INVALID_REQUEST_STOCK))
+                .given(newOption).validateStock(5);
+
+            // when & then
+            assertThatThrownBy(() -> customerCartFacade.changeOption(memberId, cartOptionId, request)
+            )
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_REQUEST_STOCK);
+                });
+
+            then(customerCartOptionService).should(never()).changeOption(any(), any());
         }
     }
 }
