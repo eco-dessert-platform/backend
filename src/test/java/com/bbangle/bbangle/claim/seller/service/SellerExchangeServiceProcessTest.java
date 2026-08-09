@@ -70,7 +70,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.APPROVE, REASON);
@@ -79,7 +79,7 @@ class SellerExchangeServiceProcessTest {
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.APPROVED);
             assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_APPROVED);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -95,7 +95,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -107,7 +107,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.APPROVE, REASON))
@@ -126,7 +126,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.rejected(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.APPROVE, REASON))
@@ -154,7 +154,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.REJECT, REASON);
@@ -163,7 +163,7 @@ class SellerExchangeServiceProcessTest {
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.REJECTED);
             assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_REJECTED);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -175,7 +175,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.REJECT, REASON))
@@ -191,7 +191,7 @@ class SellerExchangeServiceProcessTest {
         void processExchange_reject_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.empty());
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.processExchange(EXCHANGE_ID, SELLER_ID, DecisionType.REJECT, REASON))
@@ -220,7 +220,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
             given(claimDeliveryRepository.save(any(ClaimDelivery.class))).willAnswer(inv -> inv.getArgument(0));
 
             // when
@@ -229,7 +229,7 @@ class SellerExchangeServiceProcessTest {
             // then
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.RESHIPPED);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_ITEM_SHIPPED);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(claimDeliveryRepository).should(times(1)).save(any(ClaimDelivery.class));
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
@@ -246,7 +246,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(claimDeliveryRepository).should(never()).save(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
@@ -259,7 +259,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.registerExchangeInvoice(EXCHANGE_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
@@ -279,7 +279,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.registerExchangeInvoice(EXCHANGE_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
@@ -311,7 +311,7 @@ class SellerExchangeServiceProcessTest {
             ClaimDelivery mockDelivery = mock(ClaimDelivery.class);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
             given(claimDeliveryRepository.findByClaimIdAndDeliveryType(EXCHANGE_ID, ClaimDeliveryType.EXCHANGE_REDELIVERY))
                 .willReturn(Optional.of(mockDelivery));
 
@@ -320,7 +320,7 @@ class SellerExchangeServiceProcessTest {
 
             // then
             then(mockDelivery).should(times(1)).updateInvoice(NEW_COURIER, NEW_TRACKING_NUMBER);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -336,7 +336,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(claimDeliveryRepository).should(never()).findByClaimIdAndDeliveryType(any(), any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
@@ -349,7 +349,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
@@ -369,7 +369,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.updateExchangeInvoice(EXCHANGE_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
@@ -389,7 +389,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
             given(claimDeliveryRepository.findByClaimIdAndDeliveryType(EXCHANGE_ID, ClaimDeliveryType.EXCHANGE_REDELIVERY))
                 .willReturn(Optional.empty());
 
@@ -419,7 +419,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.inspecting(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.holdExchange(EXCHANGE_ID, SELLER_ID, REASON);
@@ -428,7 +428,7 @@ class SellerExchangeServiceProcessTest {
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.ON_HOLD);
             assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_ON_HOLD);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -440,7 +440,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.holdExchange(EXCHANGE_ID, SELLER_ID, REASON);
@@ -464,7 +464,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -476,7 +476,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.COMPLETED, orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.holdExchange(EXCHANGE_ID, SELLER_ID, REASON))
@@ -495,7 +495,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.rejected(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.holdExchange(EXCHANGE_ID, SELLER_ID, REASON))
@@ -523,7 +523,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.inspecting(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON);
@@ -532,7 +532,7 @@ class SellerExchangeServiceProcessTest {
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.REJECTED);
             assertThat(exchangeRequest.getSellerComment()).isEqualTo(REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_RETURNED);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -544,7 +544,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.pickedUp(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON);
@@ -568,7 +568,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -580,7 +580,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.COMPLETED, orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON))
@@ -599,7 +599,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.rejectExchange(EXCHANGE_ID, SELLER_ID, REASON))
@@ -626,7 +626,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.withStatus(ExchangeRequestStatus.RESHIPPED, orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when
             sut.completeExchange(EXCHANGE_ID, SELLER_ID);
@@ -634,7 +634,7 @@ class SellerExchangeServiceProcessTest {
             // then
             assertThat(exchangeRequest.getStatus()).isEqualTo(ExchangeRequestStatus.COMPLETED);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.EXCHANGE_COMPLETED);
-            then(exchangeRequestRepository).should(times(1)).findWithLockById(EXCHANGE_ID);
+            then(exchangeRequestRepository).should(times(1)).findById(EXCHANGE_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -650,7 +650,7 @@ class SellerExchangeServiceProcessTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(exchangeRequestRepository).should(never()).findWithLockById(any());
+            then(exchangeRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -662,7 +662,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.completeExchange(EXCHANGE_ID, SELLER_ID))
@@ -681,7 +681,7 @@ class SellerExchangeServiceProcessTest {
             ExchangeRequest exchangeRequest = ExchangeRequestFixture.rejected(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.of(exchangeRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.completeExchange(EXCHANGE_ID, SELLER_ID))
@@ -697,7 +697,7 @@ class SellerExchangeServiceProcessTest {
         void completeExchange_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(EXCHANGE_ID, SELLER_ID)).willReturn(true);
-            given(exchangeRequestRepository.findWithLockById(EXCHANGE_ID)).willReturn(Optional.empty());
+            given(exchangeRequestRepository.findById(EXCHANGE_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.completeExchange(EXCHANGE_ID, SELLER_ID))

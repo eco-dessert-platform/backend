@@ -122,7 +122,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         applyDecision(exchangeRequest, decisionType, reason);
     }
 
@@ -132,7 +132,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         exchangeRequest.startRedelivery();
 
         OrderItem orderItem = exchangeRequest.getOrderItem();
@@ -150,7 +150,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         exchangeRequest.validateReshipped();
 
         ClaimDelivery claimDelivery = claimDeliveryRepository
@@ -168,7 +168,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         exchangeRequest.completeExchange();
 
         OrderItem orderItem = exchangeRequest.getOrderItem();
@@ -183,7 +183,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         exchangeRequest.holdExchange(reason);
 
         OrderItem orderItem = exchangeRequest.getOrderItem();
@@ -198,7 +198,7 @@ public class SellerExchangeService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ExchangeRequest exchangeRequest = findExchangeRequestWithLock(exchangeId);
+        ExchangeRequest exchangeRequest = getExchangeRequestOrThrow(exchangeId);
         exchangeRequest.rejectAfterInspection(reason);
 
         OrderItem orderItem = exchangeRequest.getOrderItem();
@@ -207,9 +207,8 @@ public class SellerExchangeService {
         orderItemHistoryRepository.save(OrderItemHistory.create(orderItem));
     }
 
-    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
-    private ExchangeRequest findExchangeRequestWithLock(Long exchangeId) {
-        return exchangeRequestRepository.findWithLockById(exchangeId)
+    private ExchangeRequest getExchangeRequestOrThrow(Long exchangeId) {
+        return exchangeRequestRepository.findById(exchangeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
     }
 

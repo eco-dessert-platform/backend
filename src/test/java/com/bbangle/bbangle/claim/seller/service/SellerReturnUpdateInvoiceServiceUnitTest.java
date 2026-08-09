@@ -77,7 +77,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
             given(mockShipping.getTrackingNumber()).willReturn(NEW_TRACKING_NUMBER);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
             given(claimDeliveryRepository.findByClaimIdAndDeliveryType(RETURN_ID, ClaimDeliveryType.RETURN_PICKUP))
                 .willReturn(Optional.of(mockDelivery));
 
@@ -109,7 +109,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(returnRequestRepository).should(never()).findById(any());
             then(claimDeliveryRepository).should(never()).findByClaimIdAndDeliveryType(any(), any());
         }
 
@@ -118,7 +118,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
         void updateReturnInvoice_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.updateReturnInvoice(RETURN_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
@@ -137,7 +137,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
             given(claimDeliveryRepository.findByClaimIdAndDeliveryType(RETURN_ID, ClaimDeliveryType.RETURN_PICKUP))
                 .willReturn(Optional.empty());
 
@@ -163,7 +163,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
             );
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.updateReturnInvoice(RETURN_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
@@ -184,7 +184,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
             );
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.updateReturnInvoice(RETURN_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
@@ -203,7 +203,7 @@ class SellerReturnUpdateInvoiceServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.updateReturnInvoice(RETURN_ID, SELLER_ID, NEW_COURIER, NEW_TRACKING_NUMBER))
