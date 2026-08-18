@@ -8,6 +8,7 @@ import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRe
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDetailResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import com.bbangle.bbangle.notification.admin.facade.AdminNotificationFacade;
@@ -76,6 +77,15 @@ public class AdminNotificationController implements AdminNotificationApi {
         Page<NoticeInfo> result = adminNotificationService.searchNotice(pageable);
         return responseService.getSingleResult(
             BbanglePageResponse.of(result.map(AdminNotificationSearchResponse::from)));
+    }
+
+    @GetMapping("/{noticeId}")
+    @Override
+    public SingleResult<AdminNotificationDetailResponse> getNotification(@PathVariable Long noticeId) {
+        NoticeInfo noticeInfo = adminNotificationService.getNotice(noticeId);
+        AdminNotificationDetailResponse response = AdminNotificationDetailResponse.from(noticeInfo);
+
+        return responseService.getSingleResult(response);
     }
 
     @DeleteMapping

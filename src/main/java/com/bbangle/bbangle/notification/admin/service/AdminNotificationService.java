@@ -104,6 +104,14 @@ public class AdminNotificationService {
     }
 
     @Transactional(readOnly = true)
+    public NoticeInfo getNotice(Long noticeId) {
+        Notice notice = notificationRepository.findByIdAndIsDeletedFalse(noticeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
+
+        return NoticeInfo.from(notice, objectMapper);
+    }
+
+    @Transactional(readOnly = true)
     public Page<NoticeInfo> searchNotice(Pageable pageable) {
         Page<Notice> notice = notificationRepository.findByIsDeletedFalse(pageable);
         return notice.map(NoticeInfo::from);

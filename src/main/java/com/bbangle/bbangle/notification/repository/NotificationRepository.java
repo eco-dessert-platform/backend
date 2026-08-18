@@ -2,6 +2,7 @@ package com.bbangle.bbangle.notification.repository;
 
 import com.bbangle.bbangle.notification.domain.Notice;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,8 @@ import org.springframework.data.repository.query.Param;
 public interface NotificationRepository extends JpaRepository<Notice, Long>, NotificationQueryDSLRepository {
 
     Page<Notice> findByIsDeletedFalse(Pageable pageable);
+
+    Optional<Notice> findByIdAndIsDeletedFalse(Long id);
 
     @Modifying(clearAutomatically = true)
     @Query("""

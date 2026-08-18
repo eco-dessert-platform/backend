@@ -6,6 +6,7 @@ import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRe
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRequest.AdminNotificationUpdateRequest;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationCreateResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDeleteResponse;
+import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationDetailResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationSearchResponse;
 import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationResponse.AdminNotificationUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +37,9 @@ public interface AdminNotificationApi {
     @Operation(summary = "(관리자) 공지사항 조회")
     SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(
         @ParameterObject Pageable pageable);
+
+    @Operation(summary = "(관리자) 공지사항 단건 조회")
+    SingleResult<AdminNotificationDetailResponse> getNotification(Long noticeId);
 
     @Operation(summary = "(관리자) 공지사항 삭제")
     SingleResult<AdminNotificationDeleteResponse> deleteNotification(
