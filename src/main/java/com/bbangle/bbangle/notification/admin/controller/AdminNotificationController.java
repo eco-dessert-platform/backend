@@ -18,6 +18,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,7 +42,7 @@ public class AdminNotificationController implements AdminNotificationApi {
     private final AdminNotificationFacade adminNotificationFacade;
     private final AdminNotificationService adminNotificationService;
 
-    @PostMapping(value= "/{adminId}/register", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/{adminId}/register", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
     public SingleResult<AdminNotificationCreateResponse> registerNotification(@PathVariable Long adminId,
                                                                               @RequestPart @Valid AdminNotificationCreateRequest request,
@@ -53,7 +54,7 @@ public class AdminNotificationController implements AdminNotificationApi {
         return responseService.getSingleResult(response);
     }
 
-    @PutMapping(value= "/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{noticeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
     public SingleResult<AdminNotificationUpdateResponse> updateNotification(@AuthenticationPrincipal Long adminId,
                                                                             @PathVariable Long noticeId,
@@ -68,11 +69,13 @@ public class AdminNotificationController implements AdminNotificationApi {
 
     @GetMapping
     @Override
-    public SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(@PageableDefault(size = 10, page = 0)
-                                                                                                 Pageable pageable) {
-
+    public SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(
+        @PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Direction.DESC)
+        Pageable pageable
+    ) {
         Page<NoticeInfo> result = adminNotificationService.searchNotice(pageable);
-        return responseService.getSingleResult(BbanglePageResponse.of(result.map(AdminNotificationSearchResponse::from)));
+        return responseService.getSingleResult(
+            BbanglePageResponse.of(result.map(AdminNotificationSearchResponse::from)));
     }
 
     @DeleteMapping

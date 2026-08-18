@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -561,7 +562,7 @@ class AdminNotificationServiceIntegrationTest {
         em.clear();
 
         // when - 첫 번째 페이지 조회
-        var pageRequest1 = PageRequest.of(0, 1);
+        var pageRequest1 = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
         var result1 = sut.searchNotice(pageRequest1);
 
         // then

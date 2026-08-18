@@ -11,6 +11,7 @@ import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRe
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +35,7 @@ public interface AdminNotificationApi {
 
     @Operation(summary = "(관리자) 공지사항 조회")
     SingleResult<BbanglePageResponse<AdminNotificationSearchResponse>> searchNotification(
-        Pageable pageable);
+        @ParameterObject Pageable pageable);
 
     @Operation(summary = "(관리자) 공지사항 삭제")
     SingleResult<AdminNotificationDeleteResponse> deleteNotification(

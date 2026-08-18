@@ -59,7 +59,7 @@ class AdminNotificationServiceUnitTest {
             .build();
         Page<Notice> noticePage = new PageImpl<>(List.of(notice));
 
-        given(notificationRepository.searchNoticeAll(any(Pageable.class))).willReturn(noticePage);
+        given(notificationRepository.findByIsDeletedFalse(any(Pageable.class))).willReturn(noticePage);
 
         // when
         Page<NoticeInfo> result = adminNotificationService.searchNotice(pageable);

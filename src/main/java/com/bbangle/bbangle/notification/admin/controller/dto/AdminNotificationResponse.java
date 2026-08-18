@@ -69,6 +69,8 @@ public class AdminNotificationResponse {
     @Schema(description = "(관리자) 공지사항 조회 응답 DTO")
     @Builder
     public record AdminNotificationSearchResponse(
+        @Schema(description = "공지사항 ID")
+        Long noticeId,
         @Schema(description = "제목")
         String title,
         @Schema(description = "생성 일시")
@@ -78,6 +80,7 @@ public class AdminNotificationResponse {
     ){
         public static AdminNotificationSearchResponse from(NoticeInfo noticeInfo) {
             return AdminNotificationSearchResponse.builder()
+                .noticeId(noticeInfo.id())
                 .title(noticeInfo.title())
                 .createAt(noticeInfo.createAt())
                 .modifiedAt(noticeInfo.modifiedAt())

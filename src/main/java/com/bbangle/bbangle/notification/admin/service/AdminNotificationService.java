@@ -105,7 +105,7 @@ public class AdminNotificationService {
 
     @Transactional(readOnly = true)
     public Page<NoticeInfo> searchNotice(Pageable pageable) {
-        Page<Notice> notice = notificationRepository.searchNoticeAll(pageable);
+        Page<Notice> notice = notificationRepository.findByIsDeletedFalse(pageable);
         return notice.map(NoticeInfo::from);
     }
 
