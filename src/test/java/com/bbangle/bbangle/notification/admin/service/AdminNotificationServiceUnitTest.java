@@ -12,7 +12,6 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -38,9 +37,6 @@ class AdminNotificationServiceUnitTest {
 
     @Mock
     private AdminRepository adminRepository;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("공지사항 조회에 성공한다")

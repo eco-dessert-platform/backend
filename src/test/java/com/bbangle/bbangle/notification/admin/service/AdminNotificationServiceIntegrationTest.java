@@ -12,9 +12,6 @@ import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeCommand.A
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +41,6 @@ class AdminNotificationServiceIntegrationTest {
 
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private Long testAdminId;
 
@@ -101,7 +95,7 @@ class AdminNotificationServiceIntegrationTest {
 
     @Test
     @DisplayName("공지사항 생성 후 DB에 저장되고 트랜잭션이 커밋된다")
-    void success_createAdminNotification_SavesToDB() throws JsonProcessingException {
+    void success_createAdminNotification_SavesToDB() {
         // given
         String title = "공지사항 제목";
         String content = "<div>공지사항 본문</div>";
@@ -124,12 +118,7 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(savedNotice.getTitle()).isEqualTo(title);
         assertThat(savedNotice.getContent()).isEqualTo(content);
 
-        // imageLinks JSON 역직렬화 검증
-        List<String> savedImageLinks = objectMapper.readValue(
-            savedNotice.getImageLinks(),
-            new TypeReference<List<String>>() {}
-        );
-        assertThat(savedImageLinks).containsExactlyElementsOf(imageLinks);
+        assertThat(savedNotice.getImageLinks()).containsExactlyElementsOf(imageLinks);
     }
 
     @Test
@@ -224,7 +213,7 @@ class AdminNotificationServiceIntegrationTest {
 
     @Test
     @DisplayName("이미지 포함하여 공지사항 수정에 성공한다")
-    void success_updateAdminNotification_WithImages() throws JsonProcessingException {
+    void success_updateAdminNotification_WithImages() {
         // given - 먼저 공지사항 생성
         String originalTitle = "원본 제목";
         String originalContent = "<div>원본 내용</div>";
@@ -273,11 +262,7 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(updatedNotice.getTitle()).isEqualTo(updatedTitle);
         assertThat(updatedNotice.getContent()).isEqualTo(updatedContent);
 
-        List<String> savedImageLinks = objectMapper.readValue(
-            updatedNotice.getImageLinks(),
-            new TypeReference<List<String>>() {}
-        );
-        assertThat(savedImageLinks).containsExactlyElementsOf(updatedImageLinks);
+        assertThat(updatedNotice.getImageLinks()).containsExactlyElementsOf(updatedImageLinks);
     }
 
     @Test
@@ -327,7 +312,7 @@ class AdminNotificationServiceIntegrationTest {
 
     @Test
     @DisplayName("JPA Dirty Checking을 통해 자동으로 DB에 업데이트된다")
-    void success_updateAdminNotification_DirtyCheckingWorks() throws JsonProcessingException {
+    void success_updateAdminNotification_DirtyCheckingWorks() {
         // given - 먼저 공지사항 생성
         var createCommand = new AdminNoticeCreateCommand(
             testAdminId,
@@ -360,11 +345,7 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(savedNotice.getTitle()).isEqualTo("수정된 제목");
         assertThat(savedNotice.getContent()).isEqualTo("<div>수정된 내용</div>");
 
-        List<String> savedImageLinks = objectMapper.readValue(
-            savedNotice.getImageLinks(),
-            new TypeReference<List<String>>() {}
-        );
-        assertThat(savedImageLinks).containsExactly("https://cdn.example.com/new-image.jpg");
+        assertThat(savedNotice.getImageLinks()).containsExactly("https://cdn.example.com/new-image.jpg");
     }
 
     @Test
@@ -455,7 +436,7 @@ class AdminNotificationServiceIntegrationTest {
 
     @Test
     @DisplayName("여러 필드를 동시에 수정할 수 있다")
-    void success_updateAdminNotification_MultipleFieldsAtOnce() throws JsonProcessingException {
+    void success_updateAdminNotification_MultipleFieldsAtOnce() {
         // given - 먼저 공지사항 생성
         var createCommand = new AdminNoticeCreateCommand(
             testAdminId,
@@ -500,11 +481,7 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(updatedNotice.getTitle()).isEqualTo(newTitle);
         assertThat(updatedNotice.getContent()).isEqualTo(newContent);
 
-        List<String> savedImageLinks = objectMapper.readValue(
-            updatedNotice.getImageLinks(),
-            new TypeReference<List<String>>() {}
-        );
-        assertThat(savedImageLinks).containsExactlyElementsOf(newImageLinks);
+        assertThat(updatedNotice.getImageLinks()).containsExactlyElementsOf(newImageLinks);
     }
 
     @Test
@@ -537,8 +514,7 @@ class AdminNotificationServiceIntegrationTest {
         assertThat(result.getContent().get(0).id()).isEqualTo(noticeId);
         assertThat(result.getContent().get(0).title()).isEqualTo(title);
         assertThat(result.getContent().get(0).content()).isEqualTo(content);
-        // 조회 시에는 imageLinks가 본문에 포함되어있어 빈 리스트로 반환됨
-        assertThat(result.getContent().get(0).imageLinks()).isEmpty();
+        assertThat(result.getContent().get(0).imageLinks()).containsExactlyElementsOf(imageLinks);
     }
 
     @Test

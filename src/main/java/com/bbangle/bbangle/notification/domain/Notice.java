@@ -7,6 +7,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.customer.dto.NotificationResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -17,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,8 +39,9 @@ public class Notice extends SoftDeleteBaseEntity {
     private Long id;
     private String title;
     private String content;
-    @Column(columnDefinition = "JSON")
-    private String imageLinks;
+    @Convert(converter = NoticeImageLinksConverter.class)
+    @Column(columnDefinition = "longtext")
+    private List<String> imageLinks;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -55,16 +58,16 @@ public class Notice extends SoftDeleteBaseEntity {
         );
     }
 
-    public static Notice createNoticeForAdmin(String title, String content, String imageLinks, Admin admin) {
+    public static Notice createNoticeForAdmin(String title, String content, List<String> imageLinks, Admin admin) {
         return new Notice(title, content, imageLinks, admin);
     }
 
-    public static Notice createNoticeFofAdminWithoutImage(String title, String content, Admin admin){
+    public static Notice createNoticeForAdminWithoutImage(String title, String content, Admin admin){
         return new Notice(title, content, admin);
     }
 
 
-    public void updateNoticeContainImage(String title, String content, String imageLinks){
+    public void updateNoticeContainImage(String title, String content, List<String> imageLinks){
         this.title = Objects.requireNonNullElse(title, this.title);
         this.content = Objects.requireNonNullElse(content, this.content);
         this.imageLinks = Objects.requireNonNullElse(imageLinks, this.imageLinks);
@@ -75,7 +78,7 @@ public class Notice extends SoftDeleteBaseEntity {
         this.content = Objects.requireNonNullElse(content, this.content);
     }
 
-    public Notice(String title, String content, String imageLinks, Admin admin) {
+    public Notice(String title, String content, List<String> imageLinks, Admin admin) {
         validateField(title, content, admin);
         this.title = title;
         this.content = content;
@@ -87,7 +90,7 @@ public class Notice extends SoftDeleteBaseEntity {
         validateField(title, content, admin);
         this.title = title;
         this.content = content;
-        this.imageLinks = "[]";
+        this.imageLinks = List.of();
         this.admin = admin;
     }
 
