@@ -8,7 +8,8 @@ public class CustomerApiPath {
         "/api/v1/boards/folders/**",
         "/api/v1/customer/orders/**",
         "/api/v1/customer/delivery-addresses/**",
-        "/api/v1/customer/payments/**"
+        "/api/v1/customer/payments/**",
+        PREFIX + "/orders/**"
     };
 
 }

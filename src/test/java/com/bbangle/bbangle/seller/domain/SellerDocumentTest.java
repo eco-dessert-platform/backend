@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -250,6 +251,28 @@ public class SellerDocumentTest {
         assertThatThrownBy(() -> SellerDocument.create(fileName, url, type, seller))
             .isInstanceOf(BbangleException.class)
             .hasMessageContaining(BbangleErrorCode.INVALID_DOCUMENT_FILE_EXTENSION.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "BUSINESS_REGISTRATION_CERTIFICATE, original.pdf, 사업자등록증.pdf",
+        "MAIL_ORDER_SALES_REPORT, upload.jpg, 통신판매업신고증.jpg",
+        "INSTANT_FOOD_MANUFACTURING_PROCESSING_REGISTRATION, file.png, 즉석식품제조가공업등록증.png",
+        "BANKBOOK_COPY, doc.jpeg, 통장사본.jpeg"
+    })
+    @DisplayName("서류 타입별 한글 파일명으로 ZIP 파일명을 반환한다")
+    void getZipFileName_returns_korean_name_with_original_extension(
+        String type, String originalName, String expectedZipName
+    ) {
+        // arrange
+        String url = "https://s3.amazonaws.com/bbangle/documents/" + originalName;
+        SellerDocument document = SellerDocument.create(originalName, url, type, seller);
+
+        // act
+        String zipFileName = document.getZipFileName();
+
+        // assert
+        assertThat(zipFileName).isEqualTo(expectedZipName);
     }
 
 }

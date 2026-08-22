@@ -45,6 +45,19 @@ public class Payment extends BaseEntity {
 
     private LocalDateTime paidAt;
 
+    @Column(name = "approval_number", length = 20)
+    private String approvalNumber;
+
+    @Column(name = "card_type", length = 20)
+    @Enumerated(EnumType.STRING)
+    private CardType cardType;
+
+    @Column(name = "card_number", length = 255)
+    private String cardNumber;
+
+    @Column(name = "installment", length = 20)
+    private String installment;
+
     @Column(name = "payment_key", length = 200)
     private String paymentKey;
 
@@ -52,11 +65,19 @@ public class Payment extends BaseEntity {
     private Payment(Order order,
                     PaymentStatus paymentStatus,
                     PaymentMethod paymentMethod,
-                    LocalDateTime paidAt) {
+                    LocalDateTime paidAt,
+                    String approvalNumber,
+                    CardType cardType,
+                    String cardNumber,
+                    String installment) {
         this.order = order;
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
         this.paidAt = paidAt;
+        this.approvalNumber = approvalNumber;
+        this.cardType = cardType;
+        this.cardNumber = cardNumber;
+        this.installment = installment;
     }
 
     public void confirm(String paymentKey, LocalDateTime approvedAt) {

@@ -12,11 +12,13 @@ import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.search.repository.component.SearchFilter;
 import com.bbangle.bbangle.search.repository.component.SearchSort;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -38,6 +40,15 @@ class ProductImgRepositoryTest {
 
     @Autowired
     private ProductImgRepository sut;
+
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private BoardRepository boardRepository;
+
+    @Autowired
+    private ProductImgRepository productImgRepository;
 
     @Autowired
     private EntityManager em;
@@ -94,4 +105,69 @@ class ProductImgRepositoryTest {
         assertThat(notDeletedImg.get().isDeleted()).isFalse();
     }
 
+    @Nested
+    @DisplayName("findThumbnailImagesByBoardIds() 테스트")
+    class FindThumbnailImagesByBoardIdsTest {
+
+        private Board board1;
+        private Board board2;
+
+        @BeforeEach
+        void setUp() {
+
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+
+            board1 = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board1"));
+            board2 = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "board2"));
+
+            // board1 이미지 (thumbnail + 일반)
+            sut.save(ProductImgFixture.defaultProductImgThumbnail(board1, "img1"));
+            sut.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board1, "img2", 1));
+
+            // board2 이미지 (thumbnail)
+            sut.save(ProductImgFixture.defaultProductImgThumbnail(board2, "img3"));
+
+            em.flush();
+            em.clear();
+        }
+
+        @Test
+        @DisplayName("Board ID 목록에 해당하는 Thumbnail(imgOrder=0)만 조회된다")
+        void success_findThumbnailImagesByBoardIds() {
+
+            // given
+            List<Long> boardIds = List.of(board1.getId(), board2.getId());
+
+            // when
+            List<ProductImg> result = sut.findThumbnailImagesByBoardIds(boardIds);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(ProductImg::getImgOrder).containsOnly(0);
+            assertThat(result).extracting(img -> img.getBoard().getId())
+                .containsExactlyInAnyOrder(board1.getId(), board2.getId());
+        }
+
+        @Test
+        @DisplayName("삭제된 Thumbnail은 조회되지 않는다")
+        void success_findThumbnailImagesByBoardIds_excludeDeletedThumbnail() {
+
+            // given
+            ProductImg deletedThumbnail = ProductImgFixture.defaultProductImgThumbnail(board1, "deleted");
+            deletedThumbnail.delete();
+
+            sut.save(deletedThumbnail);
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<ProductImg> result = productImgRepository.findThumbnailImagesByBoardIds(List.of(board1.getId()));
+
+            // then
+            assertThat(result)
+                .extracting(ProductImg::getUrl)
+                .doesNotContain("deleted");
+        }
+    }
 }

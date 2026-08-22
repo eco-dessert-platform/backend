@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.seller.admin.controller.swagger;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerDocumentDownloadRequest;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerRequest.StoreApplicationApprove;
 import com.bbangle.bbangle.seller.admin.controller.dto.AdminSellerResponse;
@@ -11,8 +12,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @Tag(name = "Admin Seller", description = "(관리자) 판매자 관리 API")
 public interface AdminSellerApi {
@@ -26,6 +29,14 @@ public interface AdminSellerApi {
         @RequestParam(defaultValue = "1")
         @Min(1)
         int page
+    );
+
+    @Operation(
+        summary = "(관리자) 판매자 서류 ZIP 다운로드",
+        description = "선택된 판매자들의 서류를 스토어명 디렉토리 구조로 ZIP 파일로 다운로드합니다."
+    )
+    ResponseEntity<StreamingResponseBody> downloadSellerDocuments(
+        @RequestBody @Valid AdminSellerDocumentDownloadRequest request
     );
 
     @Operation(

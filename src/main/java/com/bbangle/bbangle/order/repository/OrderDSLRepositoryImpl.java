@@ -13,6 +13,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.CompletedOrderSearchCommand;
 import com.bbangle.bbangle.seller.domain.QSeller;
+import com.bbangle.bbangle.store.domain.QStore;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     private final QOrder order = QOrder.order;
     private final QOrderItem orderItem = QOrderItem.orderItem;
     private final QSeller seller = QSeller.seller;
+    private final QStore store = QStore.store;
     private final QProduct product = QProduct.product;
     private final QOrderDelivery orderDelivery = QOrderDelivery.orderDelivery;
 
@@ -401,6 +404,22 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
     // LocalDate → 해당 날짜 23:59:59 LocalDateTime 변환 (null-safe)
     private LocalDateTime toEndDateTime(LocalDate date) {
         return date != null ? date.atTime(23, 59, 59) : null;
+    }
+
+    @Override
+    public Optional<Order> findByIdWithFullAssociations(Long orderId, Long memberId) {
+        List<Order> results = queryFactory
+            .selectFrom(order)
+            .distinct()
+            .leftJoin(order.payment).fetchJoin()
+            .join(order.seller, seller).fetchJoin()
+            .join(seller.store, store).fetchJoin()
+            .join(order.orderItems, orderItem).fetchJoin()
+            .join(orderItem.product, product).fetchJoin()
+            .where(order.id.eq(orderId), order.member.id.eq(memberId))
+            .fetch();
+
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
 }

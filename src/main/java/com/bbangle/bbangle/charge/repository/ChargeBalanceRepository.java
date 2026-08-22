@@ -12,6 +12,8 @@ public interface ChargeBalanceRepository extends JpaRepository<ChargeBalance, Lo
 
   Optional<ChargeBalance> findBySellerId(Long sellerId);
 
+  boolean existsBySellerId(Long sellerId);
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT cb FROM ChargeBalance cb WHERE cb.seller.id = :sellerId")
   Optional<ChargeBalance> findBySellerIdWithLock(@Param("sellerId") Long sellerId);

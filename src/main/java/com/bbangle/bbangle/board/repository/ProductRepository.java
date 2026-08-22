@@ -18,6 +18,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
     @Query("SELECT p FROM Board b JOIN b.products p WHERE b.id = :boardId")
     List<Product> findByBoardId(@Param("boardId") Long boardId);
 
+    @Query("SELECT p FROM Product p WHERE p.board.id IN :boardIds AND p.isDeleted = false")
+    List<Product> findByBoardIds(@Param("boardIds") List<Long> boardId);
+
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE Product p

@@ -36,9 +36,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -61,6 +63,37 @@ public class BoardDetailService {
     private final BoardRepository boardRepository;
     private final HtmlUtils htmlUtils;
     private final BoardDetailInfoMapper boardDetailInfoMapper;
+
+    private static List<String> convertToStrings(List<TagsDao> tags) {
+        Set<String> tagStrings = new HashSet<>();
+
+        Set<TagsDao> duplicationTags = tags.stream()
+            .collect(Collectors.toSet()); // 아예 똑같은 태그 DAO 중복 제거
+
+        for (TagsDao tag : duplicationTags) {
+            if (tag.glutenFreeTag()) {
+                tagStrings.add(TagEnum.GLUTEN_FREE.label());
+            }
+
+            if (tag.sugarFreeTag()) {
+                tagStrings.add(TagEnum.SUGAR_FREE.label());
+            }
+
+            if (tag.highProteinTag()) {
+                tagStrings.add(TagEnum.HIGH_PROTEIN.label());
+            }
+
+            if (tag.veganTag()) {
+                tagStrings.add(TagEnum.VEGAN.label());
+            }
+
+            if (tag.ketogenicTag()) {
+                tagStrings.add(TagEnum.KETOGENIC.label());
+            }
+        }
+
+        return tagStrings.stream().toList();
+    }
 
     @Transactional
     public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId,
@@ -145,37 +178,6 @@ public class BoardDetailService {
         return boardResponses;
     }
 
-    private static List<String> convertToStrings(List<TagsDao> tags) {
-        Set<String> tagStrings = new HashSet<>();
-
-        Set<TagsDao> duplicationTags = tags.stream()
-            .collect(Collectors.toSet()); // 아예 똑같은 태그 DAO 중복 제거
-
-        for (TagsDao tag : duplicationTags) {
-            if (tag.glutenFreeTag()) {
-                tagStrings.add(TagEnum.GLUTEN_FREE.label());
-            }
-
-            if (tag.sugarFreeTag()) {
-                tagStrings.add(TagEnum.SUGAR_FREE.label());
-            }
-
-            if (tag.highProteinTag()) {
-                tagStrings.add(TagEnum.HIGH_PROTEIN.label());
-            }
-
-            if (tag.veganTag()) {
-                tagStrings.add(TagEnum.VEGAN.label());
-            }
-
-            if (tag.ketogenicTag()) {
-                tagStrings.add(TagEnum.KETOGENIC.label());
-            }
-        }
-
-        return tagStrings.stream().toList();
-    }
-
     private void addRandomRecommandationBoard(List<Long> similarityOrderByBoardIds) {
         int insufficientNumber =
             RECOMMENDATION_ITEM_COUNT - similarityOrderByBoardIds.size();
@@ -226,23 +228,19 @@ public class BoardDetailService {
     }
 
     public BoardDetailInfo.Main getBoardDetail(BoardDetailCommand.Main command) {
-        Board board = boardRepository.findById(command.boardId())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        Board board = boardRepository.findById(command.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
         if (Objects.isNull(command.memberId())) {
-            return boardDetailInfoMapper.toMainInfo(board, NOT_WISHED_STORE, NOT_WISHED_BOARD,
-                NOT_BBANGKETTING_PRODUCT_IDS);
+            return boardDetailInfoMapper.toMainInfo(board, NOT_WISHED_STORE, NOT_WISHED_BOARD, NOT_BBANGKETTING_PRODUCT_IDS);
         }
 
-        boolean isWishedBoard = wishListBoardRepository.existsByBoardIdAndMemberId(
-            command.boardId(), command.memberId());
-        boolean isWishedStore = wishListStoreRepository.existsByStoreIdAndMemberId(
-            board.getStore().getId(), command.memberId());
+        boolean isWishedBoard = wishListBoardRepository.existsByBoardIdAndMemberId(command.boardId(), command.memberId());
+        boolean isWishedStore = wishListStoreRepository.existsByStoreIdAndMemberId(board.getStore().getId(), command.memberId());
 
         List<Long> bbangkettingProductIds = getBbankettingProductsIds(board, command.memberId());
 
-        return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard,
-            bbangkettingProductIds);
+        return boardDetailInfoMapper.toMainInfo(board, isWishedStore, isWishedBoard, bbangkettingProductIds);
     }
 
     private List<Long> getBbankettingProductsIds(Board board, Long memberId) {

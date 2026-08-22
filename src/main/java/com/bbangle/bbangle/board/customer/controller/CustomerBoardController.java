@@ -6,6 +6,7 @@ import com.bbangle.bbangle.board.customer.dto.BoardResponse;
 import com.bbangle.bbangle.board.customer.dto.FilterRequest;
 import com.bbangle.bbangle.board.customer.facade.BoardFacade;
 import com.bbangle.bbangle.board.customer.service.BoardService;
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.common.dto.SingleResult;
 import com.bbangle.bbangle.common.page.CursorPageResponse;
 import com.bbangle.bbangle.common.page.CursorPagination;
@@ -39,6 +40,7 @@ public class CustomerBoardController {
     private final BoardFacade boardFacade;
     private final SearchMapper searchMapper;
 
+    @ExecutionTimeLog
     @Operation(summary = "게시글 전체 조회")
     @GetMapping
     public SingleResult<CursorPagination<SearchInfo.Select>> getList(

@@ -1,0 +1,367 @@
+package com.bbangle.bbangle.cart.customer.controller;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.bbangle.bbangle.cart.customer.controller.dto.CartRequest;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.CartListResponse;
+import com.bbangle.bbangle.cart.customer.controller.dto.CartResponse.UpdateCartOptionResponse;
+import com.bbangle.bbangle.cart.customer.facade.CustomerCartFacade;
+import com.bbangle.bbangle.common.adaptor.slack.TestSlackAdaptorConfig;
+import com.bbangle.bbangle.common.client.annotation.WithMockAuthenticationPrincipal;
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.JsonDataEncoder;
+import com.bbangle.bbangle.config.security.CustomerApiPath;
+import com.bbangle.bbangle.config.security.SecurityConfig;
+import com.bbangle.bbangle.config.security.jwt.TestJwtPropertiesConfig;
+import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+@DisplayName("[컨트롤러 테스트] CustomerCartController")
+@WebMvcTest(controllers = CustomerCartController.class)
+@Import({
+    TestSlackAdaptorConfig.class,
+    JsonDataEncoder.class,
+    TokenProvider.class,
+    TestJwtPropertiesConfig.class,
+    ResponseService.class,
+    SecurityConfig.class
+})
+@ActiveProfiles("test")
+class CustomerCartControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private CustomerCartFacade customerCartFacade;
+
+    @SpyBean
+    private ResponseService responseService;
+
+    @Nested
+    @DisplayName("addCart() 테스트")
+    class AddCartTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("장바구니 추가에 성공한다.")
+        void success_add_cart() throws Exception {
+
+            // given
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                1L,
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(
+                        1L,
+                        3
+                    )
+                )
+            );
+
+            // when & then
+            mockMvc.perform(post(CustomerApiPath.PREFIX + "/carts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            verify(customerCartFacade).addCartItem(eq(1L), any(CartRequest.AddCartRequest.class));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("상품 옵션이 존재하지 않으면 예외를 반환한다.")
+        void fail_add_cart_product_not_found() throws Exception {
+
+            // given
+            CartRequest.AddCartRequest request = new CartRequest.AddCartRequest(
+                1L,
+                List.of(
+                    new CartRequest.AddCartRequest.SelectedOptions(
+                        999L,
+                        3
+                    )
+                )
+            );
+
+            willThrow(new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND))
+                .given(customerCartFacade)
+                .addCartItem(anyLong(), any(CartRequest.AddCartRequest.class));
+
+            // when & then
+            mockMvc.perform(post(CustomerApiPath.PREFIX + "/carts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.PRODUCT_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+
+            verify(customerCartFacade).addCartItem(eq(1L), any(CartRequest.AddCartRequest.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteCartOptions() 테스트")
+    class DeleteCartOptionsTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("장바구니 옵션 삭제에 성공한다.")
+        void success_delete_cart_options() throws Exception {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(1L, 2L)
+            );
+
+            // when & then
+            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            then(customerCartFacade).should().deleteCartOptions(eq(1L), any(CartRequest.DeleteCartOptionsRequest.class));
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("존재하지 않는 옵션이면 예외를 반환한다.")
+        void fail_delete_cart_options_not_found() throws Exception {
+
+            // given
+            CartRequest.DeleteCartOptionsRequest request = new CartRequest.DeleteCartOptionsRequest(
+                List.of(99999L)
+            );
+
+            willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION))
+                .given(customerCartFacade)
+                .deleteCartOptions(anyLong(), any(CartRequest.DeleteCartOptionsRequest.class));
+
+            // when & then
+            mockMvc.perform(delete(CustomerApiPath.PREFIX + "/carts/options")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("getCart() 테스트")
+    class GetCartTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal()
+        @DisplayName("장바구니를 조회한다")
+        void success_getCart() throws Exception {
+
+            // given
+            CartListResponse response = CartListResponse.builder()
+                .carts(List.of())
+                .build();
+
+            given(customerCartFacade.getCart(1L)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(get(CustomerApiPath.PREFIX + "/carts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.carts").isArray());
+
+            verify(customerCartFacade).getCart(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("updateCartOption() 테스트")
+    class UpdateCartOptionTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션의 수량을 변경한다.")
+        void success_updateCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+            String optionName = "락토 프리";
+            int quantity = 4;
+
+            CartRequest.UpdateCartOptionRequest request = new CartRequest.UpdateCartOptionRequest(quantity);
+
+            UpdateCartOptionResponse response = UpdateCartOptionResponse.builder()
+                .cartOptionId(cartOptionId)
+                .optionId(optionId)
+                .optionName(optionName)
+                .quantity(quantity)
+                .build();
+
+            given(customerCartFacade.updateQuantity(memberId, cartOptionId, request)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"))
+                .andExpect(jsonPath("$.result.cartOptionId").value(cartOptionId))
+                .andExpect(jsonPath("$.result.optionId").value(optionId))
+                .andExpect(jsonPath("$.result.optionName").value(optionName))
+                .andExpect(jsonPath("$.result.quantity").value(quantity));
+
+            verify(customerCartFacade).updateQuantity(memberId, cartOptionId, request);
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션이 존재하지 않으면 예외를 반환한다.")
+        void fail_updateCartOption_notFoundCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+
+            CartRequest.UpdateCartOptionRequest request = new CartRequest.UpdateCartOptionRequest(3);
+
+            given(customerCartFacade.updateQuantity(memberId, cartOptionId, request))
+                .willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION));
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
+
+            verify(customerCartFacade).updateQuantity(memberId, cartOptionId, request);
+        }
+    }
+
+    @Nested
+    @DisplayName("changeCartOption() 테스트")
+    class ChangeCartOptionTest {
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션을 다른 옵션으로 변경한다.")
+        void success_changeCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("이미 담긴 옵션으로 변경하면 예외를 반환한다.")
+        void fail_changeCartOption_duplicated() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            willThrow(new BbangleException(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION))
+                .given(customerCartFacade)
+                .changeOption(memberId, cartOptionId, request);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.DUPLICATED_PRODUCT_OPTION.getMessage()));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+
+        @Test
+        @WithMockAuthenticationPrincipal
+        @DisplayName("장바구니 옵션이 존재하지 않으면 예외를 반환한다.")
+        void fail_changeCartOption_notFoundCartOption() throws Exception {
+
+            // given
+            Long memberId = 1L;
+            Long cartOptionId = 2L;
+            Long optionId = 3L;
+
+            CartRequest.ChangeCartOptionRequest request = new CartRequest.ChangeCartOptionRequest(optionId);
+
+            willThrow(new BbangleException(BbangleErrorCode.NOT_FOUND_CART_OPTION))
+                .given(customerCartFacade)
+                .changeOption(memberId, cartOptionId, request);
+
+            // when & then
+            mockMvc.perform(patch(CustomerApiPath.PREFIX + "/carts/options/{cartOptionId}/option", cartOptionId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getCode()))
+                .andExpect(jsonPath("$.message").value(BbangleErrorCode.NOT_FOUND_CART_OPTION.getMessage()));
+
+            then(customerCartFacade).should().changeOption(memberId, cartOptionId, request);
+        }
+    }
+}

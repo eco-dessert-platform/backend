@@ -16,10 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ProductImgService {
 
+    private static final String PRODUCT_IMAGE_FOLDER = "product-images";
     private final ProductImgRepository productImgRepository;
     private final S3Service s3Service;
-
-    private static final String PRODUCT_IMAGE_FOLDER = "product-images";
 
     /**
      * 단일 이미지 업로드 (Board 연결 없이)
@@ -66,5 +65,10 @@ public class ProductImgService {
             productImg.updateBoard(board, imgOrder);
             imgOrder++;
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductImg> findAllByBoardIds(List<Long> boardIds) {
+        return productImgRepository.findThumbnailImagesByBoardIds(boardIds);
     }
 }

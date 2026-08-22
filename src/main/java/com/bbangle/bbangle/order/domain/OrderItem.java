@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.order.domain;
 
 import static com.bbangle.bbangle.order.domain.model.OrderStatus.CANCEL_REQUESTED;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.ORDER_CONFIRMED;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.IN_PRODUCTION;
+import static com.bbangle.bbangle.order.domain.model.OrderStatus.PAYMENT_COMPLETED;
 import static com.bbangle.bbangle.order.domain.model.OrderStatus.RETURN_REQUESTED;
 
 import com.bbangle.bbangle.board.domain.Product;
@@ -138,16 +141,38 @@ public class OrderItem extends BaseEntity {
         this.orderStatus = OrderStatus.SHIPPED;
     }
 
+    public boolean canRequestCancel() {
+        return this.orderStatus == PAYMENT_COMPLETED
+            || this.orderStatus == ORDER_CONFIRMED
+            || this.orderStatus == IN_PRODUCTION;
+    }
+
+    public boolean requestCancel() {
+        if (!canRequestCancel()) {
+            return false;
+        }
+        this.orderStatus = CANCEL_REQUESTED;
+        return true;
+    }
+
+    public boolean canRequestReturn() {
+        return this.orderStatus == OrderStatus.SHIPPED || this.orderStatus == OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public boolean requestReturn() {
-        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+        if (!canRequestReturn()) {
             return false;
         }
         this.orderStatus = RETURN_REQUESTED;
         return true;
     }
 
+    public boolean canRequestExchange() {
+        return this.orderStatus == OrderStatus.SHIPPED || this.orderStatus == OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public boolean requestExchange() {
-        if (this.orderStatus != OrderStatus.SHIPPED && this.orderStatus != OrderStatus.PURCHASE_CONFIRMED) {
+        if (!canRequestExchange()) {
             return false;
         }
         this.orderStatus = OrderStatus.EXCHANGE_REQUEST;

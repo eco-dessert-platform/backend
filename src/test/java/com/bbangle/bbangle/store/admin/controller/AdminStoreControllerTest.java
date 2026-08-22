@@ -708,4 +708,29 @@ class AdminStoreControllerTest {
                 .andExpect(status().isBadRequest());
         }
     }
+
+    @Nested
+    @DisplayName("duplicateStoreName() 테스트")
+    class DuplicateStoreNameTest {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("스토어명 중복 여부를 반환한다.")
+        void duplicateStoreName() throws Exception {
+
+            // given
+            given(adminStoreService.isDuplicateStoreName("빵그리")).willReturn(true);
+
+            // when & then
+            mockMvc.perform(get(AdminApiPath.PREFIX + "/stores/check-name")
+                    .param("storeName", "빵그리"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("SUCCESS"))
+                .andExpect(jsonPath("$.result").value(true));
+
+            then(adminStoreService).should().isDuplicateStoreName("빵그리");
+        }
+    }
 }

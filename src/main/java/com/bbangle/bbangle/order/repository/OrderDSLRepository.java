@@ -6,6 +6,7 @@ import com.bbangle.bbangle.order.domain.model.OrderStatus;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.OrderSearchCommand;
 import com.bbangle.bbangle.order.seller.service.model.SellerOrderCommand.CompletedOrderSearchCommand;
 import java.util.Map;
+import java.util.Optional;
 
 public interface OrderDSLRepository {
 
@@ -16,4 +17,6 @@ public interface OrderDSLRepository {
     BbanglePageResponse<Order> searchCompletedOrderList(CompletedOrderSearchCommand command);
 
     Map<OrderStatus, Long> countByCompletedOrderStatus(CompletedOrderSearchCommand command);
+
+    Optional<Order> findByIdWithFullAssociations(Long orderId, Long memberId);
 }

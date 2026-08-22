@@ -5,6 +5,7 @@ import static com.bbangle.bbangle.search.customer.validation.SearchValidation.ch
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.MemberSegment;
 import com.bbangle.bbangle.board.repository.MemberSegmentRepository;
+import com.bbangle.bbangle.common.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.common.page.CursorPagination;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -61,6 +62,7 @@ public class SearchService {
         return memberId;
     }
 
+    @ExecutionTimeLog
     public SearchInfo.BoardsInfo getBoardList(Main command) {
 
         SearchInfo.CursorCondition cursorCondition = Objects.nonNull(command.cursorId()) ?
@@ -83,13 +85,12 @@ public class SearchService {
         SearchInfo.CursorCondition cursorCondition) {
         MemberSegment memberSegment = memberSegmentRepository.findByMemberId(command.memberId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
-        List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition,
-            memberSegment);
-        Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition,
-            memberSegment);
+        List<Board> boards = searchRepository.getRecommendBoardList(command, cursorCondition, memberSegment);
+        Long boardCount = searchRepository.getRecommendAllCount(command, cursorCondition, memberSegment);
         return searchInfoMapper.toBoardsInfo(boards, boardCount, command.limitSize());
     }
 
+    @ExecutionTimeLog
     public CursorPagination<SearchInfo.Select> convertBoardsToCursorPagination(
         SearchInfo.BoardsInfo boardsInfo, Map<Long, Boolean> boardWishedMap) {
 

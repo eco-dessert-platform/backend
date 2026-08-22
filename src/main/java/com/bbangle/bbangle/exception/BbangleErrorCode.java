@@ -85,6 +85,11 @@ public enum BbangleErrorCode {
     INVALID_STOCK_AMOUNT(-61, "재고 수량은 0이상이여야 합니다.", BAD_REQUEST),
     NOT_FOUND_OPTION(-62, "존재하지 않는 상품 옵션입니다", NOT_FOUND),
     INVALID_DECREASE_STOCK_AMOUNT(-63, "감소하려는 수보다 현재 재고가 더 작습니다.", BAD_REQUEST),
+    INVALID_REQUEST_STOCK(-68, "선택하신 수량보다 현재 재고 수량이 부족합니다.", BAD_REQUEST),
+    INVALID_REQUEST_QUANTITY(-69, "선택하신 수량이 1이상 999이하 이여야합니다.", BAD_REQUEST),
+    DUPLICATED_PRODUCT_OPTION(-70, "장바구니에 추가할 상품 옵션이 중복이 되어선 안됩니다.", BAD_REQUEST),
+    NOT_FOUND_CART(-71, "해당 계정의 장바구니 데이터를 찾지 못했습니다.", BAD_REQUEST),
+    NOT_FOUND_CART_OPTION(-72, "장바구니 옵션을 찾을 수 없습니다.", NOT_FOUND),
 
     //AWS Error (600)
     AWS_ERROR(-600, "AWS S3 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -127,6 +132,7 @@ public enum BbangleErrorCode {
     PRODUCT_NOT_FOUND(-716, "존재하지 않는 상품입니다.", NOT_FOUND),
     MISSING_BOARD_THUMBNAIL(-717, "썸네일 이미지는 필수입니다. 새 파일 또는 기존 URL을 제공해주세요.", BAD_REQUEST),
     NOT_REGISTERED_STORE(-718, "스토어를 등록하지 않은 계정입니다.", NOT_FOUND),
+    SELLER_DOCUMENT_NOT_FOUND(-719, "판매자의 서류가 존재하지 않습니다.", NOT_FOUND),
 
     // Store Error (721~740)
     INVALID_STORE(-721, "유효하지 않은 스토어 객체입니다.", BAD_REQUEST),
@@ -177,6 +183,9 @@ public enum BbangleErrorCode {
     EXCHANGE_NOT_ALLOWED(-783, "교환 요청이 불가능한 상태입니다.", BAD_REQUEST),
     DELIVERY_NOT_FOUND(-784, "해당 주문상품의 배송 정보를 찾을 수 없습니다.", NOT_FOUND),
     DELIVERY_MODIFY_NOT_ALLOWED(-785, "현재 배송 상태에서는 운송장을 수정할 수 없습니다.", BAD_REQUEST),
+    CUSTOMER_ORDER_UNAUTHORIZED(-786, "주문 조회를 위해 로그인이 필요합니다.", UNAUTHORIZED),
+    CUSTOMER_ORDER_MEMBER_NOT_FOUND(-787, "존재하지 않는 회원의 주문 조회 요청입니다.", NOT_FOUND),
+    CUSTOMER_ORDER_NOT_FOUND(-788, "존재하지 않거나 접근할 수 없는 주문입니다.", NOT_FOUND),
 
     // Settlement Error(801 ~ 820)
     SETTLEMENT_NOT_FOUND(-802, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
