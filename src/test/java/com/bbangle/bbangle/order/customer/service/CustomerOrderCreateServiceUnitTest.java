@@ -41,9 +41,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@DisplayName("[단위 테스트] CustomerOrderService")
+@DisplayName("[단위 테스트] CustomerOrderCreateService")
 @ExtendWith(MockitoExtension.class)
-class CustomerOrderServiceUnitTest {
+class CustomerOrderCreateServiceUnitTest {
 
     @Mock private MemberRepository memberRepository;
     @Mock private MemberDeliveryAddressRepository memberDeliveryAddressRepository;
@@ -54,7 +54,7 @@ class CustomerOrderServiceUnitTest {
     @Mock private PaymentRepository paymentRepository;
 
     @InjectMocks
-    private CustomerOrderService customerOrderService;
+    private CustomerOrderCreateService customerOrderCreateService;
 
     private static final Long MEMBER_ID = 1L;
 
@@ -120,7 +120,7 @@ class CustomerOrderServiceUnitTest {
                 List.of(new OrderPreviewRequest.OrderProductItem(99L, 1))
             );
 
-            assertThatThrownBy(() -> customerOrderService.getOrderPreview(MEMBER_ID, request))
+            assertThatThrownBy(() -> customerOrderCreateService.getOrderPreview(MEMBER_ID, request))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.ORDER_PRODUCT_EMPTY);
@@ -146,7 +146,7 @@ class CustomerOrderServiceUnitTest {
                 PaymentMethod.CARD
             );
 
-            assertThatThrownBy(() -> customerOrderService.createOrders(MEMBER_ID, request))
+            assertThatThrownBy(() -> customerOrderCreateService.createOrders(MEMBER_ID, request))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.NOTFOUND_MEMBER);
@@ -175,7 +175,7 @@ class CustomerOrderServiceUnitTest {
                 PaymentMethod.CARD
             );
 
-            assertThatThrownBy(() -> customerOrderService.createOrders(MEMBER_ID, request))
+            assertThatThrownBy(() -> customerOrderCreateService.createOrders(MEMBER_ID, request))
                 .isInstanceOf(BbangleException.class)
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.DELIVERY_ADDRESS_NOT_FOUND);
@@ -209,7 +209,7 @@ class CustomerOrderServiceUnitTest {
                 List.of(new OrderPreviewRequest.OrderProductItem(1L, 2))
             );
 
-            OrderPreviewResponse response = customerOrderService.getOrderPreview(MEMBER_ID, request);
+            OrderPreviewResponse response = customerOrderCreateService.getOrderPreview(MEMBER_ID, request);
 
             assertThat(response.totalProductAmount()).isEqualTo(18_000); // 9,000 × 2
             assertThat(response.totalDeliveryFee()).isEqualTo(3_000);    // 배송비 미달

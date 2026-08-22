@@ -6,7 +6,7 @@ import com.bbangle.bbangle.order.customer.dto.request.OrderCreateRequest;
 import com.bbangle.bbangle.order.customer.dto.request.OrderPreviewRequest;
 import com.bbangle.bbangle.order.customer.dto.response.OrderCreateResponse;
 import com.bbangle.bbangle.order.customer.dto.response.OrderPreviewResponse;
-import com.bbangle.bbangle.order.customer.service.CustomerOrderService;
+import com.bbangle.bbangle.order.customer.service.CustomerOrderCreateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/customer/orders")
 @RequiredArgsConstructor
-public class CustomerOrderController {
+public class CustomerOrderCreateController {
 
-    private final CustomerOrderService customerOrderService;
+    private final CustomerOrderCreateService customerOrderCreateService;
     private final ResponseService responseService;
 
     @PostMapping("/preview")
@@ -30,7 +30,7 @@ public class CustomerOrderController {
         @RequestBody @Valid OrderPreviewRequest request,
         @AuthenticationPrincipal Long memberId
     ) {
-        OrderPreviewResponse response = customerOrderService.getOrderPreview(memberId, request);
+        OrderPreviewResponse response = customerOrderCreateService.getOrderPreview(memberId, request);
         return responseService.getSingleResult(response);
     }
 
@@ -40,7 +40,7 @@ public class CustomerOrderController {
         @RequestBody @Valid OrderCreateRequest request,
         @AuthenticationPrincipal Long memberId
     ) {
-        OrderCreateResponse response = customerOrderService.createOrders(memberId, request);
+        OrderCreateResponse response = customerOrderCreateService.createOrders(memberId, request);
         return responseService.getSingleResult(response);
     }
 }
