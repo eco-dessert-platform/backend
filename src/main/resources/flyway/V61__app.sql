@@ -1,1 +1,0 @@
-ALTER TABLE payment ADD COLUMN payment_key VARCHAR(200) NULL;
