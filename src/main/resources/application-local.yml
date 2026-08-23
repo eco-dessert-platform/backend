@@ -69,6 +69,20 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT}
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 oauth2:
   # OAuth2 로그인 인증 후 리다이렉트할 URL 및 도메인을 화이트리스트 방식으로 관리
   redirect:
