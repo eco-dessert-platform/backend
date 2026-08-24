@@ -75,6 +75,19 @@ oauth2:
     seller: ${SELLER_DOMAIN}
     customer: ${CUSTOMER_DOMAIN}
 
+management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT}
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 logging:
   config: classpath:logback/dev.xml
   file:
