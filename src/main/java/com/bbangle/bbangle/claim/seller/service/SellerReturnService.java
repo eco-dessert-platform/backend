@@ -123,8 +123,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+        ReturnRequest returnRequest = getReturnRequestOrThrow(returnId);
 
         returnRequest.processReturn();
 
@@ -140,8 +139,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+        ReturnRequest returnRequest = getReturnRequestOrThrow(returnId);
 
         returnRequest.startReturnPickup();
 
@@ -157,8 +155,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = returnRequestRepository.findWithLockById(returnId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
+        ReturnRequest returnRequest = getReturnRequestOrThrow(returnId);
 
         returnRequest.validatePickupScheduled();
 
@@ -177,7 +174,7 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = findReturnRequestWithLock(returnId);
+        ReturnRequest returnRequest = getReturnRequestOrThrow(returnId);
         applyHold(returnRequest, holdReason);
     }
 
@@ -194,13 +191,12 @@ public class SellerReturnService {
             throw new BbangleException(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
         }
 
-        ReturnRequest returnRequest = findReturnRequestWithLock(returnId);
+        ReturnRequest returnRequest = getReturnRequestOrThrow(returnId);
         applyRefusal(returnRequest, refusalReason);
     }
 
-    // 락 전략 전환이 필요할 경우 이 메서드만 교체하면 된다 (현재: 비관적 락).
-    private ReturnRequest findReturnRequestWithLock(Long returnId) {
-        return returnRequestRepository.findWithLockById(returnId)
+    private ReturnRequest getReturnRequestOrThrow(Long returnId) {
+        return returnRequestRepository.findById(returnId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.CLAIM_NOT_FOUND));
     }
 

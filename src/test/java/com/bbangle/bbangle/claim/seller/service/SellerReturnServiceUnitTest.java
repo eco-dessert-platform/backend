@@ -71,7 +71,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
             given(claimDeliveryRepository.save(any(ClaimDelivery.class))).willAnswer(inv -> inv.getArgument(0));
 
             // when
@@ -94,7 +94,7 @@ class SellerReturnServiceUnitTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(returnRequestRepository).should(never()).findById(any());
             then(claimDeliveryRepository).should(never()).save(any());
         }
 
@@ -103,7 +103,7 @@ class SellerReturnServiceUnitTest {
         void registerReturnInvoice_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
@@ -122,7 +122,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);  // REQUESTED 상태
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
@@ -141,7 +141,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.registerReturnInvoice(RETURN_ID, SELLER_ID, COURIER, TRACKING_NUMBER))
@@ -281,7 +281,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.refuseReturn(RETURN_ID, SELLER_ID, REFUSAL_REASON);
@@ -290,7 +290,7 @@ class SellerReturnServiceUnitTest {
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
             assertThat(returnRequest.getSellerComment()).isEqualTo(REFUSAL_REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
-            then(returnRequestRepository).should(times(1)).findWithLockById(RETURN_ID);
+            then(returnRequestRepository).should(times(1)).findById(RETURN_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -302,7 +302,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.refuseReturn(RETURN_ID, SELLER_ID, REFUSAL_REASON);
@@ -311,7 +311,7 @@ class SellerReturnServiceUnitTest {
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.REJECTED);
             assertThat(returnRequest.getSellerComment()).isEqualTo(REFUSAL_REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_REJECTED);
-            then(returnRequestRepository).should(times(1)).findWithLockById(RETURN_ID);
+            then(returnRequestRepository).should(times(1)).findById(RETURN_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -327,7 +327,7 @@ class SellerReturnServiceUnitTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(returnRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -336,7 +336,7 @@ class SellerReturnServiceUnitTest {
         void refuseReturn_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.refuseReturn(RETURN_ID, SELLER_ID, REFUSAL_REASON))
@@ -357,7 +357,7 @@ class SellerReturnServiceUnitTest {
             );
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.refuseReturn(RETURN_ID, SELLER_ID, REFUSAL_REASON))
@@ -376,7 +376,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.rejected(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.refuseReturn(RETURN_ID, SELLER_ID, REFUSAL_REASON))
@@ -404,7 +404,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
@@ -413,7 +413,7 @@ class SellerReturnServiceUnitTest {
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.HOLD);
             assertThat(returnRequest.getSellerComment()).isEqualTo(HOLD_REASON);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_ON_HOLD);
-            then(returnRequestRepository).should(times(1)).findWithLockById(RETURN_ID);
+            then(returnRequestRepository).should(times(1)).findById(RETURN_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -425,7 +425,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.approved(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
@@ -445,7 +445,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.pickupScheduled(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON);
@@ -469,7 +469,7 @@ class SellerReturnServiceUnitTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(returnRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -478,7 +478,7 @@ class SellerReturnServiceUnitTest {
         void holdReturn_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
@@ -499,7 +499,7 @@ class SellerReturnServiceUnitTest {
             );
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
@@ -518,7 +518,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.rejected(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.holdReturn(RETURN_ID, SELLER_ID, HOLD_REASON))
@@ -547,7 +547,7 @@ class SellerReturnServiceUnitTest {
             );
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when
             sut.processReturn(RETURN_ID, SELLER_ID);
@@ -555,7 +555,7 @@ class SellerReturnServiceUnitTest {
             // then
             assertThat(returnRequest.getStatus()).isEqualTo(ReturnRequestRequestStatus.COMPLETED);
             assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.RETURN_COMPLETED);
-            then(returnRequestRepository).should(times(1)).findWithLockById(RETURN_ID);
+            then(returnRequestRepository).should(times(1)).findById(RETURN_ID);
             then(orderItemHistoryRepository).should(times(1)).save(any(OrderItemHistory.class));
         }
 
@@ -571,7 +571,7 @@ class SellerReturnServiceUnitTest {
                 .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
                 .isEqualTo(BbangleErrorCode.SELLER_CLAIM_MISMATCH);
 
-            then(returnRequestRepository).should(never()).findWithLockById(any());
+            then(returnRequestRepository).should(never()).findById(any());
             then(orderItemHistoryRepository).should(never()).save(any());
         }
 
@@ -580,7 +580,7 @@ class SellerReturnServiceUnitTest {
         void processReturn_fails_when_claim_not_found() {
             // given
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.empty());
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sut.processReturn(RETURN_ID, SELLER_ID))
@@ -599,7 +599,7 @@ class SellerReturnServiceUnitTest {
             ReturnRequest returnRequest = ReturnRequestFixture.requested(orderItem);
 
             given(claimRepository.existsClaimRequestBySeller(RETURN_ID, SELLER_ID)).willReturn(true);
-            given(returnRequestRepository.findWithLockById(RETURN_ID)).willReturn(Optional.of(returnRequest));
+            given(returnRequestRepository.findById(RETURN_ID)).willReturn(Optional.of(returnRequest));
 
             // when & then
             assertThatThrownBy(() -> sut.processReturn(RETURN_ID, SELLER_ID))
