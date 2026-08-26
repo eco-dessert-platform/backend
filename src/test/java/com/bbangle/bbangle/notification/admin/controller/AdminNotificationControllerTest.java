@@ -374,4 +374,43 @@ public class AdminNotificationControllerTest {
         // Service 호출 검증
         verify(adminNotificationService).searchNotice(any());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("공지사항 단건 조회에 성공한다")
+    void success_getNotification_WithValidAdmin() throws Exception {
+        // given
+        Long noticeId = 1L;
+        NoticeInfo mockNotice = NoticeInfo.builder()
+            .id(noticeId)
+            .title("공지사항 1")
+            .content("<div>내용 1</div>")
+            .imageLinks(List.of())
+            .createAt(LocalDateTime.now())
+            .modifiedAt(LocalDateTime.now())
+            .build();
+
+        when(adminNotificationService.getNotice(noticeId)).thenReturn(mockNotice);
+
+        // when & then
+        mockMvc.perform(
+                MockMvcRequestBuilders.get(AdminApiPath.PREFIX + "/notifications/" + noticeId)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        // Service 호출 검증
+        verify(adminNotificationService).getNotice(noticeId);
+    }
+
+    @Test
+    @DisplayName("공지사항 단건 조회 시 인증 없으면 실패한다 (401 Unauthorized)")
+    void getNotification_Fails_WithoutAuthentication() throws Exception {
+        // when & then - 로그인하지 않은 사용자
+        mockMvc.perform(
+                MockMvcRequestBuilders.get(AdminApiPath.PREFIX + "/notifications/1")
+            )
+            .andDo(print())
+            .andExpect(status().isUnauthorized());
+    }
 }

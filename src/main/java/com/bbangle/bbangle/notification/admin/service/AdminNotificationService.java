@@ -12,9 +12,6 @@ import com.bbangle.bbangle.notification.admin.controller.dto.AdminNotificationRe
 import com.bbangle.bbangle.notification.admin.service.model.AdminNoticeInfo.NoticeInfo;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,30 +27,19 @@ public class AdminNotificationService {
 
     private final NotificationRepository notificationRepository;
     private final AdminRepository adminRepository;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public NoticeInfo createAdminNotification(AdminNoticeCreateCommand command) {
         Admin admin = adminRepository.findById(command.adminId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
 
-        try {
+        Notice notice = command.cdnImageLinks() == null
+            ? Notice.createNoticeForAdminWithoutImage(command.title(), command.content(), admin)
+            : Notice.createNoticeForAdmin(command.title(), command.content(), command.cdnImageLinks(), admin);
 
-            if (command.cdnImageLinks() == null) {
-                Notice savedNotice = notificationRepository.save(
-                    Notice.createNoticeFofAdminWithoutImage(command.title(), command.content(), admin));
+        Notice savedNotice = notificationRepository.save(notice);
 
-                return NoticeInfo.from(savedNotice);
-            }
-            String imageLinksJson = objectMapper.writeValueAsString(command.cdnImageLinks());
-
-            Notice notice = Notice.createNoticeForAdmin(command.title(), command.content(), imageLinksJson, admin);
-            Notice savedNotice = notificationRepository.save(notice);
-
-            return NoticeInfo.from(savedNotice, objectMapper);
-        } catch (JsonProcessingException e) {
-            throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
-        }
+        return NoticeInfo.from(savedNotice);
     }
 
 
@@ -62,24 +48,16 @@ public class AdminNotificationService {
         Admin admin = adminRepository.findById(command.adminId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.ADMIN_NOT_FOUND));
 
-        try {
-            Notice beforeNotice = notificationRepository.findById(command.noticeId())
-                .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
+        Notice beforeNotice = notificationRepository.findById(command.noticeId())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
 
-            if (command.cdnImageLinks() != null) {
-
-                String imageLinksJson = objectMapper.writeValueAsString(command.cdnImageLinks());
-                beforeNotice.updateNoticeContainImage(command.title(), command.content(), imageLinksJson);
-                return NoticeInfo.from(beforeNotice, objectMapper);
-            }
-
+        if (command.cdnImageLinks() != null) {
+            beforeNotice.updateNoticeContainImage(command.title(), command.content(), command.cdnImageLinks());
+        } else {
             beforeNotice.updateNoticeWithoutImage(command.title(), command.content());
-
-            return NoticeInfo.from(beforeNotice);
-
-        } catch (JsonProcessingException e) {
-            throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
         }
+
+        return NoticeInfo.from(beforeNotice);
     }
 
     @Transactional(readOnly = true)
@@ -87,25 +65,20 @@ public class AdminNotificationService {
         Notice notice = notificationRepository.findById(noticeId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
 
-        return deserializeImageLinks(notice.getImageLinks());
+        return notice.getImageLinks() != null ? notice.getImageLinks() : List.of();
     }
 
-    private List<String> deserializeImageLinks(String imageLinksJson) {
-        if (imageLinksJson == null) {
-            return List.of();
-        }
+    @Transactional(readOnly = true)
+    public NoticeInfo getNotice(Long noticeId) {
+        Notice notice = notificationRepository.findByIdAndIsDeletedFalse(noticeId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOT_FIND_NOTICE));
 
-        try {
-            return objectMapper.readValue(imageLinksJson, new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new BbangleException(BbangleErrorCode.JSON_SERIALIZATION_ERROR);
-        }
+        return NoticeInfo.from(notice);
     }
 
     @Transactional(readOnly = true)
     public Page<NoticeInfo> searchNotice(Pageable pageable) {
-        Page<Notice> notice = notificationRepository.searchNoticeAll(pageable);
+        Page<Notice> notice = notificationRepository.findByIsDeletedFalse(pageable);
         return notice.map(NoticeInfo::from);
     }
 
