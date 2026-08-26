@@ -2,7 +2,6 @@ package com.bbangle.bbangle.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -99,6 +98,7 @@ public enum BbangleErrorCode {
     AWS_S3_FILE_NOT_FOUND(-604, "URL에 파일이 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STREAM_CLOSING_ERROR(-605, "Stream 파일 닫기에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    FORBIDDEN(-988, "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     NOT_FOUND_REQUEST(-989, "해당 요청을 찾을 수 없습니다.", NOT_FOUND),
     REQUEST_IS_REJECTED(-990, "이미 거절된 요청입니다.", BAD_REQUEST),
     REQUEST_IS_APPROVED(-991, "이미 승인된 요청입니다.", BAD_REQUEST),
@@ -124,11 +124,11 @@ public enum BbangleErrorCode {
     ACCOUNT_NOT_VERIFIED(-708, "인증되지 않은 계좌입니다.", BAD_REQUEST),
     ORDER_NOT_FOUND(-709, "존재하지 않는 주문입니다.", NOT_FOUND),
     ORDER_ITEM_NOT_FOUND(-710, "존재하지 않는 주문상품입니다.", NOT_FOUND),
-    ORDER_ACCESS_DENIED(-711, "해당 주문에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    ORDER_ACCESS_DENIED(-711, "해당 주문에 대한 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     ENCRYPTION_FAILED(-712, "암호화 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     DECRYPTION_FAILED(-713, "복호화 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_REGISTER_STORE(-714, "이미 스토어를 등록한 판매자 계정입니다.", BAD_REQUEST),
-    FORBIDDEN_BOARD_ACCESS(-715, "해당 게시글에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    FORBIDDEN_BOARD_ACCESS(-715, "해당 게시글에 대한 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     PRODUCT_NOT_FOUND(-716, "존재하지 않는 상품입니다.", NOT_FOUND),
     MISSING_BOARD_THUMBNAIL(-717, "썸네일 이미지는 필수입니다. 새 파일 또는 기존 URL을 제공해주세요.", BAD_REQUEST),
     NOT_REGISTERED_STORE(-718, "스토어를 등록하지 않은 계정입니다.", NOT_FOUND),
@@ -189,7 +189,7 @@ public enum BbangleErrorCode {
 
     // Settlement Error(801 ~ 820)
     SETTLEMENT_NOT_FOUND(-802, "존재하지 않는 정산 내역입니다.", NOT_FOUND),
-    SETTLEMENT_ACCESS_DENIED(-803, "해당 정산에 대한 접근 권한이 없습니다.", FORBIDDEN),
+    SETTLEMENT_ACCESS_DENIED(-803, "해당 정산에 대한 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     INVALID_SETTLEMENT_DATE_RANGE(-804, "조회 시작일은 종료일보다 이전이어야 합니다.", BAD_REQUEST),
     SETTLEMENT_DATE_RANGE_EXCEEDED(-805, "조회 기간은 최대 1개월까지 가능합니다.", BAD_REQUEST),
     SETTLEMENT_DATE_REQUIRED(-806, "엑셀 다운로드 시 조회 시작일과 종료일은 필수입니다.", BAD_REQUEST),

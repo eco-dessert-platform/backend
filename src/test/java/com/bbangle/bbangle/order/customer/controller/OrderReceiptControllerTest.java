@@ -150,7 +150,6 @@ class OrderReceiptControllerTest {
                     .andExpect(status().isUnauthorized());
 
                 then(orderReceiptService).shouldHaveNoInteractions();
-                then(responseService).shouldHaveNoInteractions();
             }
 
             @Test

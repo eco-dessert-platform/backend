@@ -151,7 +151,6 @@ class AdminBoardControllerTest {
             .andExpect(status().isUnauthorized());
 
         then(adminBoardService).shouldHaveNoInteractions();
-        then(responseService).shouldHaveNoInteractions();
     }
 
     @Test
@@ -259,7 +258,6 @@ class AdminBoardControllerTest {
             .andExpect(status().isUnauthorized());
 
         then(adminBoardService).shouldHaveNoInteractions();
-        then(responseService).shouldHaveNoInteractions();
     }
 
     @Test
@@ -325,7 +323,6 @@ class AdminBoardControllerTest {
             .andExpect(status().isUnauthorized());
 
         then(adminBoardService).shouldHaveNoInteractions();
-        then(responseService).shouldHaveNoInteractions();
     }
 
 }

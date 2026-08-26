@@ -7,22 +7,27 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.security.filter.ExceptionHandlerFilter;
+import com.bbangle.bbangle.config.security.handler.BbangleAccessDeniedHandler;
+import com.bbangle.bbangle.config.security.handler.BbangleAuthenticationEntryPoint;
 import com.bbangle.bbangle.config.security.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.config.security.jwt.TokenProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @RequiredArgsConstructor
 @Configuration
@@ -31,10 +36,31 @@ public class SecurityConfig {
 
     private final TokenProvider tokenProvider;
 
+    @Bean
+    public BbangleAuthenticationEntryPoint bbangleAuthenticationEntryPoint(
+        ResponseService responseService,
+        ObjectMapper objectMapper
+    ) {
+        return new BbangleAuthenticationEntryPoint(responseService, objectMapper);
+    }
+
+    @Bean
+    public BbangleAccessDeniedHandler bbangleAccessDeniedHandler(
+        ResponseService responseService,
+        ObjectMapper objectMapper
+    ) {
+        return new BbangleAccessDeniedHandler(responseService, objectMapper);
+    }
+
     @Profile("!local")
     @Bean
     @Order(2)
-    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiFilterChain(
+        HttpSecurity http,
+        @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
+        BbangleAuthenticationEntryPoint authenticationEntryPoint,
+        BbangleAccessDeniedHandler accessDeniedHandler
+    ) throws Exception {
         http
             .securityMatcher("/**")
             .cors(Customizer.withDefaults())
@@ -43,6 +69,10 @@ public class SecurityConfig {
             .addFilterBefore(
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
+            )
+            .addFilterBefore(
+                new ExceptionHandlerFilter(handlerExceptionResolver),
+                TokenAuthenticationFilter.class
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/.well-known/**").permitAll() // Chrome DevTools 및 well-known URI
@@ -56,11 +86,12 @@ public class SecurityConfig {
                 .requestMatchers(AdminApiPath.ANY_METHOD).hasAuthority(ROLE_ADMIN.getRole()) // Admin API
                 .requestMatchers("/api/**").authenticated() // 나머지 /api 하위는 인증 필요
                 .anyRequest().permitAll())
-            .exceptionHandling(exp ->
-                exp.defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+            .exceptionHandling(exp -> exp
+                .defaultAuthenticationEntryPointFor(
+                    authenticationEntryPoint,
                     new AntPathRequestMatcher("/api/**")
                 )
+                .accessDeniedHandler(accessDeniedHandler)
             );
         return http.build();
     }
@@ -68,7 +99,12 @@ public class SecurityConfig {
     @Profile("local")
     @Bean
     @Order(2)
-    public SecurityFilterChain localApiFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain localApiFilterChain(
+        HttpSecurity http,
+        @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
+        BbangleAuthenticationEntryPoint authenticationEntryPoint,
+        BbangleAccessDeniedHandler accessDeniedHandler
+    ) throws Exception {
         http
             .securityMatcher("/**")
             .cors(Customizer.withDefaults())
@@ -78,13 +114,18 @@ public class SecurityConfig {
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
             )
+            .addFilterBefore(
+                new ExceptionHandlerFilter(handlerExceptionResolver),
+                TokenAuthenticationFilter.class
+            )
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll())
-            .exceptionHandling(exp ->
-                exp.defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+            .exceptionHandling(exp -> exp
+                .defaultAuthenticationEntryPointFor(
+                    authenticationEntryPoint,
                     new AntPathRequestMatcher("/api/**")
                 )
+                .accessDeniedHandler(accessDeniedHandler)
             );
         return http.build();
     }
