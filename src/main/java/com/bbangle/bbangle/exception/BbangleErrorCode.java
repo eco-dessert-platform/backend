@@ -216,7 +216,18 @@ public enum BbangleErrorCode {
     INVALID_VAT_DATE_RANGE(-852, "조회 기간이 올바르지 않습니다.", BAD_REQUEST),
     EXCEEDED_MAX_VAT_DATE_RANGE(-853, "조회 기간은 최대 1년까지 가능합니다.", BAD_REQUEST),
     INVALID_EXCEL_TYPE(-854, "엑셀 다운로드 유형이 올바르지 않습니다.", BAD_REQUEST),
-    EXCEL_CREATE_FAILED(-855, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    EXCEL_CREATE_FAILED(-855, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Order Customer Error(856 ~ 870)
+    DELIVERY_ADDRESS_NOT_FOUND(-856, "기본 배송지를 찾을 수 없습니다.", NOT_FOUND),
+    ORDER_PRODUCT_EMPTY(-857, "주문 상품이 비어 있습니다.", BAD_REQUEST),
+
+    // Payment Customer Error(871 ~ 880)
+    PAYMENT_NOT_FOUND(-871, "결제 정보를 찾을 수 없습니다.", NOT_FOUND),
+    PAYMENT_AMOUNT_MISMATCH(-872, "결제 금액이 일치하지 않습니다.", BAD_REQUEST),
+    PAYMENT_CONFIRM_FAILED(-873, "결제 승인에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_ALREADY_COMPLETED(-874, "이미 완료된 결제입니다.", CONFLICT),
+    INVALID_ORDER_STATUS_TRANSITION(-875, "해당 주문 상태에서는 상태를 변경할 수 없습니다.", BAD_REQUEST);
 
     private final int code;
     private final String message;

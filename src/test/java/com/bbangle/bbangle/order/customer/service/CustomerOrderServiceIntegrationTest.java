@@ -176,6 +176,32 @@ class CustomerOrderServiceIntegrationTest {
         assertThat(counts.exchanged()).isZero();
     }
 
+    @DisplayName("결제 전(PAYMENT_PENDING) 주문은 목록·총건수·탭 카운트 어디에도 잡히지 않는다")
+    @Test
+    void getOrders_excludesPaymentPendingOrders() {
+        // given: 결제완료 1건 + 결제대기 1건
+        persistOrder("ORDER-PAID", LocalDateTime.of(2025, 6, 1, 10, 0), OrderStatus.PAYMENT_COMPLETED);
+        persistOrder("ORDER-PENDING", LocalDateTime.of(2025, 6, 5, 10, 0), OrderStatus.PAYMENT_PENDING);
+        em.flush();
+        em.clear();
+
+        CustomerOrderSearchCommand command = CustomerOrderSearchCommand.builder()
+            .memberId(member.getId())
+            .pageable(PageRequest.of(0, 10))
+            .build();
+
+        // when
+        CustomerOrderPageResponse result = customerOrderService.getOrders(command);
+
+        // then: 결제대기 주문이 더 최신이지만 노출되지 않아야 한다
+        assertThat(result.orders().content())
+            .extracting(CustomerOrderInfo::orderNumber)
+            .containsExactly("ORDER-PAID");
+        // 총 건수도 목록과 일치해야 한다 (어긋나면 페이지네이션이 깨진다)
+        assertThat(result.orders().totalElements()).isEqualTo(1L);
+        assertThat(result.statusCounts().total()).isEqualTo(1L);
+    }
+
     @DisplayName("다른 회원의 주문은 조회되지 않는다")
     @Test
     void getOrders_excludesOtherMembersOrders() {

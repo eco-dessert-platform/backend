@@ -17,6 +17,7 @@ public final class OrderFixture {
     public static Order.OrderBuilder defaultOrder() {
         return Order.builder()
             .orderNumber("ORDER-2025-01-01-00001")
+            .orderGroupId("test-group-id-12345678901")
             .orderDate(LocalDateTime.of(2025, 1, 1, 10, 0, 0))
             .buyerName("홍길동")
             .buyerPhone("01012345678")

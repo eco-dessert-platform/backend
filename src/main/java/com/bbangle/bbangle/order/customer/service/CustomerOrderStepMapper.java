@@ -57,6 +57,12 @@ public final class CustomerOrderStepMapper {
         int index;
         String label;
         switch (status) {
+            // 결제 전 상태. happy-path 단계 위에 있지 않으므로 인덱스는 BRANCH_INDEX로 둔다.
+            // NORMAL_STEPS에 단계를 추가하면 기존 인덱스(0~4)가 전부 밀리므로 라벨만 별도 노출한다.
+            case PAYMENT_PENDING -> {
+                index = BRANCH_INDEX;
+                label = "결제대기";
+            }
             case PAYMENT_COMPLETED -> {
                 index = 0;
                 label = "결제완료";

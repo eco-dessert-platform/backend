@@ -6,7 +6,9 @@ public class CustomerApiPath {
 
     public static final String[] ANY_METHOD = {
         "/api/v1/boards/folders/**",
-        PREFIX + "/orders/**"
+        PREFIX + "/orders/**",
+        PREFIX + "/delivery-addresses/**",
+        PREFIX + "/payments/**"
     };
 
 }

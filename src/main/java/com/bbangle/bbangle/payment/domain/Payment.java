@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.payment.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,6 +58,9 @@ public class Payment extends BaseEntity {
     @Column(name = "installment", length = 20)
     private String installment;
 
+    @Column(name = "payment_key", length = 200)
+    private String paymentKey;
+
     @Builder(access = AccessLevel.PRIVATE)
     private Payment(Order order,
                     PaymentStatus paymentStatus,
@@ -73,6 +78,22 @@ public class Payment extends BaseEntity {
         this.cardType = cardType;
         this.cardNumber = cardNumber;
         this.installment = installment;
+    }
+
+    public void confirm(String paymentKey, LocalDateTime approvedAt) {
+        if (this.paymentStatus != PaymentStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
+        this.paymentKey = paymentKey;
+        this.paidAt = approvedAt;
+        this.paymentStatus = PaymentStatus.COMPLETED;
+    }
+
+    public void fail() {
+        if (this.paymentStatus != PaymentStatus.PENDING) {
+            throw new BbangleException(BbangleErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
+        this.paymentStatus = PaymentStatus.FAILED;
     }
 
     public static Payment create(
