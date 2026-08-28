@@ -7,7 +7,9 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.logging.LoggingFilter;
 import com.bbangle.bbangle.config.security.filter.ExceptionHandlerFilter;
 import com.bbangle.bbangle.config.security.handler.BbangleAccessDeniedHandler;
 import com.bbangle.bbangle.config.security.handler.BbangleAuthenticationEntryPoint;
@@ -59,7 +61,8 @@ public class SecurityConfig {
         HttpSecurity http,
         @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
         BbangleAuthenticationEntryPoint authenticationEntryPoint,
-        BbangleAccessDeniedHandler accessDeniedHandler
+        BbangleAccessDeniedHandler accessDeniedHandler,
+        SlackAdaptor slackAdaptor
     ) throws Exception {
         http
             .securityMatcher("/**")
@@ -73,6 +76,10 @@ public class SecurityConfig {
             .addFilterBefore(
                 new ExceptionHandlerFilter(handlerExceptionResolver),
                 TokenAuthenticationFilter.class
+            )
+            .addFilterAfter(
+                new LoggingFilter(slackAdaptor),
+                ExceptionHandlerFilter.class
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/.well-known/**").permitAll() // Chrome DevTools 및 well-known URI
@@ -103,7 +110,8 @@ public class SecurityConfig {
         HttpSecurity http,
         @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
         BbangleAuthenticationEntryPoint authenticationEntryPoint,
-        BbangleAccessDeniedHandler accessDeniedHandler
+        BbangleAccessDeniedHandler accessDeniedHandler,
+        SlackAdaptor slackAdaptor
     ) throws Exception {
         http
             .securityMatcher("/**")
@@ -117,6 +125,10 @@ public class SecurityConfig {
             .addFilterBefore(
                 new ExceptionHandlerFilter(handlerExceptionResolver),
                 TokenAuthenticationFilter.class
+            )
+            .addFilterAfter(
+                new LoggingFilter(slackAdaptor),
+                ExceptionHandlerFilter.class
             )
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll())

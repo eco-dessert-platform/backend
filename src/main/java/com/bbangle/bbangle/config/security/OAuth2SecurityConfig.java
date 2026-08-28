@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.config.security;
 
 import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
+import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
+import com.bbangle.bbangle.config.logging.LoggingFilter;
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
 import com.bbangle.bbangle.config.security.auth.CustomOAuth2AuthorizationRequestResolver;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;
@@ -33,7 +35,8 @@ public class OAuth2SecurityConfig {
     public SecurityFilterChain oauth2FilterChain(
         HttpSecurity http,
         CustomOAuth2AuthorizationRequestResolver oAuth2Resolver,
-        OAuth2ClientValidationFilter validationFilter
+        OAuth2ClientValidationFilter validationFilter,
+        SlackAdaptor slackAdaptor
     ) throws Exception {
         http
             .securityMatcher(
@@ -51,6 +54,10 @@ public class OAuth2SecurityConfig {
             .addFilterBefore(
                 validationFilter,
                 OAuth2AuthorizationRequestRedirectFilter.class
+            )
+            .addFilterBefore(
+                new LoggingFilter(slackAdaptor),
+                OAuth2ClientValidationFilter.class
             );
         return http.build();
     }
