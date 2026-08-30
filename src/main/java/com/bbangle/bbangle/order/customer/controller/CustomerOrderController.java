@@ -6,6 +6,7 @@ import com.bbangle.bbangle.config.security.CustomerApiPath;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetail;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderPageResponse;
 import com.bbangle.bbangle.order.customer.service.CustomerOrderService;
+import com.bbangle.bbangle.order.customer.service.PurchaseConfirmService;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderDetailCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +27,7 @@ public class CustomerOrderController implements CustomerOrderApi {
 
     private final ResponseService responseService;
     private final CustomerOrderService customerOrderService;
+    private final PurchaseConfirmService purchaseConfirmService;
 
     /**
      * 소비자 주문목록 조회. 기본 정렬은 주문일(orderDate) 최신순입니다.
@@ -62,5 +65,20 @@ public class CustomerOrderController implements CustomerOrderApi {
         CustomerOrderDetail response = customerOrderService.getOrderDetail(command);
 
         return responseService.getSingleResult(response);
+    }
+
+    /**
+     * 소비자 구매확정. 본인 소유의 배송완료된 주문상품만 구매확정할 수 있습니다.
+     */
+    @Override
+    @PostMapping("/{orderId}/items/{orderItemId}/confirm")
+    public SingleResult<Long> confirmPurchase(
+        @AuthenticationPrincipal Long memberId,
+        @PathVariable Long orderId,
+        @PathVariable Long orderItemId
+    ) {
+        Long confirmedOrderItemId = purchaseConfirmService.confirm(memberId, orderId, orderItemId);
+
+        return responseService.getSingleResult(confirmedOrderItemId);
     }
 }

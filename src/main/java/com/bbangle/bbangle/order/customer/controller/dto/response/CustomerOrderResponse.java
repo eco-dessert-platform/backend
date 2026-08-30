@@ -73,7 +73,9 @@ public class CustomerOrderResponse {
         @Schema(description = "배송 상태") String deliveryStatus,
         @Schema(description = "택배사") String courierCompany,
         @Schema(description = "운송장 번호") String trackingNumber,
-        @Schema(description = "진행 단계 정보") CustomerOrderProgress progress
+        @Schema(description = "진행 단계 정보") CustomerOrderProgress progress,
+        @Schema(description = "구매확정 버튼 노출 여부 (배송완료 && 구매확정 전이면 true)") boolean purchaseConfirmable,
+        @Schema(description = "후기작성 버튼 노출 여부 (구매확정 상태면 true)") boolean reviewable
     ) {
 
     }

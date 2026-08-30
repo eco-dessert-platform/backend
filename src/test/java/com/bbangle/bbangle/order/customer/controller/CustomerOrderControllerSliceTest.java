@@ -6,7 +6,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +32,7 @@ import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderR
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderProgress;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderStatusCounts;
 import com.bbangle.bbangle.order.customer.service.CustomerOrderService;
+import com.bbangle.bbangle.order.customer.service.PurchaseConfirmService;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderDetailCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.model.CustomerOrderCategory;
@@ -74,6 +77,9 @@ class CustomerOrderControllerSliceTest {
     @MockBean
     private CustomerOrderService customerOrderService;
 
+    @MockBean
+    private PurchaseConfirmService purchaseConfirmService;
+
     private static UsernamePasswordAuthenticationToken memberAuth(Long memberId) {
         return new UsernamePasswordAuthenticationToken(
             memberId, "N/A", List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
@@ -90,7 +96,7 @@ class CustomerOrderControllerSliceTest {
             List.of("결제완료", "상품제작중", "상품발송", "배송완료", "구매확정"));
         CustomerOrderItemInfo item = new CustomerOrderItemInfo(
             10L, "저당 베이글 세트", "저칼로리 베이글", 2, 4700L, 9400L,
-            OrderStatus.SHIPPED, "배송완료", "CJ대한통운", "123-456", progress);
+            OrderStatus.SHIPPED, "배송완료", "CJ대한통운", "123-456", progress, true, false);
         CustomerOrderInfo orderInfo = new CustomerOrderInfo(
             1L, "ORDER-2025-06-14-00001", LocalDate.of(2025, 6, 14), 9400L, null, List.of(item));
 
@@ -181,7 +187,7 @@ class CustomerOrderControllerSliceTest {
         CustomerOrderDetailItem item = new CustomerOrderDetailItem(
             10L, "비건빵빵이네", "저당 베이글 세트", "저칼로리 베이글", "상품발송",
             OrderStatus.SHIPPED, 5800L, 4700L, 19, 2, 9400L,
-            List.of("고단백", "글루텐프리"), true, "CJ대한통운", "123-456-789", progress);
+            List.of("고단백", "글루텐프리"), true, "CJ대한통운", "123-456-789", progress, false, false);
         CustomerPaymentSummary payment = new CustomerPaymentSummary(
             11600L, 2200L, 2500L, 11900L, 2200L, "총 2,200원 할인 받았어요", true, null);
         CustomerDeliveryInfo delivery = new CustomerDeliveryInfo(
@@ -228,6 +234,49 @@ class CustomerOrderControllerSliceTest {
             .andExpect(status().is4xxClientError())
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.code").value(BbangleErrorCode.CUSTOMER_ORDER_NOT_FOUND.getCode()));
+
+        then(globalControllerAdvice).should(times(1))
+            .handleBbangleException(any(), any(BbangleException.class));
+    }
+
+    @DisplayName("구매확정 API - 성공")
+    @Test
+    void givenDeliveredOrderItem_whenConfirmPurchase_thenReturnsConfirmedId() throws Exception {
+        // given
+        Long memberId = 1L;
+        Long orderId = 100L;
+        Long orderItemId = 10L;
+
+        given(purchaseConfirmService.confirm(memberId, orderId, orderItemId)).willReturn(orderItemId);
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders/{orderId}/items/{orderItemId}/confirm", orderId, orderItemId)
+                .with(authentication(memberAuth(memberId)))
+                .with(csrf()))
+
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.result").value(orderItemId));
+
+        then(purchaseConfirmService).should(times(1)).confirm(memberId, orderId, orderItemId);
+    }
+
+    @DisplayName("구매확정 API - 실패(배송완료 전 구매확정 시도)")
+    @Test
+    void givenNotDeliveredOrderItem_whenConfirmPurchase_thenReturns4xx() throws Exception {
+        // given
+        given(purchaseConfirmService.confirm(any(), any(), any()))
+            .willThrow(new BbangleException(BbangleErrorCode.PURCHASE_CONFIRM_NOT_ALLOWED));
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders/{orderId}/items/{orderItemId}/confirm", 100L, 10L)
+                .with(authentication(memberAuth(1L)))
+                .with(csrf()))
+
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value(BbangleErrorCode.PURCHASE_CONFIRM_NOT_ALLOWED.getCode()));
 
         then(globalControllerAdvice).should(times(1))
             .handleBbangleException(any(), any(BbangleException.class));

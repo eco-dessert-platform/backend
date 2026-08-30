@@ -55,4 +55,12 @@ public class Shipping {
         this.trackingNumber = trackingNumber;
     }
 
+    /**
+     * 배송완료 시각을 기록합니다.
+     * 배송완료 후 N일 자동 구매확정의 기산점으로 사용됩니다.
+     */
+    public void markDelivered(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
 }
