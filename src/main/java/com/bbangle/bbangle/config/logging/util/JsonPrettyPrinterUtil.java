@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.util;
+package com.bbangle.bbangle.config.logging.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ public class JsonPrettyPrinterUtil {
         "refreshtoken", "accesstoken",
         "password", "passwd", "pwd", "pw", "accountid",
         "secret",
-        "accountnumber", "bankcode", "phonenumber", "email", "address"
+        "accountnumber", "bankcode", "phonenumber", "email"
     );
 
     public static String prettyPrint(String raw) {
@@ -46,7 +46,7 @@ public class JsonPrettyPrinterUtil {
             // 4. 로그 정렬용 들여쓰기 추가
             return indent(pretty, "    ");
         } catch (Exception e) {
-            return indent(raw, "    ");
+            return "    (본문 파싱 실패 - 생략)";
         }
     }
 

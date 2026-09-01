@@ -2,7 +2,7 @@ package com.bbangle.bbangle.config.security;
 
 import com.bbangle.bbangle.auth.oauth.client.OAuth2StateParser;
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
-import com.bbangle.bbangle.config.logging.LoggingFilter;
+import com.bbangle.bbangle.config.logging.filter.LoggingFilter;
 import com.bbangle.bbangle.config.security.auth.CustomFailureHandler;
 import com.bbangle.bbangle.config.security.auth.CustomOAuth2AuthorizationRequestResolver;
 import com.bbangle.bbangle.config.security.auth.CustomSuccessHandler;

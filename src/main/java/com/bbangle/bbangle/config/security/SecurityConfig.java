@@ -9,7 +9,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.config.logging.LoggingFilter;
+import com.bbangle.bbangle.config.logging.filter.LoggingFilter;
 import com.bbangle.bbangle.config.security.filter.ExceptionHandlerFilter;
 import com.bbangle.bbangle.config.security.handler.BbangleAccessDeniedHandler;
 import com.bbangle.bbangle.config.security.handler.BbangleAuthenticationEntryPoint;
