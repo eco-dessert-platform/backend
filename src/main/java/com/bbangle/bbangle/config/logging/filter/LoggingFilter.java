@@ -72,38 +72,41 @@ public class LoggingFilter extends OncePerRequestFilter {
         String requestId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
         MDC.put("requestId", requestId);
 
-        // multipart는 컨트롤러 처리 후 임시 파일이 삭제될 수 있으므로,
-        // chain 실행 전에 JSON 파트만 미리 읽어서 캐싱해둔다. (파일 파트는 읽지 않음)
-        boolean isMultipart = HttpLogSupportUtil.isMultipart(request);
-        String multipartJsonSnapshot = isMultipart ? RequestMultipartBodyReader.captureJsonParts(request) : null;
-        HttpServletRequest wrappedRequest = isMultipart ? request : new CachingRequestWrapper(request);
-
-        // Request 로그는 컨트롤러 진입 전, 요청 정보만으로 바로 출력한다.
-        RequestLoggingDTO requestLog = RequestLogSupportUtil.build(wrappedRequest, requestId, isMultipart, multipartJsonSnapshot);
-        if (log.isInfoEnabled()) {
-            log.info(requestLog.toFullLog());
-        }
-
-        SelectiveCachingResponseWrapper wrappedResponse = new SelectiveCachingResponseWrapper(response);
-        long startTime = System.currentTimeMillis();
         try {
-            filterChain.doFilter(wrappedRequest, wrappedResponse);
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            try {
-                ResponseLoggingDTO responseLog = ResponseLogSupportUtil.build(wrappedRequest, wrappedResponse, requestId, duration);
-                logByStatus(responseLog);
+            // multipart는 컨트롤러 처리 후 임시 파일이 삭제될 수 있으므로,
+            // chain 실행 전에 JSON 파트만 미리 읽어서 캐싱해둔다. (파일 파트는 읽지 않음)
+            boolean isMultipart = HttpLogSupportUtil.isMultipart(request);
+            String multipartJsonSnapshot = isMultipart ? RequestMultipartBodyReader.captureJsonParts(request) : null;
+            HttpServletRequest wrappedRequest = isMultipart ? request : new CachingRequestWrapper(request);
 
-                // API 실행 시간이 3s 이상인 경우 Slack으로 메세지 전송
-                if (duration > SLOW_REQUEST_THRESHOLD_MS) {
-                    slackAdaptor.sendText("느린 요청 알림", responseLog.toSlackSummary());
-                }
-            } finally {
-                wrappedResponse.copyBodyToResponse();
-                QueryTimerContext.clear();
-                MethodExecutionTimeContext.clear();
-                MDC.remove("requestId");
+            // Request 로그는 컨트롤러 진입 전, 요청 정보만으로 바로 출력한다.
+            RequestLoggingDTO requestLog = RequestLogSupportUtil.build(wrappedRequest, requestId, isMultipart, multipartJsonSnapshot);
+            if (log.isInfoEnabled()) {
+                log.info(requestLog.toFullLog());
             }
+
+            SelectiveCachingResponseWrapper wrappedResponse = new SelectiveCachingResponseWrapper(response);
+            long startTime = System.currentTimeMillis();
+            try {
+                filterChain.doFilter(wrappedRequest, wrappedResponse);
+            } finally {
+                long duration = System.currentTimeMillis() - startTime;
+                try {
+                    ResponseLoggingDTO responseLog = ResponseLogSupportUtil.build(wrappedRequest, wrappedResponse, requestId, duration);
+                    logByStatus(responseLog);
+
+                    // API 실행 시간이 3s 이상인 경우 Slack으로 메세지 전송
+                    if (duration > SLOW_REQUEST_THRESHOLD_MS) {
+                        slackAdaptor.sendText("느린 요청 알림", responseLog.toSlackSummary());
+                    }
+                } finally {
+                    wrappedResponse.copyBodyToResponse();
+                }
+            }
+        } finally {
+            QueryTimerContext.clear();
+            MethodExecutionTimeContext.clear();
+            MDC.remove("requestId");
         }
     }
 
