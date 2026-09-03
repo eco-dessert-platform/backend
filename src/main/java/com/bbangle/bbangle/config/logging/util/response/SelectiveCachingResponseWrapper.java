@@ -101,6 +101,10 @@ public class SelectiveCachingResponseWrapper extends HttpServletResponseWrapper 
      * 직접 전달됐으므로 여기서 할 일이 없다.
      */
     public void copyBodyToResponse() throws IOException {
+        if (writer != null) {
+            writer.flush();
+        }
+
         if (bodyCached && cacheBuffer.size() > 0) {
             getResponse().getOutputStream().write(cacheBuffer.toByteArray());
         }

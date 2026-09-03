@@ -80,8 +80,8 @@ public class LoggingFilter extends OncePerRequestFilter {
             HttpServletRequest wrappedRequest = isMultipart ? request : new CachingRequestWrapper(request);
 
             // Request 로그는 컨트롤러 진입 전, 요청 정보만으로 바로 출력한다.
-            RequestLoggingDTO requestLog = RequestLogSupportUtil.build(wrappedRequest, requestId, isMultipart, multipartJsonSnapshot);
             if (log.isInfoEnabled()) {
+                RequestLoggingDTO requestLog = RequestLogSupportUtil.build(wrappedRequest, requestId, isMultipart, multipartJsonSnapshot);
                 log.info(requestLog.toFullLog());
             }
 
