@@ -20,6 +20,10 @@ public final class PaymentFixture {
         return createPaymentWithStatusAndMethod(null, status, PaymentMethod.CARD);
     }
 
+    public static Payment createPaymentWithStatus(Order order, PaymentStatus status) {
+        return createPaymentWithStatusAndMethod(order, status, PaymentMethod.CARD);
+    }
+
     public static Payment createPaymentWithMethod(PaymentMethod method) {
         return createPaymentWithStatusAndMethod(null, PaymentStatus.COMPLETED, method);
     }

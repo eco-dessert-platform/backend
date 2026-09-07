@@ -18,6 +18,20 @@ class CustomerOrderStepMapperTest {
     class Normal {
 
         @Test
+        @DisplayName("결제대기(PAYMENT_PENDING)는 happy-path 단계가 아니므로 index -1, 라벨은 '결제대기'")
+        void paymentPending() {
+            CustomerOrderProgress progress =
+                CustomerOrderStepMapper.resolve(OrderStatus.PAYMENT_PENDING, null);
+
+            assertThat(progress.category()).isEqualTo(CustomerOrderCategory.NORMAL);
+            assertThat(progress.currentStep()).isEqualTo("결제대기");
+            assertThat(progress.currentStepIndex()).isEqualTo(-1);
+            // NORMAL_STEPS 자체는 변하지 않아야 기존 단계 인덱스가 밀리지 않는다
+            assertThat(progress.steps())
+                .containsExactly("결제완료", "상품제작중", "상품발송", "배송완료", "구매확정");
+        }
+
+        @Test
         @DisplayName("결제완료 → index 0")
         void paymentCompleted() {
             CustomerOrderProgress progress =

@@ -10,6 +10,14 @@ import org.springframework.data.repository.query.Param;
 public interface ProductImgRepository extends JpaRepository<ProductImg, Long> {
     List<ProductImg> findAllByIdInOrderByIdAsc(List<Long> imageIds);
 
+    @Query("""
+            SELECT pi FROM ProductImg pi
+            WHERE pi.board.id IN :boardIds
+              AND pi.imgOrder = 0
+              AND pi.isDeleted = false
+        """)
+    List<ProductImg> findThumbnailsByBoardIdIn(@Param("boardIds") List<Long> boardIds);
+
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE ProductImg pi

@@ -42,9 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
         "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9201, 'DS-7001', -1000.00, -1000.00)",
 
     // 주문 등록
-    "INSERT INTO orders (id, order_number, order_date, buyer_name, buyer_phone, delivery_fee, total_amount, seller_id, created_at, modified_at) " +
+    "INSERT INTO orders (id, order_number, order_group_id, order_date, buyer_name, buyer_phone, delivery_fee, total_amount, seller_id, created_at, modified_at) " +
         "VALUES " +
-        "(8001, 'ORD-20260401-EXCEL', CURRENT_TIMESTAMP, '엑셀테스터', '01099999999', 2500, 50000, 9201, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "(8001, 'ORD-20260401-EXCEL', 'settle-test-grp-8001000000', CURRENT_TIMESTAMP, '엑셀테스터', '01099999999', 2500, 50000, 9201, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
 
     // 상품 등록 (is_deleted, stock 포함)
     "INSERT INTO product (id, title, price, is_soldout, is_deleted, stock, monday, tuesday, wednesday, thursday, friday, saturday, sunday, created_at, modified_at) " +

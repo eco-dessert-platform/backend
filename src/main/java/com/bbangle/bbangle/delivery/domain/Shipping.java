@@ -44,6 +44,12 @@ public class Shipping {
         return new Shipping(null, null, null);
     }
 
+    public static Shipping withMemo(String deliveryMemo) {
+        Shipping shipping = new Shipping(null, null, null);
+        shipping.deliveryMemo = deliveryMemo;
+        return shipping;
+    }
+
     public void updateShippingInfo(String courierName, String trackingNumber) {
         this.courierName = courierName;
         this.trackingNumber = trackingNumber;

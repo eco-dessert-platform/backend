@@ -13,6 +13,7 @@ public enum OrderStatus {
     // 주문관리 페이지에서 조회의 효율성을 위해 상태를 세분화함
 
     // 일반
+    PAYMENT_PENDING("결제대기"),
     PAYMENT_COMPLETED("결제완료"),
     ORDER_CONFIRMED("발주확인"),
     IN_PRODUCTION("상품제작중"),
