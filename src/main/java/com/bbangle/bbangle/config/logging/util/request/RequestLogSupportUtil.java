@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.config.logging.util.request;
 
 import com.bbangle.bbangle.config.logging.dto.RequestLoggingDTO;
-import com.bbangle.bbangle.config.logging.util.JsonPrettyPrinterUtil;
+import com.bbangle.bbangle.config.logging.util.JsonMaskingSupporter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import lombok.experimental.UtilityClass;
@@ -41,6 +41,6 @@ public class RequestLogSupportUtil {
             return "    null";
         }
 
-        return JsonPrettyPrinterUtil.prettyPrint(new String(content, StandardCharsets.UTF_8));
+        return JsonMaskingSupporter.prettyPrint(new String(content, StandardCharsets.UTF_8));
     }
 }

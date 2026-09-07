@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
  * Body 데이터를 마스킹 처리 및 가독성을 높이기 위해 실제 JSON 형식으로 출력을 도와주는 유틸 클래스
  */
 @NoArgsConstructor
-public class JsonPrettyPrinterUtil {
+public class JsonMaskingSupporter {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int BASE64_LENGTH_THRESHOLD = 200;

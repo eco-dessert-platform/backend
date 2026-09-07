@@ -4,7 +4,7 @@ import com.bbangle.bbangle.common.querylistener.QueryTimerContext;
 import com.bbangle.bbangle.config.logging.context.MethodExecutionTimeContext;
 import com.bbangle.bbangle.config.logging.dto.ResponseLoggingDTO;
 import com.bbangle.bbangle.config.logging.util.HttpLogSupportUtil;
-import com.bbangle.bbangle.config.logging.util.JsonPrettyPrinterUtil;
+import com.bbangle.bbangle.config.logging.util.JsonMaskingSupporter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import lombok.experimental.UtilityClass;
@@ -47,6 +47,6 @@ public class ResponseLogSupportUtil {
             return "    null";
         }
 
-        return JsonPrettyPrinterUtil.prettyPrint(new String(content, StandardCharsets.UTF_8));
+        return JsonMaskingSupporter.prettyPrint(new String(content, StandardCharsets.UTF_8));
     }
 }

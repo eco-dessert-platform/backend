@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.config.logging.util.request;
 
 
-import com.bbangle.bbangle.config.logging.util.JsonPrettyPrinterUtil;
+import com.bbangle.bbangle.config.logging.util.JsonMaskingSupporter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class RequestMultipartBodyReader {
     private String formatJsonPart(Part part) throws IOException {
         try (InputStream is = part.getInputStream()) {
             String content = StreamUtils.copyToString(is, StandardCharsets.UTF_8);
-            return JsonPrettyPrinterUtil.prettyPrint(content);
+            return JsonMaskingSupporter.prettyPrint(content);
         }
     }
 }

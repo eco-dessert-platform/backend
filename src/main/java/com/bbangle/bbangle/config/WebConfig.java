@@ -13,6 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    // private final RequestTimeInterceptor requestTimeInterceptor;
     private final OctetStreamReadMsgConverter octetStreamReadMsgConverter;
     private final Optional<LocalSecurityArgumentResolver> localSecurityArgumentResolver;
 
@@ -26,4 +27,19 @@ public class WebConfig implements WebMvcConfigurer {
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         localSecurityArgumentResolver.ifPresent(resolvers::add);
     }
+
+    // TODO : 로깅 필터 안정성 확인 후 제거
+    // 불필요한 swagger 로그 찍히는 부분 설정
+/*    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(requestTimeInterceptor)
+            .addPathPatterns("/**")
+            .excludePathPatterns(
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/favicon.ico",
+                "/error"
+            );
+    }*/
 }
