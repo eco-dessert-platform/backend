@@ -21,7 +21,7 @@ public class LocalSlackAdaptor implements SlackAdaptor {
     }
 
     public void sendText(String title, String content) {
-        title = String.format("** 개발서버알림 **\n- url: %s \n", title);
+        title = String.format("** 로컬서버알림 **\n- url: %s \n", title);
         content = String.format("- message: %s", content);
 
         log.info("- title: {} \n {}", title, content);
