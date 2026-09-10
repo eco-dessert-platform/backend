@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.seller.controller.swagger;
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -23,7 +24,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "SellerBoards", description = "판매자 상품 게시글 관련 API")
 public interface SellerBoardApi {
@@ -249,4 +249,13 @@ public interface SellerBoardApi {
         Long storeId,
         List<Long> boardIds);
 
+    @Operation(
+        summary = "판매자 상품 게시글 단건 조회",
+        description = "BoardId로 상품 게시글 단건 상세 조회합니다."
+    )
+    SingleResult<SellerBoardDetailResponse> getBoardDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @Parameter(name = "boardId", description = "게시글 ID", example = "1")
+        @PathVariable("boardId") Long boardId
+    );
 }

@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.seller.controller;
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
 import com.bbangle.bbangle.board.seller.controller.swagger.SellerBoardApi;
@@ -100,5 +101,16 @@ public class SellerBoardController implements SellerBoardApi {
         @RequestBody List<Long> boardIds) {
         // TODO: 비즈니스 로직 구현 예정
         return responseService.getSuccessResult();
+    }
+
+    @Override
+    @GetMapping("/{boardId}")
+    public SingleResult<SellerBoardDetailResponse> getBoardDetail(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable("boardId") Long boardId
+    ) {
+        return responseService.getSingleResult(
+            sellerBoardService.getBoardDetail(sellerId, boardId)
+        );
     }
 }

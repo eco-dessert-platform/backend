@@ -44,4 +44,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
             WHERE p.id IN :productIds
         """)
     void softDeleteByProductIds(@Param("productIds") List<Long> productIds);
+
+    /**
+     * 게시글 상세 조회용: 삭제되지 않은 상품 옵션 목록.
+     * Nutrition은 @Embedded라서 추가 조인 없이 함께 조회되고,
+     * segmentIntolerances(OneToMany, LAZY)는 접근하지 않으므로 추가 쿼리가 발생하지 않는다.
+     */
+    @Query("SELECT p FROM Product p WHERE p.board.id = :boardId AND p.isDeleted = false")
+    List<Product> findAllByBoardIdAndIsDeletedFalse(@Param("boardId") Long boardId);
 }

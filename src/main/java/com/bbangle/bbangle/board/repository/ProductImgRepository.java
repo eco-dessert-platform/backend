@@ -24,4 +24,10 @@ public interface ProductImgRepository extends JpaRepository<ProductImg, Long> {
             WHERE pi.board.id IN :boardIds AND pi.imgOrder = 0 AND pi.isDeleted = false
         """)
     List<ProductImg> findThumbnailImagesByBoardIds(@Param("boardIds") List<Long> boardId);
+
+    /**
+     * 게시글 상세 조회용: 삭제되지 않은 이미지를 imgOrder 오름차순(0번=썸네일)으로 조회.
+     * 컬렉션 하나만 단독으로 조회하므로 N+1, 카티션 곱 걱정 없이 단순 파생 쿼리로 충분하다.
+     */
+    List<ProductImg> findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(Long boardId);
 }

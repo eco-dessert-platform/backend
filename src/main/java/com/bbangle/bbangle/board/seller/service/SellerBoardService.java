@@ -9,6 +9,8 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.dao.SellerBoardDao;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
+import com.bbangle.bbangle.board.seller.controller.mapper.SellerBoardDetailMapper;
 import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductImgCommand;
 import com.bbangle.bbangle.board.seller.service.command.SearchSellerBoardCommand;
@@ -26,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,7 @@ public class SellerBoardService {
     private final ProductImgRepository productImgRepository;
     private final ProductRepository productRepository;
     private final SellerRepository sellerRepository;
+    private final SellerBoardDetailMapper sellerBoardDetailMapper;
 
     @Transactional
     public BoardInfo createBoard(CreateBoardServiceCommand command) {
@@ -228,4 +231,26 @@ public class SellerBoardService {
         board.addProducts(newProducts);
     }
 
+    /**
+     * 판매자 상품 게시글 상세 조회.
+     *
+     * 쿼리 3방으로 조회한다(카티션 곱 방지):
+     *  1) Board + productInfoNotice + boardDetail (단일 값 연관관계, EntityGraph)
+     *  2) ProductImg 목록 (imgOrder 오름차순)
+     *  3) Product 목록
+     * 각 쿼리는 boardId 하나 기준의 고정 횟수 조회라 N+1이 발생하지 않는다.
+     */
+    public SellerBoardDetailResponse getBoardDetail(Long sellerId, Long boardId) {
+        Board board = boardRepository.findByIdAndIsDeletedFalse(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        if (!sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, board.getStore().getId())) {
+            throw new BbangleException(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+        }
+
+        List<ProductImg> productImgs = productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(boardId);
+        List<Product> products = productRepository.findAllByBoardIdAndIsDeletedFalse(boardId);
+
+        return sellerBoardDetailMapper.toResponse(board, productImgs, products);
+    }
 }
