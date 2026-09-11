@@ -57,10 +57,10 @@ public class SellerBoardResponse {
     @Builder
     @Schema(description = "상품 단건 상세 조회 DTO")
     public record SellerBoardDetailResponse(
-        BoardDetailDTO BoardDetailDTO,
+        BoardDetailDTO boardDetailDTO,
         DeliveryDTO deliveryDTO,
         BoardImgDTO boardImgDTO,
-        List<ProductOptionDTO> Options,
+        List<ProductOptionDTO> options,
         BoardContentDTO boardContent,
         ProductInfoNoticeDTO productInfoNotice
     ) {

@@ -39,10 +39,10 @@ public interface SellerBoardDetailMapper {
         List<Product> products
     ) {
         return SellerBoardDetailResponse.builder()
-            .BoardDetailDTO(toBoardDetailDTO(board))
+            .boardDetailDTO(toBoardDetailDTO(board))
             .deliveryDTO(toDeliveryDTO(board))
             .boardImgDTO(toBoardImgDTO(productImgs))
-            .Options(products.stream().map(this::toProductOptionDTO).toList())
+            .options(products.stream().map(this::toProductOptionDTO).toList())
             .boardContent(toBoardContentDTO(board.getBoardDetail()))
             .productInfoNotice(toProductInfoNoticeDTO(board.getProductInfoNotice()))
             .build();

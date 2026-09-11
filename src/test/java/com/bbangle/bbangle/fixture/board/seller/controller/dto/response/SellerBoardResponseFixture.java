@@ -26,10 +26,10 @@ public final class SellerBoardResponseFixture {
      */
     public static SellerBoardDetailResponse defaultResponse(Long boardId) {
         return SellerBoardDetailResponse.builder()
-            .BoardDetailDTO(defaultBoardDetailDTO(boardId))
+            .boardDetailDTO(defaultBoardDetailDTO(boardId))
             .deliveryDTO(defaultDeliveryDTO())
             .boardImgDTO(defaultBoardImgDTO())
-            .Options(List.of(defaultProductOptionDTO()))
+            .options(List.of(defaultProductOptionDTO()))
             .boardContent(new BoardContentDTO("<p>글루텐프리 식빵입니다.</p>"))
             .productInfoNotice(defaultProductInfoNoticeDTO())
             .build();
