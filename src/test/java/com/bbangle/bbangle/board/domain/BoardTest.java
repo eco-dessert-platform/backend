@@ -632,4 +632,51 @@ class BoardTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("getDisplayDiscountValue() 테스트")
+    class GetDisplayDiscountValueTest {
+
+        @Test
+        @DisplayName("할인 타입이 RATE이면 discountRate(할인율)를 반환한다.")
+        void returnDiscountRate_whenDiscountTypeIsRate() {
+
+            // given
+            Board board = BoardFixture.boardWithDiscount(DiscountType.RATE, 1000, 20);
+
+            // when
+            Integer result = board.getDisplayDiscountValue();
+
+            // then
+            assertThat(result).isEqualTo(20);
+        }
+
+        @Test
+        @DisplayName("할인 타입이 AMOUNT이면 discountValue(할인 금액)를 반환한다.")
+        void returnDiscountValue_whenDiscountTypeIsAmount() {
+
+            // given
+            Board board = BoardFixture.boardWithDiscount(DiscountType.AMOUNT, 1000, 20);
+
+            // when
+            Integer result = board.getDisplayDiscountValue();
+
+            // then
+            assertThat(result).isEqualTo(1000);
+        }
+
+        @Test
+        @DisplayName("RATE 타입에서 discountRate가 0이어도 discountRate를 그대로 반환한다.")
+        void returnZeroDiscountRate_whenDiscountRateIsZero() {
+
+            // given
+            Board board = BoardFixture.boardWithDiscount(DiscountType.RATE, 500, 0);
+
+            // when
+            Integer result = board.getDisplayDiscountValue();
+
+            // then
+            assertThat(result).isZero();
+        }
+    }
 }

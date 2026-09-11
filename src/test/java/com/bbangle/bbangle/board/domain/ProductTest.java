@@ -7,6 +7,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
 import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -390,6 +391,77 @@ class ProductTest {
             // then
             assertThat(product.getStock()).isZero();
             assertThat(product.isSoldout()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("getTagEnums() 테스트")
+    class GetTagEnumsTest {
+
+        @Test
+        @DisplayName("true인 태그만 TagEnum 목록으로 반환한다.")
+        void returnOnlyTrueTags() {
+
+            // given
+            // glutenFree, sugarFree만 true
+            Product product = ProductFixture.withTags(true, false, true, false, false, false);
+
+            // when
+            List<TagEnum> result = product.getTagEnums();
+
+            // then
+            assertThat(result).containsExactly(TagEnum.GLUTEN_FREE, TagEnum.SUGAR_FREE);
+        }
+
+        @Test
+        @DisplayName("모든 태그가 false이면 빈 목록을 반환한다.")
+        void returnEmptyList_whenAllTagsFalse() {
+
+            // given
+            Product product = ProductFixture.withTags(false, false, false, false, false, false);
+
+            // when
+            List<TagEnum> result = product.getTagEnums();
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("모든 태그가 true이면 정의된 순서대로 전체 TagEnum 목록을 반환한다.")
+        void returnAllTagsInOrder_whenAllTagsTrue() {
+
+            // given
+            Product product = ProductFixture.withTags(true, true, true, true, true, true);
+
+            // when
+            List<TagEnum> result = product.getTagEnums();
+
+            // then
+            // getTagEnums() 내부 Stream.of() 선언 순서와 동일해야 한다.
+            assertThat(result).containsExactly(
+                TagEnum.GLUTEN_FREE,
+                TagEnum.HIGH_PROTEIN,
+                TagEnum.SUGAR_FREE,
+                TagEnum.VEGAN,
+                TagEnum.KETOGENIC,
+                TagEnum.LOW_FAT
+            );
+        }
+
+        @Test
+        @DisplayName("lowFatTag만 true이면 LOW_FAT 하나만 반환한다.")
+        void returnLowFatOnly_whenOnlyLowFatTagIsTrue() {
+
+            // given
+            // 다른 태그(getter 통해)와 달리 lowFatTag는 DietaryTagsRequest에 없는 내부 전용 필드라 별도 검증
+            Product product = ProductFixture.withTags(false, false, false, false, false, true);
+
+            // when
+            List<TagEnum> result = product.getTagEnums();
+
+            // then
+            assertThat(result).containsExactly(TagEnum.LOW_FAT);
         }
     }
 }

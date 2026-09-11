@@ -41,6 +41,30 @@ public final class ProductFixture {
             .build();
     }
 
+    /**
+     * 6개 태그(glutenFree ~ lowFat)를 직접 지정해 생성한다.
+     * getTagEnums() 테스트처럼 태그 조합에 따른 반환값 검증에 사용한다.
+     * board는 필요 없는 테스트이므로 세팅하지 않는다.
+     */
+    public static Product withTags(
+        boolean glutenFree,
+        boolean highProtein,
+        boolean sugarFree,
+        boolean vegan,
+        boolean ketogenic,
+        boolean lowFat
+    ) {
+        return Product.builder()
+            .title("테스트 상품")
+            .glutenFreeTag(glutenFree)
+            .highProteinTag(highProtein)
+            .sugarFreeTag(sugarFree)
+            .veganTag(vegan)
+            .ketogenicTag(ketogenic)
+            .lowFatTag(lowFat)
+            .build();
+    }
+
     public static Product withId(Product product, Long id) {
         ReflectionTestUtils.setField(product, "id", id);
         return product;
