@@ -170,4 +170,97 @@ class ProductImgRepositoryTest {
                 .doesNotContain("deleted");
         }
     }
+
+    @Nested
+    @DisplayName("findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc() 테스트")
+    class FindAllByBoardIdAndIsDeletedFalseOrderByImgOrderAscTest {
+
+        private Board board;
+
+        @BeforeEach
+        void setUp() {
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "이미지 테스트 게시글"));
+        }
+
+        @Test
+        @DisplayName("삭제되지 않은 이미지를 imgOrder 오름차순(썸네일 우선)으로 조회한다.")
+        void success_orderByImgOrderAsc() {
+
+            // given
+            // 저장 순서를 일부러 뒤섞어서 정렬이 실제로 imgOrder 기준인지 검증한다.
+            productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board, "sub2.png", 2));
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "thumbnail.png"));
+            productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board, "sub1.png", 1));
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<ProductImg> result =
+                productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(board.getId());
+
+            // then
+            assertThat(result).hasSize(3);
+            assertThat(result).extracting(ProductImg::getUrl)
+                .containsExactly("thumbnail.png", "sub1.png", "sub2.png");
+        }
+
+        @Test
+        @DisplayName("삭제된 이미지는 조회 결과에서 제외된다.")
+        void exclude_deletedImage() {
+
+            // given
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "active.png"));
+            ProductImg deletedImg = productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board, "deleted.png", 1));
+            deletedImg.delete();
+            productImgRepository.save(deletedImg);
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<ProductImg> result =
+                productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(board.getId());
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getUrl()).isEqualTo("active.png");
+        }
+
+        @Test
+        @DisplayName("다른 게시글에 속한 이미지는 조회되지 않는다.")
+        void exclude_otherBoardImage() {
+
+            // given
+            Store anotherStore = storeRepository.save(StoreFixture.defaultStore("다른스토어"));
+            Board anotherBoard = boardRepository.save(BoardFixture.defaultBoardWithStore(anotherStore, "다른 게시글"));
+
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "my-board.png"));
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(anotherBoard, "other-board.png"));
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<ProductImg> result =
+                productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(board.getId());
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getUrl()).isEqualTo("my-board.png");
+        }
+
+        @Test
+        @DisplayName("이미지가 없으면 빈 목록을 반환한다.")
+        void empty_when_noImages() {
+
+            // when
+            List<ProductImg> result =
+                productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(board.getId());
+
+            // then
+            assertThat(result).isEmpty();
+        }
+    }
 }
