@@ -138,26 +138,13 @@ class ProductRepositoryTest {
             board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "상품 옵션 테스트 게시글"));
         }
 
-        /**
-         * 요일 검증(validate)을 통과할 수 있도록 월요일만 true로 설정해 생성한다.
-         * Repository 슬라이스 테스트처럼 실제 DB에 저장 가능한 유효한 Product가 필요할 때 사용한다.
-         */
-        public Product createValidWithBoard(Board board, String title) {
-            return new Product(
-                board, title, 0, "BREAD", 10,
-                false, false, false, false, false,
-                true, false, false, false, false, false, false, // monday만 true
-                null
-            );
-        }
-
         @Test
         @DisplayName("삭제되지 않은 상품 옵션 목록을 조회한다.")
         void success_findAllByBoardIdAndIsDeletedFalse() {
 
             // given
-            sut.save(createValidWithBoard(board, "옵션1"));
-            sut.save(createValidWithBoard(board, "옵션2"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "옵션1"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "옵션2"));
 
             em.flush();
             em.clear();
@@ -176,8 +163,8 @@ class ProductRepositoryTest {
         void exclude_deletedProduct() {
 
             // given
-            sut.save(createValidWithBoard(board, "활성옵션"));
-            Product deletedProduct = sut.save(createValidWithBoard(board, "삭제옵션"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "활성옵션"));
+            Product deletedProduct = sut.save(ProductFixture.createValidWithBoardAndMonday(board, "삭제옵션"));
             deletedProduct.delete();
             sut.save(deletedProduct);
 
@@ -200,8 +187,8 @@ class ProductRepositoryTest {
             Store anotherStore = storeRepository.save(StoreFixture.defaultStore("다른스토어"));
             Board anotherBoard = boardRepository.save(BoardFixture.defaultBoardWithStore(anotherStore, "다른 게시글"));
 
-            sut.save(createValidWithBoard(board, "내 게시글 옵션"));
-            sut.save(createValidWithBoard(anotherBoard, "다른 게시글 옵션"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "내 게시글 옵션"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(anotherBoard, "다른 게시글 옵션"));
 
             em.flush();
             em.clear();

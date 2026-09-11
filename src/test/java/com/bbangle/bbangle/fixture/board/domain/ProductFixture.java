@@ -65,6 +65,19 @@ public final class ProductFixture {
             .build();
     }
 
+    /**
+     * 요일 검증(validate)을 통과할 수 있도록 월요일만 true로 설정해 생성한다.
+     * Repository 슬라이스 테스트처럼 실제 DB에 저장 가능한 유효한 Product가 필요할 때 사용한다.
+     */
+    public static Product createValidWithBoardAndMonday(Board board, String title) {
+        return new Product(
+            board, title, 0, "BREAD", 10,
+            false, false, false, false, false,
+            true, false, false, false, false, false, false, // monday만 true
+            null
+        );
+    }
+
     public static Product withId(Product product, Long id) {
         ReflectionTestUtils.setField(product, "id", id);
         return product;

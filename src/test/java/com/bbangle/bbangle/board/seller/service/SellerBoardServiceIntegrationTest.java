@@ -13,6 +13,7 @@ import com.bbangle.bbangle.board.domain.SortType;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.service.command.BoardDetailCommand;
 import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceCommand;
 import com.bbangle.bbangle.board.seller.service.command.ProductCommand;
@@ -27,6 +28,8 @@ import com.bbangle.bbangle.board.seller.service.info.SellerBoardListInfo;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductImgFixture;
 import com.bbangle.bbangle.fixture.seller.domain.SellerFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.domain.Seller;
@@ -75,14 +78,111 @@ class SellerBoardServiceIntegrationTest {
 
     private Store store;
 
-    @BeforeEach
-    void setUp() {
-        store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+    private Board createAndSaveBoardForSearch(
+        Store targetStore,
+        String title,
+        SaleStatus saleStatus,
+        Integer deliveryFee,
+        Integer freeShippingConditions,
+        String thumbnailUrl,
+        List<Boolean> soldoutStates
+    ) {
+        Board board = BoardFixture.defaultBoardWithStore(targetStore, title);
+        ReflectionTestUtils.setField(board, "saleStatus", saleStatus);
+        ReflectionTestUtils.setField(board, "deliveryFee", deliveryFee);
+        ReflectionTestUtils.setField(board, "freeShippingConditions", freeShippingConditions);
+        ReflectionTestUtils.setField(board, "isDeleted", false);
+        boardRepository.save(board);
+
+        ProductImg thumbnail = ProductImg.builder()
+            .board(board)
+            .url(thumbnailUrl)
+            .imgOrder(0)
+            .build();
+        productImgRepository.save(thumbnail);
+
+        for (Boolean soldout : soldoutStates) {
+            Product product = Product.builder()
+                .board(board)
+                .title("옵션")
+                .soldout(soldout)
+                .build();
+            productRepository.save(product);
+        }
+
+        return board;
+    }
+
+    private CreateBoardServiceCommand createValidCommand(Store store) {
+        return CreateBoardServiceCommand.builder()
+            .store(store)
+            .title("글루텐프리 빵 세트")
+            .price(15000)
+            .discountType("RATE")
+            .discountValue(10)
+            .deliveryFee(3000)
+            .freeShippingConditions(30000)
+            .isFresh(false)
+            .productionStartTime("T_09_10")
+            .deliveryCondition("일반배송")
+            .deliveryCompany("CJ대한통운")
+            .productImgs(List.of(
+                new ProductImgCommand("https://cdn.example.com/thumbnail.jpg", 0)
+            ))
+            .products(List.of(createProductCommand("글루텐프리 식빵", "BREAD")))
+            .boardDetail(new BoardDetailCommand("<p>상세설명입니다</p>"))
+            .productInfoNotice(createProductInfoNoticeCommand())
+            .build();
+    }
+
+    private ProductCommand createProductCommand(String title, String category) {
+        return ProductCommand.builder()
+            .title(title)
+            .category(category)
+            .plusPriceWithBoardPrice(0)
+            .stock(100)
+            .glutenFreeTag(true)
+            .highProteinTag(false)
+            .sugarFreeTag(true)
+            .veganTag(false)
+            .ketogenicTag(false)
+            .monday(true)
+            .tuesday(true)
+            .wednesday(true)
+            .thursday(true)
+            .friday(true)
+            .saturday(false)
+            .sunday(false)
+            .nutrition(new Nutrition(300, 50, 30, 5, 10, 8, 200))
+            .build();
+    }
+
+    private ProductInfoNoticeCommand createProductInfoNoticeCommand() {
+        return ProductInfoNoticeCommand.builder()
+            .productName("글루텐프리 빵 세트")
+            .foodType("빵류")
+            .manufacturer("빵그리의 오븐")
+            .originLocation("서울특별시")
+            .manufactureDate("제조일자 별도 표기")
+            .expirationDate("제조일로부터 5일")
+            .storageGuide("냉동보관")
+            .packagingQuantityUnit("1세트")
+            .rawMaterialName("쌀가루, 설탕, 버터")
+            .nutritionInfo("별도 표기")
+            .transgenic("해당없음")
+            .customerWarning("알레르기 주의")
+            .importFood("해당없음")
+            .build();
     }
 
     @Nested
     @DisplayName("createBoard 메서드")
     class CreateBoard {
+
+        @BeforeEach
+        void setUp() {
+            store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
+        }
 
         @DisplayName("정상적인 입력으로 Board가 DB에 저장되고 BoardInfo를 반환한다.")
         @Test
@@ -397,6 +497,7 @@ class SellerBoardServiceIntegrationTest {
 
         @BeforeEach
         void setUpUpdateBoard() {
+            store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
             seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
             BoardInfo created = sellerBoardService.createBoard(createValidCommand(store));
             boardId = created.boardId();
@@ -683,6 +784,7 @@ class SellerBoardServiceIntegrationTest {
 
         @BeforeEach
         void setUpSearchBoards() {
+            store = storeRepository.saveAndFlush(StoreFixture.defaultStore());
             seller = sellerRepository.saveAndFlush(SellerFixture.defaultSeller(store));
 
             // Board1: ON_SALE, 모든 상품 재고 있음 → IN_STOCK
@@ -867,100 +969,138 @@ class SellerBoardServiceIntegrationTest {
         }
     }
 
-    private Board createAndSaveBoardForSearch(
-        Store targetStore,
-        String title,
-        SaleStatus saleStatus,
-        Integer deliveryFee,
-        Integer freeShippingConditions,
-        String thumbnailUrl,
-        List<Boolean> soldoutStates
-    ) {
-        Board board = BoardFixture.defaultBoardWithStore(targetStore, title);
-        ReflectionTestUtils.setField(board, "saleStatus", saleStatus);
-        ReflectionTestUtils.setField(board, "deliveryFee", deliveryFee);
-        ReflectionTestUtils.setField(board, "freeShippingConditions", freeShippingConditions);
-        ReflectionTestUtils.setField(board, "isDeleted", false);
-        boardRepository.save(board);
+    @Nested
+    @DisplayName("getBoardDetail() 테스트")
+    class GetBoardDetailTest {
 
-        ProductImg thumbnail = ProductImg.builder()
-            .board(board)
-            .url(thumbnailUrl)
-            .imgOrder(0)
-            .build();
-        productImgRepository.save(thumbnail);
+        @Test
+        @DisplayName("게시글 상세 정보를 이미지/옵션과 함께 조회한다.")
+        void success_getBoardDetail() {
 
-        for (Boolean soldout : soldoutStates) {
-            Product product = Product.builder()
-                .board(board)
-                .title("옵션")
-                .soldout(soldout)
-                .build();
-            productRepository.save(product);
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "글루텐프리 식빵 세트"));
+
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "thumbnail.png"));
+            productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board, "sub1.png", 1));
+            productRepository.save(ProductFixture.createValidWithBoardAndMonday(board, "기본 옵션"));
+
+            em.flush();
+            em.clear();
+
+            // when
+            SellerBoardDetailResponse result = sellerBoardService.getBoardDetail(seller.getId(), board.getId());
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.BoardDetailDTO().boardId()).isEqualTo(board.getId());
+            assertThat(result.BoardDetailDTO().name()).isEqualTo("글루텐프리 식빵 세트");
+            assertThat(result.boardImgDTO().thumbnailImg()).isEqualTo("thumbnail.png");
+            assertThat(result.boardImgDTO().additionalImgs()).containsExactly("sub1.png");
+            assertThat(result.Options()).hasSize(1);
+            assertThat(result.Options().get(0).optionName()).isEqualTo("기본 옵션");
         }
 
-        return board;
-    }
+        @Test
+        @DisplayName("게시글이 존재하지 않으면 BOARD_NOT_FOUND 예외가 발생한다.")
+        void fail_boardNotFound() {
 
-    private CreateBoardServiceCommand createValidCommand(Store store) {
-        return CreateBoardServiceCommand.builder()
-            .store(store)
-            .title("글루텐프리 빵 세트")
-            .price(15000)
-            .discountType("RATE")
-            .discountValue(10)
-            .deliveryFee(3000)
-            .freeShippingConditions(30000)
-            .isFresh(false)
-            .productionStartTime("T_09_10")
-            .deliveryCondition("일반배송")
-            .deliveryCompany("CJ대한통운")
-            .productImgs(List.of(
-                new ProductImgCommand("https://cdn.example.com/thumbnail.jpg", 0)
-            ))
-            .products(List.of(createProductCommand("글루텐프리 식빵", "BREAD")))
-            .boardDetail(new BoardDetailCommand("<p>상세설명입니다</p>"))
-            .productInfoNotice(createProductInfoNoticeCommand())
-            .build();
-    }
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            long invalidBoardId = 999L;
 
-    private ProductCommand createProductCommand(String title, String category) {
-        return ProductCommand.builder()
-            .title(title)
-            .category(category)
-            .plusPriceWithBoardPrice(0)
-            .stock(100)
-            .glutenFreeTag(true)
-            .highProteinTag(false)
-            .sugarFreeTag(true)
-            .veganTag(false)
-            .ketogenicTag(false)
-            .monday(true)
-            .tuesday(true)
-            .wednesday(true)
-            .thursday(true)
-            .friday(true)
-            .saturday(false)
-            .sunday(false)
-            .nutrition(new Nutrition(300, 50, 30, 5, 10, 8, 200))
-            .build();
-    }
+            em.flush();
+            em.clear();
 
-    private ProductInfoNoticeCommand createProductInfoNoticeCommand() {
-        return ProductInfoNoticeCommand.builder()
-            .productName("글루텐프리 빵 세트")
-            .foodType("빵류")
-            .manufacturer("빵그리의 오븐")
-            .originLocation("서울특별시")
-            .manufactureDate("제조일자 별도 표기")
-            .expirationDate("제조일로부터 5일")
-            .storageGuide("냉동보관")
-            .packagingQuantityUnit("1세트")
-            .rawMaterialName("쌀가루, 설탕, 버터")
-            .nutritionInfo("별도 표기")
-            .transgenic("해당없음")
-            .customerWarning("알레르기 주의")
-            .importFood("해당없음")
-            .build();
+            // when & then
+            assertThatThrownBy(() ->
+                sellerBoardService.getBoardDetail(seller.getId(), invalidBoardId))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("삭제된 게시글은 조회되지 않고 BOARD_NOT_FOUND 예외가 발생한다.")
+        void fail_boardDeleted() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "삭제될 게시글"));
+            board.delete();
+            boardRepository.save(board);
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(() ->
+                sellerBoardService.getBoardDetail(seller.getId(), board.getId()))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("게시글의 소유자가 아닌 판매자가 조회하면 FORBIDDEN_BOARD_ACCESS 예외가 발생한다.")
+        void fail_forbiddenAccess() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "다른 판매자 게시글"));
+
+            Store anotherStore = storeRepository.save(StoreFixture.defaultStore("다른스토어"));
+            Seller anotherSeller = sellerRepository.save(SellerFixture.defaultSeller(anotherStore));
+
+            em.flush();
+            em.clear();
+
+            // when & then
+            assertThatThrownBy(() ->
+                sellerBoardService.getBoardDetail(anotherSeller.getId(), board.getId()))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+                });
+        }
+
+        @Test
+        @DisplayName("삭제된 이미지/옵션은 응답에 포함되지 않는다.")
+        void exclude_deletedImagesAndProducts() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Seller seller = sellerRepository.save(SellerFixture.defaultSeller(store));
+            Board board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "삭제 필터링 테스트"));
+
+            productImgRepository.save(ProductImgFixture.defaultProductImgThumbnail(board, "thumbnail.png"));
+            var deletedImg = productImgRepository.save(ProductImgFixture.defaultProductImgWithProductAndOrder(board, "deleted.png", 1));
+            deletedImg.delete();
+            productImgRepository.save(deletedImg);
+
+            productRepository.save(ProductFixture.createValidWithBoardAndMonday(board, "활성 옵션"));
+            Product deletedProduct = productRepository.save(ProductFixture.createValidWithBoardAndMonday(board, "삭제 옵션"));
+            deletedProduct.delete();
+            productRepository.save(deletedProduct);
+
+            em.flush();
+            em.clear();
+
+            // when
+            SellerBoardDetailResponse result = sellerBoardService.getBoardDetail(seller.getId(), board.getId());
+
+            // then
+            assertThat(result.boardImgDTO().additionalImgs()).isEmpty();
+            assertThat(result.Options()).hasSize(1);
+            assertThat(result.Options().get(0).optionName()).isEqualTo("활성 옵션");
+        }
     }
 }
