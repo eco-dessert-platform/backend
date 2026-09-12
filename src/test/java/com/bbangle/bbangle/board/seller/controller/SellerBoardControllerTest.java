@@ -76,16 +76,16 @@ class SellerBoardControllerTest {
             mockMvc.perform(get(SellerApiPath.PREFIX + "/boards/{boardId}", boardId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.result.BoardDetailDTO.boardId").value(boardId))
-                .andExpect(jsonPath("$.result.BoardDetailDTO.name").value("글루텐 프리 케이크"))
-                .andExpect(jsonPath("$.result.BoardDetailDTO.price.base").value(10000))
-                .andExpect(jsonPath("$.result.BoardDetailDTO.price.discountValue").value(20))
+                .andExpect(jsonPath("$.result.boardDetailDTO.boardId").value(boardId))
+                .andExpect(jsonPath("$.result.boardDetailDTO.name").value("글루텐 프리 케이크"))
+                .andExpect(jsonPath("$.result.boardDetailDTO.price.base").value(10000))
+                .andExpect(jsonPath("$.result.boardDetailDTO.price.discountValue").value(20))
                 .andExpect(jsonPath("$.result.deliveryDTO.courier").value("CJ대한통운"))
                 .andExpect(jsonPath("$.result.boardImgDTO.thumbnailImg").value("thumbnail.png"))
                 .andExpect(jsonPath("$.result.boardImgDTO.additionalImgs.length()").value(2))
-                .andExpect(jsonPath("$.result.Options.length()").value(1))
-                .andExpect(jsonPath("$.result.Options[0].optionName").value("기본 옵션"))
-                .andExpect(jsonPath("$.result.Options[0].tags[0]").value("GLUTEN_FREE"))
+                .andExpect(jsonPath("$.result.options.length()").value(1))
+                .andExpect(jsonPath("$.result.options[0].optionName").value("기본 옵션"))
+                .andExpect(jsonPath("$.result.options[0].tags[0]").value("GLUTEN_FREE"))
                 .andExpect(jsonPath("$.result.productInfoNotice.productName").value("빵그리의 식빵"));
 
             verify(sellerBoardService).getBoardDetail(1L, boardId);

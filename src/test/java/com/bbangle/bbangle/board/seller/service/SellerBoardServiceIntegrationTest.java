@@ -994,12 +994,12 @@ class SellerBoardServiceIntegrationTest {
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.BoardDetailDTO().boardId()).isEqualTo(board.getId());
-            assertThat(result.BoardDetailDTO().name()).isEqualTo("글루텐프리 식빵 세트");
+            assertThat(result.boardDetailDTO().boardId()).isEqualTo(board.getId());
+            assertThat(result.boardDetailDTO().name()).isEqualTo("글루텐프리 식빵 세트");
             assertThat(result.boardImgDTO().thumbnailImg()).isEqualTo("thumbnail.png");
             assertThat(result.boardImgDTO().additionalImgs()).containsExactly("sub1.png");
-            assertThat(result.Options()).hasSize(1);
-            assertThat(result.Options().get(0).optionName()).isEqualTo("기본 옵션");
+            assertThat(result.options()).hasSize(1);
+            assertThat(result.options().get(0).optionName()).isEqualTo("기본 옵션");
         }
 
         @Test
@@ -1099,8 +1099,8 @@ class SellerBoardServiceIntegrationTest {
 
             // then
             assertThat(result.boardImgDTO().additionalImgs()).isEmpty();
-            assertThat(result.Options()).hasSize(1);
-            assertThat(result.Options().get(0).optionName()).isEqualTo("활성 옵션");
+            assertThat(result.options()).hasSize(1);
+            assertThat(result.options().get(0).optionName()).isEqualTo("활성 옵션");
         }
     }
 }
