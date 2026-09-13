@@ -29,7 +29,7 @@ public class SellerSettlementItemController implements SellerSettlementItemApi {
 
     /**
      * 건별 정산내역 페이징 조회.
-     * 조회기간(startDate~endDate, baseDate 기준) 필터와 페이지네이션을 적용하여
+     * 조회기간(startDate~endDate, dateType 기준), 검색조건(searchType/searchValue), 페이지네이션을 적용하여
      * 정산 목록 + 요약 정보(총 건수, 총 정산 예정 금액)를 반환한다.
      */
     @Override

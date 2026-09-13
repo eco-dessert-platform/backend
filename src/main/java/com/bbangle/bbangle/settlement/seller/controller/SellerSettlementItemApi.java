@@ -16,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 public interface SellerSettlementItemApi {
 
     @Operation(summary = "(판매자) 건별 정산내역 페이징 조회",
-        description = "baseDate 기준 날짜 범위로 건별 정산 내역 목록과 요약 정보(총 건수, 총 정산 예정 금액)를 반환합니다.")
+        description = "dateType(정산예정일/정산기준일/정산완료일, 미전달 시 기존 호환을 위해 BASE_DATE) 기준 날짜 범위와 "
+            + "searchType/searchValue(주문번호/상품주문번호) 검색 조건으로 건별 정산 내역 목록과 "
+            + "요약 정보(총 건수, 총 정산 예정 금액)를 반환합니다.")
     SingleResult<SettlementItemPageResponse> getSettlementItems(
         @ParameterObject Pageable pageable,
         @ParameterObject SettlementItemFilter filter,

@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Sql(statements = {
     // 판매자 등록
     "INSERT INTO sellers (id, created_at, is_deleted, name, provider, provider_id, status, store_id) " +
-        "VALUES (9101, CURRENT_TIMESTAMP, FALSE, 'item_settle', 'KAKAO', 'item-settle-test-9101', 'APPROVED', NULL)",
+        "VALUES " +
+        "(9101, CURRENT_TIMESTAMP, FALSE, 'item_settle', 'KAKAO', 'item-settle-test-9101', 'APPROVED', NULL)," +
+        "(9102, CURRENT_TIMESTAMP, FALSE, 'other_seller', 'KAKAO', 'item-settle-test-9102', 'APPROVED', NULL)",
 
     // 일별 정산 등록
     "INSERT INTO daily_settlement " +
@@ -36,13 +38,16 @@ import org.springframework.transaction.annotation.Transactional;
         "(2001, DATE '2026-04-01', DATE '2026-04-02', 100000.00, -3000.00, -2000.00, 0.00, " +
         "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9101, 'DS-2001', -1000.00, -1000.00)," +
         "(2002, DATE '2026-04-05', NULL, 80000.00, -2400.00, 0.00, 0.00, " +
-        "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9101, 'DS-2002', 0.00, 0.00)",
+        "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9101, 'DS-2002', 0.00, 0.00)," +
+        "(2003, DATE '2026-04-10', DATE '2026-04-11', 20000.00, -600.00, 0.00, 0.00, " +
+        "'BANK_TRANSFER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9102, 'DS-2003', 0.00, 0.00)",
 
     // 주문 등록 (seller_id 포함)
     "INSERT INTO orders (id, order_number, order_date, buyer_name, buyer_phone, delivery_fee, total_amount, seller_id, created_at, modified_at) " +
         "VALUES " +
         "(3001, 'ORD-20260401-001', CURRENT_TIMESTAMP, '홍길동', '01011111111', 2500, 50000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
-        "(3002, 'ORD-20260405-002', CURRENT_TIMESTAMP, '김철수', '01022222222', 2500, 30000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "(3002, 'ORD-20260405-002', CURRENT_TIMESTAMP, '김철수', '01022222222', 2500, 30000, 9101, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
+        "(3003, 'ORD-20260410-003', CURRENT_TIMESTAMP, '이영희', '01033333333', 2500, 20000, 9102, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
 
     // 상품 등록 (is_deleted, stock 포함)
     "INSERT INTO product (id, title, price, is_soldout, is_deleted, stock, monday, tuesday, wednesday, thursday, friday, saturday, sunday, created_at, modified_at) " +
@@ -54,7 +59,8 @@ import org.springframework.transaction.annotation.Transactional;
     "INSERT INTO order_item (id, quantity, product_price, unit_price, order_status, delivery_status, total_price, order_id, product_id, created_at, modified_at) " +
         "VALUES " +
         "(5001, 2, 25000, 25000, 'PAYMENT_COMPLETED', 'PREPARING', 50000, 3001, 4001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
-        "(5002, 1, 15000, 15000, 'PAYMENT_COMPLETED', 'PREPARING', 15000, 3002, 4002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "(5002, 1, 15000, 15000, 'PAYMENT_COMPLETED', 'PREPARING', 15000, 3002, 4002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
+        "(5003, 1, 20000, 20000, 'PAYMENT_COMPLETED', 'PREPARING', 20000, 3003, 4001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
 
     // 건별 정산 등록 (status는 VARCHAR(20) 제한으로 PENDING, CANCELLED 사용 - 실제 앱에서는 Flyway V47+ 로 크기 확장 필요)
     "INSERT INTO settlement_item " +
@@ -62,7 +68,8 @@ import org.springframework.transaction.annotation.Transactional;
         "VALUES " +
         "(6001, 'SI-001', 'NORMAL', 25000.00, DATE '2026-04-01', DATE '2026-04-08', NULL, 'PENDING', 2001, 5001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
         "(6002, 'SI-002', 'NORMAL', 15000.00, DATE '2026-04-05', DATE '2026-04-12', NULL, 'PENDING', 2002, 5002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
-        "(6003, 'SI-003', 'NORMAL', 10000.00, DATE '2026-04-01', DATE '2026-04-08', DATE '2026-04-08', 'PENDING', 2001, 5001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+        "(6003, 'SI-003', 'NORMAL', 10000.00, DATE '2026-04-01', DATE '2026-04-08', DATE '2026-04-08', 'PENDING', 2001, 5001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)," +
+        "(6004, 'SI-004', 'NORMAL', 20000.00, DATE '2026-04-10', DATE '2026-04-17', DATE '2026-04-11', 'PENDING', 2003, 5003, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
 })
 @DisplayName("[통합테스트] SellerSettlementItem 조회 API")
 class SellerSettlementItemControllerIntegrationTest {
@@ -167,6 +174,125 @@ class SellerSettlementItemControllerIntegrationTest {
     void getSettlementItems_customerRole_returns403() throws Exception {
         mockMvc.perform(get(BASE_URL))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("dateType=SCHEDULED_DATE + 기간 조회 시 정산예정일 기준으로 필터링된다")
+    void getSettlementItems_withScheduledDateType_filtersByScheduledDate() throws Exception {
+        // scheduled_date=2026-04-08인 건: id=6001, id=6003 (2건)
+        mockMvc.perform(get(BASE_URL)
+                .param("dateType", "SCHEDULED_DATE")
+                .param("startDate", "2026-04-08")
+                .param("endDate", "2026-04-08"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(2))
+            .andExpect(jsonPath("$.result.settlements.totalElements").value(2));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("dateType=BASE_DATE + 기간 조회 시 정산기준일 기준으로 필터링된다")
+    void getSettlementItems_withBaseDateType_filtersByBaseDate() throws Exception {
+        // base_date=2026-04-01인 건: id=6001, id=6003 (2건)
+        mockMvc.perform(get(BASE_URL)
+                .param("dateType", "BASE_DATE")
+                .param("startDate", "2026-04-01")
+                .param("endDate", "2026-04-01"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(2))
+            .andExpect(jsonPath("$.result.settlements.totalElements").value(2));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("dateType=COMPLETED_DATE + 기간 조회 시 정산완료일 기준으로 필터링된다")
+    void getSettlementItems_withCompletedDateType_filtersByCompletedDate() throws Exception {
+        // completed_date=2026-04-08인 건: id=6003 (1건, id=6001/6002는 completed_date가 NULL)
+        mockMvc.perform(get(BASE_URL)
+                .param("dateType", "COMPLETED_DATE")
+                .param("startDate", "2026-04-08")
+                .param("endDate", "2026-04-08"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(1))
+            .andExpect(jsonPath("$.result.settlements.content[0].orderItemId").value(5001));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("dateType 미전달 + 기간 조회 시 기존 호환을 위해 정산기준일(baseDate) 기준으로 필터링된다")
+    void getSettlementItems_withoutDateType_defaultsToBaseDate() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                .param("startDate", "2026-04-01")
+                .param("endDate", "2026-04-01"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(2))
+            .andExpect(jsonPath("$.result.settlements.totalElements").value(2));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("searchType=ORDER_NUMBER 검색 시 주문번호 부분 일치로 필터링된다")
+    void getSettlementItems_withOrderNumberSearch_filtersByOrderNumber() throws Exception {
+        // order_number='ORD-20260401-001' → order_item=5001 → settlement_item id=6001, id=6003 (2건)
+        mockMvc.perform(get(BASE_URL)
+                .param("searchType", "ORDER_NUMBER")
+                .param("searchValue", "20260401"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(2))
+            .andExpect(jsonPath("$.result.settlements.totalElements").value(2));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("searchType=ORDER_ITEM_ID 검색 시 상품주문번호(OrderItem PK) 완전 일치로 필터링된다")
+    void getSettlementItems_withOrderItemIdSearch_filtersByOrderItemId() throws Exception {
+        // order_item_id=5002 → settlement_item id=6002 (1건)
+        mockMvc.perform(get(BASE_URL)
+                .param("searchType", "ORDER_ITEM_ID")
+                .param("searchValue", "5002"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(1))
+            .andExpect(jsonPath("$.result.settlements.content[0].orderItemId").value(5002));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("기간 조건과 검색 조건을 동시에 적용하면 두 조건을 모두 만족하는 데이터만 반환된다")
+    void getSettlementItems_withDateAndSearch_filtersByBothConditions() throws Exception {
+        // completed_date=2026-04-08 AND order_item_id=5001 → id=6003만 해당 (id=6001은 completed_date NULL)
+        mockMvc.perform(get(BASE_URL)
+                .param("dateType", "COMPLETED_DATE")
+                .param("startDate", "2026-04-08")
+                .param("endDate", "2026-04-08")
+                .param("searchType", "ORDER_ITEM_ID")
+                .param("searchValue", "5001"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(1))
+            .andExpect(jsonPath("$.result.settlements.content[0].orderItemId").value(5001));
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9101L, role = "SELLER")
+    @DisplayName("조회 기간이 1개월을 초과하면 400 에러를 반환한다")
+    void getSettlementItems_dateRangeOverOneMonth_returns400() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                .param("dateType", "BASE_DATE")
+                .param("startDate", "2026-01-01")
+                .param("endDate", "2026-03-02"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockAuthenticationPrincipal(userId = 9102L, role = "SELLER")
+    @DisplayName("다른 판매자로 조회하면 본인 소유의 정산 내역만 반환된다")
+    void getSettlementItems_otherSeller_returnsOnlyOwnData() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                .param("page", "0")
+                .param("size", "10"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.settlements.content.length()").value(1))
+            .andExpect(jsonPath("$.result.settlements.content[0].orderItemId").value(5003));
     }
 
 }
