@@ -33,11 +33,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         """)
     void softDeleteByIds(List<Long> boardIds);
 
-    /**
-     * 상세 조회용: 단일 값 연관관계(productInfoNotice, boardDetail)만 EntityGraph로 함께 조회.
-     * products, productImgs는 컬렉션이라 카티션 곱을 피하기 위해 여기 포함하지 않고 별도 쿼리로 조회한다.
-     * isDeleted = false 조건까지 메서드명에 포함해 soft-delete 된 게시글은 조회되지 않도록 한다.
-     */
     @EntityGraph(attributePaths = {"productInfoNotice", "boardDetail"})
     Optional<Board> findByIdAndIsDeletedFalse(Long boardId);
 }

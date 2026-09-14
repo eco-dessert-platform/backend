@@ -28,11 +28,6 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface SellerBoardDetailMapper {
 
-    /**
-     * 별도로 조회된 Board / ProductImg 목록 / Product 목록을 하나의 상세 응답 DTO로 조립한다.
-     * 컬렉션 두 개(products, productImgs)를 각각 독립적으로 조회했기 때문에
-     * 여기서만 조합하고, 나머지 단건 매핑은 개별 메서드에 위임한다.
-     */
     default SellerBoardDetailResponse toResponse(
         Board board,
         List<ProductImg> productImgs,
@@ -55,9 +50,6 @@ public interface SellerBoardDetailMapper {
     @Mapping(target = "price", expression = "java(toPriceDTO(board))")
     BoardDetailDTO toBoardDetailDTO(Board board);
 
-    /**
-     * discountType에 따라 표시할 할인값이 달라지므로 Board의 도메인 메서드에 위임한다.
-     */
     default BoardDetailDTO.PriceDTO toPriceDTO(Board board) {
         return BoardDetailDTO.PriceDTO.builder()
             .base(board.getPrice())
@@ -71,10 +63,6 @@ public interface SellerBoardDetailMapper {
 
     // ===== 이미지 정보 =====
 
-    /**
-     * imgOrder = 0(썸네일) 여부로 대표 이미지와 추가 이미지를 분리한다.
-     * 썸네일이 없으면 데이터 정합성 오류이므로 예외를 던진다(Board.getThumbnail()과 동일한 정책).
-     */
     default BoardImgDTO toBoardImgDTO(List<ProductImg> productImgs) {
         String thumbnailUrl = productImgs.stream()
             .filter(ProductImg::isThumbnail)
@@ -114,12 +102,11 @@ public interface SellerBoardDetailMapper {
             .build();
     }
 
-    // Nutrition -> NutritionDTO : 필드명이 전부 동일해 자동 매핑
     ProductOptionDTO.NutritionDTO toNutritionDTO(Nutrition nutrition);
 
-    // ===== 상세 페이지 (필드명 동일, 자동 매핑) =====
+    // ===== 상세 페이지 =====
     BoardContentDTO toBoardContentDTO(BoardDetail boardDetail);
 
-    // ===== 상품 정보 고시 (필드명 전부 동일, 자동 매핑) =====
+    // ===== 상품 정보 고시 =====
     ProductInfoNoticeDTO toProductInfoNoticeDTO(ProductInfoNotice productInfoNotice);
 }

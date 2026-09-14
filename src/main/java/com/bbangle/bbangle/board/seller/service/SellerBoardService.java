@@ -233,12 +233,6 @@ public class SellerBoardService {
 
     /**
      * 판매자 상품 게시글 상세 조회.
-     *
-     * 쿼리 3방으로 조회한다(카티션 곱 방지):
-     *  1) Board + productInfoNotice + boardDetail (단일 값 연관관계, EntityGraph)
-     *  2) ProductImg 목록 (imgOrder 오름차순)
-     *  3) Product 목록
-     * 각 쿼리는 boardId 하나 기준의 고정 횟수 조회라 N+1이 발생하지 않는다.
      */
     public SellerBoardDetailResponse getBoardDetail(Long sellerId, Long boardId) {
         Board board = boardRepository.findByIdAndIsDeletedFalse(boardId)

@@ -29,9 +29,5 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     @Query("UPDATE Seller s SET s.store = null, s.certificationStatus = :status WHERE s.store.id IN :storeIds")
     void clearStoreAndResetStatusByStoreIdIn(@Param("storeIds") List<Long> storeIds, @Param("status") CertificationStatus status);
 
-    /**
-     * 해당 sellerId를 가진 판매자가 storeId를 소유하고 있는지 검증한다.
-     * board.getStore().getId()와 비교해서 게시글 소유권을 확인하는 용도로 사용.
-     */
     Boolean existsByIdAndStore_IdAndIsDeletedFalse(Long sellerId, Long storeId);
 }
