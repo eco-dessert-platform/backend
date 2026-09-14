@@ -28,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -71,7 +72,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             // StreamingResponseBody 등 비동기 응답의 ASYNC 재디스패치 시 SecurityContext가 유지되도록
             // TokenAuthenticationFilter가 SecurityContextHolder에 세팅한 인증 정보를 자동 저장시킨다.
-            .securityContext(securityContext -> securityContext.requireExplicitSave(false))
+            // (세션을 생성하지 않도록 RequestAttributeSecurityContextRepository만 사용)
+            .securityContext(securityContext -> securityContext
+                .requireExplicitSave(false)
+                .securityContextRepository(new RequestAttributeSecurityContextRepository())
+            )
             .addFilterBefore(
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
@@ -123,7 +128,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             // StreamingResponseBody 등 비동기 응답의 ASYNC 재디스패치 시 SecurityContext가 유지되도록
             // TokenAuthenticationFilter가 SecurityContextHolder에 세팅한 인증 정보를 자동 저장시킨다.
-            .securityContext(securityContext -> securityContext.requireExplicitSave(false))
+            // (세션을 생성하지 않도록 RequestAttributeSecurityContextRepository만 사용)
+            .securityContext(securityContext -> securityContext
+                .requireExplicitSave(false)
+                .securityContextRepository(new RequestAttributeSecurityContextRepository())
+            )
             .addFilterBefore(
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
