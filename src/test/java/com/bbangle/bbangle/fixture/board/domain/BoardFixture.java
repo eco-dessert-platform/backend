@@ -165,4 +165,16 @@ public final class BoardFixture {
         ReflectionTestUtils.setField(board, "isDeleted", false);
         return board;
     }
+
+    /**
+     * 할인 타입/할인값/할인율을 직접 지정해 생성한다.
+     * getDisplayDiscountValue() 테스트처럼 discountType에 따른 분기 로직 검증에 사용한다.
+     */
+    public static Board boardWithDiscount(DiscountType discountType, int discountValue, Integer discountRate) {
+        return baseBuilder(StoreFixture.defaultStore(), "상품명")
+            .discountType(discountType)
+            .discountValue(discountValue)
+            .discountRate(discountRate)
+            .build();
+    }
 }

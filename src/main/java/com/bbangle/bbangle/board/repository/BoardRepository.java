@@ -33,4 +33,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
         """)
     void softDeleteByIds(List<Long> boardIds);
 
+    @EntityGraph(attributePaths = {"productInfoNotice", "boardDetail"})
+    Optional<Board> findByIdAndIsDeletedFalse(Long boardId);
 }

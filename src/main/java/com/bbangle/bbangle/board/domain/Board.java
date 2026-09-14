@@ -130,21 +130,6 @@ public class Board extends SoftDeleteBaseEntity {
     // Board가 더 많이 호출되므로 연관관계 주인을 board로 하는게 더 적합해 보임
     private BoardStatistic boardStatistic;
 
-    public void addProducts(List<Product> products) {
-        this.products.addAll(products);
-        products.forEach(product -> product.setBoard(this));
-    }
-
-    public void addBoardDetails(BoardDetail boardDetail) {
-        this.boardDetail = boardDetail;
-        boardDetail.updateBoard(this);
-    }
-
-    public void addProductImgs(List<ProductImg> productImgs) {
-        this.productImgs.addAll(productImgs);
-        productImgs.forEach(img -> img.updateBoard(this));
-    }
-
     public static Board sellerCreate(
         Store store,
         String title,
@@ -220,6 +205,21 @@ public class Board extends SoftDeleteBaseEntity {
             return price - (price * discountValue / 100);
         }
         return price - discountValue;
+    }
+
+    public void addProducts(List<Product> products) {
+        this.products.addAll(products);
+        products.forEach(product -> product.setBoard(this));
+    }
+
+    public void addBoardDetails(BoardDetail boardDetail) {
+        this.boardDetail = boardDetail;
+        boardDetail.updateBoard(this);
+    }
+
+    public void addProductImgs(List<ProductImg> productImgs) {
+        this.productImgs.addAll(productImgs);
+        productImgs.forEach(img -> img.updateBoard(this));
     }
 
     public void update(
@@ -308,5 +308,14 @@ public class Board extends SoftDeleteBaseEntity {
         this.rejectionCategory = category;
         this.rejectionReason = reason;
         this.rejectionAt = LocalDateTime.now();
+    }
+
+    /**
+     * 상세 조회 응답용 할인값.
+     * discountType이 AMOUNT면 원 단위 할인값(discountValue),
+     * RATE면 퍼센트 할인값(discountRate)을 반환한다.
+     */
+    public Integer getDisplayDiscountValue() {
+        return discountType == DiscountType.AMOUNT ? discountValue : discountRate;
     }
 }

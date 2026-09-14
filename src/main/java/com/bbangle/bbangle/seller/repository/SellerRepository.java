@@ -28,4 +28,6 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     @Modifying
     @Query("UPDATE Seller s SET s.store = null, s.certificationStatus = :status WHERE s.store.id IN :storeIds")
     void clearStoreAndResetStatusByStoreIdIn(@Param("storeIds") List<Long> storeIds, @Param("status") CertificationStatus status);
+
+    Boolean existsByIdAndStore_IdAndIsDeletedFalse(Long sellerId, Long storeId);
 }

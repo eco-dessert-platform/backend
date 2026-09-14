@@ -267,4 +267,22 @@ public class Product extends SoftDeleteBaseEntity {
             throw new BbangleException(BbangleErrorCode.PRODUCT_NOT_FOUND);
         }
     }
+
+    /**
+     * true인 태그를 TagEnum 목록으로 반환한다.
+     * getTags()(라벨 문자열 반환)와 동일한 로직이지만 응답 DTO가 enum 자체를 요구할 때 사용한다.
+     */
+    public List<TagEnum> getTagEnums() {
+        return Stream.of(
+                Map.entry(glutenFreeTag, TagEnum.GLUTEN_FREE),
+                Map.entry(highProteinTag, TagEnum.HIGH_PROTEIN),
+                Map.entry(sugarFreeTag, TagEnum.SUGAR_FREE),
+                Map.entry(veganTag, TagEnum.VEGAN),
+                Map.entry(ketogenicTag, TagEnum.KETOGENIC),
+                Map.entry(lowFatTag, TagEnum.LOW_FAT)
+            )
+            .filter(Map.Entry::getKey)
+            .map(Map.Entry::getValue)
+            .toList();
+    }
 }

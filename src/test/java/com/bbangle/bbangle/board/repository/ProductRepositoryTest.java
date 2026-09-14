@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -123,5 +124,92 @@ class ProductRepositoryTest {
         assertThat(result)
             .extracting(Product::getTitle)
             .doesNotContain("삭제옵션");
+    }
+
+    @Nested
+    @DisplayName("findAllByBoardIdAndIsDeletedFalse() 테스트")
+    class FindAllByBoardIdAndIsDeletedFalseTest {
+
+        private Board board;
+
+        @BeforeEach
+        void setUp() {
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            board = boardRepository.save(BoardFixture.defaultBoardWithStore(store, "상품 옵션 테스트 게시글"));
+        }
+
+        @Test
+        @DisplayName("삭제되지 않은 상품 옵션 목록을 조회한다.")
+        void success_findAllByBoardIdAndIsDeletedFalse() {
+
+            // given
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "옵션1"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "옵션2"));
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<Product> result = sut.findAllByBoardIdAndIsDeletedFalse(board.getId());
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(Product::getTitle)
+                .containsExactlyInAnyOrder("옵션1", "옵션2");
+        }
+
+        @Test
+        @DisplayName("삭제된 상품 옵션은 조회 결과에서 제외된다.")
+        void exclude_deletedProduct() {
+
+            // given
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "활성옵션"));
+            Product deletedProduct = sut.save(ProductFixture.createValidWithBoardAndMonday(board, "삭제옵션"));
+            deletedProduct.delete();
+            sut.save(deletedProduct);
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<Product> result = sut.findAllByBoardIdAndIsDeletedFalse(board.getId());
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getTitle()).isEqualTo("활성옵션");
+        }
+
+        @Test
+        @DisplayName("다른 게시글에 속한 상품 옵션은 조회되지 않는다.")
+        void exclude_otherBoardProduct() {
+
+            // given
+            Store anotherStore = storeRepository.save(StoreFixture.defaultStore("다른스토어"));
+            Board anotherBoard = boardRepository.save(BoardFixture.defaultBoardWithStore(anotherStore, "다른 게시글"));
+
+            sut.save(ProductFixture.createValidWithBoardAndMonday(board, "내 게시글 옵션"));
+            sut.save(ProductFixture.createValidWithBoardAndMonday(anotherBoard, "다른 게시글 옵션"));
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<Product> result = sut.findAllByBoardIdAndIsDeletedFalse(board.getId());
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getTitle()).isEqualTo("내 게시글 옵션");
+        }
+
+        @Test
+        @DisplayName("상품 옵션이 없으면 빈 목록을 반환한다.")
+        void empty_when_noProducts() {
+
+            // when
+            List<Product> result = sut.findAllByBoardIdAndIsDeletedFalse(board.getId());
+
+            // then
+            assertThat(result).isEmpty();
+        }
     }
 }
