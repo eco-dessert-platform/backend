@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.settlement.domain.model.SettlementItemDateType;
+import com.bbangle.bbangle.settlement.domain.model.SettlementItemSearchType;
 import com.bbangle.bbangle.settlement.seller.service.model.SellerSettlementCommand.SettlementItemSearchCommand;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
@@ -29,8 +31,11 @@ class SettlementItemFilterTest {
         void 정상적인_날짜_범위로_커맨드_변환이_성공한다() {
             // given
             SettlementItemFilter filter = new SettlementItemFilter(
+                SettlementItemDateType.SCHEDULED_DATE,
                 LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 31)
+                LocalDate.of(2025, 3, 31),
+                null,
+                null
             );
 
             // when
@@ -38,9 +43,29 @@ class SettlementItemFilterTest {
 
             // then
             assertThat(command.sellerId()).isEqualTo(SELLER_ID);
+            assertThat(command.dateType()).isEqualTo(SettlementItemDateType.SCHEDULED_DATE);
             assertThat(command.startDate()).isEqualTo(LocalDate.of(2025, 3, 1));
             assertThat(command.endDate()).isEqualTo(LocalDate.of(2025, 3, 31));
             assertThat(command.pageable()).isEqualTo(PAGEABLE);
+        }
+
+        @Test
+        @DisplayName("dateType을 전달하지 않으면 기존 API 호환을 위해 BASE_DATE가 기본값으로 적용된다")
+        void dateType_미전달시_BASE_DATE가_기본값이다() {
+            // given
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null,
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 31),
+                null,
+                null
+            );
+
+            // when
+            SettlementItemSearchCommand command = filter.toCommand(SELLER_ID, PAGEABLE);
+
+            // then
+            assertThat(command.dateType()).isEqualTo(SettlementItemDateType.BASE_DATE);
         }
 
         @Test
@@ -48,8 +73,11 @@ class SettlementItemFilterTest {
         void 시작일이_종료일보다_늦으면_예외가_발생한다() {
             // given
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 3, 31),
-                LocalDate.of(2025, 3, 1)
+                LocalDate.of(2025, 3, 1),
+                null,
+                null
             );
 
             // when & then
@@ -60,10 +88,45 @@ class SettlementItemFilterTest {
         }
 
         @Test
+        @DisplayName("조회 기간이 1개월을 초과하면 SETTLEMENT_DATE_RANGE_EXCEEDED 예외가 발생한다")
+        void 조회_기간이_1개월_초과하면_예외가_발생한다() {
+            // given: 2025-01-01 ~ 2025-02-02, plusMonths(1) = 2025-02-01, isAfter = true
+            SettlementItemFilter filter = new SettlementItemFilter(
+                SettlementItemDateType.BASE_DATE,
+                LocalDate.of(2025, 1, 1),
+                LocalDate.of(2025, 2, 2),
+                null,
+                null
+            );
+
+            // when & then
+            assertThatThrownBy(() -> filter.toCommand(SELLER_ID, PAGEABLE))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> assertThat(((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.SETTLEMENT_DATE_RANGE_EXCEEDED));
+        }
+
+        @Test
+        @DisplayName("정확히 1개월 범위(startDate ~ startDate+1개월)는 허용된다")
+        void 정확히_1개월은_허용된다() {
+            // given
+            SettlementItemFilter filter = new SettlementItemFilter(
+                SettlementItemDateType.BASE_DATE,
+                LocalDate.of(2025, 1, 1),
+                LocalDate.of(2025, 2, 1),
+                null,
+                null
+            );
+
+            // when & then
+            assertThatCode(() -> filter.toCommand(SELLER_ID, PAGEABLE)).doesNotThrowAnyException();
+        }
+
+        @Test
         @DisplayName("날짜가 null이면 유효성 검증을 통과하고 커맨드에 null이 담긴다")
         void 날짜가_null이면_유효성_검증을_통과한다() {
             // given
-            SettlementItemFilter filter = new SettlementItemFilter(null, null);
+            SettlementItemFilter filter = new SettlementItemFilter(null, null, null, null, null);
 
             // when
             SettlementItemSearchCommand command = filter.toCommand(SELLER_ID, PAGEABLE);
@@ -77,11 +140,41 @@ class SettlementItemFilterTest {
         @DisplayName("시작일만 null이면 유효성 검증을 통과한다")
         void 시작일만_null이면_유효성_검증을_통과한다() {
             // given
-            SettlementItemFilter filter = new SettlementItemFilter(null, LocalDate.of(2025, 3, 31));
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null, null, LocalDate.of(2025, 3, 31), null, null);
 
             // when & then
             assertThatCode(() -> filter.toCommand(SELLER_ID, PAGEABLE))
                 .doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("searchType과 searchValue가 커맨드에 그대로 담긴다")
+        void searchType과_searchValue가_커맨드에_담긴다() {
+            // given
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null, null, null, SettlementItemSearchType.ORDER_NUMBER, "250401A1F7");
+
+            // when
+            SettlementItemSearchCommand command = filter.toCommand(SELLER_ID, PAGEABLE);
+
+            // then
+            assertThat(command.searchType()).isEqualTo(SettlementItemSearchType.ORDER_NUMBER);
+            assertThat(command.searchValue()).isEqualTo("250401A1F7");
+        }
+
+        @Test
+        @DisplayName("searchValue가 공백이면 커맨드에는 null로 정규화된다")
+        void searchValue가_공백이면_null로_정규화된다() {
+            // given
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null, null, null, SettlementItemSearchType.ORDER_NUMBER, "   ");
+
+            // when
+            SettlementItemSearchCommand command = filter.toCommand(SELLER_ID, PAGEABLE);
+
+            // then
+            assertThat(command.searchValue()).isNull();
         }
 
     } // end ToCommandTest
@@ -95,8 +188,11 @@ class SettlementItemFilterTest {
         void 정상_날짜_범위는_예외_없음() {
             // given
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 31)
+                LocalDate.of(2025, 3, 31),
+                null,
+                null
             );
 
             // when & then
@@ -108,8 +204,11 @@ class SettlementItemFilterTest {
         void 정확히_1개월은_허용된다() {
             // 2025-01-01 ~ 2025-02-01: plusMonths(1)과 동일, isAfter = false → 통과
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 1, 1),
-                LocalDate.of(2025, 2, 1)
+                LocalDate.of(2025, 2, 1),
+                null,
+                null
             );
 
             // when & then
@@ -121,8 +220,11 @@ class SettlementItemFilterTest {
         void 한달_초과시_예외_발생() {
             // 2025-01-01 ~ 2025-02-02: plusMonths(1) = 2025-02-01, endDate(02-02).isAfter(02-01) = true
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 1, 1),
-                LocalDate.of(2025, 2, 2)
+                LocalDate.of(2025, 2, 2),
+                null,
+                null
             );
 
             // when & then
@@ -136,7 +238,8 @@ class SettlementItemFilterTest {
         @DisplayName("startDate가 null이면 SETTLEMENT_DATE_REQUIRED 예외가 발생한다")
         void startDate_null이면_예외_발생() {
             // given
-            SettlementItemFilter filter = new SettlementItemFilter(null, LocalDate.of(2025, 3, 31));
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null, null, LocalDate.of(2025, 3, 31), null, null);
 
             // when & then
             assertThatThrownBy(filter::validateForExcel)
@@ -149,7 +252,8 @@ class SettlementItemFilterTest {
         @DisplayName("endDate가 null이면 SETTLEMENT_DATE_REQUIRED 예외가 발생한다")
         void endDate_null이면_예외_발생() {
             // given
-            SettlementItemFilter filter = new SettlementItemFilter(LocalDate.of(2025, 3, 1), null);
+            SettlementItemFilter filter = new SettlementItemFilter(
+                null, LocalDate.of(2025, 3, 1), null, null, null);
 
             // when & then
             assertThatThrownBy(filter::validateForExcel)
@@ -163,8 +267,11 @@ class SettlementItemFilterTest {
         void startDate가_endDate보다_이후이면_예외_발생() {
             // given
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 3, 31),
-                LocalDate.of(2025, 3, 1)
+                LocalDate.of(2025, 3, 1),
+                null,
+                null
             );
 
             // when & then
@@ -185,8 +292,11 @@ class SettlementItemFilterTest {
         void 엑셀_커맨드로_올바르게_변환된다() {
             // given
             SettlementItemFilter filter = new SettlementItemFilter(
+                null,
                 LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 31)
+                LocalDate.of(2025, 3, 31),
+                null,
+                null
             );
 
             // when

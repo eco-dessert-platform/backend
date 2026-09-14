@@ -2,6 +2,8 @@ package com.bbangle.bbangle.settlement.seller.controller.dto.request;
 
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.settlement.domain.model.SettlementItemDateType;
+import com.bbangle.bbangle.settlement.domain.model.SettlementItemSearchType;
 import com.bbangle.bbangle.settlement.seller.excel.service.model.SettlementItemExcelSearchCommand;
 import com.bbangle.bbangle.settlement.seller.service.model.SellerSettlementCommand.SettlementItemSearchCommand;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,11 +15,20 @@ import org.springframework.data.domain.Pageable;
  * 날짜 범위 필터링과 엑셀 다운로드용 추가 검증을 제공한다.
  */
 public record SettlementItemFilter(
-    @Parameter(description = "조회 시작일 (baseDate 기준)", example = "2025-03-01")
+    @Parameter(description = "조회 기준 날짜 타입 (미전달 시 기존 호환을 위해 BASE_DATE 적용)", example = "SCHEDULED_DATE")
+    SettlementItemDateType dateType,
+
+    @Parameter(description = "조회 시작일 (dateType 기준)", example = "2025-03-01")
     LocalDate startDate,
 
-    @Parameter(description = "조회 종료일 (baseDate 기준)", example = "2025-03-31")
-    LocalDate endDate
+    @Parameter(description = "조회 종료일 (dateType 기준)", example = "2025-03-31")
+    LocalDate endDate,
+
+    @Parameter(description = "검색 구분 (searchType 없이 검색어만 전달되면 검색조건은 무시된다)", example = "ORDER_NUMBER")
+    SettlementItemSearchType searchType,
+
+    @Parameter(description = "검색어", example = "250401A1F7")
+    String searchValue
 ) {
 
     /**
@@ -26,11 +37,15 @@ public record SettlementItemFilter(
      */
     public SettlementItemSearchCommand toCommand(Long sellerId, Pageable pageable) {
         validateDateRange();
+        validateMaxOneMonthRange(startDate, endDate);
 
         return SettlementItemSearchCommand.builder()
             .sellerId(sellerId)
+            .dateType(normalizedDateType())
             .startDate(startDate)
             .endDate(endDate)
+            .searchType(searchType)
+            .searchValue(normalize(searchValue))
             .pageable(pageable)
             .build();
     }
@@ -44,10 +59,7 @@ public record SettlementItemFilter(
             throw new BbangleException(BbangleErrorCode.SETTLEMENT_DATE_REQUIRED);
         }
         validateDateRange();
-        // startDate 기준 1개월 초과 여부 검증 (e.g. 01-01 ~ 02-01 허용, 01-01 ~ 02-02 불가)
-        if (endDate.isAfter(startDate.plusMonths(1))) {
-            throw new BbangleException(BbangleErrorCode.SETTLEMENT_DATE_RANGE_EXCEEDED);
-        }
+        validateMaxOneMonthRange(startDate, endDate);
     }
 
     /**
@@ -68,6 +80,30 @@ public record SettlementItemFilter(
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new BbangleException(BbangleErrorCode.INVALID_SETTLEMENT_DATE_RANGE);
         }
+    }
+
+    /**
+     * 조회 기간 최대 1개월 검증 (e.g. 01-01 ~ 02-01 허용, 01-01 ~ 02-02 불가).
+     * startDate 또는 endDate가 없으면 검증하지 않는다 (기존 API 호환을 위해 optional 유지).
+     */
+    private void validateMaxOneMonthRange(LocalDate start, LocalDate end) {
+        if (start != null && end != null && end.isAfter(start.plusMonths(1))) {
+            throw new BbangleException(BbangleErrorCode.SETTLEMENT_DATE_RANGE_EXCEEDED);
+        }
+    }
+
+    /**
+     * dateType 기본값 처리.
+     * 미전달 시 기존 API 호환을 위해 BASE_DATE(정산기준일)를 기본값으로 사용한다.
+     * (피그마 기획상 기본값은 SCHEDULED_DATE이나, 신규 화면은 dateType을 항상 명시적으로 전달할 것을 전제로
+     *  기존 호출(파라미터 미전달)의 필터링 기준을 유지하기 위해 서버 기본값은 BASE_DATE로 둔다.)
+     */
+    private SettlementItemDateType normalizedDateType() {
+        return dateType != null ? dateType : SettlementItemDateType.BASE_DATE;
+    }
+
+    private String normalize(String value) {
+        return (value != null && !value.isBlank()) ? value : null;
     }
 
 }
