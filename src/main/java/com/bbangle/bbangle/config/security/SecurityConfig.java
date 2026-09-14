@@ -69,6 +69,9 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
+            // StreamingResponseBody 등 비동기 응답의 ASYNC 재디스패치 시 SecurityContext가 유지되도록
+            // TokenAuthenticationFilter가 SecurityContextHolder에 세팅한 인증 정보를 자동 저장시킨다.
+            .securityContext(securityContext -> securityContext.requireExplicitSave(false))
             .addFilterBefore(
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
@@ -118,6 +121,9 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
+            // StreamingResponseBody 등 비동기 응답의 ASYNC 재디스패치 시 SecurityContext가 유지되도록
+            // TokenAuthenticationFilter가 SecurityContextHolder에 세팅한 인증 정보를 자동 저장시킨다.
+            .securityContext(securityContext -> securityContext.requireExplicitSave(false))
             .addFilterBefore(
                 new TokenAuthenticationFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
