@@ -87,6 +87,10 @@ public class WishListBoardService {
         WishListFolder wishlistFolder,
         Long memberId
     ) {
+        if (wishlistBoardRepository.existsByBoardIdAndMemberId(board.getId(), memberId)) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
+        }
+
         WishListBoard wishlistBoard = WishListBoard.builder()
             .wishlistFolderId(wishlistFolder.getId())
             .boardId(board.getId())
