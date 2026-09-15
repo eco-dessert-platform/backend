@@ -3,9 +3,11 @@ package com.bbangle.bbangle.order.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.order.OrderItemFixture;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,53 @@ class OrderItemTest {
             // then
             assertThat(result).isFalse();
             assertThat(orderItem.getOrderStatus()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("confirmPurchase()")
+    class ConfirmPurchase {
+
+        @Test
+        @DisplayName("SHIPPED 상태에서 confirmPurchase()를 호출하면 PURCHASE_CONFIRMED로 전환되고 확정 시각이 기록된다")
+        void confirmPurchase_success_when_shipped() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED);
+            LocalDateTime confirmedAt = LocalDateTime.of(2025, 6, 29, 12, 0);
+
+            // when
+            orderItem.confirmPurchase(confirmedAt);
+
+            // then
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.PURCHASE_CONFIRMED);
+            assertThat(orderItem.getPurchaseConfirmedAt()).isEqualTo(confirmedAt);
+        }
+
+        @Test
+        @DisplayName("SHIPPED가 아닌 상태에서 confirmPurchase()를 호출하면 예외가 발생하고 상태/확정시각은 변경되지 않는다")
+        void confirmPurchase_fail_when_not_shipped() {
+            // given
+            OrderItem orderItem = OrderItemFixture.orderItemWithStatus(OrderStatus.PAYMENT_COMPLETED);
+
+            // when & then
+            assertThatThrownBy(() -> orderItem.confirmPurchase(LocalDateTime.now()))
+                .isInstanceOf(BbangleException.class)
+                .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                .isEqualTo(BbangleErrorCode.PURCHASE_CONFIRM_NOT_ALLOWED);
+            assertThat(orderItem.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_COMPLETED);
+            assertThat(orderItem.getPurchaseConfirmedAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("canConfirmPurchase()는 SHIPPED 상태에서만 true를 반환한다")
+        void canConfirmPurchase_true_only_when_shipped() {
+            // given
+            OrderItem shipped = OrderItemFixture.orderItemWithStatus(OrderStatus.SHIPPED);
+            OrderItem confirmed = OrderItemFixture.orderItemWithStatus(OrderStatus.PURCHASE_CONFIRMED);
+
+            // when & then
+            assertThat(shipped.canConfirmPurchase()).isTrue();
+            assertThat(confirmed.canConfirmPurchase()).isFalse();
         }
     }
 

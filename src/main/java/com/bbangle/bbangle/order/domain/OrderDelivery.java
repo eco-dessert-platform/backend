@@ -9,6 +9,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.order.domain.model.OrderDeliveryStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
+import java.time.LocalDateTime;
 import java.util.Set;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -94,6 +95,22 @@ public class OrderDelivery extends BaseEntity {
             throw new BbangleException(BbangleErrorCode.DELIVERY_MODIFY_NOT_ALLOWED);
         }
         this.shipping.modifyShippingInfo(courierName, trackingNumber);
+    }
+
+    /**
+     * 배송완료 처리. 상태를 DELIVERED 로 바꾸고 배송완료 시각을 기록합니다.
+     * 배송완료 후 7일 자동 구매확정 배치의 기산점이 됩니다.
+     */
+    public void markDelivered(LocalDateTime deliveredAt) {
+        if (this.shipping == null) {
+            this.shipping = Shipping.empty();
+        }
+        this.shipping.markDelivered(deliveredAt);
+        this.status = OrderDeliveryStatus.DELIVERED;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return this.shipping != null ? this.shipping.getDeliveredAt() : null;
     }
 
 }

@@ -25,6 +25,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -61,6 +62,9 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "total_price")
     private Integer totalPrice;
+
+    @Column(name = "purchase_confirmed_at")
+    private LocalDateTime purchaseConfirmedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
@@ -129,6 +133,27 @@ public class OrderItem extends BaseEntity {
             throw new BbangleException(BbangleErrorCode.ORDER_INVALID_STATUS);
         }
         this.orderStatus = OrderStatus.SHIPPED;
+    }
+
+    /**
+     * 구매확정이 가능한 상태인지 여부.
+     * 배송완료(상품발송 + 배송상태 DELIVERED) 이후에만 확정할 수 있으므로,
+     * 배송상태 검증은 호출 측(서비스)에서 별도로 수행합니다.
+     */
+    public boolean canConfirmPurchase() {
+        return this.orderStatus == OrderStatus.SHIPPED;
+    }
+
+    /**
+     * 구매확정 처리. 상품발송(SHIPPED) 상태에서만 구매확정으로 전환하고 확정 시각을 기록합니다.
+     * 고객의 수동 확정과 배송완료 후 7일 자동 확정 배치에서 공통으로 사용합니다.
+     */
+    public void confirmPurchase(LocalDateTime confirmedAt) {
+        if (!canConfirmPurchase()) {
+            throw new BbangleException(BbangleErrorCode.PURCHASE_CONFIRM_NOT_ALLOWED);
+        }
+        this.orderStatus = OrderStatus.PURCHASE_CONFIRMED;
+        this.purchaseConfirmedAt = confirmedAt;
     }
 
     public boolean canRequestCancel() {

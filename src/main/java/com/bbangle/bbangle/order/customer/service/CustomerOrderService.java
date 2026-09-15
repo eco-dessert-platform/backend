@@ -215,6 +215,8 @@ public class CustomerOrderService {
             trackingNumber = delivery.getShipping().getTrackingNumber();
         }
         boolean deliveryTrackable = courierCompany != null && trackingNumber != null;
+        boolean purchaseConfirmable = isPurchaseConfirmable(item.getOrderStatus(), deliveryStatus);
+        boolean reviewable = item.getOrderStatus() == OrderStatus.PURCHASE_CONFIRMED;
 
         Product product = item.getProduct();
         String storeName = product != null && product.getStore() != null ? product.getStore().getName() : null;
@@ -243,8 +245,18 @@ public class CustomerOrderService {
             deliveryTrackable,
             courierCompany,
             trackingNumber,
-            progress
+            progress,
+            purchaseConfirmable,
+            reviewable
         );
+    }
+
+    /**
+     * 구매확정 버튼 노출 여부.
+     * 배송완료(상품발송 + 배송상태 DELIVERED) 상태이면서 아직 구매확정 전일 때만 노출합니다.
+     */
+    private boolean isPurchaseConfirmable(OrderStatus orderStatus, OrderDeliveryStatus deliveryStatus) {
+        return orderStatus == OrderStatus.SHIPPED && deliveryStatus == OrderDeliveryStatus.DELIVERED;
     }
 
     private int calculateDiscountRate(int productPrice, int unitPrice) {
@@ -317,6 +329,8 @@ public class CustomerOrderService {
         }
 
         CustomerOrderProgress progress = CustomerOrderStepMapper.resolve(item.getOrderStatus(), deliveryStatus);
+        boolean purchaseConfirmable = isPurchaseConfirmable(item.getOrderStatus(), deliveryStatus);
+        boolean reviewable = item.getOrderStatus() == OrderStatus.PURCHASE_CONFIRMED;
 
         return new CustomerOrderItemInfo(
             item.getId(),
@@ -330,7 +344,9 @@ public class CustomerOrderService {
             deliveryStatusLabel,
             courierCompany,
             trackingNumber,
-            progress
+            progress,
+            purchaseConfirmable,
+            reviewable
         );
     }
 
