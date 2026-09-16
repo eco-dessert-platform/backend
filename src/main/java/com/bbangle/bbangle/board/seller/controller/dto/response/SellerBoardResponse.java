@@ -55,6 +55,17 @@ public class SellerBoardResponse {
     }
 
     @Builder
+    @Schema(description = "게시글 상태 변경 응답 DTO")
+    public record BoardUpdateDTO(
+        @Schema(description = "상품 게시글 id", example = "1")
+        Long boardId,
+        @Schema(description = "상품명 (게시글 제목)", example = "글루텐 프리 케이크")
+        String name,
+        @Schema(description = "판매 상태", example = "ON_SALE")
+        SaleStatus status
+    ) {}
+
+    @Builder
     @Schema(description = "상품 단건 상세 조회 DTO")
     public record SellerBoardDetailResponse(
         BoardDetailDTO boardDetailDTO,

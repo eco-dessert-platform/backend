@@ -2,7 +2,9 @@ package com.bbangle.bbangle.board.seller.controller;
 
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.SellerBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.BoardUpdateDTO;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardSearchResponse;
@@ -24,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -111,6 +114,18 @@ public class SellerBoardController implements SellerBoardApi {
     ) {
         return responseService.getSingleResult(
             sellerBoardService.getBoardDetail(sellerId, boardId)
+        );
+    }
+
+    @Override
+    @PatchMapping("/{boardId}/status")
+    public SingleResult<BoardUpdateDTO> updateSaleStatus(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable("boardId") Long boardId,
+        @Valid SellerBoardRequest.UpdateSaleStatusRequest request
+    ) {
+        return responseService.getSingleResult(
+            sellerBoardService.changeSaleStatus(sellerId, boardId, request.saleStatus())
         );
     }
 }

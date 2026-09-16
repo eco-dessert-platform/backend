@@ -2,7 +2,9 @@ package com.bbangle.bbangle.board.seller.controller.swagger;
 
 import com.bbangle.bbangle.board.seller.controller.dto.request.CreateBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.ProductBoardRequest.ProductBoardSearchRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.request.SellerBoardRequest;
 import com.bbangle.bbangle.board.seller.controller.dto.request.UpdateBoardRequest;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.BoardUpdateDTO;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardListResponse;
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
@@ -24,6 +26,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "SellerBoards", description = "판매자 상품 게시글 관련 API")
 public interface SellerBoardApi {
@@ -257,5 +260,21 @@ public interface SellerBoardApi {
         @AuthenticationPrincipal Long sellerId,
         @Parameter(name = "boardId", description = "게시글 ID", example = "1")
         @PathVariable("boardId") Long boardId
+    );
+
+    @Operation(
+        summary = "판매자 상품 게시글 판매 상태 변경",
+        description = """
+            게시글의 판매 상태(SaleStatus)를 변경합니다.
+            - ON_SALE 또는 OUT_OF_STOCK 상태 → STOPPED (판매 중지)
+            - STOPPED 상태 → ON_SALE (판매 재개)
+            - 그 외의 상태 전환 요청은 허용되지 않으며 INVALID_BOARD_STATUS 예외가 발생합니다.
+            """
+    )
+    SingleResult<BoardUpdateDTO> updateSaleStatus(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long sellerId,
+        @Parameter(name = "boardId", description = "판매 상태를 변경할 게시글 ID", example = "1")
+        @PathVariable("boardId") Long boardId,
+        @Valid @RequestBody SellerBoardRequest.UpdateSaleStatusRequest request
     );
 }
