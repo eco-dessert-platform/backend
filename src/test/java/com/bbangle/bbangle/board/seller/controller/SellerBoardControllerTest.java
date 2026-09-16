@@ -204,7 +204,7 @@ class SellerBoardControllerTest {
                 .willThrow(new BbangleException(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS));
 
             // when & then
-            mockMvc.perform(patch(SellerApiPath.PREFIX + "/boards/{boardId}/sale-status", boardId)
+            mockMvc.perform(patch(SellerApiPath.PREFIX + "/boards/{boardId}/status", boardId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(jsonDataEncoder.encode(request)))
                 .andExpect(status().isForbidden())
