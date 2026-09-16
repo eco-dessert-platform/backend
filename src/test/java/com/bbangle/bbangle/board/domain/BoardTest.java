@@ -679,4 +679,155 @@ class BoardTest {
             assertThat(result).isZero();
         }
     }
+
+    @Nested
+    @DisplayName("판매 상태 변경 메서드 (stopSale, resumeSale, restock)")
+    class SaleStatusChange {
+
+        @Nested
+        @DisplayName("stopSale 메서드")
+        class StopSaleMethod {
+
+            @Test
+            @DisplayName("ON_SALE 상태에서 stopSale()을 호출하면 STOPPED로 변경된다")
+            void stopSaleSuccessWhenOnSale() {
+                // given
+                Board board = BoardFixture.defaultBoard();
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+
+                // when
+                board.stopSale();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.STOPPED);
+            }
+
+            @Test
+            @DisplayName("OUT_OF_STOCK 상태에서 stopSale()을 호출하면 STOPPED로 변경된다")
+            void stopSaleSuccessWhenOutOfStock() {
+                // given
+                Board board = BoardFixture.outOfStockBoardWithStore(store, "품절 게시글");
+
+                // when
+                board.stopSale();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.STOPPED);
+            }
+
+            @Test
+            @DisplayName("이미 STOPPED 상태에서 stopSale()을 호출하면 예외가 발생한다")
+            void stopSaleFailWhenAlreadyStopped() {
+                // given
+                Board board = BoardFixture.stoppedBoardWithStore(store, "중지된 게시글");
+
+                // when & then
+                assertThatThrownBy(board::stopSale)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+
+            @Test
+            @DisplayName("PENDING 상태에서 stopSale()을 호출하면 예외가 발생한다")
+            void stopSaleFailWhenPending() {
+                // given
+                Board board = BoardFixture.pendingBoardWithStore(store, "대기중 게시글");
+
+                // when & then
+                assertThatThrownBy(board::stopSale)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+        }
+
+        @Nested
+        @DisplayName("resumeSale 메서드")
+        class ResumeSaleMethod {
+
+            @Test
+            @DisplayName("STOPPED 상태에서 resumeSale()을 호출하면 ON_SALE로 변경된다")
+            void resumeSaleSuccess() {
+                // given
+                Board board = BoardFixture.stoppedBoardWithStore(store, "중지된 게시글");
+
+                // when
+                board.resumeSale();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+            }
+
+            @Test
+            @DisplayName("ON_SALE 상태에서 resumeSale()을 호출하면 예외가 발생한다")
+            void resumeSaleFailWhenOnSale() {
+                // given
+                Board board = BoardFixture.defaultBoard();
+
+                // when & then
+                assertThatThrownBy(board::resumeSale)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+
+            @Test
+            @DisplayName("OUT_OF_STOCK 상태에서 resumeSale()을 호출하면 예외가 발생한다")
+            void resumeSaleFailWhenOutOfStock() {
+                // given
+                Board board = BoardFixture.outOfStockBoardWithStore(store, "품절 게시글");
+
+                // when & then
+                assertThatThrownBy(board::resumeSale)
+                    .isInstanceOf(BbangleException.class)
+                    .extracting(e -> ((BbangleException) e).getBbangleErrorCode())
+                    .isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+            }
+        }
+
+        @Nested
+        @DisplayName("restock 메서드")
+        class RestockMethod {
+
+            @Test
+            @DisplayName("OUT_OF_STOCK 상태에서 restock()을 호출하면 ON_SALE로 변경된다")
+            void restockChangesToOnSaleWhenOutOfStock() {
+                // given
+                Board board = BoardFixture.outOfStockBoardWithStore(store, "품절 게시글");
+
+                // when
+                board.restock();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+            }
+
+            @Test
+            @DisplayName("STOPPED 상태에서는 restock()을 호출해도 변경되지 않는다(판매자가 의도적으로 중지했으므로)")
+            void restockDoesNotAffectStoppedStatus() {
+                // given
+                Board board = BoardFixture.stoppedBoardWithStore(store, "중지된 게시글");
+
+                // when
+                board.restock();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.STOPPED);
+            }
+
+            @Test
+            @DisplayName("ON_SALE 상태에서는 restock()을 호출해도 변경되지 않는다")
+            void restockDoesNotAffectOnSaleStatus() {
+                // given
+                Board board = BoardFixture.defaultBoard();
+
+                // when
+                board.restock();
+
+                // then
+                assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+            }
+        }
+    }
 }
