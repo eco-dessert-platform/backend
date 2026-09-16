@@ -318,4 +318,39 @@ public class Board extends SoftDeleteBaseEntity {
     public Integer getDisplayDiscountValue() {
         return discountType == DiscountType.AMOUNT ? discountValue : discountRate;
     }
+
+    /**
+     * 판매 중지.
+     * ON_SALE(판매중) 또는 OUT_OF_STOCK(품절) 상태에서만 STOPPED(판매중지)로 전환할 수 있다.
+     * 그 외 상태(PENDING, BANNED, 이미 STOPPED 등)에서는 예외가 발생한다.
+     */
+    public void stopSale() {
+        if (saleStatus != SaleStatus.ON_SALE && saleStatus != SaleStatus.OUT_OF_STOCK) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_STATUS);
+        }
+        this.saleStatus = SaleStatus.STOPPED;
+    }
+
+    /**
+     * 판매 재개.
+     * STOPPED(판매중지) 상태에서만 ON_SALE(판매중)로 전환할 수 있다.
+     */
+    public void resumeSale() {
+        if (saleStatus != SaleStatus.STOPPED) {
+            throw new BbangleException(BbangleErrorCode.INVALID_BOARD_STATUS);
+        }
+        this.saleStatus = SaleStatus.ON_SALE;
+    }
+
+    /**
+     * 재고 보충에 따른 자동 판매 재개.
+     * OUT_OF_STOCK(품절) 상태일 때만 ON_SALE(판매중)로 전환한다.
+     * 판매자가 의도적으로 STOPPED(판매중지) 시킨 경우는 재고가 채워져도 자동으로 재개되지 않도록
+     * 건드리지 않는다(no-op). 그 외 상태(ON_SALE, PENDING, BANNED)도 마찬가지로 건드리지 않는다.
+     */
+    public void restock() {
+        if (saleStatus == SaleStatus.OUT_OF_STOCK) {
+            this.saleStatus = SaleStatus.ON_SALE;
+        }
+    }
 }

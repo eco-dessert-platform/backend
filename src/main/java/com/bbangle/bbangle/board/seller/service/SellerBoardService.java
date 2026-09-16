@@ -9,6 +9,7 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.board.repository.dao.SellerBoardDao;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.BoardUpdateDTO;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.mapper.SellerBoardDetailMapper;
 import com.bbangle.bbangle.board.seller.service.command.CreateBoardServiceCommand;
@@ -121,6 +122,12 @@ public class SellerBoardService {
 
         mergeProducts(board, command.products());
 
+        // 요청된 상품 중 재고가 채워진 것이 있으면, 품절(OUT_OF_STOCK)로 인해 내려가 있던
+        // 판매 상태를 자동으로 판매중(ON_SALE)으로 되돌린다. (판매자가 직접 STOPPED한 경우는 영향받지 않음)
+        if (hasRestockedProduct(command.products())) {
+            board.restock();
+        }
+
         // dirty 상태(board, productInfoNotice, boardDetail, products) flush
         // softDeleteByBoardIds의 clearAutomatically = true로 인해 EM이 clear되기 전에 반영해야 함
         boardRepository.flush();
@@ -134,6 +141,15 @@ public class SellerBoardService {
         productImgRepository.saveAll(newProductImgs);
 
         return BoardInfo.from(board);
+    }
+
+    /**
+     * 요청된 상품 목록 중 재고(stock)가 1 이상인 상품이 하나라도 있는지 확인한다.
+     * 재고가 채워졌다는 것은 곧 판매 재개가 가능해졌다는 신호이므로,
+     * OUT_OF_STOCK 상태의 게시글을 ON_SALE로 되돌리는 트리거로 사용한다.
+     */
+    private boolean hasRestockedProduct(List<UpdateProductCommand> productCommands) {
+        return productCommands.stream().anyMatch(cmd -> cmd.stock() >= 1);
     }
 
     public SellerBoardListInfo searchBoards(SearchSellerBoardCommand command) {
@@ -246,5 +262,35 @@ public class SellerBoardService {
         List<Product> products = productRepository.findAllByBoardIdAndIsDeletedFalse(boardId);
 
         return sellerBoardDetailMapper.toResponse(board, productImgs, products);
+    }
+
+    /**
+     * 판매자가 명시적으로 게시글의 판매 상태(SaleStatus)를 변경한다.
+     * - STOPPED: ON_SALE 또는 OUT_OF_STOCK 상태에서만 가능 (판매 중지)
+     * - ON_SALE: STOPPED 상태에서만 가능 (판매 재개)
+     * - 그 외 targetStatus(PENDING, BANNED, OUT_OF_STOCK)는 허용하지 않는다.
+     *
+     * @return 변경된 판매 상태를 담은 응답 DTO
+     */
+    @Transactional
+    public BoardUpdateDTO changeSaleStatus(Long sellerId, Long boardId, SaleStatus targetStatus) {
+        Board board = boardRepository.findByIdAndIsDeletedFalse(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        if (!sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, board.getStore().getId())) {
+            throw new BbangleException(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+        }
+
+        switch (targetStatus) {
+            case STOPPED -> board.stopSale();
+            case ON_SALE -> board.resumeSale();
+            default -> throw new BbangleException(BbangleErrorCode.INVALID_BOARD_STATUS);
+        }
+
+        return BoardUpdateDTO.builder()
+            .boardId(board.getId())
+            .name(board.getTitle())
+            .status(board.getSaleStatus())
+            .build();
     }
 }

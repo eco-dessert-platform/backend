@@ -711,6 +711,116 @@ class SellerBoardServiceIntegrationTest {
                 .isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
         }
 
+        @Test
+        @DisplayName("OUT_OF_STOCK 상태에서 재고가 있는 상품으로 수정하면 SaleStatus가 ON_SALE로 변경된다")
+        void success_changesToOnSale_whenRestockedFromOutOfStock() {
+            // given
+            Board board = boardRepository.findById(boardId).orElseThrow();
+            ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.OUT_OF_STOCK);
+            boardRepository.save(board);
+            em.flush();
+            em.clear();
+
+            // createUpdateProductCommand()의 기본 stock은 50(>=1)이므로 재입고로 간주된다.
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), boardId);
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            assertThat(updatedBoard.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+        }
+
+        @Test
+        @DisplayName("STOPPED 상태에서는 재고가 채워져도 SaleStatus가 변경되지 않는다(판매자가 의도적으로 중지했으므로)")
+        void doesNotChangeStatus_whenStoppedAndRestocked() {
+            // given
+            Board board = boardRepository.findById(boardId).orElseThrow();
+            ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.STOPPED);
+            boardRepository.save(board);
+            em.flush();
+            em.clear();
+
+            UpdateBoardServiceCommand command = createValidUpdateCommand(seller.getId(), boardId);
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            assertThat(updatedBoard.getSaleStatus()).isEqualTo(SaleStatus.STOPPED);
+        }
+
+        @Test
+        @DisplayName("모든 상품의 재고가 0이면 OUT_OF_STOCK 상태에서도 SaleStatus가 변경되지 않는다")
+        void doesNotChangeStatus_whenAllProductsZeroStock() {
+            // given
+            Board board = boardRepository.findById(boardId).orElseThrow();
+            ReflectionTestUtils.setField(board, "saleStatus", SaleStatus.OUT_OF_STOCK);
+            boardRepository.save(board);
+            em.flush();
+            em.clear();
+
+            UpdateProductCommand zeroStockProduct = UpdateProductCommand.builder()
+                .productId(null)
+                .title("품절 상품옵션")
+                .category("BREAD")
+                .plusPriceWithBoardPrice(0)
+                .stock(0)
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(false)
+                .ketogenicTag(false)
+                .monday(true)
+                .tuesday(false)
+                .wednesday(false)
+                .thursday(false)
+                .friday(false)
+                .saturday(false)
+                .sunday(false)
+                .nutrition(new Nutrition(200, 50, 25, 5, 8, 6, 150))
+                .build();
+
+            UpdateBoardServiceCommand command = UpdateBoardServiceCommand.builder()
+                .sellerId(seller.getId())
+                .boardId(boardId)
+                .title("수정된 상품명")
+                .price(20000)
+                .discountType("RATE")
+                .discountValue(0)
+                .deliveryFee(2500)
+                .freeShippingConditions(50000)
+                .isFresh(true)
+                .productionStartTime("T_09_10")
+                .deliveryCondition("COLD")
+                .deliveryCompany("우체국택배")
+                .productImgs(List.of(
+                    new ProductImgCommand("https://cdn.example.com/thumbnail.jpg", 0)
+                ))
+                .products(List.of(zeroStockProduct))
+                .boardDetail(new BoardDetailCommand("<p>수정된 상세내용</p>"))
+                .productInfoNotice(createUpdateNoticeCommand())
+                .build();
+
+            // when
+            sellerBoardService.updateBoard(command);
+
+            // then
+            em.flush();
+            em.clear();
+
+            Board updatedBoard = boardRepository.findWithAllById(boardId).orElseThrow();
+            assertThat(updatedBoard.getSaleStatus()).isEqualTo(SaleStatus.OUT_OF_STOCK);
+        }
+
         private UpdateBoardServiceCommand createValidUpdateCommand(Long sellerId, Long boardId) {
             return UpdateBoardServiceCommand.builder()
                 .sellerId(sellerId)

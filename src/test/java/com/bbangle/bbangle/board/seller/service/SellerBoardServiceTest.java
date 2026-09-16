@@ -14,9 +14,11 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Nutrition;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.domain.SaleStatus;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductImgRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.BoardUpdateDTO;
 import com.bbangle.bbangle.board.seller.controller.dto.response.SellerBoardResponse.SellerBoardDetailResponse;
 import com.bbangle.bbangle.board.seller.controller.mapper.SellerBoardDetailMapper;
 import com.bbangle.bbangle.board.seller.service.command.BoardDetailCommand;
@@ -371,6 +373,141 @@ class SellerBoardServiceTest {
             verify(productImgRepository, never()).findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(any());
             verify(productRepository, never()).findAllByBoardIdAndIsDeletedFalse(any());
             verify(sellerBoardDetailMapper, never()).toResponse(any(), any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("changeSaleStatus() 테스트")
+    class ChangeSaleStatusTest {
+
+        @Test
+        @DisplayName("ON_SALE 상태의 게시글을 STOPPED로 변경한다.")
+        void success_stopSale() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board board = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "판매중 게시글"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(board));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+
+            // when
+            BoardUpdateDTO result = sut.changeSaleStatus(sellerId, boardId, SaleStatus.STOPPED);
+
+            // then
+            assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.STOPPED);
+            assertThat(result.boardId()).isEqualTo(boardId);
+            assertThat(result.name()).isEqualTo("판매중 게시글");
+            assertThat(result.status()).isEqualTo(SaleStatus.STOPPED);
+        }
+
+        @Test
+        @DisplayName("STOPPED 상태의 게시글을 ON_SALE로 변경한다.")
+        void success_resumeSale() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board board = BoardFixture.withId(BoardFixture.stoppedBoardWithStore(store, "중지된 게시글"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(board));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+
+            // when
+            BoardUpdateDTO result = sut.changeSaleStatus(sellerId, boardId, SaleStatus.ON_SALE);
+
+            // then
+            assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
+            assertThat(result.boardId()).isEqualTo(boardId);
+            assertThat(result.name()).isEqualTo("중지된 게시글");
+            assertThat(result.status()).isEqualTo(SaleStatus.ON_SALE);
+        }
+
+        @Test
+        @DisplayName("게시글이 존재하지 않으면 BOARD_NOT_FOUND 예외가 발생한다.")
+        void fail_boardNotFound() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 999L;
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSaleStatus(sellerId, boardId, SaleStatus.STOPPED))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
+                });
+        }
+
+        @Test
+        @DisplayName("게시글의 소유자가 아니면 FORBIDDEN_BOARD_ACCESS 예외가 발생한다.")
+        void fail_forbiddenAccess() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board board = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "다른 판매자 게시글"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(board));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSaleStatus(sellerId, boardId, SaleStatus.STOPPED))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+                });
+        }
+
+        @Test
+        @DisplayName("ON_SALE 상태에서 ON_SALE로 변경을 시도하면(유효하지 않은 전이) INVALID_BOARD_STATUS 예외가 발생한다.")
+        void fail_invalidTransition_resumeSaleFromOnSale() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board board = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "판매중 게시글"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(board));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSaleStatus(sellerId, boardId, SaleStatus.ON_SALE))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+                });
+        }
+
+        @Test
+        @DisplayName("STOPPED, ON_SALE 이외의 상태로 요청하면 INVALID_BOARD_STATUS 예외가 발생한다.")
+        void fail_unsupportedTargetStatus() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board board = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "판매중 게시글"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(board));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSaleStatus(sellerId, boardId, SaleStatus.PENDING))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
+                });
         }
     }
 }
