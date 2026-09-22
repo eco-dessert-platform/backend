@@ -91,11 +91,15 @@ public class SellerBoardController implements SellerBoardApi {
         );
     }
 
+    @Override
     @PostMapping("/{boardId}/copy")
-    public CommonResult copyProductBoard(
-        @PathVariable(name = "boardId") Long boardId,
-        @RequestParam(name = "storeId") Long storeId) {
-        return responseService.getSuccessResult();
+    public SingleResult<SellerBoardDetailResponse> copyProductBoard(
+        @AuthenticationPrincipal Long sellerId,
+        @PathVariable(name = "boardId") Long boardId
+    ) {
+        return responseService.getSingleResult(
+            sellerBoardService.copyBoard(sellerId, boardId)
+        );
     }
 
     @PostMapping("/delete-boards")

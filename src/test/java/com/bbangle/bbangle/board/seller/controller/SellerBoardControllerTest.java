@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -207,6 +208,65 @@ class SellerBoardControllerTest {
             mockMvc.perform(patch(SellerApiPath.PREFIX + "/boards/{boardId}/status", boardId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(jsonDataEncoder.encode(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS.getCode()));
+        }
+    }
+
+    @Nested
+    @DisplayName("copyProductBoard() 테스트")
+    class CopyProductBoardTest {
+
+        @Test
+        @DisplayName("게시글을 복제하면 200과 함께 상세 응답을 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void success_copyProductBoard() throws Exception {
+
+            // given
+            Long boardId = 1L;
+            SellerBoardDetailResponse response = SellerBoardResponseFixture.defaultResponse(boardId);
+
+            given(sellerBoardService.copyBoard(1L, boardId)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(post(SellerApiPath.PREFIX + "/boards/{boardId}/copy", boardId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.result.boardDetailDTO.boardId").value(boardId));
+
+            verify(sellerBoardService).copyBoard(1L, boardId);
+        }
+
+        @Test
+        @DisplayName("게시글이 존재하지 않으면 400을 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void fail_boardNotFound() throws Exception {
+
+            // given
+            Long boardId = 999L;
+            given(sellerBoardService.copyBoard(anyLong(), eq(boardId)))
+                .willThrow(new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+            // when & then
+            mockMvc.perform(post(SellerApiPath.PREFIX + "/boards/{boardId}/copy", boardId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(BbangleErrorCode.BOARD_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("게시글의 소유자가 아니면 403을 반환한다.")
+        @WithMockAuthenticationPrincipal(role = "SELLER")
+        void fail_forbiddenAccess() throws Exception {
+
+            // given
+            Long boardId = 1L;
+            given(sellerBoardService.copyBoard(anyLong(), eq(boardId)))
+                .willThrow(new BbangleException(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS));
+
+            // when & then
+            mockMvc.perform(post(SellerApiPath.PREFIX + "/boards/{boardId}/copy", boardId))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS.getCode()));

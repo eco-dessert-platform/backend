@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("[단위 테스트] Product 도메인")
 class ProductTest {
@@ -462,6 +463,35 @@ class ProductTest {
 
             // then
             assertThat(result).containsExactly(TagEnum.LOW_FAT);
+        }
+    }
+
+    @Nested
+    @DisplayName("copyOf 메서드")
+    class CopyOfTest {
+
+        @Test
+        @DisplayName("Product의 모든 필드를 그대로 복제한 새 인스턴스를 반환한다")
+        void success() {
+
+            // given
+            Product original = ProductFixture.withTags(true, false, true, false, false, true);
+            ReflectionTestUtils.setField(original, "stock", 20);
+            ReflectionTestUtils.setField(
+                original, "nutrition", new Nutrition(100, 50, 30, 10, 5, 3, 200)
+            );
+
+            // when
+            Product copied = Product.copyOf(original);
+
+            // then
+            assertThat(copied).isNotSameAs(original);
+            assertThat(copied.getTitle()).isEqualTo(original.getTitle());
+            assertThat(copied.isGlutenFreeTag()).isEqualTo(original.isGlutenFreeTag());
+            assertThat(copied.isSugarFreeTag()).isEqualTo(original.isSugarFreeTag());
+            assertThat(copied.getStock()).isEqualTo(original.getStock());
+            assertThat(copied.getNutrition()).isNotSameAs(original.getNutrition());
+            assertThat(copied.getNutrition().getWeight()).isEqualTo(original.getNutrition().getWeight());
         }
     }
 }

@@ -29,7 +29,9 @@ import com.bbangle.bbangle.board.seller.service.command.ProductInfoNoticeCommand
 import com.bbangle.bbangle.board.seller.service.info.BoardInfo;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.board.domain.BoardDetailFixture;
 import com.bbangle.bbangle.fixture.board.domain.BoardFixture;
+import com.bbangle.bbangle.fixture.board.domain.ProductInfoNoticeFixture;
 import com.bbangle.bbangle.fixture.store.domain.StoreFixture;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
@@ -39,6 +41,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -508,6 +511,119 @@ class SellerBoardServiceTest {
                     BbangleException ex = (BbangleException) e;
                     assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.INVALID_BOARD_STATUS);
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("copyBoard() 테스트")
+    class CopyBoardTest {
+
+        @Test
+        @DisplayName("정상적인 요청이면 Board와 연관 엔티티를 복제하고 상세 응답을 반환한다.")
+        void success_copyBoard() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board originalBoard = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "A"), boardId);
+            // Board.copyOf가 boardDetail/productInfoNotice를 복제하므로 픽스처에도 채워줘야 한다.
+            ReflectionTestUtils.setField(originalBoard, "boardDetail", BoardDetailFixture.defaultBoardDetailWithBoard("원본 상세 내용"));
+            ReflectionTestUtils.setField(originalBoard, "productInfoNotice", ProductInfoNoticeFixture.defaultNotice());
+
+            List<Product> originalProducts = List.of(mock(Product.class));
+            List<ProductImg> originalImgs = List.of(mock(ProductImg.class));
+            SellerBoardDetailResponse response = mock(SellerBoardDetailResponse.class);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(originalBoard));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+            given(productRepository.findAllByBoardIdAndIsDeletedFalse(boardId)).willReturn(originalProducts);
+            given(productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(boardId)).willReturn(originalImgs);
+            given(boardRepository.findAllTitlesByStoreId(store.getId())).willReturn(List.of("A"));
+            given(sellerBoardDetailMapper.toResponse(any(Board.class), any(List.class), any(List.class)))
+                .willReturn(response);
+
+            // when
+            SellerBoardDetailResponse result = sut.copyBoard(sellerId, boardId);
+
+            // then
+            assertThat(result).isEqualTo(response);
+            then(boardRepository).should().save(any(Board.class));
+        }
+
+        @Test
+        @DisplayName("게시글이 존재하지 않으면 BOARD_NOT_FOUND 예외가 발생한다.")
+        void fail_boardNotFound() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 999L;
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sut.copyBoard(sellerId, boardId))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.BOARD_NOT_FOUND);
+                });
+
+            then(boardRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("게시글의 소유자가 아니면 FORBIDDEN_BOARD_ACCESS 예외가 발생한다.")
+        void fail_forbiddenAccess() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board originalBoard = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "A"), boardId);
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(originalBoard));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sut.copyBoard(sellerId, boardId))
+                .isInstanceOf(BbangleException.class)
+                .satisfies(e -> {
+                    BbangleException ex = (BbangleException) e;
+                    assertThat(ex.getBbangleErrorCode()).isEqualTo(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+                });
+
+            then(boardRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("동일한 이름의 게시글이 이미 있으면 제목 뒤에 증가하는 번호를 붙여 복제한다.")
+        void success_generatesIncrementedTitle() {
+
+            // given
+            Long sellerId = 1L;
+            Long boardId = 10L;
+            Store store = StoreFixture.withId(StoreFixture.defaultStore(), 100L);
+            Board originalBoard = BoardFixture.withId(BoardFixture.defaultBoardWithStore(store, "A"), boardId);
+            ReflectionTestUtils.setField(originalBoard, "boardDetail", BoardDetailFixture.defaultBoardDetailWithBoard("원본 상세 내용"));
+            ReflectionTestUtils.setField(originalBoard, "productInfoNotice", ProductInfoNoticeFixture.defaultNotice());
+
+            given(boardRepository.findByIdAndIsDeletedFalse(boardId)).willReturn(Optional.of(originalBoard));
+            given(sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, store.getId())).willReturn(true);
+            given(productRepository.findAllByBoardIdAndIsDeletedFalse(boardId)).willReturn(List.of());
+            given(productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(boardId)).willReturn(List.of());
+            given(boardRepository.findAllTitlesByStoreId(store.getId())).willReturn(List.of("A", "A (3)"));
+            given(sellerBoardDetailMapper.toResponse(any(Board.class), any(List.class), any(List.class)))
+                .willReturn(mock(SellerBoardDetailResponse.class));
+
+            ArgumentCaptor<Board> boardCaptor = ArgumentCaptor.forClass(Board.class);
+
+            // when
+            sut.copyBoard(sellerId, boardId);
+
+            // then
+            then(boardRepository).should().save(boardCaptor.capture());
+            assertThat(boardCaptor.getValue().getTitle()).isEqualTo("A (4)");
+            assertThat(boardCaptor.getValue().getSaleStatus()).isEqualTo(SaleStatus.PENDING);
         }
     }
 }

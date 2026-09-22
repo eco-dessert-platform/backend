@@ -207,6 +207,77 @@ public class Board extends SoftDeleteBaseEntity {
         return price - discountValue;
     }
 
+    /**
+     * 기존 게시글(Board)을 복제하여 새로운 Board 엔티티를 생성한다.
+     * <p>
+     * - saleStatus는 항상 PENDING(승인 대기)으로 초기화된다. <br>
+     * - title은 파라미터로 전달된 newTitle을 사용한다(중복 방지 로직은 호출부에서 계산해 넘긴다). <br>
+     * - BoardDetail, ProductInfoNotice는 값이 동일한 새 엔티티로 복제되어 함께 채워진다. <br>
+     * - Product, ProductImg는 연관관계가 많고 board 참조가 필요하므로 이 메서드에서는 채우지 않으며,
+     *   호출부에서 {@link #addProducts(List)}, {@link #addProductImgs(List)}로 별도 추가해야 한다.
+     *
+     * @param original 복제할 원본 게시글
+     * @param newTitle 중복을 피해 생성된 새 게시글 제목
+     * @return Product/ProductImg가 비어있는 상태의 새 Board 엔티티
+     */
+    public static Board copyOf(Board original, String newTitle) {
+        Board copiedBoard = Board.builder()
+            .store(original.getStore())
+            .title(newTitle)
+            .price(original.getPrice())
+            .discountType(original.getDiscountType())
+            .discountValue(original.getDiscountValue())
+            .discountRate(original.getDiscountRate())
+            .discountPrice(original.getDiscountPrice())
+            .status(false)
+            .saleStatus(SaleStatus.PENDING)
+            .purchaseUrl(original.getPurchaseUrl())
+            .deliveryFee(original.getDeliveryFee())
+            .freeShippingConditions(original.getFreeShippingConditions())
+            .view(0)
+            .courier(original.getCourier())
+            .deliveryCondition(original.getDeliveryCondition())
+            .isCrawling(false)
+            .isFresh(original.getIsFresh())
+            .productionStartTime(original.getProductionStartTime())
+            .products(new ArrayList<>())
+            .productImgs(new ArrayList<>())
+            .build();
+
+        if (original.getBoardDetail() != null) {
+            copiedBoard.addBoardDetails(copyBoardDetail(original.getBoardDetail()));
+        }
+        if (original.getProductInfoNotice() != null) {
+            copiedBoard.productInfoNotice = copyProductInfoNotice(original.getProductInfoNotice());
+        }
+
+        return copiedBoard;
+    }
+
+    private static BoardDetail copyBoardDetail(BoardDetail original) {
+        return BoardDetail.builder()
+            .content(original.getContent())
+            .build();
+    }
+
+    private static ProductInfoNotice copyProductInfoNotice(ProductInfoNotice original) {
+        return ProductInfoNotice.builder()
+            .productName(original.getProductName())
+            .foodType(original.getFoodType())
+            .manufacturer(original.getManufacturer())
+            .originLocation(original.getOriginLocation())
+            .manufactureDate(original.getManufactureDate())
+            .expirationDate(original.getExpirationDate())
+            .storageGuide(original.getStorageGuide())
+            .packagingQuantityUnit(original.getPackagingQuantityUnit())
+            .rawMaterialName(original.getRawMaterialName())
+            .nutritionInfo(original.getNutritionInfo())
+            .transgenic(original.getTransgenic())
+            .customerWarning(original.getCustomerWarning())
+            .importFood(original.getImportFood())
+            .build();
+    }
+
     public void addProducts(List<Product> products) {
         this.products.addAll(products);
         products.forEach(product -> product.setBoard(this));
