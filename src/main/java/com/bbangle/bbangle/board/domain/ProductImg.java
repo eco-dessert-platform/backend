@@ -40,6 +40,17 @@ public class ProductImg extends SoftDeleteBaseEntity {
 
     private int imgOrder;
 
+    /**
+     * 기존 상품 이미지를 그대로 복제하여 새로운 ProductImg 엔티티를 생성한다.
+     * board 연관관계는 설정하지 않으므로, 호출부에서 {@code Board.addProductImgs(...)}를 통해 채워 넣어야 한다.
+     */
+    public static ProductImg copyOf(ProductImg original) {
+        return ProductImg.builder()
+            .url(original.getUrl())
+            .imgOrder(original.getImgOrder())
+            .build();
+    }
+
     public void updateBoard(Board board) {
         this.board = board;
     }

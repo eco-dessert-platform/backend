@@ -153,6 +153,54 @@ public class Product extends SoftDeleteBaseEntity {
         this.soldout = false;
     }
 
+    /**
+     * 기존 상품 옵션(Product)을 그대로 복제하여 새로운 Product 엔티티를 생성한다.
+     * board 연관관계는 설정하지 않으므로, 호출부에서 {@code Board.addProducts(...)}를 통해 채워 넣어야 한다.
+     */
+    public static Product copyOf(Product original) {
+        return Product.builder()
+            .store(original.getStore())
+            .title(original.getTitle())
+            .price(original.getPrice())
+            .category(original.getCategory())
+            .glutenFreeTag(original.isGlutenFreeTag())
+            .highProteinTag(original.isHighProteinTag())
+            .sugarFreeTag(original.isSugarFreeTag())
+            .veganTag(original.isVeganTag())
+            .ketogenicTag(original.isKetogenicTag())
+            .lowFatTag(original.isLowFatTag())
+            .monday(original.isMonday())
+            .tuesday(original.isTuesday())
+            .wednesday(original.isWednesday())
+            .thursday(original.isThursday())
+            .friday(original.isFriday())
+            .saturday(original.isSaturday())
+            .sunday(original.isSunday())
+            .orderStartDate(original.getOrderStartDate())
+            .orderEndDate(original.getOrderEndDate())
+            .soldout(original.isSoldout())
+            .stock(original.getStock())
+            .nutrition(copyNutrition(original.getNutrition()))
+            .segmentIntolerances(new ArrayList<>())
+            .build();
+    }
+
+    private static Nutrition copyNutrition(Nutrition original) {
+        if (original == null) {
+            return null;
+        }
+
+        return new Nutrition(
+            original.getWeight(),
+            original.getServingWeight(),
+            original.getCarbohydrates(),
+            original.getSugars(),
+            original.getProtein(),
+            original.getFat(),
+            original.getCalories()
+        );
+    }
+
     private void validate(String title,
                           boolean monday, boolean tuesday, boolean wednesday,
                           boolean thursday, boolean friday, boolean saturday, boolean sunday) {

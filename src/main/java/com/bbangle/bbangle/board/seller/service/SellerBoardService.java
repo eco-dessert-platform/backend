@@ -24,6 +24,7 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
+import com.bbangle.bbangle.util.TitleDuplicatorUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -292,5 +293,47 @@ public class SellerBoardService {
             .name(board.getTitle())
             .status(board.getSaleStatus())
             .build();
+    }
+
+    /**
+     * 게시글(Board)을 연관 엔티티(ProductImg, Product/Nutrition, BoardDetail, ProductInfoNotice)와 함께 그대로 복제한다.
+     * <p>
+     * - saleStatus는 PENDING(승인 대기)으로 초기화된다. <br>
+     * - title은 같은 스토어 내 기존 제목들을 조회하여 "제목 (n)" 형태로 겹치지 않게 생성한다.
+     *
+     * @param sellerId 복제를 요청한 판매자 ID (소유권 검증용)
+     * @param boardId  복제할 원본 게시글 ID
+     * @return 새로 생성된 게시글의 상세 응답
+     */
+    @Transactional
+    public SellerBoardDetailResponse copyBoard(Long sellerId, Long boardId) {
+        Board originalBoard = boardRepository.findByIdAndIsDeletedFalse(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        if (!sellerRepository.existsByIdAndStore_IdAndIsDeletedFalse(sellerId, originalBoard.getStore().getId())) {
+            throw new BbangleException(BbangleErrorCode.FORBIDDEN_BOARD_ACCESS);
+        }
+
+        List<Product> originalProducts = productRepository.findAllByBoardIdAndIsDeletedFalse(boardId);
+        List<ProductImg> originalImgs = productImgRepository.findAllByBoardIdAndIsDeletedFalseOrderByImgOrderAsc(boardId);
+
+        List<String> existingTitles = boardRepository.findAllTitlesByStoreId(originalBoard.getStore().getId());
+        String newTitle = TitleDuplicatorUtil.generateNextTitle(originalBoard.getTitle(), existingTitles);
+
+        Board copiedBoard = Board.copyOf(originalBoard, newTitle);
+
+        List<Product> copiedProducts = originalProducts.stream()
+            .map(Product::copyOf)
+            .toList();
+        copiedBoard.addProducts(copiedProducts);
+
+        List<ProductImg> copiedImgs = originalImgs.stream()
+            .map(ProductImg::copyOf)
+            .toList();
+        copiedBoard.addProductImgs(copiedImgs);
+
+        boardRepository.save(copiedBoard);
+
+        return sellerBoardDetailMapper.toResponse(copiedBoard, copiedImgs, copiedProducts);
     }
 }

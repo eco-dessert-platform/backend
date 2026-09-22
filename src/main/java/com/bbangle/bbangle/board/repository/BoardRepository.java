@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository {
 
@@ -35,4 +36,11 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
 
     @EntityGraph(attributePaths = {"productInfoNotice", "boardDetail"})
     Optional<Board> findByIdAndIsDeletedFalse(Long boardId);
+
+    /**
+     * 게시글 복제 시 제목 중복 방지("제목 (n)")를 계산하기 위해,
+     * 해당 스토어의 삭제되지 않은 게시글 제목 전체를 조회한다.
+     */
+    @Query("SELECT b.title FROM Board b WHERE b.store.id = :storeId AND b.isDeleted = false")
+    List<String> findAllTitlesByStoreId(@Param("storeId") Long storeId);
 }

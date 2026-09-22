@@ -682,7 +682,7 @@ class BoardTest {
 
     @Nested
     @DisplayName("판매 상태 변경 메서드 (stopSale, resumeSale, restock)")
-    class SaleStatusChange {
+    class SaleStatusChangeTest {
 
         @Nested
         @DisplayName("stopSale 메서드")
@@ -828,6 +828,97 @@ class BoardTest {
                 // then
                 assertThat(board.getSaleStatus()).isEqualTo(SaleStatus.ON_SALE);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("copyOf 메서드")
+    class CopyOfTest {
+
+        @Test
+        @DisplayName("saleStatus는 PENDING이고, 전달받은 title로 복제된 새 Board를 생성한다")
+        void success() {
+
+            // given
+            Board original = Board.sellerCreate(
+                store, "원본 게시글", 10000, "RATE", 10,
+                3000, 30000, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            ReflectionTestUtils.setField(original, "saleStatus", SaleStatus.ON_SALE);
+
+            // when
+            Board copied = Board.copyOf(original, "원본 게시글 (1)");
+
+            // then
+            assertThat(copied.getTitle()).isEqualTo("원본 게시글 (1)");
+            assertThat(copied.getSaleStatus()).isEqualTo(SaleStatus.PENDING);
+            assertThat(copied.getStore()).isEqualTo(original.getStore());
+            assertThat(copied.getPrice()).isEqualTo(original.getPrice());
+            assertThat(copied.getDiscountType()).isEqualTo(original.getDiscountType());
+            assertThat(copied.getDeliveryFee()).isEqualTo(original.getDeliveryFee());
+            assertThat(copied.getFreeShippingConditions()).isEqualTo(original.getFreeShippingConditions());
+            assertThat(copied.getCourier()).isEqualTo(original.getCourier());
+            assertThat(copied.getProducts()).isEmpty();
+            assertThat(copied.getProductImgs()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("BoardDetail과 ProductInfoNotice는 원본과 다른 새 인스턴스로 복제된다")
+        void copiesAssociationsAsNewInstances() {
+
+            // given
+            Board original = Board.sellerCreate(
+                store, "원본 게시글", 10000, "RATE", 10,
+                3000, 30000, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+
+            // when
+            Board copied = Board.copyOf(original, "원본 게시글 (1)");
+
+            // then
+            assertThat(copied.getBoardDetail()).isNotSameAs(original.getBoardDetail());
+            assertThat(copied.getBoardDetail().getContent()).isEqualTo(original.getBoardDetail().getContent());
+            assertThat(copied.getProductInfoNotice()).isNotSameAs(original.getProductInfoNotice());
+            assertThat(copied.getProductInfoNotice().getProductName())
+                .isEqualTo(original.getProductInfoNotice().getProductName());
+        }
+
+        @Test
+        @DisplayName("원본에 BoardDetail이 없으면 예외 없이 복제하고 BoardDetail은 null이다")
+        void copiesWithoutError_whenBoardDetailIsNull() {
+            // given
+            Board original = Board.sellerCreate(
+                store, "원본 게시글", 10000, "RATE", 10,
+                3000, 30000, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            ReflectionTestUtils.setField(original, "boardDetail", null);
+
+            // when
+            Board copied = Board.copyOf(original, "원본 게시글 (1)");
+
+            // then
+            assertThat(copied.getBoardDetail()).isNull();
+        }
+
+        @Test
+        @DisplayName("원본에 ProductInfoNotice가 없으면 예외 없이 복제하고 ProductInfoNotice는 null이다")
+        void copiesWithoutError_whenProductInfoNoticeIsNull() {
+            // given
+            Board original = Board.sellerCreate(
+                store, "원본 게시글", 10000, "RATE", 10,
+                3000, 30000, false, "T_09_10", "NORMAL",
+                "CJ대한통운", productInfoNotice, boardDetail
+            );
+            ReflectionTestUtils.setField(original, "productInfoNotice", null);
+
+            // when
+            Board copied = Board.copyOf(original, "원본 게시글 (1)");
+
+            // then
+            assertThat(copied.getProductInfoNotice()).isNull();
         }
     }
 }

@@ -175,4 +175,34 @@ class BoardRepositoryTest {
             assertThat(result.getBoardDetail()).isNull();
         }
     }
+
+    @Nested
+    @DisplayName("findAllTitlesByStoreId() 테스트")
+    class FindAllTitlesByStoreIdTest {
+
+        @Test
+        @DisplayName("해당 스토어의 삭제되지 않은 게시글 제목만 조회한다")
+        void success_findAllTitlesByStoreId() {
+
+            // given
+            Store store = storeRepository.save(StoreFixture.defaultStore());
+            Store anotherStore = storeRepository.save(StoreFixture.defaultStore("다른스토어"));
+
+            sut.save(BoardFixture.defaultBoardWithStore(store, "A"));
+            sut.save(BoardFixture.defaultBoardWithStore(store, "A (3)"));
+            Board deletedBoard = sut.save(BoardFixture.defaultBoardWithStore(store, "삭제된 게시글"));
+            deletedBoard.delete();
+            sut.save(deletedBoard);
+            sut.save(BoardFixture.defaultBoardWithStore(anotherStore, "다른 스토어 게시글"));
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<String> result = sut.findAllTitlesByStoreId(store.getId());
+
+            // then
+            assertThat(result).containsExactlyInAnyOrder("A", "A (3)");
+        }
+    }
 }

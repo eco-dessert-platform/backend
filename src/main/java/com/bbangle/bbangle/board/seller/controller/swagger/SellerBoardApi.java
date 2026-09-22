@@ -179,41 +179,18 @@ public interface SellerBoardApi {
 
     @Operation(
         summary = "판매자 상품 게시글 복제",
-        description = "상품 게시글을 복제 합니다."
+        description = """
+            상품 게시글을 그대로 복제합니다.
+            - saleStatus는 PENDING(승인 대기)으로 초기화됩니다.
+            - title은 동일 스토어 내 기존 제목과 겹치지 않도록 "제목 (n)" 형태로 자동 생성됩니다.
+              (예: "A"가 있으면 "A (1)", "A (3)"까지 있으면 "A (4)")
+            """
     )
-
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "상품 게시글 복제",
-            content = @Content(
-                schema = @Schema(implementation = CommonResult.class),
-                examples = @ExampleObject(
-                    name = "successResponse",
-                    summary = "성공응답 예시",
-                    value = """
-                        {
-                            "success": true,
-                            "code": 0,
-                            "message": "SUCCESS",
-                        }
-                        """
-                )
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "잘못된 요청 데이터",
-            content = @Content(
-                schema = @Schema(implementation = GlobalControllerAdvice.class)
-            )
-        )
-    })
-    CommonResult copyProductBoard(
-        @Parameter(name = "storeId", description = "스토어 ID", example = "1")
-        Long storeId,
-        @Parameter(name = "boardId", description = "게시글 ID", example = "1")
-        Long boardId);
+    SingleResult<SellerBoardDetailResponse> copyProductBoard(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long sellerId,
+        @Parameter(name = "boardId", description = "복제할 게시글 ID", example = "1")
+        Long boardId
+    );
 
     @Operation(
         summary = "판매자 상품 게시글 삭제",
