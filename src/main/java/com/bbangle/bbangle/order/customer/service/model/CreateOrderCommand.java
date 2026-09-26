@@ -8,6 +8,7 @@ import lombok.Builder;
 @Builder
 public record CreateOrderCommand(
     Long memberId,
+    String transactionId,
     List<StoreOrder> stores,
     Orderer orderer,
     ShippingAddress shippingAddress,
@@ -48,9 +49,10 @@ public record CreateOrderCommand(
     ) {
     }
 
-    public static CreateOrderCommand of(Long memberId, CreateOrderRequest request) {
+    public static CreateOrderCommand of(Long memberId, String transactionId, CreateOrderRequest request) {
         return CreateOrderCommand.builder()
             .memberId(memberId)
+            .transactionId(transactionId)
             .stores(request.stores().stream()
                 .map(store -> new StoreOrder(
                     store.storeId(),

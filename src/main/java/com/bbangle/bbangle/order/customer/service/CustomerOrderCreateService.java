@@ -34,6 +34,7 @@ import com.bbangle.bbangle.payment.repository.PaymentRepository;
 import com.bbangle.bbangle.seller.domain.Seller;
 import com.bbangle.bbangle.seller.repository.SellerRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +44,8 @@ import java.util.function.Function;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +65,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomerOrderCreateService {
 
+    private static final String ORDER_CREATE_REDIS_KEY_PREFIX = "customer:order:create:";
+    private static final Duration ORDER_CREATE_REDIS_TTL = Duration.ofMinutes(5);
+
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final SellerRepository sellerRepository;
@@ -70,6 +76,8 @@ public class CustomerOrderCreateService {
     private final OrderItemRepository orderItemRepository;
     private final OrderDeliveryRepository orderDeliveryRepository;
     private final OrderItemHistoryRepository orderItemHistoryRepository;
+    @Qualifier("defaultRedisTemplate")
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /** 요청 한 줄. 클라이언트가 주장한 소속·단가와 실제 조회된 옵션을 함께 들고 있다. */
     private record RequestedLine(Long storeId, Long productId, OptionOrder request, Product option) {
@@ -83,6 +91,8 @@ public class CustomerOrderCreateService {
     public CreateOrderResponse create(CreateOrderCommand command) {
         // TODO: privacyAgreed - 동의 이력 저장 미구현. 동의 이력 테이블 설계 후 반영한다.
         // TODO: shippingAddress.saveAsDefault - 배송지 도메인 미구현. 배송지 CRUD 구현 후 반영한다.
+
+        preventDuplicateRequest(command.transactionId(), command.memberId());
 
         Member member = findMember(command.memberId());
 
@@ -130,6 +140,22 @@ public class CustomerOrderCreateService {
             buildOrderName(lines),
             totalAmount,
             storeOrders);
+    }
+
+    /**
+     * 같은 거래 ID 로 들어온 재요청을 막는다. (따닥·재시도)
+     *
+     * <p>선점한 키는 트랜잭션이 실패해도 TTL 동안 남으므로, 실패 후 재시도는 새 거래 ID 로 보내야 한다.
+     */
+    private void preventDuplicateRequest(String transactionId, Long memberId) {
+        String redisKey = ORDER_CREATE_REDIS_KEY_PREFIX + transactionId;
+        boolean isNew = Boolean.TRUE.equals(
+            redisTemplate.opsForValue()
+                .setIfAbsent(redisKey, String.valueOf(memberId), ORDER_CREATE_REDIS_TTL)
+        );
+        if (!isNew) {
+            throw new BbangleException(BbangleErrorCode.ORDER_DUPLICATED_REQUEST);
+        }
     }
 
     private Member findMember(Long memberId) {

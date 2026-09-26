@@ -223,7 +223,8 @@ public enum BbangleErrorCode {
     ORDER_DUPLICATED_OPTION(-858, "주문 상품 옵션이 중복되어선 안됩니다.", BAD_REQUEST),
     ORDER_PRICE_MISMATCH(-859, "상품 가격이 변경되었습니다. 새로고침 후 다시 시도해주세요.", BAD_REQUEST),
     ORDER_DELIVERY_FEE_MISMATCH(-860, "배송비가 변경되었습니다. 새로고침 후 다시 시도해주세요.", BAD_REQUEST),
-    ORDER_INVALID_STORE(-861, "주문 상품의 스토어 정보가 올바르지 않습니다.", BAD_REQUEST);
+    ORDER_INVALID_STORE(-861, "주문 상품의 스토어 정보가 올바르지 않습니다.", BAD_REQUEST),
+    ORDER_DUPLICATED_REQUEST(-862, "동일한 주문 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.", CONFLICT);
 
     private final int code;
     private final String message;

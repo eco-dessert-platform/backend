@@ -25,10 +25,19 @@ public interface CustomerOrderApi {
             - 생성된 주문은 `PAYMENT_PENDING` 상태이며 주문목록에는 노출되지 않습니다.
             - 재고는 검증만 하고 차감하지 않습니다. 차감은 결제 승인 시점에 이루어집니다.
             - 응답의 `paymentNumber` · `orderName` · `totalAmount` 를 그대로 PG 결제창에 전달합니다.
+            - X-Transaction-Id 헤더로 중복 요청을 방지합니다. 같은 값으로 5분 내 재요청하면 거부됩니다.
             """
     )
     SingleResult<CreateOrderResponse> createOrder(
-        Long memberId,
+        @Parameter(hidden = true) Long memberId,
+
+        @Parameter(
+            description = "중복 요청 방지용 고유 거래 ID (UUID, 요청 시 생성)",
+            example = "550e8400-e29b-41d4-a716-446655440000",
+            required = true
+        )
+        String transactionId,
+
         CreateOrderRequest request
     );
 
