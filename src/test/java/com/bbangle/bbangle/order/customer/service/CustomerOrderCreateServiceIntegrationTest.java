@@ -22,6 +22,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CreateOrderResponse;
 import com.bbangle.bbangle.order.customer.service.model.CreateOrderCommand;
+import java.util.UUID;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.Order;
 import com.bbangle.bbangle.order.domain.OrderItem;
@@ -131,6 +132,20 @@ class CustomerOrderCreateServiceIntegrationTest {
             ProductFixture.orderableOption(board, "기본 옵션", optionPrice, STOCK));
     }
 
+    /** 테스트끼리 Redis 키가 겹치지 않도록 매번 새 거래 ID 를 부여한다. */
+    private static CreateOrderCommand withNewTransactionId(CreateOrderCommand command) {
+        return CreateOrderCommand.builder()
+            .memberId(command.memberId())
+            .transactionId(UUID.randomUUID().toString())
+            .stores(command.stores())
+            .orderer(command.orderer())
+            .shippingAddress(command.shippingAddress())
+            .paymentMethod(command.paymentMethod())
+            .privacyAgreed(command.privacyAgreed())
+            .paymentAmount(command.paymentAmount())
+            .build();
+    }
+
     private Long storeIdOf(Product option) {
         return option.getBoard().getStore().getId();
     }
@@ -140,19 +155,19 @@ class CustomerOrderCreateServiceIntegrationTest {
     }
 
     private CreateOrderCommand multiStoreCommand() {
-        return create(member.getId(), List.of(
+        return withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(optionA.getId(), 2, UNIT_PRICE_A)),
             store(storeIdOf(optionB), 0, boardIdOf(optionB),
                 option(optionB.getId(), 1, UNIT_PRICE_B))
-        ), amount(PRODUCT_AMOUNT, 0, DELIVERY_FEE_A));
+        ), amount(PRODUCT_AMOUNT, 0, DELIVERY_FEE_A)));
     }
 
     private CreateOrderCommand singleStoreCommand(int quantity) {
-        return create(member.getId(), List.of(
+        return withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(optionA.getId(), quantity, UNIT_PRICE_A))
-        ), amount(UNIT_PRICE_A * quantity, 0, DELIVERY_FEE_A));
+        ), amount(UNIT_PRICE_A * quantity, 0, DELIVERY_FEE_A)));
     }
 
     @DisplayName("여러 스토어를 한 번에 주문하면 스토어별 주문 N건이 결제 1건으로 묶인다")
@@ -282,16 +297,35 @@ class CustomerOrderCreateServiceIntegrationTest {
         assertThat(statusCounts).doesNotContainKey(OrderStatus.PAYMENT_PENDING);
     }
 
+    @DisplayName("같은 거래 ID 로 재요청하면 두 번째는 거부된다")
+    @Test
+    void rejectsDuplicatedTransactionId() {
+        // given : 첫 요청은 정상 처리된다
+        CreateOrderCommand command = multiStoreCommand();
+        sut.create(command);
+        em.flush();
+        em.clear();
+
+        // when & then : 같은 거래 ID 로 다시 보내면 막힌다
+        assertThatThrownBy(() -> sut.create(command))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ORDER_DUPLICATED_REQUEST.getMessage());
+
+        // 주문·결제가 중복 생성되지 않았다
+        assertThat(orderRepository.findAll()).hasSize(2);
+        assertThat(paymentRepository.findAll()).hasSize(1);
+    }
+
     @DisplayName("결제금액이 서버 계산값과 다르면 주문이 거부된다")
     @Test
     void rejectsPaymentAmountMismatch() {
         // given : 최종금액만 1,000원으로 위변조
-        CreateOrderCommand tampered = create(member.getId(), List.of(
+        CreateOrderCommand tampered = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(optionA.getId(), 2, UNIT_PRICE_A)),
             store(storeIdOf(optionB), 0, boardIdOf(optionB),
                 option(optionB.getId(), 1, UNIT_PRICE_B))
-        ), new CreateOrderCommand.PaymentAmount(PRODUCT_AMOUNT, 0, DELIVERY_FEE_A, 1_000));
+        ), new CreateOrderCommand.PaymentAmount(PRODUCT_AMOUNT, 0, DELIVERY_FEE_A, 1_000)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(tampered))
@@ -306,10 +340,10 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsOptionPriceMismatch() {
         // given : 화면에 노출됐던 단가가 10,000원이었다고 주장
-        CreateOrderCommand stale = create(member.getId(), List.of(
+        CreateOrderCommand stale = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(optionA.getId(), 2, 10_000))
-        ), amount(20_000, 0, DELIVERY_FEE_A));
+        ), amount(20_000, 0, DELIVERY_FEE_A)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(stale))
@@ -323,10 +357,10 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsDeliveryFeeMismatch() {
         // given : 배송비를 0원으로 주장
-        CreateOrderCommand stale = create(member.getId(), List.of(
+        CreateOrderCommand stale = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), 0, boardIdOf(optionA),
                 option(optionA.getId(), 2, UNIT_PRICE_A))
-        ), amount(24_000, 0, 0));
+        ), amount(24_000, 0, 0)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(stale))
@@ -340,10 +374,10 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsWhenOptionDoesNotBelongToStore() {
         // given : 스토어A 옵션을 스토어B 소속이라고 주장
-        CreateOrderCommand wrongStore = create(member.getId(), List.of(
+        CreateOrderCommand wrongStore = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionB), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(optionA.getId(), 2, UNIT_PRICE_A))
-        ), amount(24_000, 0, DELIVERY_FEE_A));
+        ), amount(24_000, 0, DELIVERY_FEE_A)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(wrongStore))
@@ -355,10 +389,10 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsWhenOptionDoesNotBelongToProduct() {
         // given : 스토어A 옵션을 게시글B 소속이라고 주장
-        CreateOrderCommand wrongProduct = create(member.getId(), List.of(
+        CreateOrderCommand wrongProduct = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionB),
                 option(optionA.getId(), 2, UNIT_PRICE_A))
-        ), amount(24_000, 0, DELIVERY_FEE_A));
+        ), amount(24_000, 0, DELIVERY_FEE_A)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(wrongProduct))
@@ -393,12 +427,12 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsDuplicatedOption() {
         // given
-        CreateOrderCommand duplicated = create(member.getId(), List.of(
+        CreateOrderCommand duplicated = withNewTransactionId(create(member.getId(), List.of(
             new CreateOrderCommand.StoreOrder(storeIdOf(optionA), DELIVERY_FEE_A, List.of(
                 new CreateOrderCommand.ProductOrder(boardIdOf(optionA), List.of(
                     option(optionA.getId(), 1, UNIT_PRICE_A),
                     option(optionA.getId(), 1, UNIT_PRICE_A)))))
-        ), amount(24_000, 0, DELIVERY_FEE_A));
+        ), amount(24_000, 0, DELIVERY_FEE_A)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(duplicated))
@@ -410,10 +444,10 @@ class CustomerOrderCreateServiceIntegrationTest {
     @Test
     void rejectsUnknownOption() {
         // given
-        CreateOrderCommand unknown = create(member.getId(), List.of(
+        CreateOrderCommand unknown = withNewTransactionId(create(member.getId(), List.of(
             store(storeIdOf(optionA), DELIVERY_FEE_A, boardIdOf(optionA),
                 option(999_999L, 1, UNIT_PRICE_A))
-        ), amount(UNIT_PRICE_A, 0, DELIVERY_FEE_A));
+        ), amount(UNIT_PRICE_A, 0, DELIVERY_FEE_A)));
 
         // when & then
         assertThatThrownBy(() -> sut.create(unknown))

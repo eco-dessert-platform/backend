@@ -12,6 +12,8 @@ import java.util.List;
 
 public final class CreateOrderCommandFixture {
 
+    public static final String DEFAULT_TRANSACTION_ID = "550e8400-e29b-41d4-a716-446655440000";
+
     private CreateOrderCommandFixture() {
     }
 
@@ -51,6 +53,7 @@ public final class CreateOrderCommandFixture {
 
     public static CreateOrderCommand.CreateOrderCommandBuilder defaultCommand() {
         return CreateOrderCommand.builder()
+            .transactionId(DEFAULT_TRANSACTION_ID)
             .orderer(defaultOrderer())
             .shippingAddress(defaultShippingAddress())
             .paymentMethod(PaymentMethod.CARD)

@@ -94,6 +94,8 @@ class CustomerOrderControllerSliceTest {
     @MockBean
     private CustomerOrderCreateService customerOrderCreateService;
 
+    private static final String TRANSACTION_ID = "550e8400-e29b-41d4-a716-446655440000";
+
     private static UsernamePasswordAuthenticationToken memberAuth(Long memberId) {
         return new UsernamePasswordAuthenticationToken(
             memberId, "N/A", List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
@@ -298,6 +300,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(validOrderRequest())))
 
@@ -325,6 +328,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(request)))
 
@@ -343,6 +347,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(request)))
 
@@ -362,6 +367,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(request)))
 
@@ -381,6 +387,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(request)))
 
@@ -400,6 +407,7 @@ class CustomerOrderControllerSliceTest {
         // when & then
         mvc.perform(post("/api/v1/customer/orders")
                 .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonDataEncoder.encode(validOrderRequest())))
 
@@ -410,5 +418,20 @@ class CustomerOrderControllerSliceTest {
 
         then(globalControllerAdvice).should(times(1))
             .handleBbangleException(any(), any(BbangleException.class));
+    }
+
+    @DisplayName("주문 생성 API - 실패(X-Transaction-Id 헤더가 없으면 주문할 수 없다)")
+    @Test
+    void givenNoTransactionIdHeader_whenCreateOrder_thenReturns4xx() throws Exception {
+        // when & then : 중복 요청 방지 헤더는 필수다
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(validOrderRequest())))
+
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
     }
 }

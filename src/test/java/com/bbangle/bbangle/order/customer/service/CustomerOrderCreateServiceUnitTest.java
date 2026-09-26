@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -53,9 +55,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import java.time.Duration;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 주문 생성 서비스 단위 테스트.
@@ -110,6 +115,18 @@ class CustomerOrderCreateServiceUnitTest {
     @Mock
     private OrderItemHistoryRepository orderItemHistoryRepository;
 
+    /**
+     * 중복 차단 로직이 {@code redisTemplate.opsForValue().setIfAbsent(...)} 처럼 연쇄 호출이라
+     * 중간 반환값(ValueOperations)도 목이어야 한다. 기본 목은 {@code opsForValue()} 에서 null 을
+     * 돌려줘 NPE 가 난다.
+     *
+     * <p>RETURNS_DEEP_STUBS 는 그 중간 목을 자동으로 만들고 캐싱해준다. 덕분에 목 선언과 연결
+     * 스텁을 따로 두지 않아도 되고, 같은 인스턴스가 반환되므로 검증도 그대로 동작한다.
+     * SellerChargeServiceUnitTest 가 같은 RedisTemplate 연쇄 호출에 쓰는 방식과 동일하다.
+     */
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private RedisTemplate<String, Object> redisTemplate;
+
     private Member member;
     private Product optionA;
     private Product optionB;
@@ -121,6 +138,12 @@ class CustomerOrderCreateServiceUnitTest {
         optionA = persistedOption(STORE_A_ID, BOARD_A_ID, "글루텐프리 케이크", 10_000, DELIVERY_FEE_A, OPTION_A_ID, 2_000);
         optionB = persistedOption(STORE_B_ID, BOARD_B_ID, "저당 쿠키", 5_000, 0, OPTION_B_ID, 1_000);
 
+    }
+
+    /** 중복 차단(Redis 선점)을 통과시킨다. 거래 ID 선점에 성공한 첫 요청 상황이다. */
+    private void givenNotDuplicatedRequest() {
+        given(redisTemplate.opsForValue()
+            .setIfAbsent(anyString(), anyString(), any(Duration.class))).willReturn(true);
     }
 
     private void givenMemberFound() {
@@ -175,6 +198,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void createsOneOrderPerStoreUnderSinglePayment() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA, optionB);
@@ -196,6 +220,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void createsPendingPaymentWithTotalAmount() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA, optionB);
@@ -219,6 +244,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void createsPendingOrderItemWithHistory() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA);
@@ -245,6 +271,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void recordsShippingAddressAndMemo() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA);
@@ -267,6 +294,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void buildsOrderName() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA, optionB);
@@ -283,6 +311,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void buildsOrderNameWithoutSuffixForSingleItem() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenSaveReturnsArgument();
         givenProductsFound(optionA);
@@ -300,6 +329,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsAmountMismatchBeforeAnyWrite() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA, optionB);
         givenSellersFound(optionA, optionB);
@@ -322,6 +352,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsOptionPriceMismatch() {
         // given : 화면 단가가 10,000원이었다고 주장
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
 
@@ -341,6 +372,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsDeliveryFeeMismatch() {
         // given : 배송비를 0원으로 주장
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
         givenSellersFound(optionA);
@@ -361,6 +393,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsWhenOptionDoesNotBelongToStore() {
         // given : 스토어A 옵션을 스토어B 소속이라고 주장
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
 
@@ -380,6 +413,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsWhenOptionDoesNotBelongToProduct() {
         // given : 스토어A 옵션을 게시글B 소속이라고 주장
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
 
@@ -395,10 +429,27 @@ class CustomerOrderCreateServiceUnitTest {
         then(orderRepository).should(never()).save(any(Order.class));
     }
 
+    @DisplayName("같은 거래 ID 로 재요청하면 회원을 조회하기 전에 실패한다")
+    @Test
+    void rejectsDuplicatedRequestBeforeAnythingElse() {
+        // given : Redis 선점 실패 = 이미 처리 중인 요청
+        given(redisTemplate.opsForValue()
+            .setIfAbsent(anyString(), anyString(), any(Duration.class))).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> sut.create(multiStoreCommand()))
+            .isInstanceOf(BbangleException.class)
+            .hasMessageContaining(BbangleErrorCode.ORDER_DUPLICATED_REQUEST.getMessage());
+
+        then(memberRepository).should(never()).findById(anyLong());
+        then(orderRepository).should(never()).save(any(Order.class));
+    }
+
     @DisplayName("존재하지 않는 회원이면 상품을 조회하기 전에 실패한다")
     @Test
     void rejectsUnknownMemberBeforeLoadingProducts() {
         // given
+        givenNotDuplicatedRequest();
         given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.empty());
 
         // when & then
@@ -414,6 +465,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsDuplicatedOptionBeforeLoadingProducts() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         CreateOrderCommand duplicated = create(MEMBER_ID, List.of(
             new StoreOrder(STORE_A_ID, DELIVERY_FEE_A, List.of(
@@ -434,6 +486,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsWhenAnyOptionIsMissing() {
         // given : 2건을 요청했는데 1건만 조회된다
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
 
@@ -449,6 +502,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsNotOnSaleProduct() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         optionA.getBoard().stopSale();
         givenProductsFound(optionA);
@@ -466,6 +520,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsWhenStockIsNotEnough() {
         // given
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA);
 
@@ -482,6 +537,7 @@ class CustomerOrderCreateServiceUnitTest {
     @Test
     void rejectsWhenSellerIsMissing() {
         // given : 스토어는 2개인데 판매자는 1명만 조회된다
+        givenNotDuplicatedRequest();
         givenMemberFound();
         givenProductsFound(optionA, optionB);
         givenSellersFound(optionA);
