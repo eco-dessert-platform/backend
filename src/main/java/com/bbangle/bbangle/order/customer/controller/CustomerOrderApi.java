@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.order.customer.controller;
 
 import com.bbangle.bbangle.common.dto.SingleResult;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CreateOrderResponse;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetail;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +13,24 @@ import org.springframework.data.domain.Pageable;
 
 @Tag(name = "Customer Order", description = "(소비자) 주문 API")
 public interface CustomerOrderApi {
+
+    @Operation(
+        summary = "(소비자) 주문 생성",
+        description = """
+            주문서 화면의 [결제하기] 진입 시 호출합니다. 결제 전 주문을 만들고 결제금액을 확정합니다.
+
+            - 주문 상품은 스토어 구분 없이 평평하게 보냅니다. 서버가 스토어별로 나눠 주문을 생성합니다.
+              (결제 1건 : 주문 N건)
+            - 모든 금액은 서버가 계산합니다. `expectedTotalAmount` 는 검증용이며 서버 계산값과 다르면 주문이 거부됩니다.
+            - 생성된 주문은 `PAYMENT_PENDING` 상태이며 주문목록에는 노출되지 않습니다.
+            - 재고는 검증만 하고 차감하지 않습니다. 차감은 결제 승인 시점에 이루어집니다.
+            - 응답의 `paymentNumber` · `orderName` · `totalAmount` 를 그대로 PG 결제창에 전달합니다.
+            """
+    )
+    SingleResult<CreateOrderResponse> createOrder(
+        Long memberId,
+        CreateOrderRequest request
+    );
 
     @Operation(
         summary = "(소비자) 주문목록 조회",
