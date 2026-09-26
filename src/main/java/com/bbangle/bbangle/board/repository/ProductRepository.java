@@ -15,6 +15,18 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Product> findWithLockById(Long id);
 
+    /**
+     * 주문 생성용 옵션 조회. 금액 계산에 게시글 가격·할인·배송비가, 스토어 그룹핑에 store 가 필요하므로
+     * 함께 fetchJoin 하여 N+1 을 막는다.
+     */
+    @Query("""
+            SELECT p FROM Product p
+            JOIN FETCH p.board b
+            JOIN FETCH b.store
+            WHERE p.id IN :ids AND p.isDeleted = false
+        """)
+    List<Product> findAllWithBoardAndStoreByIdIn(@Param("ids") List<Long> ids);
+
     @Query("SELECT p FROM Board b JOIN b.products p WHERE b.id = :boardId")
     List<Product> findByBoardId(@Param("boardId") Long boardId);
 

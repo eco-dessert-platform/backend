@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,6 +21,15 @@ import com.bbangle.bbangle.config.security.jwt.TokenProvider;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.exception.GlobalControllerAdvice;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.OptionOrderRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.OrdererRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.PaymentAmountRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.ProductOrderRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.ShippingAddressRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.request.CreateOrderRequest.StoreOrderRequest;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CreateOrderResponse;
+import com.bbangle.bbangle.order.customer.controller.dto.response.CreateOrderResponse.StoreOrderResponse;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerDeliveryInfo;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetail;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderDetailResponse.CustomerOrderDetailItem;
@@ -29,11 +39,14 @@ import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderR
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderPageResponse;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderProgress;
 import com.bbangle.bbangle.order.customer.controller.dto.response.CustomerOrderResponse.CustomerOrderStatusCounts;
+import com.bbangle.bbangle.order.customer.service.CustomerOrderCreateService;
 import com.bbangle.bbangle.order.customer.service.CustomerOrderService;
+import com.bbangle.bbangle.order.customer.service.model.CreateOrderCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderDetailCommand;
 import com.bbangle.bbangle.order.customer.service.model.CustomerOrderCommand.CustomerOrderSearchCommand;
 import com.bbangle.bbangle.order.domain.model.CustomerOrderCategory;
 import com.bbangle.bbangle.order.domain.model.OrderStatus;
+import com.bbangle.bbangle.payment.domain.PaymentMethod;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +57,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
@@ -65,6 +79,9 @@ class CustomerOrderControllerSliceTest {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private JsonDataEncoder jsonDataEncoder;
+
     @SpyBean
     private ResponseService responseService;
 
@@ -73,6 +90,11 @@ class CustomerOrderControllerSliceTest {
 
     @MockBean
     private CustomerOrderService customerOrderService;
+
+    @MockBean
+    private CustomerOrderCreateService customerOrderCreateService;
+
+    private static final String TRANSACTION_ID = "550e8400-e29b-41d4-a716-446655440000";
 
     private static UsernamePasswordAuthenticationToken memberAuth(Long memberId) {
         return new UsernamePasswordAuthenticationToken(
@@ -231,5 +253,185 @@ class CustomerOrderControllerSliceTest {
 
         then(globalControllerAdvice).should(times(1))
             .handleBbangleException(any(), any(BbangleException.class));
+    }
+
+    // ====================== 주문 생성 ======================
+
+    private static CreateOrderRequest createOrderRequest(
+        List<StoreOrderRequest> stores, boolean privacyAgreed, String ordererPhone
+    ) {
+        return new CreateOrderRequest(
+            stores,
+            new OrdererRequest("홍길동", ordererPhone, "buyer@example.com"),
+            new ShippingAddressRequest(
+                "홍길동", "01012345678", "13529",
+                "경기도 성남시 분당구 판교역로 166", "101동 1001호", "문 앞에 놔주세요", true),
+            PaymentMethod.CARD,
+            privacyAgreed,
+            new PaymentAmountRequest(24_000, 0, 3_000, 27_000));
+    }
+
+    private static StoreOrderRequest storeRequest(OptionOrderRequest option) {
+        return new StoreOrderRequest(1L, 3_000, List.of(new ProductOrderRequest(10L, List.of(option))));
+    }
+
+    private static CreateOrderRequest validOrderRequest() {
+        return createOrderRequest(
+            List.of(storeRequest(new OptionOrderRequest(101L, 2, 12_000))), true, "01012345678");
+    }
+
+    @DisplayName("주문 생성 API - 성공(스토어별 주문이 결제 1건으로 묶여 응답된다)")
+    @Test
+    void givenValidRequest_whenCreateOrder_thenReturnsPaymentAndStoreOrders() throws Exception {
+        // given
+        CreateOrderResponse mockResponse = new CreateOrderResponse(
+            "PAY-20260924-7K3XQ2M9",
+            "글루텐프리 케이크 외 1건",
+            33_000L,
+            List.of(
+                new StoreOrderResponse(11L, "ORDER-20260924-A1B2C3D4", 1L, "빵그리의 오븐",
+                    24_000L, 0L, 3_000L, 27_000L),
+                new StoreOrderResponse(12L, "ORDER-20260924-E5F6G7H8", 2L, "저당공방",
+                    6_000L, 0L, 0L, 6_000L)));
+
+        given(customerOrderCreateService.create(any(CreateOrderCommand.class)))
+            .willReturn(mockResponse);
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(validOrderRequest())))
+
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.code").value(SUCCESS.getCode()))
+            .andExpect(jsonPath("$.result.paymentNumber").value("PAY-20260924-7K3XQ2M9"))
+            .andExpect(jsonPath("$.result.orderName").value("글루텐프리 케이크 외 1건"))
+            .andExpect(jsonPath("$.result.totalAmount").value(33000))
+            .andExpect(jsonPath("$.result.orders.length()").value(2))
+            .andExpect(jsonPath("$.result.orders[0].orderNumber").value("ORDER-20260924-A1B2C3D4"))
+            .andExpect(jsonPath("$.result.orders[0].deliveryFee").value(3000))
+            .andExpect(jsonPath("$.result.orders[1].deliveryFee").value(0));
+
+        then(customerOrderCreateService).should(times(1)).create(any(CreateOrderCommand.class));
+    }
+
+    @DisplayName("주문 생성 API - 실패(개인정보 수집에 동의하지 않으면 주문할 수 없다)")
+    @Test
+    void givenPrivacyNotAgreed_whenCreateOrder_thenReturns400() throws Exception {
+        // given
+        CreateOrderRequest request = createOrderRequest(
+            List.of(storeRequest(new OptionOrderRequest(101L, 1, 12_000))), false, "01012345678");
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(request)))
+
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("주문 생성 API - 실패(스토어 목록이 비어 있으면 주문할 수 없다)")
+    @Test
+    void givenEmptyStores_whenCreateOrder_thenReturns400() throws Exception {
+        // given
+        CreateOrderRequest request = createOrderRequest(List.of(), true, "01012345678");
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(request)))
+
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("주문 생성 API - 실패(수량이 1개 미만이면 주문할 수 없다)")
+    @Test
+    void givenNonPositiveQuantity_whenCreateOrder_thenReturns400() throws Exception {
+        // given
+        CreateOrderRequest request = createOrderRequest(
+            List.of(storeRequest(new OptionOrderRequest(101L, 0, 12_000))), true, "01012345678");
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(request)))
+
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("주문 생성 API - 실패(연락처에 숫자가 아닌 값이 있으면 주문할 수 없다)")
+    @Test
+    void givenNonNumericPhone_whenCreateOrder_thenReturns400() throws Exception {
+        // given
+        CreateOrderRequest request = createOrderRequest(
+            List.of(storeRequest(new OptionOrderRequest(101L, 1, 12_000))), true, "010-1234-5678");
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(request)))
+
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("주문 생성 API - 실패(서버 계산 금액과 다르면 주문이 거부된다)")
+    @Test
+    void givenTamperedAmount_whenCreateOrder_thenReturnsErrorCode() throws Exception {
+        // given
+        given(customerOrderCreateService.create(any(CreateOrderCommand.class)))
+            .willThrow(new BbangleException(BbangleErrorCode.ORDER_AMOUNT_MISMATCH));
+
+        // when & then
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .header("X-Transaction-Id", TRANSACTION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(validOrderRequest())))
+
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value(BbangleErrorCode.ORDER_AMOUNT_MISMATCH.getCode()))
+            .andExpect(jsonPath("$.message").value(BbangleErrorCode.ORDER_AMOUNT_MISMATCH.getMessage()));
+
+        then(globalControllerAdvice).should(times(1))
+            .handleBbangleException(any(), any(BbangleException.class));
+    }
+
+    @DisplayName("주문 생성 API - 실패(X-Transaction-Id 헤더가 없으면 주문할 수 없다)")
+    @Test
+    void givenNoTransactionIdHeader_whenCreateOrder_thenReturns4xx() throws Exception {
+        // when & then : 중복 요청 방지 헤더는 필수다
+        mvc.perform(post("/api/v1/customer/orders")
+                .with(authentication(memberAuth(1L)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonDataEncoder.encode(validOrderRequest())))
+
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.success").value(false));
+
+        then(customerOrderCreateService).shouldHaveNoInteractions();
     }
 }

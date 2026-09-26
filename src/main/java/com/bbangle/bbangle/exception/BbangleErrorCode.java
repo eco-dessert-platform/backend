@@ -216,7 +216,15 @@ public enum BbangleErrorCode {
     INVALID_VAT_DATE_RANGE(-852, "조회 기간이 올바르지 않습니다.", BAD_REQUEST),
     EXCEEDED_MAX_VAT_DATE_RANGE(-853, "조회 기간은 최대 1년까지 가능합니다.", BAD_REQUEST),
     INVALID_EXCEL_TYPE(-854, "엑셀 다운로드 유형이 올바르지 않습니다.", BAD_REQUEST),
-    EXCEL_CREATE_FAILED(-855, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    EXCEL_CREATE_FAILED(-855, "엑셀 파일 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    ORDER_AMOUNT_MISMATCH(-856, "주문 금액이 일치하지 않습니다. 다시 시도해주세요.", BAD_REQUEST),
+    ORDER_PRODUCT_NOT_ON_SALE(-857, "판매중인 상품이 아닙니다.", BAD_REQUEST),
+    ORDER_DUPLICATED_OPTION(-858, "주문 상품 옵션이 중복되어선 안됩니다.", BAD_REQUEST),
+    ORDER_PRICE_MISMATCH(-859, "상품 가격이 변경되었습니다. 새로고침 후 다시 시도해주세요.", BAD_REQUEST),
+    ORDER_DELIVERY_FEE_MISMATCH(-860, "배송비가 변경되었습니다. 새로고침 후 다시 시도해주세요.", BAD_REQUEST),
+    ORDER_INVALID_STORE(-861, "주문 상품의 스토어 정보가 올바르지 않습니다.", BAD_REQUEST),
+    ORDER_DUPLICATED_REQUEST(-862, "동일한 주문 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.", CONFLICT);
 
     private final int code;
     private final String message;

@@ -100,6 +100,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                 dateRangePredicate(
                     extractStartDate(command),
                     extractEndDate(command)),
+                excludePendingPayment(),
                 keywordPredicate(searchType, keyword))
             .groupBy(orderItem.orderStatus)
             .fetch();
@@ -252,6 +253,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                     extractStartDate(command),
                     extractEndDate(command)),
                 orderStatusPredicate(command.orderDeliveryStatus()),
+                excludePendingPayment(),
                 keywordPredicate(searchType, keyword))
             .orderBy(order.orderDate.desc(), order.id.desc())
             .offset(pageable.getOffset())
@@ -320,6 +322,7 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
                     extractStartDate(command),
                     extractEndDate(command)),
                 orderStatusPredicate(command.orderDeliveryStatus()),
+                excludePendingPayment(),
                 keywordPredicate(searchType, keyword))
             .fetchOne();
 
@@ -351,6 +354,15 @@ public class OrderDSLRepositoryImpl implements OrderDSLRepository {
             return null;
         }
         return order.orderDate.between(startDate, endDate);
+    }
+
+    /**
+     * 결제 전(PAYMENT_PENDING) 주문을 목록에서 제외한다.
+     * 주문상품이 없는 주문(상품 정보 누락 상태)은 기존 동작대로 목록에 남긴다.
+     */
+    private BooleanExpression excludePendingPayment() {
+        return orderItem.orderStatus.isNull()
+            .or(orderItem.orderStatus.notIn(OrderStatus.HIDDEN_FROM_LIST));
     }
 
     private BooleanExpression orderStatusPredicate(OrderDeliveryStatus orderDeliveryStatus) {

@@ -44,6 +44,16 @@ public class Shipping {
         return new Shipping(null, null, null);
     }
 
+    /**
+     * 주문 생성 시점의 배송 정보. 운송장은 아직 없고 배송 요청사항만 채운다.
+     * (배송비는 주문 단위 값이므로 {@code Order.deliveryFee} 가 보관한다)
+     */
+    public static Shipping ofOrder(String deliveryMemo) {
+        Shipping shipping = new Shipping(null, null, null);
+        shipping.deliveryMemo = deliveryMemo;
+        return shipping;
+    }
+
     public void updateShippingInfo(String courierName, String trackingNumber) {
         this.courierName = courierName;
         this.trackingNumber = trackingNumber;

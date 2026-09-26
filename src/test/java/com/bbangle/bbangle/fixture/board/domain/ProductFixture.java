@@ -24,6 +24,18 @@ public final class ProductFixture {
             .build();
     }
 
+    /** 주문 가능한 옵션. 옵션 가격은 게시글 가격에 더해지는 '추가금'이다. */
+    public static Product orderableOption(Board board, String title, int addedPrice, int stock) {
+        return Product.builder()
+            .board(board)
+            .store(board.getStore())
+            .title(title)
+            .price(addedPrice)
+            .stock(stock)
+            .soldout(false)
+            .build();
+    }
+
     public static Product defaultProductWithStore(Store store) {
         return Product.builder()
             .store(store)
