@@ -55,6 +55,28 @@ public final class BoardFixture {
             .build();
     }
 
+    /**
+     * 주문 금액 계산용 게시글. 가격·배송비를 직접 지정한다.
+     * {@code discountPrice} 는 채우지 않으므로 할인 없음으로 계산된다.
+     */
+    public static Board orderableBoard(Store store, String title, int price, int deliveryFee) {
+        return baseBuilder(store, title)
+            .price(price)
+            .deliveryFee(deliveryFee)
+            .build();
+    }
+
+    /** 무료배송 조건이 걸린 게시글. */
+    public static Board orderableBoard(
+        Store store, String title, int price, int deliveryFee, int freeShippingConditions
+    ) {
+        return baseBuilder(store, title)
+            .price(price)
+            .deliveryFee(deliveryFee)
+            .freeShippingConditions(freeShippingConditions)
+            .build();
+    }
+
     public static Board withId(Board board, Long id) {
         ReflectionTestUtils.setField(board, "id", id);
         return board;
