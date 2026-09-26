@@ -73,6 +73,30 @@ public class OrderItem extends BaseEntity {
     @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<OrderDelivery> orderDeliveries = new ArrayList<>();
 
+    /**
+     * 주문 생성 시점의 주문상품. 결제 전이므로 PAYMENT_PENDING 으로 시작한다.
+     *
+     * @param productPrice 정가 단가
+     * @param unitPrice    할인 적용 단가
+     */
+    public static OrderItem createPending(
+        Product product,
+        Integer quantity,
+        Integer productPrice,
+        Integer unitPrice,
+        Integer totalPrice
+    ) {
+        return OrderItem.builder()
+            .product(product)
+            .quantity(quantity)
+            .productPrice(productPrice)
+            .unitPrice(unitPrice)
+            .totalPrice(totalPrice)
+            .orderStatus(OrderStatus.PAYMENT_PENDING)
+            .orderDeliveryStatus(OrderDeliveryStatus.NONE)
+            .build();
+    }
+
     public boolean confirmOrder() {
         if (this.orderStatus != OrderStatus.PAYMENT_COMPLETED) {
             return false;

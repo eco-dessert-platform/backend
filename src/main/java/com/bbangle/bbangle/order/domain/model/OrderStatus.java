@@ -12,6 +12,9 @@ public enum OrderStatus {
 
     // 주문관리 페이지에서 조회의 효율성을 위해 상태를 세분화함
 
+    // 결제 전
+    PAYMENT_PENDING("결제대기"),
+
     // 일반
     PAYMENT_COMPLETED("결제완료"),
     ORDER_CONFIRMED("발주확인"),
@@ -50,6 +53,15 @@ public enum OrderStatus {
     private final String description;
 
     // ---- 화면 집계용 그룹핑 상수 ----
+
+    /**
+     * 주문 목록 화면에 노출하지 않는 상태.
+     * 결제 전 주문은 PG 금액 검증을 위해 미리 저장되므로 판매자·소비자 목록에서 제외한다.
+     * (단건 상세 조회는 주문 생성 직후 본인이 확인해야 하므로 제외하지 않는다)
+     */
+    public static final Set<OrderStatus> HIDDEN_FROM_LIST =
+        EnumSet.of(PAYMENT_PENDING);
+
     public static final Set<OrderStatus> PAYMENT_COMPLETED_GROUP =
         EnumSet.of(PAYMENT_COMPLETED);
 
