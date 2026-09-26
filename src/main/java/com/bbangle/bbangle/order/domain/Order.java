@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,6 +51,9 @@ public class Order extends BaseEntity {
     @Column(name = "buyer_sub_phone", columnDefinition = "VARCHAR(20)")
     private String buyerSubPhone;
 
+    @Column(name = "buyer_email", columnDefinition = "VARCHAR(100)")
+    private String buyerEmail;
+
     @Column(name = "delivery_fee")
     private Integer deliveryFee;
 
@@ -69,8 +71,41 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
     private Payment payment;
+
+    /**
+     * 스토어(판매자) 단위 주문을 생성한다.
+     *
+     * <p>{@code @Builder} 는 필드 초기화식({@code = new ArrayList<>()})을 무시하므로
+     * {@code orderItems} 를 반드시 빈 리스트로 채워야 {@link #addOrderItem} 이 동작한다.
+     */
+    public static Order create(
+        String orderNumber,
+        Member member,
+        Seller seller,
+        Payment payment,
+        String buyerName,
+        String buyerPhone,
+        String buyerEmail,
+        Integer deliveryFee,
+        Integer totalAmount
+    ) {
+        return Order.builder()
+            .orderNumber(orderNumber)
+            .orderDate(LocalDateTime.now())
+            .member(member)
+            .seller(seller)
+            .payment(payment)
+            .buyerName(buyerName)
+            .buyerPhone(buyerPhone)
+            .buyerEmail(buyerEmail)
+            .deliveryFee(deliveryFee)
+            .totalAmount(totalAmount)
+            .orderItems(new ArrayList<>())
+            .build();
+    }
 
     /**
      * 주문에 주문 항목을 추가합니다. 양방향 연관관계를 안전하게 설정합니다.

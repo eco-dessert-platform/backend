@@ -828,7 +828,8 @@ class SellerOrderServiceUnitTest {
             order.addOrderItem(orderItem);
 
             // 결제 정보: CARD, 고정 paidAt
-            Payment payment = Payment.create(order, PaymentStatus.COMPLETED, PaymentMethod.CARD, paidAt);
+            Payment payment = Payment.create("PAY-TEST-PAIDAT", null, order.getTotalAmount(),
+                PaymentStatus.COMPLETED, PaymentMethod.CARD, paidAt);
             ReflectionTestUtils.setField(order, "payment", payment);
 
             // 수취인이 buyerName("홍길동")과 다른 배송 정보 → 배송 수취인 우선 사용 검증
@@ -913,7 +914,8 @@ class SellerOrderServiceUnitTest {
             ReflectionTestUtils.setField(orderItem, "id", 10L);
             order.addOrderItem(orderItem);
 
-            Payment payment = Payment.create(order, PaymentStatus.COMPLETED, PaymentMethod.CARD, LocalDateTime.now());
+            Payment payment = Payment.create("PAY-TEST-COMPLETED", null, order.getTotalAmount(),
+                PaymentStatus.COMPLETED, PaymentMethod.CARD, LocalDateTime.now());
             ReflectionTestUtils.setField(order, "payment", payment);
 
             BbanglePageResponse<Order> orderPage = new BbanglePageResponse<>(List.of(order), 0, 10, 1, 1L);
